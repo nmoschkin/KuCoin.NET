@@ -126,6 +126,7 @@ namespace KuCoinApp
             {
                 if (create)
                 {
+                    cred.Seed = seed;
                     return cred;
                 }
                 else
@@ -382,7 +383,7 @@ namespace KuCoinApp
             path = Path.Join(path, file);
 
             var json = JsonConvert.SerializeObject(this);
-            var crypted = AesOperation.EncryptString(GetCipherSeed(seed, pin), json, out _);
+            var crypted = AesOperation.EncryptString(GetCipherSeed(Seed, pin), json, out _);
 
             File.WriteAllText(path, crypted);
         }

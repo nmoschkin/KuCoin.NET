@@ -211,9 +211,11 @@ namespace DataTools.PinEntry
                     var oldChar = chars[index];
                     chars[index] = value;
                     text = new string(chars);
-
-                    CharacterChanged?.Invoke(this, new CharacterChangedEventArgs(text, index, oldChar));
-                    OnPropertyChanged(nameof(Text));
+                    System.Windows.Application.Current.Dispatcher.Invoke(() =>
+                    {
+                        CharacterChanged?.Invoke(this, new CharacterChangedEventArgs(text, index, oldChar));
+                        OnPropertyChanged(nameof(Text));
+                    });
                 }
             }
 

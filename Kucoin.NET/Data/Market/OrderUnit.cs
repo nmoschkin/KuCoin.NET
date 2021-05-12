@@ -67,7 +67,19 @@ namespace Kucoin.NET.Data.Market
                 }
             }
         }
-        
+
+        public override bool Equals(object obj)
+        {
+            if (obj is OrderUnit other)
+            {
+                return other.price == price && other.size == size && other.seq == seq;
+            }
+            else
+            {
+                return false;
+            }
+        }
+
         internal OrderUnit(string[] data)
         {
             price = decimal.Parse(data[0]);

@@ -23,6 +23,8 @@ namespace KuCoinApp
     {
         private Level2 level2Feed;
 
+        private Level2Depth50 level2Feed50;
+
         private TickerFeed tickerFeed;
 
         private KlineFeed klineFeed;
@@ -69,10 +71,21 @@ namespace KuCoinApp
 
         private ILevel2OrderBookProvider level2;
 
+        private ObservableStaticMarketDepthUpdate marketUpdate;
+
         public ICommand RefreshSymbolsCommand { get; private set; }
         public ICommand RefreshKlineCommand { get; private set; }
         public ICommand RefreshPriceCommand { get; private set; }
         public ICommand EditCredentialsCommand { get; private set; }
+
+        public ObservableStaticMarketDepthUpdate MarketUpdate
+        {
+            get => marketUpdate;
+            set
+            {
+                SetProperty(ref marketUpdate, value);
+            }
+        }
 
         public bool IsCredShowing
         {
@@ -291,18 +304,26 @@ namespace KuCoinApp
                             _ = tickerFeed.AddSymbol(newSymbol);
                             _ = klineFeed.AddSymbol(newSymbol, KlineType);
 
-                            Level2?.Dispose();
-                            
                             if (isKlineChange) return;
 
-                            level2Feed.AddSymbol(newSymbol, 20).ContinueWith((t) =>
+                            level2Feed50?.RemoveSymbol(oldSymbol).ContinueWith(async (t) =>
                             {
-                                App.Current.Dispatcher.Invoke(() =>
-                                {
-                                    Level2 = t.Result;
-                                });
-
+                                MarketUpdate = await level2Feed50.AddSymbol(newSymbol);
                             });
+
+
+                            //Level2?.Dispose();
+
+                            //if (isKlineChange) return;
+
+                            //level2Feed.AddSymbol(newSymbol, 20).ContinueWith((t) =>
+                            //{
+                            //    App.Current.Dispatcher.Invoke(() =>
+                            //    {
+                            //        Level2 = t.Result;
+                            //    });
+
+                            //});
 
                         });
                     });
@@ -313,17 +334,29 @@ namespace KuCoinApp
             {
                 RefreshData().ContinueWith(async (t2) =>
                 {
-                    level2Feed?.AddSymbol(newSymbol, 20).ContinueWith((t) =>
+                    
+                    
+                    //level2Feed?.AddSymbol(newSymbol, 20).ContinueWith((t) =>
+                    //{
+                    //    App.Current.Dispatcher.Invoke(() =>
+                    //    {
+                    //        Level2 = t.Result;
+                    //    });
+
+                    //});
+                    
+                    level2Feed50?.AddSymbol(newSymbol).ContinueWith((t) =>
                     {
                         App.Current.Dispatcher.Invoke(() =>
                         {
-                            Level2 = t.Result;
+                            MarketUpdate = t.Result;
                         });
 
                     });
 
                     await tickerFeed.AddSymbol(newSymbol);
                     await klineFeed.AddSymbol(newSymbol, KlineType);
+
                 });
             }
 
@@ -598,7 +631,11 @@ namespace KuCoinApp
                     if (cred != null)
                     {
                         level2Feed = new Level2(cred);
-                        await level2Feed.Connect();
+                        level2Feed50 = new Level2Depth50(cred);
+
+                        //await level2Feed.Connect();
+                        await level2Feed50.Connect();
+
                     }
 
                     foreach (var sym in symbols)

@@ -1,5 +1,6 @@
 ﻿
 using System;
+using System.Linq;
 using System.IO;
 using System.Collections.Generic;
 using System.Text;
@@ -197,7 +198,7 @@ namespace Kucoin.NET.Websockets
                 {
                     return multiplexParent.Connected;
                 }
-                else if (socket != null && socket.State == WebSocketState.Open)
+                else if (socket?.State == WebSocketState.Open)
                 {
                     return true;
                 }
@@ -529,7 +530,7 @@ namespace Kucoin.NET.Websockets
             string[] queue;
 
             // loop forever
-            while (!ctsReceive.IsCancellationRequested && socket != null && socket?.State == WebSocketState.Open)
+            while (!ctsReceive.IsCancellationRequested && socket?.State == WebSocketState.Open)
             {
                 await Task.Delay(10);
 
@@ -538,6 +539,7 @@ namespace Kucoin.NET.Websockets
                     continue;
                 }
 
+                // lock on msgQueue.
                 lock (msgQueue)
                 {
                     queue = msgQueue.ToArray();
@@ -579,7 +581,7 @@ namespace Kucoin.NET.Websockets
             var arrSeg = new ArraySegment<byte>(inputChunk);
 
             // loop forever or until the connection is broken or canceled.
-            while (!ctsReceive.IsCancellationRequested && socket != null && socket.State == WebSocketState.Open)
+            while (!ctsReceive.IsCancellationRequested && socket?.State == WebSocketState.Open)
             {
                 var result = await socket.ReceiveAsync(arrSeg, ctsReceive.Token);
                 c = result.Count;
@@ -654,7 +656,7 @@ namespace Kucoin.NET.Websockets
 
                             strlen = 0;
 
-                            // lock the message queue to append it.
+                            // lock on message queue.
                             lock (msgQueue)
                             {
                                 msgQueue.Add(json);
@@ -695,13 +697,11 @@ namespace Kucoin.NET.Websockets
                 }
                 else if (isMultiplexParent)
                 {
-                    foreach (var child in multiplexChildren)
+                    var p = multiplexChildren.Where((child) => child.tunnelId == e.TunnelId).FirstOrDefault();
+                    
+                    if (p != null)
                     {
-                        if (child.tunnelId == e.TunnelId)
-                        {
-                            await child.InternalJsonReceive(json);
-                            break;
-                        }
+                        await p.InternalJsonReceive(json);
                     }
                 }
             }

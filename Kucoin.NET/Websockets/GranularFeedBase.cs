@@ -216,6 +216,8 @@ namespace Kucoin.NET.Websockets
         /// <param name="obj"></param>
         protected override async Task PushNext(T obj)
         {
+            if (observers == null || observers.Count == 0) return;
+
             await Task.Run(() =>
             {
                 foreach (GranularObservation<T> obs in observers)

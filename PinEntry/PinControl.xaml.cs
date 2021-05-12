@@ -60,6 +60,7 @@ namespace DataTools.PinEntry
 
         public PinControl()
         {
+            TextSource = new TextSource();
             InitializeComponent();
 
             SetupPins();
@@ -210,11 +211,11 @@ namespace DataTools.PinEntry
         {
             bool newValid = TextSource.ValidateText();
 
-            if (newValid && !isValid)
+            if (newValid)
             {
                 PinComplete?.Invoke(this, new EventArgs());
             }
-            else if (!newValid && isValid)
+            else if (!newValid)
             {
                 PinInvalidated?.Invoke(this, new EventArgs());
             }
@@ -333,13 +334,13 @@ namespace DataTools.PinEntry
                 PinGrid.ColumnDefinitions.Add(cd);
 
                 var bc = new BigCharacter();
+                bigChars.Add(bc);
+                PinGrid.Children.Add(bc);
+
                 bc.TextSource = TextSource;
                 bc.TextSourceIndex = i;
 
-                bigChars.Add(bc);
-
                 bc.Margin = CharacterMargin;
-                PinGrid.Children.Add(bc);
 
                 bc.GoForward += GoForward;
                 bc.GoBackward += GoBackward;

@@ -25,30 +25,29 @@ namespace KuCoinApp
         public Credentials()
         {
             InitializeComponent();
-
             this.Loaded += Credentials_Loaded;
         }
 
         public Credentials(CryptoCredentials cred) : this()
         {
-            vm = new CredViewModel(cred);
-            vm.CloseWindow += Vm_CloseWindow;
-            DataContext = vm;
 
+            if (cred != null)
+            {
+                vm = new CredViewModel(cred);
+                vm.CloseWindow += Vm_CloseWindow;
+
+                DataContext = vm;
+            }
         }
 
         private void Credentials_Loaded(object sender, RoutedEventArgs e)
         {
             if (vm == null)
             {
-                _ = App.Current.Dispatcher.Invoke(async () =>
+                PinWindow.GetPin().ContinueWith((t) =>
                 {
-                    var pin = await PinWindow.GetPin();
-                    if (pin == null) Close();
-                    return pin;
-
-                }).ContinueWith((t) =>
-                {
+                    var pin = t.Result;
+                    if (pin == null) return;
                     App.Current.Dispatcher.Invoke(() =>
                     {
                         vm = new CredViewModel(t.Result);

@@ -92,7 +92,7 @@ namespace KuCoinApp
 
             SaveCommand = new SimpleCommand((p) =>
             {
-                cred.SaveToStorage();
+                Credential.SaveToStorage();
                 CloseWindow?.Invoke(this, new CloseWindowEventArgs(true));
             });
 

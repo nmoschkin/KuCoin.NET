@@ -132,7 +132,8 @@ namespace Kucoin.NET.Rest
             defaultSettings = new JsonSerializerSettings()
             {
                 ContractResolver = DataContractResolver.Instance,
-                //NullValueHandling = NullValueHandling.Ignore
+                DefaultValueHandling = DefaultValueHandling.IgnoreAndPopulate,
+                NullValueHandling = NullValueHandling.Ignore
             };
 
             JsonConvert.DefaultSettings = () => 
