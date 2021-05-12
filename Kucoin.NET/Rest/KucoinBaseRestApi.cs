@@ -148,7 +148,7 @@ namespace Kucoin.NET.Rest
         /// <param name="message">The message to hash.</param>
         /// <param name="secret">The secret to hash against.</param>
         /// <returns>A Base-64 Encoded Hash String.</returns>
-        public static string CreateToken(string message, string secret)
+        protected static string CreateToken(string message, string secret)
         {
             secret = secret ?? "";
 
