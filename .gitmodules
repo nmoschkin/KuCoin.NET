@@ -1,0 +1,3 @@
+[submodule "FancyCandles"]
+	path = FancyCandles
+	url = https://github.com/nmoschkin/FancyCandles.git
