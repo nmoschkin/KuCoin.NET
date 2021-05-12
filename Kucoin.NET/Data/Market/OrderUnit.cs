@@ -80,6 +80,11 @@ namespace Kucoin.NET.Data.Market
             }
         }
 
+        public override int GetHashCode()
+        {
+            return (price.ToString() + size.ToString() + seq.ToString()).GetHashCode();
+        }
+
         internal OrderUnit(string[] data)
         {
             price = decimal.Parse(data[0]);
@@ -93,7 +98,7 @@ namespace Kucoin.NET.Data.Market
 
         object ICloneable.Clone()
         {
-            return this.MemberwiseClone();
+            return this.Clone();
         }
 
         /// <summary>
