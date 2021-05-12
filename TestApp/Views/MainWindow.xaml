@@ -1,0 +1,370 @@
+﻿<Window
+    x:Class="KuCoinApp.MainWindow"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:fc="clr-namespace:FancyCandles;assembly=FancyCandles"
+    xmlns:km="clr-namespace:Kucoin.NET.Data.Market;assembly=Kucoin.NET"
+    xmlns:local="clr-namespace:KuCoinApp"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    Title="KuCoin.NET Tool"
+    Width="800"
+    Height="450"
+    mc:Ignorable="d">
+
+    <Window.Resources>
+        <ResourceDictionary>
+
+
+            <Style TargetType="Button">
+                <Setter Property="Background" Value="{StaticResource KuCoinBackground}" />
+                <Setter Property="Foreground" Value="{StaticResource KuCoinForegroundWhite}" />
+                <Setter Property="FontFamily" Value="Calibri" />
+                <Setter Property="FontSize" Value="18" />
+            </Style>
+
+        </ResourceDictionary>
+    </Window.Resources>
+
+    <Grid Background="White">
+
+
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition />
+            <ColumnDefinition />
+            <ColumnDefinition />
+        </Grid.ColumnDefinitions>
+
+
+        <Grid.RowDefinitions>
+            <RowDefinition Height="100" />
+            <RowDefinition />
+            <RowDefinition />
+        </Grid.RowDefinitions>
+
+        <Grid
+            x:Name="TitleGrid"
+            Grid.Row="0"
+            Grid.Column="0"
+            Grid.ColumnSpan="3"
+            Height="100"
+            Margin="0"
+            VerticalAlignment="Top"
+            Background="{StaticResource KuCoinBackground}">
+
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+
+            <Label
+                Grid.Row="1"
+                Grid.Column="1"
+                Margin="8"
+                HorizontalAlignment="Center"
+                VerticalAlignment="Center"
+                Content="KuCoin Tool"
+                FontSize="20"
+                FontWeight="Bold"
+                Foreground="{StaticResource KuCoinForegroundWhite}" />
+
+        </Grid>
+
+        <Border
+            Grid.Row="1"
+            Grid.RowSpan="2"
+            Grid.Column="0"
+            Grid.ColumnSpan="2"
+            Margin="16"
+            BorderBrush="#30307f"
+            BorderThickness="2">
+
+            <fc:CandleChart
+                x:Name="ChartArea"
+                Margin="0"
+                AxisTickColor="White"
+                Background="Black"
+                BearishCandleFill="{StaticResource KuCoinSellBackground}"
+                BearishCandleStroke="{StaticResource KuCoinSellBackground}"
+                BearishVolumeBarFill="{StaticResource KuCoinSellBackground}"
+                BullishCandleFill="{StaticResource KuCoinBackground}"
+                BullishCandleStroke="{StaticResource KuCoinBackground}"
+                BullishVolumeBarFill="{StaticResource KuCoinBackground}"
+                CandlesSource="{Binding Data}"
+                ChartAreaBackground="Black"
+                CrossLinesBrush="#3c3c3c"
+                CrossPriceBackground="{StaticResource KuCoinBackground}"
+                CrossPriceForeground="White"
+                CrossPriceFormat="$#,##0.00##"
+                CrossPricePadding="8"
+                CrossStrokeDashArray="0,2,4"
+                CrossVolumeNumberFormat="#,##0"
+                Foreground="White"
+                GapBetweenPriceTickLabels="32"
+                IsCrossLinesVisible="True"
+                IsHorizontalGridlinesEnabled="False"
+                IsVerticalGridlinesEnabled="False"
+                LegendFontFamily="Calibri"
+                LegendForeground="White"
+                LegendMargin="10,8,12,2"
+                LegendText="{Binding Symbol}"
+                LegendTextAlignment="Left"
+                PriceNumberFormat="$#,##0.00##"
+                RealTimeValue="{Binding RealTimePrice}"
+                SubLegendFontFamily="Calibri"
+                SubLegendFontSize="12"
+                SubLegendForeground="White"
+                SubLegendMargin="12,2,12,8"
+                SubLegendText="{Binding SymbolDescription}"
+                SubLegendTextAlignment="Left"
+                VolumeHistogramBottomMargin="8"
+                VolumeNumberFormat="#,##0">
+                <fc:CandleChart.HorizontalGridlinesPen>
+                    <Pen Brush="#ff303030" Thickness="0.5" />
+                </fc:CandleChart.HorizontalGridlinesPen>
+                <fc:CandleChart.VerticalGridlinesPen>
+                    <Pen Brush="#ff303030" Thickness="0.5" />
+                </fc:CandleChart.VerticalGridlinesPen>
+            </fc:CandleChart>
+        </Border>
+
+        <Grid
+            Grid.Row="1"
+            Grid.RowSpan="2"
+            Grid.Column="2"
+            Margin="8">
+
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition />
+                <ColumnDefinition />
+            </Grid.ColumnDefinitions>
+
+            <StackPanel
+                Grid.ColumnSpan="2"
+                Margin="8"
+                Orientation="Vertical">
+
+                <Label Content="Recent Symbols:" />
+
+                <ComboBox ItemsSource="{Binding RecentSymbols}" SelectedItem="{Binding Symbol, Mode=TwoWay}" />
+
+                <Label Content="Active Symbol:" />
+
+                <ComboBox ItemsSource="{Binding Symbols}" SelectedItem="{Binding Symbol, Mode=TwoWay}" />
+
+                <Label Content="Kline Types:" />
+
+                <ComboBox ItemsSource="{x:Static km:KlineType.AllTypes}" SelectedItem="{Binding KlineType, Mode=TwoWay}" />
+
+            </StackPanel>
+
+            <Grid Grid.Row="1" Grid.ColumnSpan="2">
+
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition />
+                </Grid.RowDefinitions>
+
+                <Image
+                    Width="32"
+                    Height="32"
+                    Margin="8"
+                    VerticalAlignment="Top"
+                    Source="{Binding Currency.Image}" />
+
+                <Label
+                    Grid.Column="1"
+                    Margin="8"
+                    HorizontalAlignment="Left"
+                    VerticalAlignment="Top"
+                    HorizontalContentAlignment="Left"
+                    VerticalContentAlignment="Center"
+                    Content="{Binding Currency.Currency.FullName}"
+                    FontFamily="Calibri"
+                    FontSize="20" />
+
+                <Label
+                    Grid.Column="2"
+                    Margin="8"
+                    HorizontalAlignment="Left"
+                    VerticalAlignment="Top"
+                    HorizontalContentAlignment="Left"
+                    VerticalContentAlignment="Center"
+                    FontFamily="Calibri"
+                    FontSize="20">
+                    <Label.Content>
+                        <TextBlock>
+                            <Run Text="{Binding RealTimePrice, StringFormat={}{0:#\,##0.00##}}" />
+                            <Run Text=" " />
+                            <Run Text="{Binding Symbol.QuoteCurrency}" />
+                        </TextBlock>
+                    </Label.Content>
+                </Label>
+
+                <Grid Grid.Row="1" Grid.ColumnSpan="3">
+
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition />
+                        <ColumnDefinition />
+                    </Grid.ColumnDefinitions>
+
+                    <ListView
+                        x:Name="Asks"
+                        Grid.Column="0"
+                        ItemsSource="{Binding Level2.OrderBook.Asks}">
+                        <ListView.View>
+                            <GridView>
+                                <GridView.Columns>
+                                    <GridViewColumn
+                                        Width="60"
+                                        DisplayMemberBinding="{Binding Price}"
+                                        Header="Price" />
+
+
+                                    <GridViewColumn
+                                        Width="60"
+                                        DisplayMemberBinding="{Binding Size}"
+                                        Header="Size" />
+
+                                </GridView.Columns>
+                            </GridView>
+                        </ListView.View>
+                    </ListView>
+
+                    <ListView
+                        x:Name="Bids"
+                        Grid.Column="1"
+                        ItemsSource="{Binding Level2.OrderBook.Bids}">
+                        <ListView.View>
+                            <GridView>
+                                <GridView.Columns>
+                                    <GridViewColumn
+                                        Width="60"
+                                        DisplayMemberBinding="{Binding Price}"
+                                        Header="Price" />
+
+
+                                    <GridViewColumn
+                                        Width="60"
+                                        DisplayMemberBinding="{Binding Size}"
+                                        Header="Size" />
+
+                                </GridView.Columns>
+                            </GridView>
+                        </ListView.View>
+                    </ListView>
+
+                </Grid>
+
+
+            </Grid>
+
+            <Button
+                x:Name="RefreshChartBtn"
+                Grid.Row="2"
+                Grid.Column="0"
+                Width="100"
+                Height="32"
+                Margin="8"
+                HorizontalAlignment="Center"
+                VerticalAlignment="Stretch"
+                Command="{Binding RefreshKlineCommand}"
+                Content="_Refresh Chart"
+                FontSize="12"
+                IsDefault="True">
+                <Button.Resources>
+                    <Style TargetType="Border">
+                        <Setter Property="CornerRadius" Value="6" />
+                    </Style>
+
+                </Button.Resources>
+            </Button>
+
+            <Button
+                x:Name="RefreshSymbolsBtn"
+                Grid.Row="2"
+                Grid.Column="1"
+                Width="100"
+                Height="32"
+                Margin="8"
+                HorizontalAlignment="Center"
+                VerticalAlignment="Stretch"
+                Command="{Binding RefreshSymbolsCommand}"
+                Content="_Refresh Symbols"
+                FontSize="12"
+                IsDefault="True">
+                <Button.Resources>
+                    <Style TargetType="Border">
+                        <Setter Property="CornerRadius" Value="6" />
+                    </Style>
+
+                </Button.Resources>
+            </Button>
+
+            <Button
+                x:Name="EditCredentialsBtn"
+                Grid.Row="3"
+                Grid.Column="1"
+                Width="100"
+                Height="32"
+                Margin="8"
+                HorizontalAlignment="Center"
+                VerticalAlignment="Stretch"
+                Command="{Binding EditCredentialsCommand}"
+                Content="_Edit Credentials"
+                FontSize="12"
+                IsDefault="True">
+                <Button.Resources>
+                    <Style TargetType="Border">
+                        <Setter Property="CornerRadius" Value="6" />
+                    </Style>
+
+                </Button.Resources>
+            </Button>
+            <Button
+                x:Name="ShowNewChartBtn"
+                Grid.Row="3"
+                Grid.Column="0"
+                Width="100"
+                Height="32"
+                Margin="8"
+                HorizontalAlignment="Center"
+                VerticalAlignment="Stretch"
+                Click="ShowNewChartBtn_Click"
+                Content="_Show New Chart"
+                FontSize="12"
+                IsDefault="True">
+                <Button.Resources>
+                    <Style TargetType="Border">
+                        <Setter Property="CornerRadius" Value="6" />
+                    </Style>
+
+                </Button.Resources>
+            </Button>
+
+        </Grid>
+
+
+    </Grid>
+
+
+</Window>

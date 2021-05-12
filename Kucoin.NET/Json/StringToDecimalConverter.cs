@@ -1,0 +1,55 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Text;
+using System.Reflection;
+
+using Newtonsoft.Json;
+
+
+namespace Kucoin.NET.Json
+{
+    public class StringToDecimalConverter : JsonConverter
+    {
+        public override bool CanConvert(Type objectType)
+        {
+            return objectType == typeof(decimal) || objectType == typeof(decimal?);
+        }
+
+        public override object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer)
+        {
+            if (reader.Value == null)
+            {
+                return reader.Value;
+            }
+            if (reader.Value is decimal de || reader.Value is double du)
+            {
+                return (decimal)reader.Value;
+            }
+            else if (reader.Value is string s)
+            {
+                return decimal.Parse(s);
+            }
+            else if (reader.Value is long l)
+            {
+                return (decimal)(double)l;
+            }            
+            else
+            {
+                try
+                {
+                    return (decimal)reader.Value;
+                }
+                catch // (Exception ex)
+                {
+                    throw new ArgumentException();
+                }
+            }
+        }
+
+        public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer)
+        {
+            if (value == null) return;
+            writer.WriteValue(value.ToString());
+        }
+    }
+}

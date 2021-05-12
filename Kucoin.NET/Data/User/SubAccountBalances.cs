@@ -1,0 +1,101 @@
+﻿using Newtonsoft.Json;
+
+using System;
+using System.Collections.Generic;
+using System.Text;
+
+namespace Kucoin.NET.Data.User
+{
+    public class SubAccountBalances
+    {
+
+
+        /// <summary>
+        /// SubUserId
+        /// </summary>
+        [JsonProperty("subUserId")]
+        public string SubUserId { get; set; }
+
+
+        /// <summary>
+        /// SubName
+        /// </summary>
+        [JsonProperty("subName")]
+        public string SubName { get; set; }
+
+
+        /// <summary>
+        /// MainAccounts
+        /// </summary>
+        [JsonProperty("mainAccounts")]
+        public List<SubAccountBalance> MainAccounts { get; set; }
+
+
+        /// <summary>
+        /// TradeAccounts
+        /// </summary>
+        [JsonProperty("tradeAccounts")]
+        public List<SubAccountBalance> TradeAccounts { get; set; }
+
+
+        /// <summary>
+        /// MarginAccounts
+        /// </summary>
+        [JsonProperty("marginAccounts")]
+        public List<SubAccountBalance> MarginAccounts { get; set; }
+
+    }
+
+    public class SubAccountBalance
+    {
+        /// <summary>
+        /// Currency
+        /// </summary>
+        [JsonProperty("currency")]
+        public string Currency { get; set; }
+
+
+        /// <summary>
+        /// Balance
+        /// </summary>
+        [JsonProperty("balance")]
+        public decimal Balance { get; set; }
+
+
+        /// <summary>
+        /// Available
+        /// </summary>
+        [JsonProperty("available")]
+        public decimal Available { get; set; }
+
+
+        /// <summary>
+        /// Holds
+        /// </summary>
+        [JsonProperty("holds")]
+        public decimal Holds { get; set; }
+
+
+        /// <summary>
+        /// BaseCurrency
+        /// </summary>
+        [JsonProperty("baseCurrency")]
+        public string BaseCurrency { get; set; }
+
+
+        /// <summary>
+        /// BaseCurrencyPrice
+        /// </summary>
+        [JsonProperty("baseCurrencyPrice")]
+        public decimal BaseCurrencyPrice { get; set; }
+
+
+        /// <summary>
+        /// BaseAmount
+        /// </summary>
+        [JsonProperty("baseAmount")]
+        public decimal BaseAmount { get; set; }
+
+    }
+
+}

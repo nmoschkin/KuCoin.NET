@@ -1,0 +1,100 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Text;
+using Kucoin.NET.Helpers;
+
+using Newtonsoft.Json;
+
+namespace Kucoin.NET.Data.User
+{
+    public class Withdrawal
+    {
+
+        /// <summary>
+        /// Id
+        /// </summary>
+        [JsonProperty("id")]
+        public string Id { get; set; }
+
+        /// <summary>
+        /// Address
+        /// </summary>
+        [JsonProperty("address")]
+        public string Address { get; set; }
+
+        /// <summary>
+        /// Memo
+        /// </summary>
+        [JsonProperty("memo")]
+        public string Memo { get; set; }
+
+        /// <summary>
+        /// Currency
+        /// </summary>
+        [JsonProperty("currency")]
+        public string Currency { get; set; }
+
+        /// <summary>
+        /// Amount
+        /// </summary>
+        [JsonProperty("amount")]
+        public decimal Amount { get; set; }
+
+        /// <summary>
+        /// Fee
+        /// </summary>
+        [JsonProperty("fee")]
+        public decimal Fee { get; set; }
+
+        /// <summary>
+        /// WalletTxId
+        /// </summary>
+        [JsonProperty("walletTxId")]
+        public string WalletTxId { get; set; }
+
+        /// <summary>
+        /// IsInner
+        /// </summary>
+        [JsonProperty("isInner")]
+        public bool IsInner { get; set; }
+
+        /// <summary>
+        /// Status
+        /// </summary>
+        [JsonProperty("status")]
+        public string Status { get; set; }
+
+        /// <summary>
+        /// Remark
+        /// </summary>
+        [JsonProperty("remark")]
+        public string Remark { get; set; }
+
+        /// <summary>
+        /// CreatedAt
+        /// </summary>
+        [JsonProperty("createdAt")]
+        internal long InternalCreatedAt { get; set; }
+
+        /// <summary>
+        /// UpdatedAt
+        /// </summary>
+        [JsonProperty("updatedAt")]
+        internal long InternalUpdatedAt { get; set; }
+
+        [JsonIgnore]
+        public DateTime CreatedAt
+        {
+            get => EpochTime.MillisecondsToDate(InternalCreatedAt);
+        }
+
+        [JsonIgnore]
+        public DateTime UpdatedAt
+        {
+            get => EpochTime.MillisecondsToDate(InternalUpdatedAt);
+        }
+
+    }
+
+
+}

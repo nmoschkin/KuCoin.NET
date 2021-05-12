@@ -1,0 +1,161 @@
+﻿<Window
+    x:Class="KuCoinApp.PinWindow"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:local="clr-namespace:KuCoinApp"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:pin="clr-namespace:DataTools.PinEntry;assembly=PinEntry"
+    Title="Credentials"
+    Width="400"
+    Height="260"
+    Margin="0"
+    Padding="0"
+    AllowsTransparency="True"
+    ShowInTaskbar="True"
+    WindowStartupLocation="CenterScreen"
+    WindowStyle="None"
+    mc:Ignorable="d">
+
+    <Window.Resources>
+        <ResourceDictionary>
+
+            <Style TargetType="PasswordBox">
+                <Setter Property="FontFamily" Value="Calibri" />
+                <Setter Property="FontSize" Value="18" />
+                <Setter Property="Padding" Value="8,4" />
+            </Style>
+
+            <Style TargetType="TextBox">
+                <Setter Property="FontFamily" Value="Calibri" />
+                <Setter Property="FontSize" Value="18" />
+                <Setter Property="Padding" Value="8,4" />
+            </Style>
+
+            <Style TargetType="Label">
+                <Setter Property="FontFamily" Value="Calibri" />
+                <Setter Property="FontSize" Value="16" />
+            </Style>
+
+
+            <Style TargetType="Button">
+                <Setter Property="Background" Value="{StaticResource KuCoinBackground}" />
+                <Setter Property="Foreground" Value="{StaticResource KuCoinForegroundWhite}" />
+                <Setter Property="FontFamily" Value="Calibri" />
+                <Setter Property="FontSize" Value="18" />
+            </Style>
+
+        </ResourceDictionary>
+    </Window.Resources>
+
+    <Border BorderBrush="{StaticResource KuCoinBackground}" BorderThickness="1">
+        <Grid Margin="0">
+
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition />
+                <ColumnDefinition />
+            </Grid.ColumnDefinitions>
+
+            <Grid.RowDefinitions>
+                <RowDefinition Height="100" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+
+            <Grid
+                x:Name="TitleGrid"
+                Grid.Row="0"
+                Grid.Column="0"
+                Grid.ColumnSpan="2"
+                Margin="0"
+                VerticalAlignment="Stretch"
+                Background="{StaticResource KuCoinBackground}"
+                MouseDown="TitleGrid_MouseDown">
+
+                <Label
+                    Margin="8"
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Center"
+                    Content="Enter Access Pin"
+                    FontSize="40"
+                    FontWeight="Bold"
+                    Foreground="{StaticResource KuCoinForegroundWhite}" />
+
+            </Grid>
+
+            <Grid
+                Grid.Row="1"
+                Grid.Column="0"
+                Grid.ColumnSpan="2"
+                Margin="16"
+                HorizontalAlignment="Stretch"
+                VerticalAlignment="Center">
+
+                <pin:PinControl
+                    x:Name="Pinner"
+                    Height="60"
+                    PinComplete="Pinner_PinComplete"
+                    PinInvalidated="Pinner_PinInvalidated" />
+
+            </Grid>
+
+            <StackPanel
+                Grid.Row="2"
+                Grid.Column="1"
+                Margin="16"
+                HorizontalAlignment="Center"
+                VerticalAlignment="Stretch"
+                Orientation="Vertical">
+
+                <Button
+                    x:Name="SaveBtn"
+                    Width="100"
+                    Height="32"
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Stretch"
+                    Click="SaveBtn_Click"
+                    Command="{Binding SaveCommand}"
+                    Content="_OK"
+                    IsDefault="True"
+                    IsEnabled="{Binding Credential.IsFilled}">
+                    <Button.Resources>
+                        <Style TargetType="Border">
+                            <Setter Property="CornerRadius" Value="6" />
+                        </Style>
+
+                    </Button.Resources>
+                </Button>
+
+            </StackPanel>
+
+            <StackPanel
+                Grid.Row="2"
+                Grid.Column="0"
+                Margin="16"
+                HorizontalAlignment="Center"
+                VerticalAlignment="Stretch"
+                Orientation="Vertical">
+
+                <Button
+                    x:Name="CancelBtn"
+                    Width="100"
+                    Height="32"
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Stretch"
+                    Click="CancelBtn_Click"
+                    Command="{Binding CancelCommand}"
+                    Content="_Cancel"
+                    IsCancel="True">
+                    <Button.Resources>
+                        <Style TargetType="Border">
+                            <Setter Property="CornerRadius" Value="6" />
+                        </Style>
+
+                    </Button.Resources>
+                </Button>
+
+            </StackPanel>
+
+        </Grid>
+    </Border>
+</Window>
