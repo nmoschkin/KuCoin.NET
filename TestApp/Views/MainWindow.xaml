@@ -8,8 +8,8 @@
     xmlns:local="clr-namespace:KuCoinApp"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     Title="KuCoin.NET Tool"
-    Width="800"
-    Height="450"
+    Width="1200"
+    Height="750"
     mc:Ignorable="d">
 
     <Window.Resources>
@@ -40,13 +40,14 @@
             <RowDefinition Height="100" />
             <RowDefinition />
             <RowDefinition />
+            <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
 
         <Grid
             x:Name="TitleGrid"
             Grid.Row="0"
             Grid.Column="0"
-            Grid.ColumnSpan="3"
+            Grid.ColumnSpan="4"
             Height="100"
             Margin="0"
             VerticalAlignment="Top"
@@ -181,6 +182,7 @@
                 </Grid.ColumnDefinitions>
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
                     <RowDefinition />
                 </Grid.RowDefinitions>
 
@@ -220,7 +222,21 @@
                     </Label.Content>
                 </Label>
 
-                <Grid Grid.Row="1" Grid.ColumnSpan="3">
+                <Grid Grid.Row="1" Grid.Column="2">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition />
+                    </Grid.ColumnDefinitions>
+
+                    <TextBlock
+                        HorizontalAlignment="Right"
+                        VerticalAlignment="Center"
+                        Text="{Binding MarketUpdate.Timestamp, StringFormat='{}{0:MMM dd, yyyy a\\t h:mm:ss tt}'}"
+                        FontFamily="Calibri"
+                        FontSize="10" />
+                </Grid>
+
+
+                <Grid Grid.Row="2" Grid.ColumnSpan="3">
 
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition />

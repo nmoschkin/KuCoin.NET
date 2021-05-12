@@ -559,6 +559,7 @@ namespace KuCoinApp
 
         public MainWindowViewModel()
         {
+            KucoinBaseRestApi.GlobalSandbox = false;
             SynchronizationContext context = new System.Windows.Threading.DispatcherSynchronizationContext(App.Current.Dispatcher);
 
             Kucoin.NET.Helpers.Dispatcher.Initialize(context);

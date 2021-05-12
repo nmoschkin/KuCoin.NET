@@ -11,6 +11,9 @@ using Kucoin.NET.Data.Interfaces;
 
 namespace Kucoin.NET.Rest
 {
+    /// <summary>
+    /// View, create and manipulate orders.
+    /// </summary>
     public class Order : KucoinBaseRestApi
     {
 

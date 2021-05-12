@@ -460,6 +460,10 @@ namespace Kucoin.NET.Websockets
             }
             var child = new F();
 
+            if (IsPublic && !child.IsPublic)
+            {
+                throw new InvalidOperationException("Cannot initialize a private multiplex child from a public multiplex parent.");
+            }
             if (!Connected)
             {
                 await Connect(true);
@@ -480,6 +484,12 @@ namespace Kucoin.NET.Websockets
         /// <returns></returns>
         public virtual async Task<bool> MultiplexInit(KucoinBaseWebsocketFeed parent, string newTunnelId = null)
         {
+
+            if (!IsPublic && parent.IsPublic)
+            {
+                throw new InvalidOperationException("Cannot initialize a private multiplex child from a public multiplex parent.");
+            }
+
             if (Connected || tunnelId != null)
             {
                 return false;

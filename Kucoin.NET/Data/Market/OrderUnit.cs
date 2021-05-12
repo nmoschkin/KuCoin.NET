@@ -4,6 +4,7 @@ using Newtonsoft.Json;
 
 using Kucoin.NET.Observable;
 using Kucoin.NET.Json;
+using Kucoin.NET.Data.Interfaces;
 
 namespace Kucoin.NET.Data.Market
 {
@@ -13,7 +14,7 @@ namespace Kucoin.NET.Data.Market
     /// </summary>
 
     [JsonConverter(typeof(OrderUnitConverter))]
-    public class OrderUnit : ObservableBase, ICloneable
+    public class OrderUnit : ObservableBase, ICloneable, IOrderUnit
     {
         private decimal price;
         private decimal size;

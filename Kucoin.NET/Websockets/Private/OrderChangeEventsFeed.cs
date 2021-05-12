@@ -58,10 +58,10 @@ namespace Kucoin.NET.Websockets.Private
         {
         }
         protected override async Task PushNext(OrderChange obj)
-        {
-            await base.PushNext(obj);
-
+        {            
             var ch = obj.Clone();
+            await base.PushNext(obj);
+            
             var e = new OrderChangeEventArgs(ch);
 
             switch (ch.Type)

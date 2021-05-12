@@ -7,11 +7,12 @@ using System.Text;
 using Newtonsoft.Json;
 using Kucoin.NET.Rest;
 using Kucoin.NET.Helpers;
+using Kucoin.NET.Data.Interfaces;
 
 namespace Kucoin.NET.Data.Market
 {
 
-    public class OrderBook : ObservableBase
+    public class OrderBook : ObservableBase, IOrderUnitList
     {
         private ObservableCollection<OrderUnit> asks;
 
@@ -29,6 +30,10 @@ namespace Kucoin.NET.Data.Market
                 SetProperty(ref sequence, value);
             }
         }
+
+        IList<IOrderUnit> IOrderUnitList.Asks => (IList<IOrderUnit>)asks;
+
+        IList<IOrderUnit> IOrderUnitList.Bids => (IList<IOrderUnit>)bids;
 
         [JsonProperty("asks")]
         public ObservableCollection<OrderUnit> Asks

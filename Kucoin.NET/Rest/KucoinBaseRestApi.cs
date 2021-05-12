@@ -25,6 +25,8 @@ namespace Kucoin.NET.Rest
         protected bool isSandbox;
         protected bool isv1api;
 
+        public static bool? GlobalSandbox { get; set; } = null;
+
         /// <summary>
         /// Gets credentials for access.
         /// </summary>
@@ -94,6 +96,13 @@ namespace Kucoin.NET.Rest
             bool isv1api = false
             )
         {
+
+            // universal override
+            if (GlobalSandbox != null)
+            {
+                isSandbox = (bool)GlobalSandbox;
+            }
+
             if (!string.IsNullOrEmpty(url))
             {
                 this.url = url;

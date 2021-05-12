@@ -14,22 +14,6 @@ namespace Kucoin.NET.Websockets.Private
 {
 
     /// <summary>
-    /// The depth of the market for the feed.
-    /// </summary>
-    public enum Level2Depth
-    {
-        /// <summary>
-        /// 5 Best Asks/Bids
-        /// </summary>
-        Depth5 = 5,
-
-        /// <summary>
-        /// 50 Best Asks/Bids
-        /// </summary>
-        Depth50 = 50
-    }
-
-    /// <summary>
     /// Level 2 5 best asks/bids.
     /// </summary>
     public class Level2Depth5 : GranularFeedBase<StaticMarketDepthUpdate>

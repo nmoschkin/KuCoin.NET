@@ -8,6 +8,9 @@ using Kucoin.NET.Json;
 
 namespace Kucoin.NET.Data.Order
 {
+    /// <summary>
+    /// Order list query parameters object.
+    /// </summary>
     public class OrderListParams : JsonDictBase
     {
 
@@ -15,7 +18,8 @@ namespace Kucoin.NET.Data.Order
         {
         }
 
-        public OrderListParams(OrderStatus? status = null,
+        public OrderListParams(
+            OrderStatus? status = null,
             string symbol = null,
             Side? side = null,
             OrderType? type = null,
