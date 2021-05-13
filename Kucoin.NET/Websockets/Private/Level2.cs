@@ -23,6 +23,8 @@ namespace Kucoin.NET.Websockets.Private
 
         internal readonly Dictionary<string, Level2Observation> activeFeeds = new Dictionary<string, Level2Observation>();
 
+        private int updateInterval = 500;
+
         public override bool IsPublic => false;
 
         /// <summary>
@@ -45,6 +47,22 @@ namespace Kucoin.NET.Websockets.Private
 
         internal Level2() : base(null)
         {
+        }
+
+
+        /// <summary>
+        /// Gets or sets a length of time (in milliseconds) that indicates how often the orderbook is pushed to the UI thread.
+        /// </summary>
+        /// <remarks>
+        /// The default value is 500 milliseconds.
+        /// </remarks>
+        public int UpdateInterval
+        {
+            get => updateInterval;
+            set
+            {
+                SetProperty(ref updateInterval, value);
+            }
         }
 
         /// <summary>
@@ -245,7 +263,7 @@ namespace Kucoin.NET.Websockets.Private
                             {
                                 af.OnNext(update);
 
-                                if ((DateTime.Now - cycle).TotalMilliseconds >= 500)
+                                if ((DateTime.Now - cycle).TotalMilliseconds >= updateInterval)
                                 {
                                     await InitializeOrderBook(af.Symbol);
 
@@ -266,7 +284,7 @@ namespace Kucoin.NET.Websockets.Private
                                 {
                                     af.OnNext(update);
 
-                                    if ((DateTime.Now - cycle).TotalMilliseconds >= 500)
+                                    if ((DateTime.Now - cycle).TotalMilliseconds >= updateInterval)
                                     {
                                         af.PushPreflight();
                                         cycle = DateTime.Now;

@@ -336,7 +336,7 @@ namespace KuCoinApp
 
                             //if (isKlineChange) return;
 
-                            //level2Feed.AddSymbol(newSymbol, 20).ContinueWith((t) =>
+                            //await level2Feed.AddSymbol(newSymbol, 20).ContinueWith((t) =>
                             //{
                             //    App.Current?.Dispatcher?.Invoke(() =>
                             //    {
@@ -354,8 +354,8 @@ namespace KuCoinApp
             {
                 RefreshData().ContinueWith(async (t2) =>
                 {
-                    
-                    
+
+
                     //level2Feed?.AddSymbol(newSymbol, 20).ContinueWith((t) =>
                     //{
                     //    App.Current?.Dispatcher?.Invoke(() =>
@@ -364,7 +364,7 @@ namespace KuCoinApp
                     //    });
 
                     //});
-                    
+
                     level2Feed50?.AddSymbol(newSymbol).ContinueWith((t) =>
                     {
                         App.Current?.Dispatcher?.Invoke(() =>
@@ -701,6 +701,7 @@ namespace KuCoinApp
                         level2Feed = new Level2(cred);
                         level2Feed50 = new Level2Depth50(cred);
 
+                        //level2Feed.UpdateInterval = 50;
                         //await level2Feed.Connect();
                         await level2Feed50.Connect();
 
