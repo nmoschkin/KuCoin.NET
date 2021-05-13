@@ -4,6 +4,7 @@ using KuCoinApp.ViewModels;
 
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -34,7 +35,6 @@ namespace KuCoinApp.Views
             this.Loaded += Accounts_Loaded;
             this.SizeChanged += Accounts_SizeChanged;
             this.LocationChanged += Accounts_LocationChanged;
-            this.Closing += Accounts_Closing;
 
             vm = new AccountsWindowViewModel();
             DataContext = vm;
@@ -43,8 +43,9 @@ namespace KuCoinApp.Views
             init = true;
         }
 
-        private void Accounts_Closing(object sender, System.ComponentModel.CancelEventArgs e)
+        protected override void OnClosing(CancelEventArgs e)
         {
+            base.OnClosing(e);
             vm?.Dispose();
         }
 

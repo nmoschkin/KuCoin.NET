@@ -14,18 +14,14 @@ using Kucoin.NET.Data.Interfaces;
 using System.Windows.Input;
 using Kucoin.NET.Websockets.Public;
 using System.Security.Authentication;
-using Kucoin.NET.Websockets;
 
-namespace KuCoinApp.ViewModels
+namespace KuCoinApp.ViewModels.LowRefresh
 {
-    public class AccountsWindowViewModel : ObservableBase, IObserver<Ticker>, IDisposable
+    public class AccountsWindowViewModel : ObservableBase, IDisposable
     {
         private User user;
         private ICredentialsProvider cred;
         private ObservableCollection<AccountItemViewModel> accounts;
-
-        private TickerFeed ticker;
-        private GranularObservation<Ticker> feedContext;
 
         public event EventHandler<EventArgs> AccountsRefreshed;
 
@@ -127,7 +123,7 @@ namespace KuCoinApp.ViewModels
             {
                 await CurrencyViewModel.UpdateCurrencies();
             }
-            
+
             App.Current?.Dispatcher?.Invoke(() =>
             {
                 Currencies = new ObservableCollection<CurrencyViewModel>();
@@ -157,11 +153,6 @@ namespace KuCoinApp.ViewModels
         {
             var accts = await user.GetAccountList();
 
-            feedContext?.Dispose();
-            ticker?.Dispose();
-
-            var pairs = new List<string>();
-
             App.Current?.Dispatcher?.Invoke(() =>
             {
                 var newTypes = new List<string>();
@@ -180,13 +171,9 @@ namespace KuCoinApp.ViewModels
 
                 foreach (var acct in accts)
                 {
+
                     var pair = $"{acct.Currency}-{QuoteCurrency.Currency.Currency}";
                     var acctvm = new AccountItemViewModel(acct);
-
-                    if (acct.Balance != 0M)
-                    {
-                        if (!pairs.Contains(pair)) pairs.Add(pair);
-                    }
 
                     accounts.Add(acctvm);
 
@@ -194,8 +181,6 @@ namespace KuCoinApp.ViewModels
                     {
                         newTypes.Add(acct.TypeDescription);
                     }
-                    
-                    acctvm.UpdateQuoteAmount(1);
 
                     if (acct.Type == AccountType.Main)
                     {
@@ -225,26 +210,6 @@ namespace KuCoinApp.ViewModels
 
             });
 
-
-            ticker = new TickerFeed();
-            await ticker.Connect();
-
-            feedContext = (GranularObservation<Ticker>)ticker.Subscribe(this);
-            feedContext.ActiveSymbols = pairs;
-
-            foreach (var pair in pairs)
-            {
-                if (pair == "USDT-USDT") continue;
-
-                try
-                {
-                    await ticker.AddSymbol(pair);
-                }
-                catch
-                {
-
-                }
-            }
         }
 
         private void MakeCommands()
@@ -265,47 +230,50 @@ namespace KuCoinApp.ViewModels
             return;
         }
 
-        object lockObj = new object();
-        Dictionary<string, decimal> lastPrices = new Dictionary<string, decimal>();
-        DateTime updateTimeout = DateTime.Now;
+        object nextObj = new object();
 
-        public void OnNext(Ticker value)
+        public void StartTickers()
         {
-            lastPrices[value.Symbol] = value.Price;
-
-            if ((DateTime.Now - updateTimeout).TotalMilliseconds < 500) return;
-            updateTimeout = DateTime.Now;
-
-            lock (lockObj)
+            _ = Task.Run(async () =>
             {
-                foreach (var varsym in lastPrices)
+                while (!disposed)
                 {
-                    AccountItemViewModel avm;
+                    var market = new Market();
+                    var tickers = await market.GetAllTickers();
 
-                    var sym = varsym.Key;
-                    var price = varsym.Value;
-
-                    if (mainDict.TryGetValue(sym, out avm))
+                    lock (nextObj)
                     {
-                        avm.UpdateQuoteAmount(price);
+                        foreach (var ticker in tickers.Ticker.Values)
+                        {
+                            AccountItemViewModel avm;
+                            var sym = ticker.Symbol;
+
+                            if (mainDict.TryGetValue(sym, out avm))
+                            {
+                                avm.UpdateQuoteAmount((decimal)ticker.LastPrice);
+                            }
+
+                            if (tradingDict.TryGetValue(sym, out avm))
+                            {
+                                avm.UpdateQuoteAmount((decimal)ticker.LastPrice);
+                            }
+                            if (marginDict.TryGetValue(sym, out avm))
+                            {
+                                avm.UpdateQuoteAmount((decimal)ticker.LastPrice);
+                            }
+
+                            if (poolxDict.TryGetValue(sym, out avm))
+                            {
+                                avm.UpdateQuoteAmount((decimal)ticker.LastPrice);
+                            }
+                        }
                     }
 
-                    if (tradingDict.TryGetValue(sym, out avm))
-                    {
-                        avm.UpdateQuoteAmount(price);
-                    }
-                    if (marginDict.TryGetValue(sym, out avm))
-                    {
-                        avm.UpdateQuoteAmount(price);
-                    }
-
-                    if (poolxDict.TryGetValue(sym, out avm))
-                    {
-                        avm.UpdateQuoteAmount(price);
-                    }
+                    await Task.Delay(5000);
 
                 }
-            }
+            });
+
         }
 
         public AccountsWindowViewModel(ICredentialsProvider credProvider)
@@ -319,6 +287,7 @@ namespace KuCoinApp.ViewModels
 
                 await UpdateCurrencies().ContinueWith((t) => UpdateAccounts());
 
+                StartTickers();
             });
         }
 
@@ -346,19 +315,21 @@ namespace KuCoinApp.ViewModels
 
                 await UpdateCurrencies().ContinueWith((t) => UpdateAccounts());
 
+                StartTickers();
+
             });
 
         }
 
+        bool disposed;
         public void Dispose()
         {
-            feedContext?.Dispose();
-            ticker?.Dispose();
+            disposed = true;
         }
 
         ~AccountsWindowViewModel()
         {
-            Dispose();
+            disposed = true;
         }
 
 

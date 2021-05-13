@@ -84,6 +84,7 @@ namespace KuCoinApp.ViewModels
                 SetProperty(ref quoteAmount, value);
             }
         }
+
         public void UpdateQuoteAmount(decimal quoteAmount)
         {
             QuoteAmount = Balance * quoteAmount;

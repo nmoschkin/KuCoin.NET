@@ -891,6 +891,8 @@ namespace Kucoin.NET.Websockets
         protected virtual void Dispose(bool disposing)
         {
             if (disposed) throw new ObjectDisposedException(nameof(KucoinBaseWebsocketFeed));
+            
+            Disconnect();
 
             if (this.disposing) return;
             this.disposing = true;

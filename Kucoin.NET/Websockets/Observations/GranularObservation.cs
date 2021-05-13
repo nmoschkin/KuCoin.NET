@@ -23,7 +23,14 @@ namespace Kucoin.NET.Websockets
         /// <remarks>
         /// If this list is empty, the observer is active for all subscribed symbols.
         /// </remarks>
-        public List<string> ActiveSymbols => activeSymbols;
+        public List<string> ActiveSymbols
+        {
+            get => activeSymbols;
+            set
+            {
+                activeSymbols = value;
+            }
+        }
         
         /// <summary>
         /// Create a new granular observer provider.

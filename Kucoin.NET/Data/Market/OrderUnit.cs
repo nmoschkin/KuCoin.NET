@@ -20,6 +20,8 @@ namespace Kucoin.NET.Data.Market
         private decimal size;
         private long seq;
 
+        int hc = 0;
+
         internal decimal SortFactor => price;
 
         /// <summary>
@@ -35,7 +37,7 @@ namespace Kucoin.NET.Data.Market
             get => seq;
             set
             {
-                SetProperty(ref seq, value);
+                if (SetProperty(ref seq, value)) CalcHash();
             }
         }
 
@@ -49,6 +51,7 @@ namespace Kucoin.NET.Data.Market
             {
                 if (SetProperty(ref price, value))
                 {
+                    CalcHash();
                     OnPropertyChanged(nameof(SortFactor));
                 }
             }
@@ -64,6 +67,7 @@ namespace Kucoin.NET.Data.Market
             {
                 if (SetProperty(ref size, value))
                 {
+                    CalcHash();
                     OnPropertyChanged(nameof(SortFactor));
                 }
             }
@@ -81,10 +85,11 @@ namespace Kucoin.NET.Data.Market
             }
         }
 
-        public override int GetHashCode()
+        private void CalcHash()
         {
-            return (price.ToString() + size.ToString() + seq.ToString()).GetHashCode();
+            hc = (price.ToString() + size.ToString() + seq.ToString()).GetHashCode();
         }
+        public override int GetHashCode() => hc;
 
         internal OrderUnit(string[] data)
         {
