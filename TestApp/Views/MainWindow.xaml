@@ -13,17 +13,7 @@
     mc:Ignorable="d">
 
     <Window.Resources>
-        <ResourceDictionary>
-
-
-            <Style TargetType="Button">
-                <Setter Property="Background" Value="{StaticResource KuCoinBackground}" />
-                <Setter Property="Foreground" Value="{StaticResource KuCoinForegroundWhite}" />
-                <Setter Property="FontFamily" Value="Calibri" />
-                <Setter Property="FontSize" Value="18" />
-            </Style>
-
-        </ResourceDictionary>
+        <ResourceDictionary />
     </Window.Resources>
 
     <Grid Background="White">
@@ -191,8 +181,8 @@
                     Width="32"
                     Height="32"
                     Margin="8"
-                    VerticalAlignment="Center"
                     HorizontalAlignment="Center"
+                    VerticalAlignment="Center"
                     Source="{Binding Currency.Image}" />
 
                 <Label
@@ -229,8 +219,8 @@
                     Width="32"
                     Height="32"
                     Margin="8"
-                    VerticalAlignment="Center"
                     HorizontalAlignment="Center"
+                    VerticalAlignment="Center"
                     Source="{Binding QuoteCurrency.Image}" />
 
 
@@ -369,7 +359,7 @@
                 </Button.Resources>
             </Button>
             <Button
-                x:Name="ShowNewChartBtn"
+                x:Name="ShowAccountsBtn"
                 Grid.Row="3"
                 Grid.Column="0"
                 Width="100"
@@ -377,8 +367,8 @@
                 Margin="8"
                 HorizontalAlignment="Center"
                 VerticalAlignment="Stretch"
-                Click="ShowNewChartBtn_Click"
-                Content="_Show New Chart"
+                Command="{Binding ShowAccountsCommand}"
+                Content="_Show Accounts"
                 FontSize="12"
                 IsDefault="True">
                 <Button.Resources>

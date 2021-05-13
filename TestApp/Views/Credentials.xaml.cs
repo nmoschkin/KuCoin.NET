@@ -44,11 +44,11 @@ namespace KuCoinApp
         {
             if (vm == null)
             {
-                PinWindow.GetPin().ContinueWith((t) =>
+                PinWindow.GetPin(App.Current.MainWindow).ContinueWith((t) =>
                 {
                     var pin = t.Result;
                     if (pin == null) return;
-                    App.Current.Dispatcher.Invoke(() =>
+                    App.Current?.Dispatcher?.Invoke(() =>
                     {
                         vm = new CredViewModel(t.Result);
                         vm.CloseWindow += Vm_CloseWindow;

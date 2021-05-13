@@ -45,7 +45,7 @@ namespace KuCoinApp
 
             if (cred == null)
             {
-                var pin = await PinWindow.GetPin();
+                var pin = await PinWindow.GetPin(App.Current.MainWindow);
 
                 AllocConsole();
 

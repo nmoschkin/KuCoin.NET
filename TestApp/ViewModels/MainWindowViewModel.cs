@@ -15,6 +15,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Input;
+using KuCoinApp.Views;
 
 namespace KuCoinApp
 {
@@ -22,6 +23,8 @@ namespace KuCoinApp
     public class MainWindowViewModel : ObservableBase, IObserver<Ticker>, IObserver<KlineFeedMessage>
     {
         private Level2 level2Feed;
+
+        private Accounts accountWnd;
 
         private Level2Depth50 level2Feed50;
 
@@ -77,6 +80,8 @@ namespace KuCoinApp
         public ICommand RefreshKlineCommand { get; private set; }
         public ICommand RefreshPriceCommand { get; private set; }
         public ICommand EditCredentialsCommand { get; private set; }
+
+        public ICommand ShowAccountsCommand { get; private set; }
 
         public ObservableStaticMarketDepthUpdate MarketUpdate
         {
@@ -246,12 +251,12 @@ namespace KuCoinApp
                     {
                         if (curr.Currency.Currency == symbol.TradingPair[0])
                         {
-                            if (!curr.ImageLoaded) curr.LoadImage();
+                            if (!curr.ImageLoaded) _ = curr.LoadImage();
                             Currency = curr;
                         }
                         else if (curr.Currency.Currency == symbol.TradingPair[1])
                         {
-                            if (!curr.ImageLoaded) curr.LoadImage();
+                            if (!curr.ImageLoaded) _ = curr.LoadImage();
                             QuoteCurrency = curr;
                         }
                     }
@@ -333,7 +338,7 @@ namespace KuCoinApp
 
                             //level2Feed.AddSymbol(newSymbol, 20).ContinueWith((t) =>
                             //{
-                            //    App.Current.Dispatcher.Invoke(() =>
+                            //    App.Current?.Dispatcher?.Invoke(() =>
                             //    {
                             //        Level2 = t.Result;
                             //    });
@@ -353,7 +358,7 @@ namespace KuCoinApp
                     
                     //level2Feed?.AddSymbol(newSymbol, 20).ContinueWith((t) =>
                     //{
-                    //    App.Current.Dispatcher.Invoke(() =>
+                    //    App.Current?.Dispatcher?.Invoke(() =>
                     //    {
                     //        Level2 = t.Result;
                     //    });
@@ -362,7 +367,7 @@ namespace KuCoinApp
                     
                     level2Feed50?.AddSymbol(newSymbol).ContinueWith((t) =>
                     {
-                        App.Current.Dispatcher.Invoke(() =>
+                        App.Current?.Dispatcher?.Invoke(() =>
                         {
                             MarketUpdate = t.Result;
                         });
@@ -396,7 +401,7 @@ namespace KuCoinApp
 
             Data = kc;
 
-            App.Current.Dispatcher.Invoke(() =>
+            App.Current?.Dispatcher?.Invoke(() =>
             {
                 LastCandle = (KlineCandle)kc?.LastOrDefault();
             });
@@ -481,7 +486,7 @@ namespace KuCoinApp
         {
             if (ticker.Symbol == (string)symbol && KlineType == ticker.Candles.Type)
             {
-                App.Current.Dispatcher.Invoke(() =>
+                App.Current?.Dispatcher.Invoke(() =>
                 {
                     Volume = ticker.Candles.Volume;
                     VolumeTime = ticker.Timestamp;
@@ -623,6 +628,20 @@ namespace KuCoinApp
                 await RefreshData();
             });
 
+            ShowAccountsCommand = new SimpleCommand((obj) =>
+            {
+
+                if (accountWnd == null || !accountWnd.IsLoaded)
+                {
+                    accountWnd = new Accounts(cred);
+                }
+
+                accountWnd.Show();
+                accountWnd.Focus();
+
+
+            });
+
 
             market.RefreshSymbolsAsync().ContinueWith(async (t) =>
             {
@@ -633,13 +652,13 @@ namespace KuCoinApp
                     currencies.Add(new CurrencyViewModel(c, false));
                 }
 
-                await App.Current.Dispatcher.Invoke(async () => {
+                await App.Current?.Dispatcher?.Invoke(async () => {
 
                     string pin;
 
                     if (CryptoCredentials.Pin == null)
                     {
-                        pin = await PinWindow.GetPin();
+                        pin = await PinWindow.GetPin(App.Current.MainWindow);
                     }
                     else
                     {

@@ -24,6 +24,13 @@
                 Brush="{StaticResource KuCoinSellBackground}"
                 Thickness="1" />
 
+            <Style TargetType="Button">
+                <Setter Property="Background" Value="{StaticResource KuCoinBackground}" />
+                <Setter Property="Foreground" Value="{StaticResource KuCoinForegroundWhite}" />
+                <Setter Property="FontFamily" Value="Calibri" />
+                <Setter Property="FontSize" Value="18" />
+            </Style>
+
         </ResourceDictionary>
     </Application.Resources>
 </Application>

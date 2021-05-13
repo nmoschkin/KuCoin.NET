@@ -6,12 +6,214 @@
     xmlns:local="clr-namespace:KuCoinApp.Views"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:user="clr-namespace:Kucoin.NET.Data.User;assembly=Kucoin.NET"
+    xmlns:vms="clr-namespace:KuCoinApp.ViewModels"
     Title="Accounts"
     Width="600"
-    Height="350"
+    Height="550"
     mc:Ignorable="d">
     <Window.Resources>
         <ResourceDictionary>
+
+            <GridView x:Key="AccountGrid1">
+                <GridViewColumn Width="150" Header="Currency">
+                    <GridViewColumn.CellTemplate>
+                        <DataTemplate>
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="48" />
+                                    <ColumnDefinition />
+                                </Grid.ColumnDefinitions>
+
+                                <Image
+                                    Width="32"
+                                    Height="32"
+                                    Margin="8"
+                                    HorizontalAlignment="Center"
+                                    VerticalAlignment="Center"
+                                    Source="{Binding Image}" />
+
+                                <TextBlock
+                                    Grid.Column="1"
+                                    Margin="4,8"
+                                    HorizontalAlignment="Left"
+                                    VerticalAlignment="Center"
+                                    FontFamily="Calibri"
+                                    FontSize="14"
+                                    Text="{Binding CurrencyName}" />
+
+                            </Grid>
+                        </DataTemplate>
+                    </GridViewColumn.CellTemplate>
+                </GridViewColumn>
+
+                <GridViewColumn
+                    Width="150"
+                    DisplayMemberBinding="{Binding Balance}"
+                    Header="Balance" />
+                <GridViewColumn
+                    Width="150"
+                    DisplayMemberBinding="{Binding QuoteAmount}"
+                    Header="Quote Balance" />
+                <GridViewColumn
+                    Width="150"
+                    DisplayMemberBinding="{Binding Available}"
+                    Header="Available" />
+                <GridViewColumn
+                    Width="150"
+                    DisplayMemberBinding="{Binding Holds}"
+                    Header="Holds" />
+            </GridView>
+
+            <GridView x:Key="AccountGrid2">
+                <GridViewColumn Width="150" Header="Currency">
+                    <GridViewColumn.CellTemplate>
+                        <DataTemplate>
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition />
+                                </Grid.ColumnDefinitions>
+
+                                <Image
+                                    Width="32"
+                                    Height="32"
+                                    Margin="8"
+                                    HorizontalAlignment="Center"
+                                    VerticalAlignment="Center"
+                                    Source="{Binding Image}" />
+
+                                <TextBlock
+                                    Grid.Column="1"
+                                    Margin="4,8"
+                                    HorizontalAlignment="Left"
+                                    VerticalAlignment="Center"
+                                    FontFamily="Calibri"
+                                    FontSize="14"
+                                    Text="{Binding CurrencyName}" />
+
+                            </Grid>
+                        </DataTemplate>
+                    </GridViewColumn.CellTemplate>
+                </GridViewColumn>
+
+                <GridViewColumn
+                    Width="150"
+                    DisplayMemberBinding="{Binding Balance}"
+                    Header="Balance" />
+                <GridViewColumn
+                    Width="150"
+                    DisplayMemberBinding="{Binding QuoteAmount}"
+                    Header="Quote Balance" />
+                <GridViewColumn
+                    Width="150"
+                    DisplayMemberBinding="{Binding Available}"
+                    Header="Available" />
+                <GridViewColumn
+                    Width="150"
+                    DisplayMemberBinding="{Binding Holds}"
+                    Header="Holds" />
+            </GridView>
+
+            <GridView x:Key="AccountGrid3">
+                <GridViewColumn Width="150" Header="Currency">
+                    <GridViewColumn.CellTemplate>
+                        <DataTemplate>
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition />
+                                </Grid.ColumnDefinitions>
+
+                                <Image
+                                    Width="32"
+                                    Height="32"
+                                    Margin="8"
+                                    HorizontalAlignment="Center"
+                                    VerticalAlignment="Center"
+                                    Source="{Binding Image}" />
+
+                                <TextBlock
+                                    Grid.Column="1"
+                                    Margin="4,8"
+                                    HorizontalAlignment="Left"
+                                    VerticalAlignment="Center"
+                                    FontFamily="Calibri"
+                                    FontSize="14"
+                                    Text="{Binding CurrencyName}" />
+
+                            </Grid>
+                        </DataTemplate>
+                    </GridViewColumn.CellTemplate>
+                </GridViewColumn>
+
+                <GridViewColumn
+                    Width="150"
+                    DisplayMemberBinding="{Binding Balance}"
+                    Header="Balance" />
+                <GridViewColumn
+                    Width="150"
+                    DisplayMemberBinding="{Binding QuoteAmount}"
+                    Header="Quote Balance" />
+                <GridViewColumn
+                    Width="150"
+                    DisplayMemberBinding="{Binding Available}"
+                    Header="Available" />
+                <GridViewColumn
+                    Width="150"
+                    DisplayMemberBinding="{Binding Holds}"
+                    Header="Holds" />
+            </GridView>
+
+            <GridView x:Key="AccountGrid4">
+                <GridViewColumn Width="150" Header="Currency">
+                    <GridViewColumn.CellTemplate>
+                        <DataTemplate>
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition />
+                                </Grid.ColumnDefinitions>
+
+                                <Image
+                                    Width="32"
+                                    Height="32"
+                                    Margin="8"
+                                    HorizontalAlignment="Center"
+                                    VerticalAlignment="Center"
+                                    Source="{Binding Image}" />
+
+                                <TextBlock
+                                    Grid.Column="1"
+                                    Margin="4,8"
+                                    HorizontalAlignment="Left"
+                                    VerticalAlignment="Center"
+                                    FontFamily="Calibri"
+                                    FontSize="14"
+                                    Text="{Binding CurrencyName}" />
+
+                            </Grid>
+                        </DataTemplate>
+                    </GridViewColumn.CellTemplate>
+                </GridViewColumn>
+
+                <GridViewColumn
+                    Width="150"
+                    DisplayMemberBinding="{Binding Balance}"
+                    Header="Balance" />
+                <GridViewColumn
+                    Width="150"
+                    DisplayMemberBinding="{Binding QuoteAmount}"
+                    Header="Quote Balance" />
+                <GridViewColumn
+                    Width="150"
+                    DisplayMemberBinding="{Binding Available}"
+                    Header="Available" />
+                <GridViewColumn
+                    Width="150"
+                    DisplayMemberBinding="{Binding Holds}"
+                    Header="Holds" />
+            </GridView>
+
 
             <DataTemplate x:Key="AccountHeaderTemplate">
                 <Border
@@ -42,11 +244,11 @@
             </DataTemplate>
 
             <DataTemplate x:Key="AccountTemplate">
-                <Grid>
+                <Grid HorizontalAlignment="Stretch">
 
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="Auto" />
-                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition />
                         <ColumnDefinition />
                     </Grid.ColumnDefinitions>
                     <Grid.RowDefinitions>
@@ -57,7 +259,7 @@
                         Grid.Row="0"
                         Width="32"
                         Height="32"
-                        Source="{Binding BaseCurrencyImage}" />
+                        Source="{Binding Image, Mode=OneWay}" />
 
 
 
@@ -71,8 +273,12 @@
                             Grid.Row="0"
                             HorizontalAlignment="Left"
                             FontFamily="Calibri"
-                            FontSize="12"
-                            Text="{Binding CurrencyName}" />
+                            FontSize="12">
+                            <Run Text="{Binding CurrencyFullName, Mode=OneWay}" />
+                            <Run Text=" (" />
+                            <Run Text="{Binding CurrencyName, Mode=OneWay}" />
+                            <Run Text=")" />
+                        </TextBlock>
 
 
                         <TextBlock
@@ -80,7 +286,7 @@
                             HorizontalAlignment="Left"
                             FontFamily="Calibri"
                             FontSize="12"
-                            Text="{Binding AccountType}" />
+                            Text="{Binding TypeDescription, Mode=OneWay}" />
 
                     </Grid>
 
@@ -97,7 +303,7 @@
                             HorizontalAlignment="Left"
                             FontFamily="Calibri"
                             FontSize="12"
-                            Text="{Binding Amount}" />
+                            Text="{Binding Balance, Mode=OneWay}" />
 
 
                         <TextBlock
@@ -105,7 +311,7 @@
                             HorizontalAlignment="Left"
                             FontFamily="Calibri"
                             FontSize="12"
-                            Text="{Binding QuoteAmount}" />
+                            Text="{Binding QuoteAmount, Mode=OneWay}" />
 
                     </Grid>
 
@@ -125,6 +331,7 @@
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
             <RowDefinition />
+            <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
 
 
@@ -147,7 +354,6 @@
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto" />
                 <RowDefinition />
-                <RowDefinition Height="Auto" />
             </Grid.RowDefinitions>
 
             <Label
@@ -182,7 +388,9 @@
                     BorderBrush="{StaticResource KuCoinBackground}"
                     BorderThickness="1"
                     ItemTemplate="{StaticResource AccountTemplate}"
-                    ItemsSource="{Binding MainAccounts}" />
+                    ItemsSource="{Binding MainAccounts}"
+                    View="{StaticResource AccountGrid1}" />
+
 
             </TabItem>
 
@@ -198,7 +406,9 @@
                     BorderBrush="{StaticResource KuCoinBackground}"
                     BorderThickness="1"
                     ItemTemplate="{StaticResource AccountTemplate}"
-                    ItemsSource="{Binding TradingAccounts}" />
+                    ItemsSource="{Binding TradingAccounts}"
+                    View="{StaticResource AccountGrid2}" />
+
 
             </TabItem>
 
@@ -214,7 +424,8 @@
                     BorderBrush="{StaticResource KuCoinBackground}"
                     BorderThickness="1"
                     ItemTemplate="{StaticResource AccountTemplate}"
-                    ItemsSource="{Binding MarginAccounts}" />
+                    ItemsSource="{Binding MarginAccounts}"
+                    View="{StaticResource AccountGrid3}" />
 
             </TabItem>
             <TabItem
@@ -229,26 +440,86 @@
                     BorderBrush="{StaticResource KuCoinBackground}"
                     BorderThickness="1"
                     ItemTemplate="{StaticResource AccountTemplate}"
-                    ItemsSource="{Binding PoolXAccounts}" />
+                    ItemsSource="{Binding PoolXAccounts}"
+                    View="{StaticResource AccountGrid4}" />
+
 
             </TabItem>
-            <TabItem
-                x:Name="FuturesAccts"
-                Header="{x:Static user:AccountType.Futures}"
-                HeaderTemplate="{StaticResource AccountHeaderTemplate}">
-
-                <ListView
-                    Margin="8"
-                    HorizontalAlignment="Stretch"
-                    VerticalAlignment="Stretch"
-                    BorderBrush="{StaticResource KuCoinBackground}"
-                    BorderThickness="1"
-                    ItemTemplate="{StaticResource AccountTemplate}"
-                    ItemsSource="{Binding FuturesAccounts}" />
-
-            </TabItem>
-
-
         </TabControl>
+
+        <Grid
+            Grid.Row="2"
+            Grid.ColumnSpan="2"
+            HorizontalAlignment="Stretch">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition />
+                <ColumnDefinition />
+            </Grid.ColumnDefinitions>
+
+            <ComboBox
+                Width="200"
+                Margin="8"
+                HorizontalAlignment="Left"
+                ItemsSource="{Binding Currencies}"
+                SelectedItem="{Binding QuoteCurrency}">
+
+                <ComboBox.ItemTemplate>
+                    <DataTemplate>
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition />
+                            </Grid.ColumnDefinitions>
+
+                            <Image
+                                Width="24"
+                                Height="24"
+                                Margin="4"
+                                Source="{Binding Image}" />
+
+                            <TextBlock
+                                Grid.Column="1"
+                                Margin="4"
+                                HorizontalAlignment="Center"
+                                VerticalAlignment="Center"
+                                FontFamily="Calibri"
+                                FontSize="14"
+                                Text="{Binding CurrencyName}" />
+
+                            <TextBlock
+                                Grid.Column="2"
+                                Margin="4"
+                                HorizontalAlignment="Center"
+                                VerticalAlignment="Center"
+                                FontFamily="Calibri"
+                                FontSize="14"
+                                Text="{Binding Currency.FullName}" />
+
+
+                        </Grid>
+                    </DataTemplate>
+                </ComboBox.ItemTemplate>
+            </ComboBox>
+
+            <Button
+                Grid.Column="1"
+                Margin="8"
+                Padding="16,4"
+                HorizontalAlignment="Right"
+                Command="{Binding RefreshAccountsCommand}"
+                Content="Refresh">
+                <Button.Resources>
+                    <Style TargetType="Border">
+                        <Setter Property="CornerRadius" Value="6" />
+                    </Style>
+
+                </Button.Resources>
+
+            </Button>
+
+        </Grid>
+
     </Grid>
 </Window>

@@ -54,13 +54,15 @@ namespace KuCoinApp
 
         }
 
-        public static async Task<string> GetPin()
+        public static async Task<string> GetPin(Window owner = null)
         {
             return await Task.Run(() =>
             {
-                return App.Current.Dispatcher.Invoke(() =>
+                return App.Current?.Dispatcher?.Invoke(() =>
                 {
                     PinWindow wnd = new PinWindow();
+                    wnd.Owner = owner;
+
                     wnd.ShowDialog();
 
                     if (wnd.DialogResult == true)

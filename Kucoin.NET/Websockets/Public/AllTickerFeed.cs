@@ -31,15 +31,10 @@ namespace Kucoin.NET.Websockets.Public
         {
             if (msg.Type == "message")
             {
-                if (msg.Subject == Subject)
+                if (msg.Topic == Topic)
                 {
-                    var i = msg.Topic.IndexOf(":");
                     var ticker = msg.Data.ToObject<Ticker>();
-
-                    if (i != -1)
-                    {
-                        ticker.Symbol = msg.Topic.Substring(i + 1);
-                    }
+                    ticker.Symbol = msg.Subject;
 
                     await PushNext(ticker);
                 }
@@ -64,6 +59,32 @@ namespace Kucoin.NET.Websockets.Public
             var e = new FeedMessage()
             {
                 Type = "subscribe",
+                Id = connectId.ToString("d"),
+                Topic = topic,
+                Response = true
+            };
+
+            await Send(e);
+        }
+
+        /// <summary>
+        /// Unsubscribe from the feed.
+        /// </summary>
+        /// <returns></returns>
+        public virtual async Task StopFeed()
+        {
+
+            if (disposed) throw new ObjectDisposedException(nameof(AllTickerFeed));
+            if (!Connected)
+            {
+                await Connect();
+            }
+
+            var topic = Topic;
+
+            var e = new FeedMessage()
+            {
+                Type = "unsubscribe",
                 Id = connectId.ToString("d"),
                 Topic = topic,
                 Response = true

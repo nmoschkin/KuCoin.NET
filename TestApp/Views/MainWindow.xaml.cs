@@ -35,6 +35,9 @@ namespace KuCoinApp
             this.LocationChanged += MainWindow_LocationChanged;
             this.Loaded += MainWindow_Loaded;
             this.Activated += MainWindow_Activated;
+
+            App.Current.Settings.ApplyWindowSettings(this);
+            init = true;
         }
 
         private void MainWindow_Activated(object sender, EventArgs e)
@@ -44,7 +47,6 @@ namespace KuCoinApp
 
         private void MainWindow_Loaded(object sender, RoutedEventArgs e)
         {
-            App.Current.Settings.ApplyWindowSettings(this);
         }
 
         private void MainWindow_LocationChanged(object sender, EventArgs e)

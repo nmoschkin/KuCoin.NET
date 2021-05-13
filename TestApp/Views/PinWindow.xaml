@@ -13,7 +13,7 @@
     Padding="0"
     AllowsTransparency="True"
     ShowInTaskbar="True"
-    WindowStartupLocation="CenterScreen"
+    WindowStartupLocation="CenterOwner"
     WindowStyle="None"
     mc:Ignorable="d">
 

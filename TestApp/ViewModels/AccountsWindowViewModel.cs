@@ -11,29 +11,106 @@ using Kucoin.NET.Data.User;
 using Kucoin.NET.Data.Market;
 using Kucoin.NET.Rest;
 using Kucoin.NET.Data.Interfaces;
+using System.Windows.Input;
+using Kucoin.NET.Websockets.Public;
+using System.Security.Authentication;
 
 namespace KuCoinApp.ViewModels
 {
-    public class AccountsWindowViewModel : ObservableBase
+    public class AccountsWindowViewModel : ObservableBase, IObserver<Ticker>, IDisposable
     {
-        User user;
-        ICredentialsProvider cred;
-        ObservableCollection<Account> accounts;
+        private User user;
+        private ICredentialsProvider cred;
+        private ObservableCollection<AccountItemViewModel> accounts;
+
+        private AllTickerFeed ticker;
 
         public event EventHandler<EventArgs> AccountsRefreshed;
 
         private List<string> accountTypes;
 
+        private CurrencyViewModel quoteCurrency;
+        private ObservableCollection<CurrencyViewModel> currencies;
+
+        private ObservableCollection<AccountItemViewModel> mainAccounts;
+        private ObservableCollection<AccountItemViewModel> tradingAccounts;
+        private ObservableCollection<AccountItemViewModel> marginAccounts;
+        private ObservableCollection<AccountItemViewModel> poolxAccounts;
+
+        private Dictionary<string, AccountItemViewModel> mainDict;
+        private Dictionary<string, AccountItemViewModel> tradingDict;
+        private Dictionary<string, AccountItemViewModel> marginDict;
+        private Dictionary<string, AccountItemViewModel> poolxDict;
+
+        public ICommand RefreshAccountsCommand { get; private set; }
+
+        public CurrencyViewModel QuoteCurrency
+        {
+            get => quoteCurrency;
+            set
+            {
+                SetProperty(ref quoteCurrency, value);
+            }
+        }
+
+        public ObservableCollection<CurrencyViewModel> Currencies
+        {
+            get => currencies;
+            set
+            {
+                SetProperty(ref currencies, value);
+            }
+        }
+
+        public ObservableCollection<AccountItemViewModel> MainAccounts
+        {
+            get => mainAccounts;
+            set
+            {
+                SetProperty(ref mainAccounts, value);
+            }
+        }
+
+
+        public ObservableCollection<AccountItemViewModel> TradingAccounts
+        {
+            get => tradingAccounts;
+            set
+            {
+                SetProperty(ref tradingAccounts, value);
+            }
+        }
+
+
+        public ObservableCollection<AccountItemViewModel> MarginAccounts
+        {
+            get => marginAccounts;
+            set
+            {
+                SetProperty(ref marginAccounts, value);
+            }
+        }
+
+
+        public ObservableCollection<AccountItemViewModel> PoolXAccounts
+        {
+            get => poolxAccounts;
+            set
+            {
+                SetProperty(ref poolxAccounts, value);
+            }
+        }
+
         public List<string> AccountTypes
         {
             get => accountTypes;
-            set
+            private set
             {
                 SetProperty(ref accountTypes, value);
             }
         }
 
-        public ObservableCollection<Account> Accounts
+        public ObservableCollection<AccountItemViewModel> Accounts
         {
             get => accounts;
             set
@@ -42,67 +119,214 @@ namespace KuCoinApp.ViewModels
             }
         }
 
+        public async Task UpdateCurrencies()
+        {
+            if (CurrencyViewModel.Currencies == null)
+            {
+                await CurrencyViewModel.UpdateCurrencies();
+            }
+            
+            App.Current?.Dispatcher?.Invoke(() =>
+            {
+                Currencies = new ObservableCollection<CurrencyViewModel>();
+
+                CurrencyViewModel usdt = null;
+
+                foreach (var curr in CurrencyViewModel.Currencies)
+                {
+                    var newCurr = new CurrencyViewModel(curr, false);
+
+                    _ = newCurr.LoadImage();
+
+                    currencies.Add(newCurr);
+                    if (curr.Currency == "USDT") usdt = newCurr;
+                }
+
+                if (quoteCurrency == null)
+                {
+                    QuoteCurrency = usdt;
+                }
+
+            });
+
+        }
 
         public async Task UpdateAccounts()
         {
-            
-            if (accounts == null)
-            {
-                Accounts = await user.GetAccountList();
-            }
-            else
-            {
-                await user.UpdateAccountList(accounts);
-            }
-            
-            var newTypes = new List<string>();
+            var accts = await user.GetAccountList();
 
-            foreach (var acct in accounts)
+            await ticker.StopFeed();
+
+            App.Current?.Dispatcher?.Invoke(() =>
             {
-                if (!newTypes.Contains(acct.TypeDescription))
+                var newTypes = new List<string>();
+
+                mainDict = new Dictionary<string, AccountItemViewModel>();
+                tradingDict = new Dictionary<string, AccountItemViewModel>();
+                marginDict = new Dictionary<string, AccountItemViewModel>();
+                poolxDict = new Dictionary<string, AccountItemViewModel>();
+
+                MainAccounts = new ObservableCollection<AccountItemViewModel>();
+                TradingAccounts = new ObservableCollection<AccountItemViewModel>();
+                MarginAccounts = new ObservableCollection<AccountItemViewModel>();
+                PoolXAccounts = new ObservableCollection<AccountItemViewModel>();
+                Accounts = new ObservableCollection<AccountItemViewModel>();
+
+
+                foreach (var acct in accts)
                 {
-                    newTypes.Add(acct.TypeDescription);
+
+                    var pair = $"{acct.Currency}-{QuoteCurrency.Currency.Currency}";
+                    var acctvm = new AccountItemViewModel(acct);
+
+                    accounts.Add(acctvm);
+
+                    if (!newTypes.Contains(acct.TypeDescription))
+                    {
+                        newTypes.Add(acct.TypeDescription);
+                    }
+
+                    if (acct.Type == AccountType.Main)
+                    {
+                        mainAccounts.Add(acctvm);
+                        mainDict.Add(pair, acctvm);
+                    }
+                    else if (acct.Type == AccountType.Trading)
+                    {
+                        tradingAccounts.Add(acctvm);
+                        tradingDict.Add(pair, acctvm);
+                    }
+                    if (acct.Type == AccountType.Margin)
+                    {
+                        marginAccounts.Add(acctvm);
+                        marginDict.Add(pair, acctvm);
+                    }
+                    if (acct.Type == AccountType.PoolX)
+                    {
+                        poolxAccounts.Add(acctvm);
+                        poolxDict.Add(pair, acctvm);
+                    }
+
                 }
+                AccountTypes = newTypes;
+
+                AccountsRefreshed?.Invoke(this, new EventArgs());
+
+            });
+
+            await ticker.StartFeed();
+
+            //foreach (var acctvm in Accounts)
+            //{
+            //    _ = acctvm.UpdateQuoteAmount(QuoteCurrency.Currency.Currency);
+
+            //}
+        }
+
+        private void MakeCommands()
+        {
+            RefreshAccountsCommand = new SimpleCommand(async (o) =>
+            {
+                await UpdateAccounts();
+            });
+        }
+
+        public void OnCompleted()
+        {
+            return;
+        }
+
+        public void OnError(Exception error)
+        {
+            return;
+        }
+
+        public void OnNext(Ticker value)
+        {
+            AccountItemViewModel avm;
+            var sym = value.Symbol;
+
+            if (mainDict.TryGetValue(sym, out avm))
+            {
+                avm.UpdateQuoteAmount(value.Price);
             }
 
-            AccountTypes = newTypes;
-            AccountsRefreshed?.Invoke(this, new EventArgs());
+            if (tradingDict.TryGetValue(sym, out avm))
+            {
+                avm.UpdateQuoteAmount(value.Price);
+            }
+            if (marginDict.TryGetValue(sym, out avm))
+            {
+                avm.UpdateQuoteAmount(value.Price);
+            }
 
+            if (poolxDict.TryGetValue(sym, out avm))
+            {
+                avm.UpdateQuoteAmount(value.Price);
+            }
         }
 
         public AccountsWindowViewModel(ICredentialsProvider credProvider)
         {
+            MakeCommands();
+
             _ = Task.Run(async () =>
             {
                 cred = credProvider;
                 user = new User(cred);
 
-                await UpdateAccounts();
+                ticker = new AllTickerFeed();
+                await ticker.Connect();
+                ticker.Subscribe(this);
+
+                await UpdateCurrencies().ContinueWith((t) => UpdateAccounts());
+
             });
         }
 
         public AccountsWindowViewModel()
         {
+            MakeCommands();
+
             _ = Task.Run(async () =>
             {
                 string pin;
 
                 if (CryptoCredentials.Pin == null)
                 {
-                    pin = await PinWindow.GetPin();
+                    pin = await PinWindow.GetPin(App.Current.MainWindow);
                 }
                 else
                 {
                     pin = CryptoCredentials.Pin;
                 }
 
+                if (pin == null) throw new InvalidCredentialException();
+
                 cred = CryptoCredentials.LoadFromStorage(App.Current.Seed, pin, false);
                 user = new User(cred);
-                await UpdateAccounts();
+
+                ticker = new AllTickerFeed();
+                await ticker.Connect();
+                ticker.Subscribe(this);
+
+                await UpdateCurrencies().ContinueWith((t) => UpdateAccounts());
+
             });
 
         }
-    
+
+        public void Dispose()
+        {
+            ticker?.Dispose();
+        }
+
+        ~AccountsWindowViewModel()
+        {
+            ticker?.Dispose();
+        }
+
+
     }
 
 }

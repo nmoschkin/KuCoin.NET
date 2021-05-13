@@ -25,22 +25,59 @@ namespace KuCoinApp.Views
     {
 
         private AccountsWindowViewModel vm;
+        bool init = false;
 
         public Accounts()
         {
             InitializeComponent();
 
+            this.Loaded += Accounts_Loaded;
+            this.SizeChanged += Accounts_SizeChanged;
+            this.LocationChanged += Accounts_LocationChanged;
+            this.Closing += Accounts_Closing;
+
             vm = new AccountsWindowViewModel();
             DataContext = vm;
+
+            App.Current.Settings.ApplyWindowSettings(this, "Accounts");
+            init = true;
+        }
+
+        private void Accounts_Closing(object sender, System.ComponentModel.CancelEventArgs e)
+        {
+            vm?.Dispose();
         }
 
         public Accounts(ICredentialsProvider credProvider)
         {
             InitializeComponent();
 
+            this.Loaded += Accounts_Loaded;
+            this.SizeChanged += Accounts_SizeChanged;
+            this.LocationChanged += Accounts_LocationChanged;
+
             vm = new AccountsWindowViewModel(credProvider);
             DataContext = vm;
 
+
+            App.Current.Settings.ApplyWindowSettings(this, "Accounts");
+            init = true;
+        }
+
+        private void Accounts_Loaded(object sender, RoutedEventArgs e)
+        {
+        }
+
+        private void Accounts_LocationChanged(object sender, EventArgs e)
+        {
+            if (!init) return;
+            App.Current.Settings.SaveWindowSettings(this, "Accounts");
+        }
+
+        private void Accounts_SizeChanged(object sender, SizeChangedEventArgs e)
+        {
+            if (!init) return;
+            App.Current.Settings.SaveWindowSettings(this, "Accounts");
         }
 
     }
