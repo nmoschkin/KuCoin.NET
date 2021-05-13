@@ -37,6 +37,20 @@ Granular observations are possible with feeds that support more than one symbol 
 
 All of the feeds implement the __IObservable<T>__ pattern.  The ViewModels in the example app implement the __IObserver<T>__ pattern where applicable.
 
+## Running the sample app
+
+The example application will ask you for a 6 digit pin when you first start it.  Choose any pin you want, but you need to remember it to access your credentials.
+
+![](https://raw.githubusercontent.com/ironywrit/Kucoin.NET/docs/Sample2.png)
+
+Once the application starts for the first time, it will create a new random __Guid__ and store it in the registry. This Guid value, together with your pin, will be used to encrypt credentials on both disk and in memory, when not in use.  
+
+Click the button on the bottom right-hand side that says 'Edit Credentials' to enter and save your credentials.  When you start the app the next time, enter the same pin to automatically load the credentials.
+
+You can use a different pin to store a different set of credentials.  
+
+## Other Notes
+
 The library, itself, is pretty well documented, so far.  You can find plenty of usage examples in the sample app, in __Program.cs__, __MainWindowViewModel.cs__, and __AccountsWindowViewModel.cs__.
 
 The library is being implemented as described in (https://docs.kucoin.com/#general).
@@ -46,5 +60,24 @@ The example project uses my fork of the __FancyCandles__ chart library. It is in
 When you clone the project, be sure to run __git submodule init__ and __git submodule update__ from the root project directory to download and sync that project.
 
 This project is epic, and there are bound to be bugs.  Feel free to open issues, and I will get to them, as I can, if I don't find the bugs, first.  I will post more updates here when the project nears completion and I plan to include a library for __KuCoin Futures__, after this one is feature complete.  
+
+## Screenshot Of Sample App
+
+![](https://raw.githubusercontent.com/ironywrit/Kucoin.NET/docs/Sample1.png)
+
+## And finally, I take donations!  
+
+If you like my work, and find it may be useful, you can donate crypto if you like!
+
+My Ethereum wallet address is: 
+  - 0xb97a29b4349cb3f66b7f2143c6ba1362b8ec4e7d
+
+My Stellar Lumens (XLM) address is:
+  - Address: GAJ4BSGJE6UQHZAZ5U5IUOABPDCYPKPS3RFS2NVNGFGFXGVQDLBQJW2P
+  - Memo: 1870588215
+
+My KCS wallet is:
+  - 0xb97a29b4349cb3f66b7f2143c6ba1362b8ec4e7d
+   
 
 
