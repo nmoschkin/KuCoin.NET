@@ -14,9 +14,9 @@ namespace Kucoin.NET.Data.Market
 
     public class OrderBook : ObservableBase, IOrderUnitList
     {
-        private ObservableCollection<OrderUnit> asks;
+        private ObservableOrderUnits asks;
 
-        private ObservableCollection<OrderUnit> bids;
+        private ObservableOrderUnits bids;
 
         private long sequence;
 
@@ -36,13 +36,13 @@ namespace Kucoin.NET.Data.Market
         IList<IOrderUnit> IOrderUnitList.Bids => (IList<IOrderUnit>)bids;
 
         [JsonProperty("asks")]
-        public ObservableCollection<OrderUnit> Asks
+        public ObservableOrderUnits Asks
         {
             get
             {
                 if (asks == null)
                 {
-                    Asks = new ObservableCollection<OrderUnit>();
+                    Asks = new ObservableOrderUnits();
                 }
 
                 return asks;
@@ -54,13 +54,13 @@ namespace Kucoin.NET.Data.Market
         }
 
         [JsonProperty("bids")]
-        public ObservableCollection<OrderUnit> Bids
+        public ObservableOrderUnits Bids
         {
             get
             {
                 if (bids == null)
                 {
-                    Bids = new ObservableCollection<OrderUnit>();
+                    Bids = new ObservableOrderUnits(true);
                 }
 
                 return bids;

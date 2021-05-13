@@ -98,7 +98,7 @@ namespace Kucoin.NET.Data.Market
             if (data.Length > 2) seq = long.Parse(data[2]);
         }
 
-        private OrderUnit()
+        public OrderUnit()
         {
         }
 
@@ -120,7 +120,13 @@ namespace Kucoin.NET.Data.Market
                 seq = seq
             };
         }
-        
+
+        public override string ToString()
+        {
+            return $"{Price} ({Size})" + ((Sequence != 0) ? $": {Sequence}" : "");
+
+        }
+
     }
 
 }

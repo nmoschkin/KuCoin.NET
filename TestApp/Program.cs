@@ -10,6 +10,7 @@ using Kucoin.NET.Websockets.Public;
 using Kucoin.NET.Websockets;
 using Kucoin.NET.Data.User;
 using Kucoin.NET.Websockets.Private;
+using Kucoin.NET.Observable;
 
 namespace KuCoinApp
 {
@@ -42,6 +43,38 @@ namespace KuCoinApp
         [STAThread]
         public static async Task TestMain(Kucoin.NET.Data.Interfaces.ICredentialsProvider cred = null)
         {
+            var bb = new ObservableOrderUnits();
+
+            bb.Add(new OrderUnit() { Price = 102660, Size = 20 });
+            bb.Add(new OrderUnit() { Price = 526360, Size = 201 });
+            bb.Add(new OrderUnit() { Price = 524562, Size = 202 });
+            bb.Add(new OrderUnit() { Price = 24542, Size = 203 });
+            bb.Add(new OrderUnit() { Price = 845670, Size = 204 });
+            bb.Add(new OrderUnit() { Price = 305240, Size = 205 });
+            bb.Add(new OrderUnit() { Price = 126640, Size = 206 });
+            bb.Add(new OrderUnit() { Price = 37260, Size = 207 });
+            bb.Add(new OrderUnit() { Price = 2600, Size = 208 });
+            bb.Add(new OrderUnit() { Price = 848670, Size = 204 });
+            bb.Add(new OrderUnit() { Price = 308690, Size = 205 });
+            bb.Add(new OrderUnit() { Price = 135640, Size = 206 });
+            bb.Add(new OrderUnit() { Price = 37060, Size = 207 });
+            bb.Add(new OrderUnit() { Price = 2050, Size = 208 });
+            bb.Add(new OrderUnit() { Price = 300940, Size = 205 });
+            bb.Add(new OrderUnit() { Price = 139940, Size = 206 });
+            bb.Add(new OrderUnit() { Price = 39330, Size = 207 });
+            bb.Add(new OrderUnit() { Price = 2640, Size = 208 });
+            bb.Add(new OrderUnit() { Price = 899670, Size = 204 });
+            bb.Add(new OrderUnit() { Price = 309540, Size = 205 });
+            bb.Add(new OrderUnit() { Price = 135740, Size = 206 });
+            bb.Add(new OrderUnit() { Price = 37460, Size = 207 });
+            bb.Add(new OrderUnit() { Price = 2630, Size = 208 });
+            bb.Add(new OrderUnit() { Price = 842560, Size = 204 });
+            bb.Add(new OrderUnit() { Price = 304740, Size = 205 });
+            bb.Add(new OrderUnit() { Price = 135780, Size = 206 });
+            bb.Add(new OrderUnit() { Price = 35860, Size = 207 });
+            bb.Add(new OrderUnit() { Price = 2660, Size = 208 });
+            
+            var bb2 = bb.ToArray();
 
             if (cred == null)
             {

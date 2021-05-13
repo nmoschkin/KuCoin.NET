@@ -248,7 +248,7 @@
                     <ListView
                         x:Name="Asks"
                         Grid.Column="0"
-                        ItemsSource="{Binding MarketUpdate.Asks}">
+                        ItemsSource="{Binding Level2.OrderBook.Asks}">
                         <ListView.View>
                             <GridView>
                                 <GridView.Columns>
@@ -271,7 +271,7 @@
                     <ListView
                         x:Name="Bids"
                         Grid.Column="1"
-                        ItemsSource="{Binding MarketUpdate.Bids}">
+                        ItemsSource="{Binding Level2.OrderBook.Bids}">
                         <ListView.View>
                             <GridView>
                                 <GridView.Columns>

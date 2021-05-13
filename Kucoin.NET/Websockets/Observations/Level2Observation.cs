@@ -12,6 +12,7 @@ using System.ComponentModel;
 using System.Threading;
 using Kucoin.NET.Helpers;
 using Kucoin.NET.Data.Interfaces;
+using System.Linq;
 
 namespace Kucoin.NET.Websockets.Observations
 {
@@ -157,7 +158,7 @@ namespace Kucoin.NET.Websockets.Observations
         /// </summary>
         /// <param name="pieces"></param>
         /// <param name="price"></param>
-        private void RemovePiece(ObservableCollection<OrderUnit> pieces, decimal price)
+        private void RemovePiece(IList<OrderUnit> pieces, decimal price)
         {
             int i, c = pieces.Count;
 
@@ -176,7 +177,7 @@ namespace Kucoin.NET.Websockets.Observations
         /// </summary>
         /// <param name="pieces"></param>
         /// <param name="sequence"></param>
-        private void TrimPieces(ObservableCollection<OrderBook> pieces, long sequence)
+        private void TrimPieces(IList<OrderBook> pieces, long sequence)
         {
             int i, c = pieces.Count;
             for (i = c - 1; i >= 0; i--)
@@ -193,34 +194,26 @@ namespace Kucoin.NET.Websockets.Observations
         /// </summary>
         /// <param name="changes">The changes to sequence.</param>
         /// <param name="pieces">The collection to change (either an ask or a bid collection)</param>
-        private void SequencePieces(List<OrderUnit> changes, ObservableCollection<OrderUnit> pieces)
+        private void SequencePieces(IList<OrderUnit> changes, ObservableOrderUnits pieces)
         {
-            bool f;
-
             foreach (var change in changes)
             {
-                f = false;
+                decimal cp = change.Price;
 
                 if (change.Size == 0.0M)
                 {
-                    RemovePiece(pieces, change.Price);
+                    pieces.Remove(cp);
                 }                
                 else
                 {
-                    foreach (var piece in pieces)
+                    if (pieces.Contains(cp))
                     {
-                        if (change.Price == piece.Price)
-                        {
-                            f = true;
+                        var piece = pieces[cp];
 
-                            piece.Size = change.Size;
-                            piece.Sequence = change.Sequence;
-
-                            break;
-                        }
+                        piece.Size = change.Size;
+                        piece.Sequence = change.Sequence;
                     }
-
-                    if (!f)
+                    else
                     {
                         pieces.Add(change);
                     }
@@ -311,7 +304,7 @@ namespace Kucoin.NET.Websockets.Observations
         /// <param name="dest">Destination collection.</param>
         /// <param name="pieces">The number of pieces to copy.</param>
         /// <param name="clone">True to clone the observable objects so that their changes do not show up in the live feed.</param>
-        private void CopyTo(List<OrderUnit> src, ObservableCollection<OrderUnit> dest, int pieces, bool clone = false)
+        private void CopyTo(IList<OrderUnit> src, IList<OrderUnit> dest, int pieces, bool clone = false)
         {
             int i, c = pieces < src.Count ? pieces : src.Count;
             int x = dest.Count;
@@ -376,13 +369,13 @@ namespace Kucoin.NET.Websockets.Observations
                 orderBook.Sequence = preflightBook.Sequence;
                 orderBook.Time = EpochTime.DateToNanoseconds(DateTime.Now);
 
-                var lbid = new List<OrderUnit>(preflightBook.Bids);
-                var lask = new List<OrderUnit>(preflightBook.Asks);
+                var lbid = preflightBook.Bids.ToArray();
+                var lask = preflightBook.Asks.ToArray();
 
-                SortByPrice(lask, false);
+                //SortByPrice(lask, false);
                 CopyTo(lask, orderBook.Asks, pieces, !liveOrderSizeUpdates);
 
-                SortByPrice(lbid, true);
+                //SortByPrice(lbid, true);
                 CopyTo(lbid, orderBook.Bids, pieces, !liveOrderSizeUpdates);
 
             });
