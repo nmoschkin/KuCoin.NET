@@ -82,6 +82,9 @@ My Stellar Lumens (XLM) address is:
 
 My KCS wallet is:
   - 0xb97a29b4349cb3f66b7f2143c6ba1362b8ec4e7d
+
+My DOGE wallet is:
+  - DCnwUYnjvHQYhr1L2iNvRwxJmCyt6TZWXA
    
 
 
