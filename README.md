@@ -37,6 +37,8 @@ Private feeds in the namespace __Kucoin.NET.Websockets.Private__:
   - __Level2Depth5/Level2Depth50__ - Pushes the 5/50 best ask/bid static market depth feeds.
   - __Level3__ - Level 3 Full Match Engine __(IN PROGRESS)__
 
+In order to use the feeds, you need to initialize the __Kucoin.NET.Helpers.Dispatcher__ static class with a __SynchronizationContext__ from the __Dispatcher__ provided by your application (usually the App class, itself.)  Some observations will not execute correctly without a __SynchronizationContext__, because they need to inform the UI thread.
+
 All of the feeds support multiplexing.  You may create a single feed object, and use that object's connection to start sub-channels that will be served to the multiplex child classes.  Multiplexing is implemented in the __KucoinBaseWebsocketFeed__ abstract class.  
   
   * Note: You cannot multiplex a private feed onto a public feed.
@@ -80,6 +82,9 @@ My Stellar Lumens (XLM) address is:
 
 My KCS wallet is:
   - 0xb97a29b4349cb3f66b7f2143c6ba1362b8ec4e7d
+
+My DOGE wallet is:
+  - DCnwUYnjvHQYhr1L2iNvRwxJmCyt6TZWXA
    
 
 
