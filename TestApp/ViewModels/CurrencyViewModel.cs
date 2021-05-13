@@ -18,6 +18,32 @@ namespace KuCoinApp
         BitmapSource bmp = null;
         MarketCurrency curr;
 
+        public static IReadOnlyList<MarketCurrency> Currencies { get; private set; }
+
+        public static async Task UpdateCurrencies()
+        {
+            var market = new Market();
+            await market.RefreshCurrenciesAsync();
+
+            App.Current.Dispatcher.Invoke(() =>
+            {
+                var l = new List<MarketCurrency>(market.Currencies);
+                l.Sort((a, b) =>
+                {
+                    return string.Compare(a.Currency, b.Currency);
+                });
+
+                Currencies = l;
+
+            });
+
+        }
+
+        static CurrencyViewModel()
+        {
+            _ = UpdateCurrencies();
+        }
+
         public bool ImageLoaded
         {
             get => bmp != null;
@@ -40,6 +66,25 @@ namespace KuCoinApp
                 if (SetProperty(ref bmp, value))
                 {
                     OnPropertyChanged(nameof(ImageLoaded));
+                }
+            }
+        }
+
+        public CurrencyViewModel(string currency, bool loadImage = true)
+        {
+            if (Currencies == null)
+            {
+                UpdateCurrencies().Wait();
+
+
+            }
+
+            foreach (var curr in Currencies)
+            {
+                if (curr.Currency == currency)
+                {
+                    Currency = curr;
+                    return;
                 }
             }
         }

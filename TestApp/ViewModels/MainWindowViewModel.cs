@@ -63,7 +63,7 @@ namespace KuCoinApp
 
         private DateTime? volumeTime = null;
 
-        private CurrencyViewModel currency;
+        private CurrencyViewModel currency, quoteCurrency;
 
         private ObservableCollection<FancyCandles.ICandle> data = new ObservableCollection<FancyCandles.ICandle>();
 
@@ -150,18 +150,28 @@ namespace KuCoinApp
                 SetProperty(ref currency, value);
             }
         }
+        public CurrencyViewModel QuoteCurrency
+        {
+            get => quoteCurrency;
+            set
+            {
+                SetProperty(ref quoteCurrency, value);
+            }
+        }
 
         public KlineType KlineType
         {
             get => kt;
             set
             {
+                var oval = kt;
+
                 if (SetProperty(ref kt, value))
                 {
+                    UpdateSymbol((string)Symbol, (string)Symbol, true, true, oval);
+
                     Volume = null;
                     VolumeTime = null;
-
-                    UpdateSymbol((string)Symbol, (string)Symbol, true, true);
                 }
             }
         }
@@ -238,7 +248,11 @@ namespace KuCoinApp
                         {
                             if (!curr.ImageLoaded) curr.LoadImage();
                             Currency = curr;
-                            break;
+                        }
+                        else if (curr.Currency.Currency == symbol.TradingPair[1])
+                        {
+                            if (!curr.ImageLoaded) curr.LoadImage();
+                            QuoteCurrency = curr;
                         }
                     }
 
@@ -285,7 +299,7 @@ namespace KuCoinApp
             }
         }
 
-        private void UpdateSymbol(string oldSymbol, string newSymbol, bool force = false, bool isKlineChange = false)
+        private void UpdateSymbol(string oldSymbol, string newSymbol, bool force = false, bool isKlineChange = false, KlineType? oldKline = null)
         {
 
             App.Current.Settings.PushSymbol(newSymbol);
@@ -294,15 +308,16 @@ namespace KuCoinApp
             {
                 tickerFeed.RemoveSymbol(oldSymbol).ContinueWith((t) =>
                 {
-                    klineFeed.RemoveSymbol(oldSymbol, KlineType).ContinueWith((t) =>
+                    klineFeed.RemoveSymbol(oldSymbol, oldKline ?? KlineType).ContinueWith((t) =>
                     {
-                        RefreshData().ContinueWith((t) =>
+                        RefreshData().ContinueWith(async (t) =>
                         {
+
+                            await tickerFeed.AddSymbol(newSymbol);
+                            await klineFeed.AddSymbol(newSymbol, KlineType);
+
                             Volume = null;
                             VolumeTime = null;
-
-                            _ = tickerFeed.AddSymbol(newSymbol);
-                            _ = klineFeed.AddSymbol(newSymbol, KlineType);
 
                             if (isKlineChange) return;
 
@@ -464,13 +479,19 @@ namespace KuCoinApp
 
         void IObserver<KlineFeedMessage>.OnNext(KlineFeedMessage ticker)
         {
-            if ((string)ticker.Symbol != (string)symbol) return;
-
-            Task.Run(() =>
+            if (ticker.Symbol == (string)symbol && KlineType == ticker.Candles.Type)
             {
-                Volume = ticker.Candles.Volume;
-                VolumeTime = ticker.Timestamp;
-            }).Wait();
+                App.Current.Dispatcher.Invoke(() =>
+                {
+                    Volume = ticker.Candles.Volume;
+                    VolumeTime = ticker.Timestamp;
+                });
+            }
+            else
+            {
+                return;
+            }
+
         }
 
         void IObserver<Ticker>.OnNext(Ticker ticker)
@@ -614,8 +635,17 @@ namespace KuCoinApp
 
                 await App.Current.Dispatcher.Invoke(async () => {
 
+                    string pin;
 
-                    var pin = await PinWindow.GetPin();
+                    if (CryptoCredentials.Pin == null)
+                    {
+                        pin = await PinWindow.GetPin();
+                    }
+                    else
+                    {
+                        pin = CryptoCredentials.Pin;
+                    }
+
                     cred = CryptoCredentials.LoadFromStorage(App.Current.Seed, pin, false);
 
                     Symbols = market.Symbols;

@@ -5,6 +5,7 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:local="clr-namespace:KuCoinApp.Views"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:user="clr-namespace:Kucoin.NET.Data.User;assembly=Kucoin.NET"
     Title="Accounts"
     Width="600"
     Height="350"
@@ -169,7 +170,84 @@
             BorderBrush="{StaticResource KuCoinBackground}"
             BorderThickness="1">
 
-            <TabItem Header="Main" HeaderTemplate="{StaticResource AccountHeaderTemplate}" />
+            <TabItem
+                x:Name="MainAccts"
+                Header="{x:Static user:AccountType.Main}"
+                HeaderTemplate="{StaticResource AccountHeaderTemplate}">
+
+                <ListView
+                    Margin="8"
+                    HorizontalAlignment="Stretch"
+                    VerticalAlignment="Stretch"
+                    BorderBrush="{StaticResource KuCoinBackground}"
+                    BorderThickness="1"
+                    ItemTemplate="{StaticResource AccountTemplate}"
+                    ItemsSource="{Binding MainAccounts}" />
+
+            </TabItem>
+
+            <TabItem
+                x:Name="TradingAccts"
+                Header="{x:Static user:AccountType.Trading}"
+                HeaderTemplate="{StaticResource AccountHeaderTemplate}">
+
+                <ListView
+                    Margin="8"
+                    HorizontalAlignment="Stretch"
+                    VerticalAlignment="Stretch"
+                    BorderBrush="{StaticResource KuCoinBackground}"
+                    BorderThickness="1"
+                    ItemTemplate="{StaticResource AccountTemplate}"
+                    ItemsSource="{Binding TradingAccounts}" />
+
+            </TabItem>
+
+            <TabItem
+                x:Name="MarginAccts"
+                Header="{x:Static user:AccountType.Margin}"
+                HeaderTemplate="{StaticResource AccountHeaderTemplate}">
+
+                <ListView
+                    Margin="8"
+                    HorizontalAlignment="Stretch"
+                    VerticalAlignment="Stretch"
+                    BorderBrush="{StaticResource KuCoinBackground}"
+                    BorderThickness="1"
+                    ItemTemplate="{StaticResource AccountTemplate}"
+                    ItemsSource="{Binding MarginAccounts}" />
+
+            </TabItem>
+            <TabItem
+                x:Name="PoolXAccts"
+                Header="{x:Static user:AccountType.PoolX}"
+                HeaderTemplate="{StaticResource AccountHeaderTemplate}">
+
+                <ListView
+                    Margin="8"
+                    HorizontalAlignment="Stretch"
+                    VerticalAlignment="Stretch"
+                    BorderBrush="{StaticResource KuCoinBackground}"
+                    BorderThickness="1"
+                    ItemTemplate="{StaticResource AccountTemplate}"
+                    ItemsSource="{Binding PoolXAccounts}" />
+
+            </TabItem>
+            <TabItem
+                x:Name="FuturesAccts"
+                Header="{x:Static user:AccountType.Futures}"
+                HeaderTemplate="{StaticResource AccountHeaderTemplate}">
+
+                <ListView
+                    Margin="8"
+                    HorizontalAlignment="Stretch"
+                    VerticalAlignment="Stretch"
+                    BorderBrush="{StaticResource KuCoinBackground}"
+                    BorderThickness="1"
+                    ItemTemplate="{StaticResource AccountTemplate}"
+                    ItemsSource="{Binding FuturesAccounts}" />
+
+            </TabItem>
+
 
         </TabControl>
     </Grid>

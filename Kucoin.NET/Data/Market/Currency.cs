@@ -44,6 +44,11 @@ namespace Kucoin.NET.Data.Market
 
         public override string ToString()
         {
+            
+            if (FullName != null && Currency != null)
+            {
+                return $"{Currency}: {FullName}";
+            }
             return FullName ?? Currency ?? base.ToString();
         }
 

@@ -1,4 +1,8 @@
-﻿using System;
+﻿using Kucoin.NET.Data.Interfaces;
+
+using KuCoinApp.ViewModels;
+
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -19,9 +23,25 @@ namespace KuCoinApp.Views
     /// </summary>
     public partial class Accounts : Window
     {
+
+        private AccountsWindowViewModel vm;
+
         public Accounts()
         {
             InitializeComponent();
+
+            vm = new AccountsWindowViewModel();
+            DataContext = vm;
         }
+
+        public Accounts(ICredentialsProvider credProvider)
+        {
+            InitializeComponent();
+
+            vm = new AccountsWindowViewModel(credProvider);
+            DataContext = vm;
+
+        }
+
     }
 }

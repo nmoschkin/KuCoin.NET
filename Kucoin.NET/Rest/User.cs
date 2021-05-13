@@ -82,7 +82,7 @@ namespace Kucoin.NET.Rest
             }
 
             JToken jobj = null;
-            
+
             try
             {
                 if (param.Count > 0)
@@ -94,7 +94,7 @@ namespace Kucoin.NET.Rest
                     jobj = await MakeRequest(HttpMethod.Get, "/api/v1/accounts");
                 }
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 var s = ex;
             }
@@ -102,6 +102,37 @@ namespace Kucoin.NET.Rest
             return jobj?.ToObject<ObservableCollection<Account>>();
         }
 
+        public async Task UpdateAccountList(ObservableCollection<Account> accounts, string currency = null, AccountType? type = null)
+        {
+            var accts = await GetAccountList(currency, type);
+            int i, c;
+
+            foreach (var acct in accts)
+            {
+                var aex = accounts.Where((a) => a.Id == acct.Id)?.FirstOrDefault();
+                if (aex == null)
+                {
+                    accounts.Add(aex);
+                }
+                else
+                {
+                    i = accounts.IndexOf(aex);
+                    accounts[i] = acct;
+                }
+            }
+
+            c = accounts.Count;
+
+            for(i = c - 1; i >= 0; i--)
+            {
+                var aex = accts.Where((a) => a.Id == accounts[i].Id)?.FirstOrDefault();
+
+                if (aex == null)
+                {
+                    accounts.RemoveAt(i);
+                }
+            }
+        }
 
         public async Task<IList<AccountLedgerItem>> GetAccountLedger(string currency = null, BizType? bizType = null, TransactionDirection? direction = null, DateTime? startTime = null, DateTime? endTime = null, int pageSize = 50)
         {

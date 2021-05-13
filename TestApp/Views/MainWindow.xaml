@@ -179,6 +179,7 @@
                     <ColumnDefinition Width="Auto" />
                     <ColumnDefinition />
                     <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="Auto" />
                 </Grid.ColumnDefinitions>
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto" />
@@ -190,7 +191,8 @@
                     Width="32"
                     Height="32"
                     Margin="8"
-                    VerticalAlignment="Top"
+                    VerticalAlignment="Center"
+                    HorizontalAlignment="Center"
                     Source="{Binding Currency.Image}" />
 
                 <Label
@@ -215,12 +217,22 @@
                     FontSize="20">
                     <Label.Content>
                         <TextBlock>
-                            <Run Text="{Binding RealTimePrice, StringFormat={}{0:#\,##0.00##}}" />
+                            <Run Text="{Binding RealTimePrice, StringFormat={}{0:#\,##0.00#######}}" />
                             <Run Text=" " />
                             <Run Text="{Binding Symbol.QuoteCurrency}" />
                         </TextBlock>
                     </Label.Content>
                 </Label>
+
+                <Image
+                    Grid.Column="3"
+                    Width="32"
+                    Height="32"
+                    Margin="8"
+                    VerticalAlignment="Center"
+                    HorizontalAlignment="Center"
+                    Source="{Binding QuoteCurrency.Image}" />
+
 
                 <Grid Grid.Row="1" Grid.Column="2">
                     <Grid.ColumnDefinitions>
@@ -230,13 +242,13 @@
                     <TextBlock
                         HorizontalAlignment="Right"
                         VerticalAlignment="Center"
-                        Text="{Binding MarketUpdate.Timestamp, StringFormat='{}{0:MMM dd, yyyy a\\t h:mm:ss tt}'}"
                         FontFamily="Calibri"
-                        FontSize="10" />
+                        FontSize="10"
+                        Text="{Binding MarketUpdate.Timestamp, StringFormat='{}{0:MMM dd, yyyy a\\t h:mm:ss tt}'}" />
                 </Grid>
 
 
-                <Grid Grid.Row="2" Grid.ColumnSpan="3">
+                <Grid Grid.Row="2" Grid.ColumnSpan="4">
 
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition />
