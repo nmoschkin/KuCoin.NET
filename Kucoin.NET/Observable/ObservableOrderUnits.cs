@@ -35,23 +35,26 @@ namespace Kucoin.NET.Observable
             int mid; 
             
             var l = this as IList<OrderUnit>;
+            var uprice = unit.Price;
+            decimal cprice;
 
-            while(true)
+            if (!descending)
             {
-                if (hi < lo)
+                while (true)
                 {
-                    return lo;
-                }
+                    if (hi < lo)
+                    {
+                        return lo;
+                    }
 
-                mid = (hi + lo) / 2;
+                    mid = (hi + lo) / 2;
+                    cprice = l[mid].Price;
 
-                if (descending)
-                {
-                    if (unit.Price < l[mid].Price)
+                    if (uprice > cprice)
                     {
                         lo = mid + 1;
                     }
-                    else if (unit.Price > l[mid].Price)
+                    else if (uprice < cprice)
                     {
                         hi = mid - 1;
                     }
@@ -59,25 +62,37 @@ namespace Kucoin.NET.Observable
                     {
                         return mid;
                     }
-
-                }
-                else
-                {
-                    if (unit.Price > l[mid].Price)
-                    {
-                        lo = mid + 1;
-                    }
-                    else if (unit.Price < l[mid].Price)
-                    {
-                        hi = mid - 1;
-                    }
-                    else
-                    {
-                        return mid;
-                    }
-
                 }
             }
+            else
+            {
+                while (true)
+                {
+                    if (hi < lo)
+                    {
+                        return lo;
+                    }
+
+                    mid = (hi + lo) / 2;
+                    cprice = l[mid].Price;
+
+                    if (uprice < cprice)
+                    {
+                        lo = mid + 1;
+                    }
+                    else if (uprice > cprice)
+                    {
+                        hi = mid - 1;
+                    }
+                    else
+                    {
+                        return mid;
+                    }
+
+                }
+
+            }
+
         }
 
         public OrderUnit[] ToArray()
@@ -123,8 +138,13 @@ namespace Kucoin.NET.Observable
 
             if (Contains(item.Price))
             {
-                Remove(item.Price);
-                InsertItem(0, item);
+                var orgitem = this[item.Price];
+
+                orgitem.Size = item.Size;
+                orgitem.Sequence = item.Sequence;
+
+                //Remove(item.Price);
+                //InsertItem(0, item);
                 return;
             }
             base.SetItem(index, item);
