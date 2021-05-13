@@ -1,7 +1,7 @@
 # Kucoin.NET
 KuCoin API Libraries written in .NET Standard 2.0
 
-These are __not__ official libraries from KuCoin.  They are new implementations.  KuCoin does not currently offer an open-source C# library for .NET.
+These are __not__ official libraries from KuCoin.  They are new implementations.  KuCoin does not currently offer an open-source C# library for .NET, to my knowledge.
 
 This library is in active development, and it's brand new so things will undoubtedly change while I consider next steps.
 
