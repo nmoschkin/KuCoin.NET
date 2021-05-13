@@ -63,7 +63,7 @@ This project is epic, and there are bound to be bugs.  Feel free to open issues,
 
 ## Screenshot Of Sample App
 
-![](https://raw.githubusercontent.com/ironywrit/Kucoin.NET/docs/Sample1.png)
+![](https://raw.githubusercontent.com/ironywrit/Kucoin.NET/docs/sample1.png)
 
 ## And finally, I take donations!  
 
