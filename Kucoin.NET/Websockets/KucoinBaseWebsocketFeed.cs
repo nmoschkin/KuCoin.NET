@@ -18,6 +18,7 @@ using Kucoin.NET.Rest;
 using System.Runtime.InteropServices;
 using Kucoin.NET.Data.Interfaces;
 using System.Security.Cryptography.X509Certificates;
+using Kucoin.NET.Helpers;
 
 namespace Kucoin.NET.Websockets
 {
@@ -152,6 +153,11 @@ namespace Kucoin.NET.Websockets
                     throw new InvalidOperationException("Failed to initialize multiplexer from parent.");
                 }
             }
+
+            if (!Dispatcher.Initialized)
+            {
+                throw new InvalidOperationException("You must call Kucoin.NET.Helpers.Dispatcher.Initialize() with a SynchronizationContext before instantiating this class.");
+            }
         }
 
         public KucoinBaseWebsocketFeed(
@@ -180,6 +186,10 @@ namespace Kucoin.NET.Websockets
                 {
                     throw new InvalidOperationException("Failed to initialize multiplexer from parent.");
                 }
+            }
+            if (!Dispatcher.Initialized)
+            {
+                throw new InvalidOperationException("You must call Kucoin.NET.Helpers.Dispatcher.Initialize() with a SynchronizationContext before instantiating this class.");
             }
         }
 
