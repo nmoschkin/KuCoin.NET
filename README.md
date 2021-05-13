@@ -7,7 +7,7 @@ As of May 13th, 2021, I would guage that the library, itself, is about 80-90% co
 
 ## Installation
 
-The library is being implemented as described in (https://docs.kucoin.com/#general), in .NET Standard 2.0.  It will compile anywhere.
+The library is being implemented as described in (https://docs.kucoin.com/#general), in .NET Standard 2.0.  It will compile anywhere the .NET Standard library is supported (Windows/Linux/Android/MacOS/iOS/etc.)
 
 The example project is built in .NET 5 using WPF for Windows Desktop, and uses my fork of the __FancyCandles__ chart library. It is included via a git submodule.
 
