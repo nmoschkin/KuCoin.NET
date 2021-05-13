@@ -3,7 +3,7 @@ KuCoin API Libraries written in .NET Standard 2.0
 
 This library is in active development, and it's brand new so things will undoubtedly change while I consider next steps.
 
-As of May 13th, 2021, I would guage that the library, itself, is about 80-90% complete. 
+As of May 13th, 2021, I would guage that the library, itself, is about 70-80% complete. 
 
 ## Installation
 
