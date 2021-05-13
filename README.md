@@ -5,6 +5,14 @@ This library is in active development, and it's brand new so things will undoubt
 
 As of May 13th, 2021, I would guage that the library, itself, is about 80-90% complete. 
 
+## Installation
+
+The library is being implemented as described in (https://docs.kucoin.com/#general), in .NET Standard 2.0.  It will compile anywhere.
+
+The example project is built in .NET 5 using WPF for Windows Desktop, and uses my fork of the __FancyCandles__ chart library. It is included via a git submodule.
+
+When you clone the project, you must run __git submodule init__ and __git submodule update__ from the root project directory to download and sync the __FancyCandles__ project.
+
 ## REST API 
 
 Inside the Kucoin.NET.Rest namespace you will find three objects, __Market__, __Order__, and __User__.  __User__ and __Order__ require API Keys.  
@@ -52,12 +60,6 @@ You can use a different pin to store a different set of credentials.
 ## Other Notes
 
 The library, itself, is pretty well documented, so far.  You can find plenty of usage examples in the sample app, in __Program.cs__, __MainWindowViewModel.cs__, and __AccountsWindowViewModel.cs__.
-
-The library is being implemented as described in (https://docs.kucoin.com/#general), in .NET Standard 2.0.  It will compile anywhere.
-
-The example project is built in .NET 5 using WPF for Windows Desktop, and uses my fork of the __FancyCandles__ chart library. It is included via a git submodule.
-
-When you clone the project, be sure to run __git submodule init__ and __git submodule update__ from the root project directory to download and sync that project.
 
 This project is epic, and there are bound to be bugs.  Feel free to open issues, and I will get to them, as I can, if I don't find the bugs, first.  I will post more updates here when the project nears completion and I plan to include a library for __KuCoin Futures__, after this one is feature complete.  
 
