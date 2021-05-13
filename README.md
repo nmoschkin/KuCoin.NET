@@ -1,5 +1,5 @@
 # Kucoin.NET
-KuCoin API Libraries written in .NET 5.
+KuCoin API Libraries written in .NET Standard 2.0
 
 This library is in active development, and it's brand new so things will undoubtedly change while I consider next steps.
 
@@ -55,7 +55,7 @@ The library, itself, is pretty well documented, so far.  You can find plenty of 
 
 The library is being implemented as described in (https://docs.kucoin.com/#general), in .NET Standard 2.0.  It will compile anywhere.
 
-The example project is built in .NET 5, and uses my fork of the __FancyCandles__ chart library. It is included via a git submodule.
+The example project is built in .NET 5 using WPF for Windows Desktop, and uses my fork of the __FancyCandles__ chart library. It is included via a git submodule.
 
 When you clone the project, be sure to run __git submodule init__ and __git submodule update__ from the root project directory to download and sync that project.
 
