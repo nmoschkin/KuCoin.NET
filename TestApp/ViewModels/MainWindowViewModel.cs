@@ -558,7 +558,10 @@ namespace KuCoinApp
                 {
                     user = new User(cred.Key, cred.Secret, cred.Passphrase);
                     Accounts = await user.GetAccountList();
+
                     IsLoggedIn = true;
+
+                    await Initialize();
 
                     return true;
                 }
@@ -642,8 +645,23 @@ namespace KuCoinApp
 
             });
 
+            EditCredentialsCommand = new SimpleCommand(async (obj) =>
+            {
+                if (EditCredentials())
+                {
+                    await LoginUser();
+                }
+            });
 
-            market.RefreshSymbolsAsync().ContinueWith(async (t) =>
+            Task.Run(async () =>
+            {
+                await Initialize();
+            });
+        }
+
+        protected async Task Initialize()
+        {
+            await market.RefreshSymbolsAsync().ContinueWith(async (t) =>
             {
                 await market.RefreshCurrenciesAsync();
 
@@ -707,14 +725,6 @@ namespace KuCoinApp
                 });
             });
 
-
-            EditCredentialsCommand = new SimpleCommand(async (obj) =>
-            {
-                if (EditCredentials())
-                {
-                    await LoginUser();
-                }
-            });
 
         }
 
