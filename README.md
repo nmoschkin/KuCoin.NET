@@ -41,7 +41,7 @@ All of the feeds implement the __IObservable<T>__ pattern.  The ViewModels in th
 
 The example application will ask you for a 6 digit pin when you first start it.  Choose any pin you want, but you need to remember it to access your credentials.
 
-![](https://raw.githubusercontent.com/ironywrit/Kucoin.NET/main/docs/Sample2.png)
+![](docs/Sample2.png?raw=true)
 
 Once the application starts for the first time, it will create a new random __Guid__ and store it in the registry. This Guid value, together with your pin, will be used to encrypt credentials on both disk and in memory, when not in use.  
 
