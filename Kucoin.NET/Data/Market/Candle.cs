@@ -15,14 +15,23 @@ namespace Kucoin.NET.Data.Market
     /// </summary>
     public class Candle : IWriteableTypedCandle
     {
+        public Candle(IList<string> values)
+        {
+            ReadData(values);
+        }
+
         public Candle(IList<string> values, KlineType type)
         {
-
-            Deserialize(values);
+            ReadData(values);
             Type = type;
         }
 
-        public virtual void Deserialize(object source)
+        public Candle(object source)
+        {
+            ReadData(source);
+        }
+
+        public virtual void ReadData(object source)
         {
             var values = source as IList<string>;
 

@@ -171,23 +171,6 @@ namespace Kucoin.NET.Websockets.Observations
                 }
             }
         }        
-        
-        /// <summary>
-        /// Trim pieces older than the given sequence from the order book.
-        /// </summary>
-        /// <param name="pieces"></param>
-        /// <param name="sequence"></param>
-        private void TrimPieces(IList<OrderBook> pieces, long sequence)
-        {
-            int i, c = pieces.Count;
-            for (i = c - 1; i >= 0; i--)
-            {
-                if (pieces[i].Sequence < sequence)
-                {
-                    pieces.RemoveAt(i);
-                }
-            }
-        }
 
         /// <summary>
         /// Sequence the changes into the order book.
@@ -279,23 +262,6 @@ namespace Kucoin.NET.Websockets.Observations
                 }
             }
         }
-        
-        /// <summary>
-        /// Sort the given pieces by price.
-        /// </summary>
-        /// <param name="pieces">The pieces to sort.</param>
-        /// <param name="desc">Sort descending (for bids.)</param>
-        private void SortByPrice(List<OrderUnit> pieces, bool desc)
-        {
-            if (desc)
-            {
-                pieces.Sort((a, b) => a.Price < b.Price ? 1 : a.Price > b.Price ? -1 : 0);
-            }
-            else
-            {
-                pieces.Sort((a, b) => a.Price < b.Price ? -1 : a.Price > b.Price ? 1 : 0);
-            }
-        }
 
         /// <summary>
         /// Copy the changes from a preflight source to a live destination.
@@ -355,30 +321,21 @@ namespace Kucoin.NET.Websockets.Observations
         /// <summary>
         /// Push the preflight book to the live feed.
         /// </summary>
-        internal void PushPreflight()
+        public void PushPreflight()
         {
-            Dispatcher.InvokeOnMainThread((o) =>
+            if (OrderBook == null)
             {
-                if (preflightBook == null) return;
+                OrderBook = new OrderBook();
+            }
 
-                if (OrderBook == null)
-                {
-                    OrderBook = new OrderBook();
-                }
-
+            lock(parent)
+            {
                 orderBook.Sequence = preflightBook.Sequence;
                 orderBook.Time = EpochTime.DateToNanoseconds(DateTime.Now);
 
-                var lbid = preflightBook.Bids.ToArray();
-                var lask = preflightBook.Asks.ToArray();
-
-                //SortByPrice(lask, false);
-                CopyTo(lask, orderBook.Asks, pieces, !liveOrderSizeUpdates);
-
-                //SortByPrice(lbid, true);
-                CopyTo(lbid, orderBook.Bids, pieces, !liveOrderSizeUpdates);
-
-            });
+                CopyTo(preflightBook.Asks, orderBook.Asks, pieces, !liveOrderSizeUpdates);
+                CopyTo(preflightBook.Bids, orderBook.Bids, pieces, !liveOrderSizeUpdates);
+            }
         }
 
         public override string ToString() => $"{sym} : {pieces}";

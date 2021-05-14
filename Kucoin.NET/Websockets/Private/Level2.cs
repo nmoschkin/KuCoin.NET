@@ -12,6 +12,7 @@ using System.Net.Http;
 using Kucoin.NET.Websockets.Observations;
 using Kucoin.NET.Observable;
 using System.Linq;
+using Kucoin.NET.Helpers;
 
 namespace Kucoin.NET.Websockets.Private
 {
@@ -39,14 +40,26 @@ namespace Kucoin.NET.Websockets.Private
             bool isSandbox = false )
             : base(key, secret, passphrase, isSandbox)
         {
+            if (!Dispatcher.Initialized)
+            {
+                throw new InvalidOperationException("You must call Kucoin.NET.Helpers.Dispatcher.Initialize() with a SynchronizationContext before instantiating this class.");
+            }
         }
 
         public Level2(ICredentialsProvider credProvider, bool isSandbox = false) :base(credProvider, isSandbox)
         {
+            if (!Dispatcher.Initialized)
+            {
+                throw new InvalidOperationException("You must call Kucoin.NET.Helpers.Dispatcher.Initialize() with a SynchronizationContext before instantiating this class.");
+            }
         }
 
         internal Level2() : base(null)
         {
+            if (!Dispatcher.Initialized)
+            {
+                throw new InvalidOperationException("You must call Kucoin.NET.Helpers.Dispatcher.Initialize() with a SynchronizationContext before instantiating this class.");
+            }
         }
 
 

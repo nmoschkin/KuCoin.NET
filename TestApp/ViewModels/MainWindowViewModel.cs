@@ -17,6 +17,7 @@ using System.Threading.Tasks;
 using System.Windows.Input;
 using KuCoinApp.Views;
 using Kucoin.NET.Data.Interfaces;
+using Kucoin.NET.Helpers;
 
 namespace KuCoinApp
 {
@@ -581,9 +582,7 @@ namespace KuCoinApp
         public MainWindowViewModel()
         {
             KucoinBaseRestApi.GlobalSandbox = false;
-            SynchronizationContext context = new System.Windows.Threading.DispatcherSynchronizationContext(App.Current.Dispatcher);
-
-            Kucoin.NET.Helpers.Dispatcher.Initialize(context);
+            Dispatcher.Initialize();
 
             App.Current.Settings.PropertyChanged += Settings_PropertyChanged;
             market = new Market();
@@ -680,10 +679,7 @@ namespace KuCoinApp
                     Symbols = market.Symbols;
 
                     var rec = App.Current.Settings.MostRecentSymbol;
-
                     OnPropertyChanged(nameof(RecentSymbols));
-
-                    if (string.IsNullOrEmpty(rec)) return;
 
                     await tickerFeed.Connect(true);
                     await klineFeed.MultiplexInit(tickerFeed);
@@ -699,13 +695,14 @@ namespace KuCoinApp
 
                     }
 
+                    if (string.IsNullOrEmpty(rec)) return;
+
                     foreach (var sym in symbols)
                     {
                         if (sym.Symbol == rec)
                         {
                             Symbol = sym;
                             //_ = Program.TestMain(cred);
-
 
                             return;
                         }
@@ -715,6 +712,7 @@ namespace KuCoinApp
                     {
                         EditCredentials();
                     }
+
                 });
             });
 

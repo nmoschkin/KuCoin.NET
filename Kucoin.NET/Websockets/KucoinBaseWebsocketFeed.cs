@@ -154,10 +154,6 @@ namespace Kucoin.NET.Websockets
                 }
             }
 
-            if (!Dispatcher.Initialized)
-            {
-                throw new InvalidOperationException("You must call Kucoin.NET.Helpers.Dispatcher.Initialize() with a SynchronizationContext before instantiating this class.");
-            }
         }
 
         public KucoinBaseWebsocketFeed(
@@ -186,10 +182,6 @@ namespace Kucoin.NET.Websockets
                 {
                     throw new InvalidOperationException("Failed to initialize multiplexer from parent.");
                 }
-            }
-            if (!Dispatcher.Initialized)
-            {
-                throw new InvalidOperationException("You must call Kucoin.NET.Helpers.Dispatcher.Initialize() with a SynchronizationContext before instantiating this class.");
             }
         }
 
@@ -584,6 +576,7 @@ namespace Kucoin.NET.Websockets
         /// <returns></returns>
         private async Task DataReceiveThread()
         {
+
             byte[] inputChunk = new byte[chunkSize];
 
             StringBuilder sb = new StringBuilder();

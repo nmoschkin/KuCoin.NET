@@ -24,16 +24,37 @@ namespace Kucoin.NET.Helpers
         public static bool Initialized => init;
 
         /// <summary>
-        /// Call this method with a new <see cref="SynchronizationContext"/> created from the 
-        /// default dispatcher for your application.
+        /// Initialize the dispatcher with a <see cref="SynchronizationContext"/>.
         /// </summary>
         /// <param name="context">The synchronization context.</param>
+        /// <remarks>
+        /// You must create a synchronization context from the default dispatcher of your application.
+        /// </remarks>
         public static void Initialize(SynchronizationContext context)
         {
             Context = context;
             init = true;
         }
-        
+
+
+        /// <summary>
+        /// Initialize the dispatcher.
+        /// </summary>
+        /// <remars>
+        /// This method must be called from the main/UI thread of your application.
+        /// </remars>
+        public static void Initialize()
+        {
+            Context = SynchronizationContext.Current;
+            
+            if (Context == null)
+            {
+                throw new InvalidOperationException("Dispatcher.Initialize() must be called from the UI thread when called without parameters.");
+            }
+
+            init = true;
+        }
+
         /// <summary>
         /// Synchronously execute the code inside of the callback on the main application thread.
         /// </summary>

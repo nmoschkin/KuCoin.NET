@@ -139,10 +139,18 @@ namespace Kucoin.NET.Websockets.Private
           bool isSandbox = false)
           : base(key, secret, passphrase, isSandbox)
         {
+            if (!Dispatcher.Initialized)
+            {
+                throw new InvalidOperationException("You must call Kucoin.NET.Helpers.Dispatcher.Initialize() with a SynchronizationContext before instantiating this class.");
+            }
         }
 
         public Level2Depth5(ICredentialsProvider credProvider, bool isSandbox = false) : base(credProvider, isSandbox)
         {
+            if (!Dispatcher.Initialized)
+            {
+                throw new InvalidOperationException("You must call Kucoin.NET.Helpers.Dispatcher.Initialize() with a SynchronizationContext before instantiating this class.");
+            }
         }
 
         /// <summary>
@@ -156,6 +164,11 @@ namespace Kucoin.NET.Websockets.Private
           bool isSandbox = false) 
             : base(key, secret, passphrase, isSandbox)
         {
+            if (!Dispatcher.Initialized)
+            {
+                throw new InvalidOperationException("You must call Kucoin.NET.Helpers.Dispatcher.Initialize() with a SynchronizationContext before instantiating this class.");
+            }
+
             Connect().ContinueWith(async (t) =>
             {
                 await AddSymbols(symbols);
@@ -174,6 +187,11 @@ namespace Kucoin.NET.Websockets.Private
             : base(key, secret, passphrase, isSandbox)
 
         {
+            if (!Dispatcher.Initialized)
+            {
+                throw new InvalidOperationException("You must call Kucoin.NET.Helpers.Dispatcher.Initialize() with a SynchronizationContext before instantiating this class.");
+            }
+
             Connect().ContinueWith(async (t) =>
             {
                 await AddSymbol(symbol);
@@ -190,6 +208,11 @@ namespace Kucoin.NET.Websockets.Private
           bool isSandbox = false)
             : base(credProvider, isSandbox)
         {
+            if (!Dispatcher.Initialized)
+            {
+                throw new InvalidOperationException("You must call Kucoin.NET.Helpers.Dispatcher.Initialize() with a SynchronizationContext before instantiating this class.");
+            }
+
             Connect().ContinueWith(async (t) =>
             {
                 await AddSymbols(symbols);
@@ -206,6 +229,11 @@ namespace Kucoin.NET.Websockets.Private
             : base(credProvider, isSandbox)
 
         {
+            if (!Dispatcher.Initialized)
+            {
+                throw new InvalidOperationException("You must call Kucoin.NET.Helpers.Dispatcher.Initialize() with a SynchronizationContext before instantiating this class.");
+            }
+
             Connect().ContinueWith(async (t) =>
             {
                 await AddSymbol(symbol);
