@@ -108,7 +108,7 @@ namespace Kucoin.NET.Websockets.Public
 
                     var tempData = msg.Data["candles"].ToObject<string[]>();
 
-                    ticker.Candles = new Kline(tempData, sk.KlineType);
+                    ticker.Candles = new Candle(tempData, sk.KlineType);
 
                     await PushNext(ticker);
                 }

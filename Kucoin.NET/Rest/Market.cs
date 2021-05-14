@@ -11,6 +11,7 @@ using Kucoin.NET.Data.Market;
 using System.IO;
 using System.Net;
 using Kucoin.NET.Helpers;
+using Kucoin.NET.Data.Interfaces;
 
 namespace Kucoin.NET.Rest
 {
@@ -132,9 +133,9 @@ namespace Kucoin.NET.Rest
 
             foreach (var item in slist)
             {
-                if (!symbols.ContainsKey(item.Symbol))
+                if (!symbols.Contains(item.Symbol))
                 {
-                    symbols.Add(item.Symbol, item);
+                    symbols.Add(item);
                 }
                 else
                 {
@@ -142,7 +143,7 @@ namespace Kucoin.NET.Rest
                 }
             }
 
-            symbols.SortByKey();
+            //symbols.SortByKey();
         }
 
 
@@ -244,6 +245,12 @@ namespace Kucoin.NET.Rest
             return jobj.ToObject<List<TradeHistoryUnit>>();
         }
 
+        public async Task<List<Candle>> GetKline(string symbol, KlineType type, DateTime? startTime = null, DateTime? endTime = null) 
+        {
+            return await GetKline<Candle, Candle, List<Candle>>(symbol, type, startTime, endTime);
+        }
+
+
         /// <summary>
         /// Get the Kline for the specified ticker symbol.
         /// </summary>
@@ -252,7 +259,14 @@ namespace Kucoin.NET.Rest
         /// <param name="startTime"></param>
         /// <param name="endTime"></param>
         /// <returns></returns>
-        public async Task<List<Kline>> GetKline(string symbol, KlineType type, DateTime? startTime = null, DateTime? endTime = null)
+        public async Task<V> GetKline<T, U, V>(
+            string symbol, 
+            KlineType type, 
+            DateTime? startTime = null, 
+            DateTime? endTime = null
+            ) 
+            where T: IWriteableCandle, U, new() 
+            where V: IList<U>, new()
         {
             var curl = "/api/v1/market/candles";
 
@@ -293,11 +307,30 @@ namespace Kucoin.NET.Rest
             var jobj = await MakeRequest(HttpMethod.Get, curl, 5, false, param);
             var klineRaw = jobj.ToObject<List<List<string>>>();
 
-            var results = new List<Kline>();
+            var results = new V();
+            klineRaw.Reverse();
 
-            foreach (var data in klineRaw)
+            foreach (var values in klineRaw)
             {
-                results.Add(new Kline(data, type));
+                var candle = new T();
+                
+                if (candle is IWriteableTypedCandle tc)
+                {
+                    tc.Type = type;
+                }
+
+                candle.Timestamp = EpochTime.SecondsToDate(long.Parse(values[0]));
+
+                candle.OpenPrice = decimal.Parse(values[1]);
+                candle.ClosePrice = decimal.Parse(values[2]);
+
+                candle.HighPrice = decimal.Parse(values[3]);
+                candle.LowPrice = decimal.Parse(values[4]);
+
+                candle.Amount = decimal.Parse(values[5]);
+                candle.Volume = decimal.Parse(values[6]);
+
+                results.Add(candle);
             }
 
             return results;

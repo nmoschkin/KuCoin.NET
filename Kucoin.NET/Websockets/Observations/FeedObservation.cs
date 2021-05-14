@@ -34,7 +34,7 @@ namespace Kucoin.NET.Websockets
 
         protected void Dispose(bool disposing)
         {
-            if (disposed) throw new ObjectDisposedException(nameof(FeedObservation<T>));
+            if (disposed) return; // throw new ObjectDisposedException(nameof(FeedObservation<T>));
 
             observer.OnCompleted();
             if (feed?.observers.Contains(this) ?? false)

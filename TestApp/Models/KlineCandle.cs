@@ -1,5 +1,7 @@
 ﻿
+using Kucoin.NET.Data.Interfaces;
 using Kucoin.NET.Data.Market;
+using Kucoin.NET.Observable;
 
 using System;
 using System.Collections.Generic;
@@ -9,31 +11,123 @@ using System.Threading.Tasks;
 
 namespace KuCoinApp
 {
-    public class KlineCandle : FancyCandles.ICandle
+    public class KlineCandle : ObservableBase, FancyCandles.ICandle, IWriteableTypedCandle, ICloneable
     {
-        private Kline kline;
-        
-        public Kline Source
+        private DateTime ts;
+        private decimal o;
+        private decimal h;
+        private decimal l;
+        private decimal c;
+        private decimal v;
+        private decimal a;
+        private KlineType kt;
+
+        public DateTime Timestamp
         {
-            get => kline;
-            set => kline = value;
-        }
-        
-        public DateTime t => kline.Timestamp;
-        public double O => (double)kline.OpenPrice;
-        public double H => (double)kline.HighPrice;
-        public double L => (double)kline.LowPrice;
-        public double C => (double)kline.ClosePrice;
-        public double V => (double)kline.Volume;
-
-
-
-        public KlineCandle(Kline kline)
-        {
-            this.kline = kline;
+            get => ts;
+            set
+            {
+                SetProperty(ref ts, value);
+            }
         }
 
-        public static implicit operator KlineCandle(Kline k) => new KlineCandle(k);
-        public static implicit operator Kline(KlineCandle k) => k.kline;
+        public decimal OpenPrice
+        {
+            get => o;
+            set
+            {
+                SetProperty(ref o, value);
+            }
+        }
+
+        public decimal ClosePrice
+        {
+            get => c;
+            set
+            {
+                SetProperty(ref c, value);
+            }
+        }
+
+        public decimal HighPrice
+        {
+            get => h;
+            set
+            {
+                SetProperty(ref h, value);
+            }
+        }
+
+        public decimal LowPrice
+        {
+            get => l;
+            set
+            {
+                SetProperty(ref l, value);
+            }
+        }
+
+        public decimal Volume
+        {
+            get => v;
+            set
+            {
+                SetProperty(ref v, value);
+            }
+        }
+
+
+        public decimal Amount
+        {
+            get => a;
+            set
+            {
+                SetProperty(ref a, value);
+            }
+        }
+
+        public KlineType Type
+        {
+            get => kt;
+            set
+            {
+                SetProperty(ref kt, value);
+            }
+        }
+
+        DateTime FancyCandles.ICandle.t => Timestamp;
+        double FancyCandles.ICandle.O => (double)OpenPrice;
+        double FancyCandles.ICandle.H => (double)HighPrice;
+        double FancyCandles.ICandle.L => (double)LowPrice;
+        double FancyCandles.ICandle.C => (double)ClosePrice;
+        double FancyCandles.ICandle.V => (double)Volume;
+
+        public KlineCandle()
+        {
+        }
+
+        object ICloneable.Clone()
+        {
+            return MemberwiseClone();
+        }
+
+        public KlineCandle Clone()
+        {
+            return (KlineCandle)MemberwiseClone();
+        }
+
+
+        public KlineCandle(Candle kline)
+        {
+            Timestamp = kline.Timestamp;
+            OpenPrice = kline.OpenPrice;
+            HighPrice = kline.HighPrice;
+            LowPrice = kline.LowPrice;
+            ClosePrice = kline.ClosePrice;
+            Volume = kline.Volume;
+            Amount = kline.Amount;
+            Type = kline.Type;
+        }
+
     }
 }

@@ -243,7 +243,7 @@ namespace KuCoinApp.ViewModels.LowRefresh
 
                     lock (nextObj)
                     {
-                        foreach (var ticker in tickers.Ticker.Values)
+                        foreach (var ticker in tickers.Ticker)
                         {
                             AccountItemViewModel avm;
                             var sym = ticker.Symbol;

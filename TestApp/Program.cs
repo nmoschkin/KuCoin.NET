@@ -11,6 +11,9 @@ using Kucoin.NET.Websockets;
 using Kucoin.NET.Data.User;
 using Kucoin.NET.Websockets.Private;
 using Kucoin.NET.Observable;
+using System.Windows;
+using System.Text;
+using System.Reflection;
 
 namespace KuCoinApp
 {
@@ -40,41 +43,97 @@ namespace KuCoinApp
         [DllImport("kernel32.dll")]
         private static extern bool AllocConsole();
 
+        static string PrintProperty(PropertyInfo pi, bool observable = true)
+        {
+
+            var osb = new StringBuilder();
+
+            var attrs = pi.CustomAttributes;
+
+            string json;
+            string propName;
+            string summary;
+
+            var chars = pi.Name.ToCharArray();
+            chars[0] = char.ToUpper(chars[0]);
+            summary = propName = new string(chars);
+            
+            chars[0] = char.ToLower(chars[0]);
+            json = new string(chars);
+
+            foreach (var attr in attrs)
+            {
+
+            }
+
+
+            osb.AppendLine($"/// <summary>");
+            osb.AppendLine($"/// {summary}");
+            osb.AppendLine($"/// </summary>");
+
+
+
+
+
+
+
+            return osb.ToString();
+        }
+
+        static void CreateTheThing()
+        {
+            string s = "";
+
+            StringBuilder sb = new StringBuilder();
+
+
+
+
+
+
+
+
+            Clipboard.SetText(s);
+
+
+
+        }
+
         [STAThread]
         public static async Task TestMain(Kucoin.NET.Data.Interfaces.ICredentialsProvider cred = null)
         {
-            var bb = new ObservableOrderUnits();
+            //var bb = new ObservableOrderUnits();
 
-            bb.Add(new OrderUnit() { Price = 102660, Size = 20 });
-            bb.Add(new OrderUnit() { Price = 526360, Size = 201 });
-            bb.Add(new OrderUnit() { Price = 524562, Size = 202 });
-            bb.Add(new OrderUnit() { Price = 24542, Size = 203 });
-            bb.Add(new OrderUnit() { Price = 845670, Size = 204 });
-            bb.Add(new OrderUnit() { Price = 305240, Size = 205 });
-            bb.Add(new OrderUnit() { Price = 126640, Size = 206 });
-            bb.Add(new OrderUnit() { Price = 37260, Size = 207 });
-            bb.Add(new OrderUnit() { Price = 2600, Size = 208 });
-            bb.Add(new OrderUnit() { Price = 848670, Size = 204 });
-            bb.Add(new OrderUnit() { Price = 308690, Size = 205 });
-            bb.Add(new OrderUnit() { Price = 135640, Size = 206 });
-            bb.Add(new OrderUnit() { Price = 37060, Size = 207 });
-            bb.Add(new OrderUnit() { Price = 2050, Size = 208 });
-            bb.Add(new OrderUnit() { Price = 300940, Size = 205 });
-            bb.Add(new OrderUnit() { Price = 139940, Size = 206 });
-            bb.Add(new OrderUnit() { Price = 39330, Size = 207 });
-            bb.Add(new OrderUnit() { Price = 2640, Size = 208 });
-            bb.Add(new OrderUnit() { Price = 899670, Size = 204 });
-            bb.Add(new OrderUnit() { Price = 309540, Size = 205 });
-            bb.Add(new OrderUnit() { Price = 135740, Size = 206 });
-            bb.Add(new OrderUnit() { Price = 37460, Size = 207 });
-            bb.Add(new OrderUnit() { Price = 2630, Size = 208 });
-            bb.Add(new OrderUnit() { Price = 842560, Size = 204 });
-            bb.Add(new OrderUnit() { Price = 304740, Size = 205 });
-            bb.Add(new OrderUnit() { Price = 135780, Size = 206 });
-            bb.Add(new OrderUnit() { Price = 35860, Size = 207 });
-            bb.Add(new OrderUnit() { Price = 2660, Size = 208 });
+            //bb.Add(new OrderUnit() { Price = 102660, Size = 20 });
+            //bb.Add(new OrderUnit() { Price = 526360, Size = 201 });
+            //bb.Add(new OrderUnit() { Price = 524562, Size = 202 });
+            //bb.Add(new OrderUnit() { Price = 24542, Size = 203 });
+            //bb.Add(new OrderUnit() { Price = 845670, Size = 204 });
+            //bb.Add(new OrderUnit() { Price = 305240, Size = 205 });
+            //bb.Add(new OrderUnit() { Price = 126640, Size = 206 });
+            //bb.Add(new OrderUnit() { Price = 37260, Size = 207 });
+            //bb.Add(new OrderUnit() { Price = 2600, Size = 208 });
+            //bb.Add(new OrderUnit() { Price = 848670, Size = 204 });
+            //bb.Add(new OrderUnit() { Price = 308690, Size = 205 });
+            //bb.Add(new OrderUnit() { Price = 135640, Size = 206 });
+            //bb.Add(new OrderUnit() { Price = 37060, Size = 207 });
+            //bb.Add(new OrderUnit() { Price = 2050, Size = 208 });
+            //bb.Add(new OrderUnit() { Price = 300940, Size = 205 });
+            //bb.Add(new OrderUnit() { Price = 139940, Size = 206 });
+            //bb.Add(new OrderUnit() { Price = 39330, Size = 207 });
+            //bb.Add(new OrderUnit() { Price = 2640, Size = 208 });
+            //bb.Add(new OrderUnit() { Price = 899670, Size = 204 });
+            //bb.Add(new OrderUnit() { Price = 309540, Size = 205 });
+            //bb.Add(new OrderUnit() { Price = 135740, Size = 206 });
+            //bb.Add(new OrderUnit() { Price = 37460, Size = 207 });
+            //bb.Add(new OrderUnit() { Price = 2630, Size = 208 });
+            //bb.Add(new OrderUnit() { Price = 842560, Size = 204 });
+            //bb.Add(new OrderUnit() { Price = 304740, Size = 205 });
+            //bb.Add(new OrderUnit() { Price = 135780, Size = 206 });
+            //bb.Add(new OrderUnit() { Price = 35860, Size = 207 });
+            //bb.Add(new OrderUnit() { Price = 2660, Size = 208 });
             
-            var bb2 = bb.ToArray();
+            //var bb2 = bb.ToArray();
 
             if (cred == null)
             {
@@ -95,28 +154,29 @@ namespace KuCoinApp
                 Console.WriteLine("Not Authorized");
                 return;
             }
-            var ltest1 = new DataSet<string>()
-            {
-                "Horse",
-                "Tropical",
-                "Lift",
-                "Snow",
-                "Baffle",
-                "Coin",
-                "Shoe"
-            };
+
+            //var ltest1 = new DataSet<string>()
+            //{
+            //    "Horse",
+            //    "Tropical",
+            //    "Lift",
+            //    "Snow",
+            //    "Baffle",
+            //    "Coin",
+            //    "Shoe"
+            //};
 
 
-            var ltest2 = new DataSet<string>()
-            {
-                "Horse",
-                "Smell",
-                "Anxiety",
-                "Snow",
-                "Baffle",
-                "Drench",
-                "Coin"
-            };
+            //var ltest2 = new DataSet<string>()
+            //{
+            //    "Horse",
+            //    "Smell",
+            //    "Anxiety",
+            //    "Snow",
+            //    "Baffle",
+            //    "Drench",
+            //    "Coin"
+            //};
 
             var feed = new KlineFeed();
 

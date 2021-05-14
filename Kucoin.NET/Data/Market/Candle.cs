@@ -6,17 +6,26 @@ using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
 using System.Text;
+using Kucoin.NET.Data.Interfaces;
 
 namespace Kucoin.NET.Data.Market
 {
     /// <summary>
     /// Candlestick structure.
     /// </summary>
-    public struct Kline
+    public class Candle : IWriteableTypedCandle
     {
-
-        public Kline(IList<string> values, KlineType type)
+        public Candle(IList<string> values, KlineType type)
         {
+
+            Deserialize(values);
+            Type = type;
+        }
+
+        public virtual void Deserialize(object source)
+        {
+            var values = source as IList<string>;
+
             Timestamp = EpochTime.SecondsToDate(long.Parse(values[0]));
 
             OpenPrice = decimal.Parse(values[1]);
@@ -27,33 +36,36 @@ namespace Kucoin.NET.Data.Market
 
             Amount = decimal.Parse(values[5]);
             Volume = decimal.Parse(values[6]);
-
-            Type = type;
         }
 
-        public bool IsTimeInKline(DateTime time)
+        public Candle()
         {
-            var dv = Timestamp.AddSeconds(Type.Length);
+        }
 
-            if (time > dv || time < Timestamp) return false;
+        public static bool IsTimeInCandle(ITypedCandle candle, DateTime time)
+        {
+            var dv = candle.Timestamp.AddSeconds(candle.Type.Length);
+
+            if (time > dv || time < candle.Timestamp) return false;
             else return true;
         }
 
-        public DateTime Timestamp;
+        public virtual DateTime Timestamp { get; set; }
 
-        public decimal OpenPrice;
+        public virtual decimal OpenPrice { get; set; }
 
-        public decimal ClosePrice;
+        public virtual decimal ClosePrice { get; set; }
 
-        public decimal HighPrice;
+        public virtual decimal HighPrice { get; set; }
 
-        public decimal LowPrice;
+        public virtual decimal LowPrice { get; set; }
 
-        public decimal Amount;
+        public virtual decimal Amount { get; set; }
 
-        public decimal Volume;
+        public virtual decimal Volume { get; set; }
 
-        public KlineType Type;
+        public virtual KlineType Type { get; set; }
+
 
         public override string ToString()
         {

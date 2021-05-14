@@ -16,6 +16,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Input;
 using KuCoinApp.Views;
+using Kucoin.NET.Data.Interfaces;
 
 namespace KuCoinApp
 {
@@ -56,7 +57,7 @@ namespace KuCoinApp
 
         private KlineType kt = KlineType.Min1;
 
-        KlineCandle lastCandle = new KlineCandle(new Kline() { Timestamp = DateTime.Now, Type = KlineType.Min1 });
+        KlineCandle lastCandle = new KlineCandle(new Candle() { Timestamp = DateTime.Now, Type = KlineType.Min1 });
 
         private Ticker nowTicker = null;
         
@@ -385,19 +386,10 @@ namespace KuCoinApp
 
         public async Task RefreshData()
         {
-            var response = await market.GetKline((string)symbol, KlineType, startTime: KlineType.GetStartDate(200));
-
-            var kc = new ObservableCollection<FancyCandles.ICandle>();
+            var kc = await market.GetKline<KlineCandle, FancyCandles.ICandle, ObservableCollection<FancyCandles.ICandle>>((string)symbol, KlineType, startTime: KlineType.GetStartDate(200));
 
             Volume = null;
             VolumeTime = null;
-
-            int i, c = response.Count - 1;
-
-            for (i = c; i >= 0; i--)
-            {
-                kc.Add((KlineCandle)response[i]);
-            }
 
             Data = kc;
 
@@ -451,9 +443,9 @@ namespace KuCoinApp
                 {
                     foreach (var sobj in symbols)
                     {
-                        if (s == sobj.Value.Symbol)
+                        if (s == sobj.Symbol)
                         {
-                            output.Add(sobj.Value);
+                            output.Add(sobj);
                         }
                     }
                 }
@@ -469,7 +461,7 @@ namespace KuCoinApp
             {
                 if (SetProperty(ref lastCandle, value))
                 {
-                    if (data.Count == 0 || !(((KlineCandle)data.LastOrDefault())?.Source.IsTimeInKline(lastCandle.t) ?? false))
+                    if (data.Count == 0 || !Candle.IsTimeInCandle((ITypedCandle)data.LastOrDefault(), lastCandle.Timestamp))
                     {
                         data.Add(lastCandle);
                     }
@@ -506,9 +498,9 @@ namespace KuCoinApp
             {
                 decimal p = ticker.Price;
 
-                Kline kl;
+                KlineCandle kl;
 
-                if ((data?.Count ?? 0) == 0 || !LastCandle.Source.IsTimeInKline(ticker.Timestamp))
+                if ((data?.Count ?? 0) == 0 || !Candle.IsTimeInCandle(LastCandle, ticker.Timestamp))
                 {
                     await RefreshData();
                 }
@@ -518,7 +510,7 @@ namespace KuCoinApp
                     
                     n = n.AddSeconds(-1 * n.Second);
 
-                    kl = ((KlineCandle)data.LastOrDefault())?.Source ?? new Kline() { Timestamp = n, Type = this.KlineType };
+                    kl = ((KlineCandle)data.LastOrDefault()) ?? new KlineCandle() { Timestamp = n, Type = this.KlineType };
 
                     if (p < kl.LowPrice)
                     {
@@ -531,14 +523,14 @@ namespace KuCoinApp
                     
                     kl.ClosePrice = p;
 
-                    if (VolumeTime != null && kl.IsTimeInKline((DateTime)VolumeTime)) 
+                    if (VolumeTime != null && Candle.IsTimeInCandle(kl, (DateTime)VolumeTime)) 
                     {
-                        kl.Volume = (Volume ?? 0);
+                        kl.Volume = Volume ?? 0;
                     }
 
-                    App.Current?.Dispatcher?.Invoke(() => {
-                        LastCandle = new KlineCandle(kl);
-                    });
+                    //App.Current?.Dispatcher?.Invoke(() => {
+                    //    LastCandle = kl.Clone();
+                    //});
                 }
 
                 RealTimeTicker = ticker;
@@ -617,9 +609,9 @@ namespace KuCoinApp
 
                 foreach(var sym in symbols)
                 {
-                    if (sym.Value.Symbol == rec)
+                    if (sym.Symbol == rec)
                     {
-                        Symbol = sym.Value;
+                        Symbol = sym;
                         return;
                     }
                 }
@@ -709,9 +701,9 @@ namespace KuCoinApp
 
                     foreach (var sym in symbols)
                     {
-                        if (sym.Value.Symbol == rec)
+                        if (sym.Symbol == rec)
                         {
-                            Symbol = sym.Value;
+                            Symbol = sym;
                             //_ = Program.TestMain(cred);
 
 

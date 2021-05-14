@@ -16,6 +16,9 @@ using System.Threading.Tasks;
 
 namespace Kucoin.NET.Rest
 {
+    /// <summary>
+    /// User actions
+    /// </summary>
     public class User : KucoinBaseRestApi
     {
         public User(ICredentialsProvider credProvider, bool isSandbox = false) : base(credProvider, isSandbox)
@@ -26,6 +29,12 @@ namespace Kucoin.NET.Rest
         {
         }
 
+
+        /// <summary>
+        /// Refresh an account.
+        /// </summary>
+        /// <param name="account"></param>
+        /// <returns></returns>
         public async Task RefreshAccount(Account account)
         {
             var jobj = await MakeRequest(HttpMethod.Get, "/api/v1/accounts/" + account.Id);

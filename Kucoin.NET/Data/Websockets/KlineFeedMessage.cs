@@ -32,7 +32,7 @@ namespace Kucoin.NET.Data.Websockets
         }
 
         [JsonProperty("candles")]
-        public Kline Candles { get; set; }
+        public Candle Candles { get; set; }
 
         [JsonProperty("symbol")]
         public string Symbol { get; set; }

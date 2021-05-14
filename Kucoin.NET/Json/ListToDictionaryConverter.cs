@@ -70,7 +70,7 @@ namespace Kucoin.NET.Json
         {
             if (value is ObservableDictionary<string, TValue> dict)
             {
-                writer.WriteValue(dict.Values);
+                writer.WriteValue(dict);
             }
             else
             {
