@@ -178,7 +178,7 @@ namespace KuCoinApp
             //    "Coin"
             //};
 
-            var feed = new KlineFeed();
+            var feed = new KlineFeed<KlineCandle>();
 
             Feed = feed;
 

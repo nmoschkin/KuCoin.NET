@@ -5,6 +5,8 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Threading.Tasks;
+using Kucoin.NET.Data.Interfaces;
+using Kucoin.NET.Helpers;
 
 namespace Kucoin.NET.Websockets.Public
 {
@@ -60,7 +62,7 @@ namespace Kucoin.NET.Websockets.Public
     /// <summary>
     /// Implements the symbol candles feed (Level 2).
     /// </summary>
-    public class KlineFeed : KucoinBaseWebsocketFeed<KlineFeedMessage>
+    public class KlineFeed<T> : KucoinBaseWebsocketFeed<KlineFeedMessage<T>> where T: IWriteableTypedCandle, new()
     {
 
         private List<SymbolKline> activeTickers = new List<SymbolKline>();
@@ -99,16 +101,31 @@ namespace Kucoin.NET.Websockets.Public
                     var i = msg.Topic.IndexOf(":");
                     if (i == -1) return;
 
-                    var ticker = new KlineFeedMessage();
+                    var ticker = new KlineFeedMessage<T>();
                     
                     var sk = SymbolKline.Parse(msg.Topic.Substring(i + 1));
 
                     ticker.Time = msg.Data["time"].ToObject<long>();
                     ticker.Symbol = msg.Data["symbol"].ToObject<string>();
 
-                    var tempData = msg.Data["candles"].ToObject<string[]>();
+                    var values = msg.Data["candles"].ToObject<string[]>();
 
-                    ticker.Candles = new Candle(tempData, sk.KlineType);
+                    var candle = new T();
+
+                    candle.Timestamp = EpochTime.SecondsToDate(long.Parse(values[0]));
+
+                    candle.OpenPrice = decimal.Parse(values[1]);
+                    candle.ClosePrice = decimal.Parse(values[2]);
+
+                    candle.HighPrice = decimal.Parse(values[3]);
+                    candle.LowPrice = decimal.Parse(values[4]);
+
+                    candle.Amount = decimal.Parse(values[5]);
+                    candle.Volume = decimal.Parse(values[6]);
+
+                    candle.Type = sk.KlineType;
+
+                    ticker.Candles = candle;
 
                     await PushNext(ticker);
                 }
@@ -122,7 +139,7 @@ namespace Kucoin.NET.Websockets.Public
         /// <returns></returns>
         public async Task AddSymbol(string symbol, KlineType type)
         {
-            if (disposed) throw new ObjectDisposedException(nameof(KlineFeed));
+            if (disposed) throw new ObjectDisposedException(nameof(KlineFeed<T>));
             if (!Connected)
             {
                 await Connect();
@@ -159,7 +176,7 @@ namespace Kucoin.NET.Websockets.Public
         /// <returns></returns>
         public virtual async Task RemoveSymbol(string symbol, KlineType type)
         {
-            if (disposed) throw new ObjectDisposedException(nameof(KlineFeed));
+            if (disposed) throw new ObjectDisposedException(nameof(KlineFeed<T>));
             if (!Connected) return;
 
             SymbolKline sk = null;

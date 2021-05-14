@@ -21,7 +21,7 @@ using Kucoin.NET.Data.Interfaces;
 namespace KuCoinApp
 {
 
-    public class MainWindowViewModel : ObservableBase, IObserver<Ticker>, IObserver<KlineFeedMessage>
+    public class MainWindowViewModel : ObservableBase, IObserver<Ticker>, IObserver<KlineFeedMessage<KlineCandle>>
     {
         private Level2 level2Feed;
 
@@ -31,7 +31,7 @@ namespace KuCoinApp
 
         private TickerFeed tickerFeed;
 
-        private KlineFeed klineFeed;
+        private KlineFeed<KlineCandle> klineFeed;
 
         private IDisposable tickerSubscription;
 
@@ -474,7 +474,7 @@ namespace KuCoinApp
             }
         }
 
-        void IObserver<KlineFeedMessage>.OnNext(KlineFeedMessage ticker)
+        void IObserver<KlineFeedMessage<KlineCandle>>.OnNext(KlineFeedMessage<KlineCandle> ticker)
         {
             if (ticker.Symbol == (string)symbol && KlineType == ticker.Candles.Type)
             {
@@ -589,7 +589,7 @@ namespace KuCoinApp
             market = new Market();
             
             tickerFeed = new TickerFeed();
-            klineFeed = new KlineFeed();
+            klineFeed = new KlineFeed<KlineCandle>();
 
             //Program.Feed = snapshotFeed;
 

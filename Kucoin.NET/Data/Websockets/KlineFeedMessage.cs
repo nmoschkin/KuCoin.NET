@@ -7,10 +7,11 @@ using Kucoin.NET.Observable;
 using Kucoin.NET.Data.Market;
 using Kucoin.NET.Rest;
 using Kucoin.NET.Helpers;
+using Kucoin.NET.Data.Interfaces;
 
 namespace Kucoin.NET.Data.Websockets
 {
-    public class KlineFeedMessage 
+    public class KlineFeedMessage<T> where T: IWriteableTypedCandle, new()
     {
         [JsonProperty("time")]
         public long? Time { get; set; }
@@ -32,7 +33,7 @@ namespace Kucoin.NET.Data.Websockets
         }
 
         [JsonProperty("candles")]
-        public Candle Candles { get; set; }
+        public T Candles { get; set; }
 
         [JsonProperty("symbol")]
         public string Symbol { get; set; }
