@@ -62,7 +62,7 @@ namespace Kucoin.NET.Websockets.Public
     /// <summary>
     /// Implements the symbol candles feed (Level 2).
     /// </summary>
-    public class KlineFeed<T> : KucoinBaseWebsocketFeed<KlineFeedMessage<T>> where T: IWriteableTypedCandle, new()
+    public class KlineFeed<T> : KucoinBaseWebsocketFeed<KlineFeedMessage<T>> where T: IWriteableCandle, new()
     {
 
         private List<SymbolKline> activeTickers = new List<SymbolKline>();
@@ -123,7 +123,10 @@ namespace Kucoin.NET.Websockets.Public
                     candle.Amount = decimal.Parse(values[5]);
                     candle.Volume = decimal.Parse(values[6]);
 
-                    candle.Type = sk.KlineType;
+                    if (candle is IWriteableTypedCandle wt)
+                    {
+                        wt.Type = sk.KlineType;
+                    }
 
                     ticker.Candles = candle;
 

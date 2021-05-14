@@ -11,7 +11,7 @@ using Kucoin.NET.Data.Interfaces;
 
 namespace Kucoin.NET.Data.Websockets
 {
-    public class KlineFeedMessage<T> where T: IWriteableTypedCandle, new()
+    public class KlineFeedMessage<T> where T: IWriteableCandle, new()
     {
         [JsonProperty("time")]
         public long? Time { get; set; }
