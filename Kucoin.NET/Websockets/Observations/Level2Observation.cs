@@ -26,7 +26,7 @@ namespace Kucoin.NET.Websockets.Observations
         /// <summary>
         /// The number of pieces to push to the order book from the preflight book.
         /// </summary>
-        int Pieces { get; set; }
+        int Pieces { get; }
 
         /// <summary>
         /// The raw preflight (full depth) order book.
@@ -75,13 +75,15 @@ namespace Kucoin.NET.Websockets.Observations
             }
         }
 
-        internal Level2Observation(Level2 parent, string symbol, int pieces = 20)
+        internal Level2Observation(Level2 parent, string symbol, int pieces = 50)
         {
             orgThread = Thread.CurrentThread;
             sym = symbol;
 
             this.parent = parent;
             this.pieces = pieces;
+
+            orderBook = new OrderBook();
         }
 
         public string Symbol => !disposed ? sym : throw new ObjectDisposedException(nameof(Level2Observation));
@@ -97,7 +99,7 @@ namespace Kucoin.NET.Websockets.Observations
         public int Pieces
         {
             get => !disposed ? pieces : throw new ObjectDisposedException(nameof(Level2Observation));
-            set
+            internal set
             {
                 SetProperty(ref pieces, value);
             }
@@ -323,19 +325,31 @@ namespace Kucoin.NET.Websockets.Observations
         /// </summary>
         public void PushPreflight()
         {
-            if (OrderBook == null)
+            if (orderBook == null)
             {
-                OrderBook = new OrderBook();
+                var ob = new OrderBook();
+                for (int i = 0; i < pieces; i++)
+                {
+                    ob.Asks.Add(new OrderUnit());
+                    ob.Bids.Add(new OrderUnit());
+                }
+
+                OrderBook = ob;
             }
 
-            lock(parent)
+            Dispatcher.InvokeOnMainThread((o) =>
             {
                 orderBook.Sequence = preflightBook.Sequence;
                 orderBook.Time = EpochTime.DateToNanoseconds(DateTime.Now);
 
-                CopyTo(preflightBook.Asks, orderBook.Asks, pieces, !liveOrderSizeUpdates);
-                CopyTo(preflightBook.Bids, orderBook.Bids, pieces, !liveOrderSizeUpdates);
-            }
+                CopyBook();
+            });
+        }
+
+        private void CopyBook()
+        {
+            CopyTo(preflightBook.Asks, orderBook.Asks, pieces, !liveOrderSizeUpdates);
+            CopyTo(preflightBook.Bids, orderBook.Bids, pieces, !liveOrderSizeUpdates);
         }
 
         public override string ToString() => $"{sym} : {pieces}";

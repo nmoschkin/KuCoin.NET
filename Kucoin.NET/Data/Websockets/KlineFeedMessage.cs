@@ -14,7 +14,7 @@ namespace Kucoin.NET.Data.Websockets
     public class KlineFeedMessage<T> where T: IWriteableCandle, new()
     {
         [JsonProperty("time")]
-        public long? Time { get; set; }
+        internal long? Time { get; set; }
 
         [JsonIgnore]
         public DateTime Timestamp

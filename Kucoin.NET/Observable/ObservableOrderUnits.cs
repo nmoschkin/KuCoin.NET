@@ -1,4 +1,5 @@
 ﻿using Kucoin.NET.Data.Market;
+using Kucoin.NET.Helpers;
 
 using System;
 using System.Collections.Generic;
@@ -107,7 +108,7 @@ namespace Kucoin.NET.Observable
         protected override void ClearItems()
         {
             base.ClearItems();
-            CollectionChanged?.Invoke(this, new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset));
+            OnCollectionChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset));
         }
 
         protected override void InsertItem(int index, OrderUnit item)
@@ -115,7 +116,7 @@ namespace Kucoin.NET.Observable
             index = GetInsertIndex(item);
 
             base.InsertItem(index, item);
-            CollectionChanged?.Invoke(this, new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Add, item, index));
+            OnCollectionChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Add, item, index));
         }
 
         protected override void RemoveItem(int index)
@@ -123,7 +124,7 @@ namespace Kucoin.NET.Observable
             var oldItem = ((IList<OrderUnit>)this)[index];
             base.RemoveItem(index);
 
-            CollectionChanged?.Invoke(this, new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Remove, oldItem, index));
+            OnCollectionChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Remove, oldItem, index));
         }
 
         protected override void SetItem(int index, OrderUnit item)
@@ -149,7 +150,12 @@ namespace Kucoin.NET.Observable
             }
             base.SetItem(index, item);
 
-            CollectionChanged?.Invoke(this, new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Replace, item, oldItem, index));
+            OnCollectionChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Replace, item, oldItem, index));
+        }
+
+        protected void OnCollectionChanged(NotifyCollectionChangedEventArgs e)
+        {
+            CollectionChanged?.Invoke(this, e);
         }
 
     }

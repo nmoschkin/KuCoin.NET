@@ -12,11 +12,11 @@ using Kucoin.NET.Data.Interfaces;
 namespace Kucoin.NET.Data.Market
 {
 
-    public class OrderBook : ObservableBase, IOrderUnitList
+    public class OrderBook : ObservableBase, IOrderBook
     {
-        private ObservableOrderUnits asks;
+        private ObservableOrderUnits asks = new ObservableOrderUnits();
 
-        private ObservableOrderUnits bids;
+        private ObservableOrderUnits bids = new ObservableOrderUnits(true);
 
         private long sequence;
 
@@ -38,15 +38,7 @@ namespace Kucoin.NET.Data.Market
         [JsonProperty("asks")]
         public ObservableOrderUnits Asks
         {
-            get
-            {
-                if (asks == null)
-                {
-                    Asks = new ObservableOrderUnits();
-                }
-
-                return asks;
-            }
+            get => asks;
             set
             {
                 SetProperty(ref asks, value);
@@ -56,15 +48,7 @@ namespace Kucoin.NET.Data.Market
         [JsonProperty("bids")]
         public ObservableOrderUnits Bids
         {
-            get
-            {
-                if (bids == null)
-                {
-                    Bids = new ObservableOrderUnits(true);
-                }
-
-                return bids;
-            }
+            get => bids;
             set
             {
                 SetProperty(ref bids, value);
@@ -91,6 +75,12 @@ namespace Kucoin.NET.Data.Market
             {
                 return EpochTime.NanosecondsToDate(time);
             }
+        }
+
+        DateTime IOrderBook.Timestamp
+        {
+            get => EpochTime.NanosecondsToDate(time);
+            set => time = EpochTime.DateToNanoseconds(value);
         }
 
     }

@@ -15,7 +15,7 @@ using Kucoin.NET.Data.Interfaces;
 
 namespace Kucoin.NET.Rest
 {
-    public class KucoinBaseRestApi : CriticalObservableBase
+    public class KucoinBaseRestApi : ObservableBase
     {
         static readonly JsonSerializerSettings defaultSettings;
         

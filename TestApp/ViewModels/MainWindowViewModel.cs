@@ -690,6 +690,7 @@ namespace KuCoinApp
                         level2Feed50 = new Level2Depth50(cred);
 
                         level2Feed.UpdateInterval = 50;
+
                         await level2Feed.Connect();
                         await level2Feed50.Connect();
 
