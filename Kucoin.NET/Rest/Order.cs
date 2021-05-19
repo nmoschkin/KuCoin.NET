@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using System.Net.Http;
 using Kucoin.NET.Data.Market;
 using Kucoin.NET.Data.Interfaces;
+using Kucoin.NET.Json;
 
 namespace Kucoin.NET.Rest
 {
@@ -58,7 +59,7 @@ namespace Kucoin.NET.Rest
 
             if (tradeType != null)
             {
-                dict.Add("tradeType", tradeType);
+                dict.Add("tradeType", EnumToStringConverter<TradeType>.GetEnumName((TradeType)tradeType));
             }
 
             var jobj = await MakeRequest(HttpMethod.Delete, "/api/v1/orders", reqParams: dict);
@@ -140,6 +141,50 @@ namespace Kucoin.NET.Rest
             return jobj.ToObject<OrderReceipt>();
         }
 
+        public async Task<OrderDetails> GetOrder(string orderId)
+        {
+            var jobj = await MakeRequest(HttpMethod.Get, "/api/v1/orders/" + orderId);
+            return jobj.ToObject<OrderDetails>();
+
+        }
+
+        public async Task<IList<OrderDetails>> GetRecentOrders()
+        {
+            var jobj = await MakeRequest(HttpMethod.Get, "/api/v1/limit/orders");
+            return jobj.ToObject<OrderDetails[]>();
+        }
+
+        public async Task<OrderDetails> GetActiveByClientOid(string clientOid)
+        {
+            var jobj = await MakeRequest(HttpMethod.Get, "/api/v1/order/client-order/" + clientOid);
+            return jobj.ToObject<OrderDetails>();
+
+        }
+
+        public async Task<IList<Fill>> ListFills(
+            string symbol = null,
+            Side? side = null,
+            OrderType type? = null,
+            TradeType? tradeType = null,
+            DateTime? startAt = null,
+            DateTime? endAt = null
+            )
+        {
+            var lp = new OrderListParams(null, symbol, side, type, tradeType, startAt, endAt);
+
+            return await ListFills(lp);
+        }
+
+        public async Task<IList<Fill>> ListFills(OrderListParams listParams)
+        {
+            return await GetAllPaginatedResults<Fill, FillPage>(HttpMethod.Get, "/api/v1/fills", reqParams: listParams.ToDict());
+        }
+
+        public async Task<IList<Fill>> RecentFills()
+        {
+            var jobj = await MakeRequest(HttpMethod.Get, "/api/v1/limit/fills");
+            return jobj.ToObject<Fill[]>();
+        }
 
     }
 }

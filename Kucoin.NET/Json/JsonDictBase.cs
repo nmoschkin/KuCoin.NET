@@ -2,6 +2,7 @@
 using System.Reflection;
 
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 namespace Kucoin.NET.Json
 {
@@ -27,6 +28,8 @@ namespace Kucoin.NET.Json
 
             var pis = GetType().GetProperties(BindingFlags.Public | BindingFlags.Instance);
             string name;
+            //var jt = new JObject(this);
+            //return jt.ToObject<Dictionary<string, object>>();
 
             foreach (var pi in pis)
             {
