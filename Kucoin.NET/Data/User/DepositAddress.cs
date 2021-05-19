@@ -1,4 +1,6 @@
-﻿using Newtonsoft.Json;
+﻿using Kucoin.NET.Json;
+
+using Newtonsoft.Json;
 
 using System;
 using System.Collections.Generic;
@@ -6,7 +8,8 @@ using System.Text;
 
 namespace Kucoin.NET.Data.User
 {
-    public class DepositAddress
+
+    public class AddressBase : JsonDictBase
     {
         /// <summary>
         /// Address
@@ -28,7 +31,10 @@ namespace Kucoin.NET.Data.User
         [JsonProperty("chain")]
         public string Chain { get; set; }
 
+    }
 
+    public class DepositAddress : AddressBase
+    {
         /// <summary>
         /// ContractAddress
         /// </summary>
@@ -37,5 +43,15 @@ namespace Kucoin.NET.Data.User
 
     }
 
+
+    public class WithdrawalAddress : AddressBase
+    {
+        [JsonProperty("isInner")]
+        public bool IsInner { get; set; }
+
+        [JsonProperty("remark")]
+        public string Remark { get; set; }
+
+    }
 
 }

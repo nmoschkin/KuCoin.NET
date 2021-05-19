@@ -1,4 +1,5 @@
 ﻿using Kucoin.NET.Data.Interfaces;
+using Kucoin.NET.Data.Order;
 using Kucoin.NET.Data.User;
 using Kucoin.NET.Helpers;
 using Kucoin.NET.Json;
@@ -47,13 +48,106 @@ namespace Kucoin.NET.Rest
             return jobj.ToObject<Account>();
         }
 
-        public async Task<SubAccount[]> GetSubUsers()
+        public async Task<SubAccount[]> GetSubAccounts()
         {
 
             var jobj = await MakeRequest(HttpMethod.Get, "/api/v1/sub/user");
             return jobj.ToObject<SubAccount[]>();
 
         }
+
+        public async Task<SubAccountBalances> GetSubAccountBalances(string subUsertId = null)
+        {
+            var url = "/api/v1/sub/sub-accounts";
+            if (subUsertId != null) url += "/" + subUsertId;
+
+
+            var jobj = await MakeRequest(HttpMethod.Get, url);
+            return jobj.ToObject<SubAccountBalances>();
+
+        }
+
+        public async Task<TransferableBalance> GetTransferable(string currency, AccountType type)
+        {
+            var actt = type.AccountName.ToUpper();
+
+            var dict = new Dictionary<string, object>();
+
+            dict.Add("currency", currency);
+            dict.Add("type", actt);
+
+            var jobj = await MakeRequest(HttpMethod.Get, "/api/v1/accounts/transferable", reqParams: dict);
+            return jobj.ToObject<TransferableBalance>();
+
+        }
+
+        public async Task<string> SubTransfer(string currency, decimal amount, TransactionDirection direction, string subUserId, AccountType? accountType = null, AccountType? subAccountType = null, string clientOid = null)
+        {
+            if (clientOid == null) clientOid = Guid.NewGuid().ToString("d");
+
+            var dict = new Dictionary<string, object>();
+
+            dict.Add("clientOid", clientOid);
+            dict.Add("currency", currency);
+            dict.Add("amount", amount.ToString());
+            dict.Add("direction", direction == TransactionDirection.In ? "IN" : "OUT");
+            dict.Add("subUserId", subUserId);
+
+            if (accountType is AccountType a1)
+            {
+                dict.Add("accountType", a1.AccountName.ToUpper());
+            }
+
+            if (subAccountType is AccountType a2)
+            {
+                dict.Add("subAccountType", a2.AccountName.ToUpper());
+            }
+
+            var jobj = await MakeRequest(HttpMethod.Post, "/api/v1/accounts/sub-transfer", reqParams: dict);
+            return jobj["orderId"].ToObject<string>();
+        }
+
+        public async Task<string> InnerTransfer(string currency, decimal amount, AccountType fromAccount, AccountType toAccount, string clientOid = null)
+        {
+            if (clientOid == null) clientOid = Guid.NewGuid().ToString("d");
+
+            var dict = new Dictionary<string, object>();
+
+            dict.Add("clientOid", clientOid);
+            dict.Add("currency", currency);
+            dict.Add("amount", amount.ToString());
+
+            dict.Add("from", fromAccount.AccountName);
+            dict.Add("to", toAccount.AccountName);
+
+            var jobj = await MakeRequest(HttpMethod.Post, "/api/v1/accounts/inner-transfer", reqParams: dict);
+            return jobj["orderId"].ToObject<string>();
+        }
+
+        public async Task<DepositAddress> CreateDepositAddress(string currency, string address, string chain = null)
+        {
+            var dict = new Dictionary<string, object>();
+
+            dict.Add("currency", currency);
+            dict.Add("address", address);
+            if (chain != null) dict.Add("chain", chain);
+
+
+            var jobj = await MakeRequest(HttpMethod.Post, "/api/v1/accounts/deposit-addresses", reqParams: dict);
+            return jobj.ToObject<DepositAddress>();
+
+        }
+
+        public async Task<DepositAddress[]> GetDepositAddresses(string currency)
+        {
+            var dict = new Dictionary<string, object>();
+
+            dict.Add("currency", currency);
+
+            var jobj = await MakeRequest(HttpMethod.Get, "/api/v2/accounts/deposit-addresses", reqParams: dict);
+            return jobj.ToObject<DepositAddress[]>();
+        }
+
 
         public async Task<Account> CreateAccount(string currency, AccountType type)
         {
@@ -195,6 +289,163 @@ namespace Kucoin.NET.Rest
 
             return await GetAllPaginatedResults<AccountLedgerItem, AccountLedgerPage>(HttpMethod.Get, $"/api/v1/accounts/ledgers", reqParams: param);
 
+        }
+
+        public async Task<IList<DepositListItem>> GetDepositList(string currency = null, DateTime? startTime = null, DateTime? endTime = null, DepositStatus? status = null, int pageSize = 50)
+        {
+            var l = new List<DepositListItem>();
+            long st, et;
+            int cp = 1;
+            DateTime d;
+            var param = new Dictionary<string, object>();
+
+            param.Add("pageSize", pageSize);
+            param.Add("currentPage", cp);
+
+            if (currency != null)
+            {
+                param.Add("currency", currency);
+            }
+
+            if (startTime == null)
+            {
+                st = 0;
+            }
+            else
+            {
+                d = (DateTime)startTime;
+                st = EpochTime.DateToSeconds(d);
+                param.Add("startAt", st);
+            }
+
+            if (endTime == null)
+            {
+                et = 0;
+            }
+            else
+            {
+                d = (DateTime)startTime;
+                et = EpochTime.DateToSeconds(d);
+                param.Add("endAt", et);
+            }
+            if (status != null)
+            {
+                param.Add("status", EnumToStringConverter<DepositStatus>.GetEnumName((DepositStatus)status));
+            }
+
+
+            if (startTime != null && endTime != null && et < st) throw new ArgumentException("End time must be greater than start time");
+
+            return await GetAllPaginatedResults<DepositListItem, DepositListPage>(HttpMethod.Get, $"/api/v1/deposits", reqParams: param);
+
+        }
+
+        public async Task<IList<Withdrawal>> GetWithdrawalList(string currency = null, DateTime? startTime = null, DateTime? endTime = null, WithdrawalStatus? status = null, int pageSize = 50)
+        {
+            var l = new List<Withdrawal>();
+            long st, et;
+            int cp = 1;
+            DateTime d;
+            var param = new Dictionary<string, object>();
+
+            param.Add("pageSize", pageSize);
+            param.Add("currentPage", cp);
+
+            if (currency != null)
+            {
+                param.Add("currency", currency);
+            }
+
+            if (startTime == null)
+            {
+                st = 0;
+            }
+            else
+            {
+                d = (DateTime)startTime;
+                st = EpochTime.DateToSeconds(d);
+                param.Add("startAt", st);
+            }
+
+            if (endTime == null)
+            {
+                et = 0;
+            }
+            else
+            {
+                d = (DateTime)startTime;
+                et = EpochTime.DateToSeconds(d);
+                param.Add("endAt", et);
+            }
+            if (status != null)
+            {
+                param.Add("status", EnumToStringConverter<WithdrawalStatus>.GetEnumName((WithdrawalStatus)status));
+            }
+
+
+            if (startTime != null && endTime != null && et < st) throw new ArgumentException("End time must be greater than start time");
+
+            return await GetAllPaginatedResults<Withdrawal, WithdrawalListPage>(HttpMethod.Get, $"/api/v1/withdrawals", reqParams: param);
+
+        }
+
+        public async Task<WithdrawalQuota> GetWithdrawalQuotas(string currency, string chain = null)
+        {
+            var dict = new Dictionary<string, object>();
+
+            dict.Add("currency", currency);
+            if (chain != null) dict.Add("chain", chain);
+
+            var jobj = await MakeRequest(HttpMethod.Get, "/api/v1/quotas", reqParams: dict);
+            return jobj.ToObject<WithdrawalQuota>();
+
+        }
+
+        public async Task<string> ApplyWithdrawal(string currency, decimal amount, AddressBase address)
+        {
+            var dict = address.ToDict();
+
+            dict.Add("currency", currency);
+            dict.Add("amount", amount.ToString());
+
+            var jobj = await MakeRequest(HttpMethod.Post, "/api/v1/withdrawals", reqParams: dict);
+            return jobj["withdrawalId"].ToObject<string>();
+        }
+
+        public async Task CancelWithdrawal(string withdrawalId)
+        {
+            await MakeRequest(HttpMethod.Delete, $"/api/v1/withdrawals/{withdrawalId}");
+
+        }
+
+        public async Task<FeeRate> GetBaseFee()
+        {
+
+            var jobj = await MakeRequest(HttpMethod.Get, "/api/v1/base-fee");
+            return jobj.ToObject<FeeRate>();
+        }
+
+        public async Task<FeeRate[]> GetActualFeeRates(IEnumerable<string> symbols)
+        {
+            var sb = new StringBuilder();
+
+            foreach(var sym in symbols)
+            {
+                if (sb.Length > 0) sb.Append(",");
+                sb.Append(sym);
+            }
+
+            var url = "/api/v1/trade-fees?symbols=" + sb.ToString();
+
+            var jobj = await MakeRequest(HttpMethod.Get, url);
+            return jobj.ToObject<FeeRate[]>();
+
+
+        }
+
+        public async Task<FeeRate> GetActualFeeRate(string symbol)
+        {
+            return (await GetActualFeeRates(new string[] { symbol }))[0];
         }
 
     }

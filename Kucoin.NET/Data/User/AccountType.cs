@@ -26,6 +26,8 @@ namespace Kucoin.NET.Data.User
     {
         private string value;
 
+        public string AccountName => value;
+
         private AccountType(string type)
         {
             value = type;
@@ -42,6 +44,8 @@ namespace Kucoin.NET.Data.User
         public static readonly AccountType Margin = new AccountType("margin");
 
         public static readonly AccountType Futures = new AccountType("futures");
+
+        public static readonly AccountType Contract = new AccountType("contract");
 
         public static AccountType Parse(string s)
         {
@@ -90,7 +94,7 @@ namespace Kucoin.NET.Data.User
                 {
                     var x = (AccountType)fi.GetValue(null);
 
-                    if (x.value == val)
+                    if (x.value.ToLower() == val.ToLower())
                     {
                         return x;
                     }
