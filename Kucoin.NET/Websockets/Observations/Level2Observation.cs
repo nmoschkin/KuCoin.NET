@@ -327,12 +327,6 @@ namespace Kucoin.NET.Websockets.Observations
             if (orderBook == null)
             {
                 var ob = new OrderBook();
-                for (int i = 0; i < pieces; i++)
-                {
-                    ob.Asks.Add(new OrderUnit());
-                    ob.Bids.Add(new OrderUnit());
-                }
-
                 OrderBook = ob;
             }
 
