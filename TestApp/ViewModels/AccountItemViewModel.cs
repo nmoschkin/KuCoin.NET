@@ -93,7 +93,7 @@ namespace KuCoinApp.ViewModels
         public async Task UpdateQuoteAmount(string quoteCurrency)
         {
             var market = new Market();
-            var ticker = await market.GetTicker((TradingSymbol)$"{CurrencyName}-{quoteCurrency}");
+            var ticker = await market.GetTicker($"{CurrencyName}-{quoteCurrency}");
 
             QuoteAmount = Balance * ticker.Price;
         }

@@ -87,14 +87,16 @@ namespace Kucoin.NET.Data.User
             var t = typeof(AccountType);
 
             var fis = t.GetFields(BindingFlags.Public | BindingFlags.Static);
+            var search = val?.ToLower() ?? null;
 
             foreach (var fi in fis)
             {
                 if (fi.FieldType == t)
                 {
                     var x = (AccountType)fi.GetValue(null);
+                    var inspect = x.value?.ToLower() ?? null;
 
-                    if (x.value.ToLower() == val.ToLower())
+                    if (inspect == search)
                     {
                         return x;
                     }

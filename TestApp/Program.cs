@@ -225,7 +225,7 @@ namespace KuCoinApp
 
             await market.RefreshCurrenciesAsync();
 
-            var stats = await market.Get24HourStats((TradingSymbol)"ETH-USDT");
+            var stats = await market.Get24HourStats("ETH-USDT");
 
             var markets = await market.GetMarketList();
 
@@ -253,7 +253,7 @@ namespace KuCoinApp
             //Console.WriteLine($"Now Getting Request for {sym.Name}: ");
             //Console.WriteLine();
 
-            var ticker = await market.GetTicker(sym);
+            var ticker = await market.GetTicker((string)sym);
 
             //Console.WriteLine("Current Price: " + string.Format("${0:#,##0.00########}", ticker.Price));
 
@@ -381,7 +381,7 @@ namespace KuCoinApp
 
                 try
                 {
-                    ticker = await market.GetTicker(sym);
+                    ticker = await market.GetTicker((string)sym);
                     Console.WriteLine("Current Price: " + string.Format("${0:#,##0.00########}", ticker.Price));
                     fiatval = acct.Balance * ticker.Price;
                 }

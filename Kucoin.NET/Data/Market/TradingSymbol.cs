@@ -14,7 +14,7 @@ namespace Kucoin.NET.Data.Market
     /// <summary>
     /// Trading symbol
     /// </summary>
-    public struct TradingSymbol : ISymbol
+    public class TradingSymbol : ISymbol
     {
         /// <summary>
         /// Gets the trading pair as an array of strings [base, quote].
@@ -135,7 +135,7 @@ namespace Kucoin.NET.Data.Market
 
         public static explicit operator string(TradingSymbol s)
         {
-            return s.Symbol;
+            return s?.Symbol;
         }
 
         public static explicit operator TradingSymbol(string s)

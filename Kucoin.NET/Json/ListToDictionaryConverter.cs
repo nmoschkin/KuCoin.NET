@@ -7,7 +7,7 @@ using System.Reflection;
 
 namespace Kucoin.NET.Json
 {
-    public class ListToDictionaryConverter<TKey, TValue> : JsonConverter
+    public class ListToDictionaryConverter<TKey, TValue> : JsonConverter where TValue: class
     {
         public string KeyPropertyName { get; private set; }
 

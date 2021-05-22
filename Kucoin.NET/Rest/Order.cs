@@ -164,7 +164,7 @@ namespace Kucoin.NET.Rest
         public async Task<IList<Fill>> ListFills(
             string symbol = null,
             Side? side = null,
-            OrderType type? = null,
+            OrderType? type = null,
             TradeType? tradeType = null,
             DateTime? startAt = null,
             DateTime? endAt = null

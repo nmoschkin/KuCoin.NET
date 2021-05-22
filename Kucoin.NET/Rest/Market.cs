@@ -65,7 +65,7 @@ namespace Kucoin.NET.Rest
         /// </summary>
         /// <param name="symbol"></param>
         /// <returns></returns>
-        public async Task<Ticker> GetTicker(TradingSymbol symbol)
+        public async Task<Ticker> GetTicker(string symbol)
         {
             var param = new Dictionary<string, object>();
 
@@ -74,7 +74,7 @@ namespace Kucoin.NET.Rest
             var jobj = await MakeRequest(HttpMethod.Get, "/api/v1/market/orderbook/level1", 5, false, param);
 
             var obj = jobj.ToObject<Ticker>();
-            obj.Symbol = (string)symbol;
+            obj.Symbol = symbol;
 
             return obj;
         }
@@ -187,7 +187,7 @@ namespace Kucoin.NET.Rest
         /// </summary>
         /// <param name="symbol"></param>
         /// <returns></returns>
-        public async Task<TickerListItem> Get24HourStats(TradingSymbol symbol)
+        public async Task<TickerListItem> Get24HourStats(string symbol)
         {
             var param = new Dictionary<string, object>();
 
@@ -196,7 +196,7 @@ namespace Kucoin.NET.Rest
             var jobj = await MakeRequest(HttpMethod.Get, "/api/v1/market/stats", 5, false, param);
 
             var obj = jobj.ToObject<TickerListItem>();
-            obj.Symbol = (string)symbol;
+            obj.Symbol = symbol;
 
             return obj;
         }
@@ -350,6 +350,11 @@ namespace Kucoin.NET.Rest
             var results = jobj.ToObject<List<MarketCurrency>>();
 
             currencies = results;
+            currencies.Sort((a, b) =>
+            {
+                return string.Compare(a.Currency, b.Currency);
+            });
+
             OnPropertyChanged(nameof(Currencies));
 
             return results;

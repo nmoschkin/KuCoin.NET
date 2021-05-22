@@ -37,7 +37,7 @@ namespace Kucoin.NET.Websockets.Observations
         /// Specifies whether or not the order size is updated for each price in the live book
         /// or only in the preflight book.
         /// </summary>
-        bool LiveOrderSizeUpdates { get; set; }
+        bool UseObservableOrders { get; set; }
 
         /// <summary>
         /// Reset and de-initialize the feed to trigger recalibration.
@@ -48,49 +48,48 @@ namespace Kucoin.NET.Websockets.Observations
     /// <summary>
     /// Level 2 Observation Cache
     /// </summary>
-    public sealed class Level2Observation : ObservableBase, ILevel2OrderBookProvider
+    public class Level2Observation : ObservableBase, ILevel2OrderBookProvider
     {
-        private Thread orgThread;
-        private OrderBook preflightBook;
-        private OrderBook orderBook;
-        private string sym;
-        private int pieces;
-        private bool liveOrderSizeUpdates = true;
-        private bool cal;
-        private bool init;
-        private Level2 parent;
+        protected OrderBook preflightBook;
+        protected OrderBook orderBook;
+        protected string symbol;
+        protected int pieces;
+        protected bool useObservableOrders = true;
+        protected bool calibrated; 
+        protected bool initialized; 
+        protected Level2 connectedFeed;
 
-        private List<Level2Update> calCache = new List<Level2Update>();
-
-        public Level2 Parent => !disposed ? parent : throw new ObjectDisposedException(nameof(Level2Observation));
-
-        private List<Level2Update> Cache => calCache;
-
-        public bool LiveOrderSizeUpdates
-        {
-            get => liveOrderSizeUpdates;
-            set
-            {
-                SetProperty(ref liveOrderSizeUpdates, value);
-            }
-        }
+        protected List<Level2Update> orderBuffer = new List<Level2Update>();
 
         internal Level2Observation(Level2 parent, string symbol, int pieces = 50)
         {
-            orgThread = Thread.CurrentThread;
-            sym = symbol;
+            this.symbol = symbol;
 
-            this.parent = parent;
+            this.connectedFeed = parent;
             this.pieces = pieces;
 
             orderBook = new OrderBook();
         }
 
-        public string Symbol => !disposed ? sym : throw new ObjectDisposedException(nameof(Level2Observation));
+
+        public Level2 ConnectedFeed => !disposed ? connectedFeed : throw new ObjectDisposedException(nameof(Level2Observation));
+
+        public virtual IList<Level2Update> OrderBuffer => orderBuffer;
+
+        public string Symbol => !disposed ? symbol : throw new ObjectDisposedException(nameof(Level2Observation));
+
+        public virtual bool UseObservableOrders
+        {
+            get => useObservableOrders;
+            set
+            {
+                SetProperty(ref useObservableOrders, value);
+            }
+        }
 
         void ISymbol.SetSymbol(string symbol)
         {
-            SetProperty(ref sym, symbol);
+            base.SetProperty(ref this.symbol, symbol);
         }
 
         /// <summary>
@@ -134,11 +133,11 @@ namespace Kucoin.NET.Websockets.Observations
         /// </summary>
         public bool Initialized
         {
-            get => !disposed ? init : throw new ObjectDisposedException(nameof(Level2Observation));
+            get => !disposed ? initialized : throw new ObjectDisposedException(nameof(Level2Observation));
             internal set
             {
                 if (disposed) throw new ObjectDisposedException(nameof(Level2Observation));
-                SetProperty(ref init, value);
+                SetProperty(ref initialized, value);
             }
         }
 
@@ -147,11 +146,11 @@ namespace Kucoin.NET.Websockets.Observations
         /// </summary>
         public bool Calibrated
         {
-            get => !disposed ? cal : throw new ObjectDisposedException(nameof(Level2Observation));
-            private set
+            get => !disposed ? calibrated : throw new ObjectDisposedException(nameof(Level2Observation));
+            protected set
             {
                 if (disposed) throw new ObjectDisposedException(nameof(Level2Observation));
-                SetProperty(ref cal, value);
+                SetProperty(ref calibrated, value);
             }
         }
 
@@ -160,7 +159,7 @@ namespace Kucoin.NET.Websockets.Observations
         /// </summary>
         /// <param name="pieces"></param>
         /// <param name="price"></param>
-        private void RemovePiece(IList<OrderUnit> pieces, decimal price)
+        protected void RemovePiece(IList<OrderUnit> pieces, decimal price)
         {
             int i, c = pieces.Count;
 
@@ -179,7 +178,7 @@ namespace Kucoin.NET.Websockets.Observations
         /// </summary>
         /// <param name="changes">The changes to sequence.</param>
         /// <param name="pieces">The collection to change (either an ask or a bid collection)</param>
-        private void SequencePieces(IList<OrderUnit> changes, ObservableOrderUnits pieces)
+        protected void SequencePieces(IList<OrderUnit> changes, ObservableOrderUnits pieces)
         {
             foreach (var change in changes)
             {
@@ -212,7 +211,7 @@ namespace Kucoin.NET.Websockets.Observations
         /// </summary>
         public void Reset()
         {
-            calCache = new List<Level2Update>();
+            orderBuffer = new List<Level2Update>();
 
             Initialized = false;
             Calibrated = false;
@@ -223,14 +222,14 @@ namespace Kucoin.NET.Websockets.Observations
         /// </summary>
         public void Calibrate()
         {
-            cal = true;
+            calibrated = true;
 
-            foreach (var q in calCache)
+            foreach (var q in orderBuffer)
             {
                 if (q.SequenceStart > preflightBook.Sequence) OnNext(q);
             }
 
-            calCache.Clear();
+            orderBuffer.Clear();
 
             OnPropertyChanged(nameof(Calibrated));
         }
@@ -247,9 +246,9 @@ namespace Kucoin.NET.Websockets.Observations
             {
                 try
                 {
-                    if (!cal)
+                    if (!calibrated)
                     {
-                        calCache.Add(value);
+                        orderBuffer.Add(value);
                         return;
                     }
 
@@ -272,7 +271,7 @@ namespace Kucoin.NET.Websockets.Observations
         /// <param name="dest">Destination collection.</param>
         /// <param name="pieces">The number of pieces to copy.</param>
         /// <param name="clone">True to clone the observable objects so that their changes do not show up in the live feed.</param>
-        private void CopyTo(IList<OrderUnit> src, IList<OrderUnit> dest, int pieces, bool clone = false)
+        protected void CopyTo(IList<OrderUnit> src, IList<OrderUnit> dest, int pieces, bool clone = false)
         {
             int i, c = pieces < src.Count ? pieces : src.Count;
             int x = dest.Count;
@@ -346,13 +345,13 @@ namespace Kucoin.NET.Websockets.Observations
             });
         }
 
-        private void CopyBook()
+        protected void CopyBook()
         {
-            CopyTo(preflightBook.Asks, orderBook.Asks, pieces, !liveOrderSizeUpdates);
-            CopyTo(preflightBook.Bids, orderBook.Bids, pieces, !liveOrderSizeUpdates);
+            CopyTo(preflightBook.Asks, orderBook.Asks, pieces, !useObservableOrders);
+            CopyTo(preflightBook.Bids, orderBook.Bids, pieces, !useObservableOrders);
         }
 
-        public override string ToString() => $"{sym} : {pieces}";
+        public override string ToString() => $"{symbol} : {pieces}";
 
 
         #region IDisposable pattern
@@ -367,7 +366,7 @@ namespace Kucoin.NET.Websockets.Observations
 
         public bool disposed;
 
-        private void Dispose(bool disposing)
+        protected void Dispose(bool disposing)
         {
             if (disposed) return;
 
@@ -375,21 +374,21 @@ namespace Kucoin.NET.Websockets.Observations
 
             if (disposing)
             {
-                if (parent != null)
+                if (connectedFeed != null)
                 {
-                    parent.RemoveSymbol(sym).Wait();
+                    connectedFeed.RemoveSymbol(symbol).Wait();
                 }
             }
 
             lock (preflightBook)
             {
-                parent = null;
+                connectedFeed = null;
                 preflightBook = null;
                 orderBook = null;
                 pieces = 0;
-                sym = null;
-                cal = false;
-                init = false;
+                symbol = null;
+                calibrated = false;
+                initialized = false;
             }
         }
 

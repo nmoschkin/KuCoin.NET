@@ -55,7 +55,7 @@ namespace KuCoinApp
             {
                 return ((IList<TradingSymbol>)market.Symbols).Where((d) =>
                 {
-                    return d.QuoteCurrency == c.Currency;
+                    return d.BaseCurrency == c.Currency;
                 })?.FirstOrDefault() != null;
             }).ToList();
 
