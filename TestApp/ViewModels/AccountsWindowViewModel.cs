@@ -15,17 +15,22 @@ using System.Windows.Input;
 using Kucoin.NET.Websockets.Public;
 using System.Security.Authentication;
 using Kucoin.NET.Websockets;
+using Kucoin.NET.Websockets.Private;
+using Kucoin.NET.Data.Websockets.User;
 
 namespace KuCoinApp.ViewModels
 {
-    public class AccountsWindowViewModel : ObservableBase, IObserver<Ticker>, IDisposable
+    public class AccountsWindowViewModel : ObservableBase, IObserver<Ticker>, IObserver<BalanceNotice>, IDisposable
     {
         private User user;
         private ICredentialsProvider cred;
         private ObservableCollection<AccountItemViewModel> accounts;
 
         private TickerFeed ticker;
-        private GranularObservation<Ticker> feedContext;
+        private BalanceNoticeFeed balances; 
+
+        private SymbolObservation<Ticker> feedContext;
+        private FeedObservation<BalanceNotice> balanceContext;
 
         public event EventHandler<EventArgs> AccountsRefreshed;
 
@@ -152,12 +157,48 @@ namespace KuCoinApp.ViewModels
             });
 
         }
+        private void AddAccount(Account acct, bool addTicker = false)
+        {
+            var pair = $"{acct.Currency}-{QuoteCurrency.Currency.Currency}";
+            var acctvm = new AccountItemViewModel(acct);
+
+            accounts.Add(acctvm);
+
+            acctvm.UpdateQuoteAmount(1);
+
+            if (acct.Type == AccountType.Main)
+            {
+                mainAccounts.Add(acctvm);
+                mainDict.Add(pair, acctvm);
+            }
+            else if (acct.Type == AccountType.Trading)
+            {
+                tradingAccounts.Add(acctvm);
+                tradingDict.Add(pair, acctvm);
+            }
+            if (acct.Type == AccountType.Margin)
+            {
+                marginAccounts.Add(acctvm);
+                marginDict.Add(pair, acctvm);
+            }
+            if (acct.Type == AccountType.PoolX)
+            {
+                poolxAccounts.Add(acctvm);
+                poolxDict.Add(pair, acctvm);
+            }
+
+            if (addTicker)
+            {
+                _ = ticker.AddSymbol(pair);
+            }
+        }
 
         public async Task UpdateAccounts()
         {
             var accts = await user.GetAccountList();
 
             feedContext?.Dispose();
+            balanceContext?.Dispose();
             ticker?.Dispose();
 
             var pairs = new List<string>();
@@ -177,59 +218,37 @@ namespace KuCoinApp.ViewModels
                 PoolXAccounts = new ObservableCollection<AccountItemViewModel>();
                 Accounts = new ObservableCollection<AccountItemViewModel>();
 
-
                 foreach (var acct in accts)
                 {
                     var pair = $"{acct.Currency}-{QuoteCurrency.Currency.Currency}";
-                    var acctvm = new AccountItemViewModel(acct);
 
                     if (acct.Balance != 0M)
                     {
                         if (!pairs.Contains(pair)) pairs.Add(pair);
                     }
 
-                    accounts.Add(acctvm);
-
                     if (!newTypes.Contains(acct.TypeDescription))
                     {
                         newTypes.Add(acct.TypeDescription);
                     }
-                    
-                    acctvm.UpdateQuoteAmount(1);
 
-                    if (acct.Type == AccountType.Main)
-                    {
-                        mainAccounts.Add(acctvm);
-                        mainDict.Add(pair, acctvm);
-                    }
-                    else if (acct.Type == AccountType.Trading)
-                    {
-                        tradingAccounts.Add(acctvm);
-                        tradingDict.Add(pair, acctvm);
-                    }
-                    if (acct.Type == AccountType.Margin)
-                    {
-                        marginAccounts.Add(acctvm);
-                        marginDict.Add(pair, acctvm);
-                    }
-                    if (acct.Type == AccountType.PoolX)
-                    {
-                        poolxAccounts.Add(acctvm);
-                        poolxDict.Add(pair, acctvm);
-                    }
-
+                    AddAccount(acct);
                 }
-                AccountTypes = newTypes;
 
+                AccountTypes = newTypes;
                 AccountsRefreshed?.Invoke(this, new EventArgs());
 
             });
 
+            balances = new BalanceNoticeFeed(cred);
+            await balances.Connect(true);
 
             ticker = new TickerFeed();
-            await ticker.Connect();
+            await ticker.MultiplexInit(balances);
 
-            feedContext = (GranularObservation<Ticker>)ticker.Subscribe(this);
+            balanceContext = (FeedObservation<BalanceNotice>)balances.Subscribe(this);
+
+            feedContext = (SymbolObservation<Ticker>)ticker.Subscribe(this);
             feedContext.ActiveSymbols = pairs;
 
             foreach (var pair in pairs)
@@ -269,7 +288,96 @@ namespace KuCoinApp.ViewModels
         Dictionary<string, decimal> lastPrices = new Dictionary<string, decimal>();
         DateTime updateTimeout = DateTime.Now;
 
-        public void OnNext(Ticker value)
+        void IObserver<BalanceNotice>.OnNext(BalanceNotice value)
+        {
+            var t = value.RelationEvent & RelationEventType.Accounts;
+
+            switch(t)
+            {
+                case RelationEventType.Main:
+
+                    foreach (var acct in mainAccounts)
+                    {
+                        if (acct.Currency.Currency.Currency == value.Currency)
+                        {
+                            lock(lockObj)
+                            {
+                                acct.Available = value.Available;
+                                acct.Balance = value.Total;
+                                acct.Holds = value.Hold;
+
+                                return;
+                            }
+                        }
+                    }
+
+                    Task.Run(async () =>
+                    {
+                        var newacct = await user.GetAccountList(value.Currency, AccountType.Main);
+                        lock (lockObj) AddAccount(newacct.FirstOrDefault(), true);
+                    });
+
+                    break;
+
+                case RelationEventType.Trade:
+
+                    foreach (var acct in tradingAccounts)
+                    {
+                        if (acct.Currency.Currency.Currency == value.Currency)
+                        {
+                            lock (lockObj)
+                            {
+                                acct.Available = value.Available;
+                                acct.Balance = value.Total;
+                                acct.Holds = value.Hold;
+
+                                return;
+                            }
+                        }
+                    }
+
+                    Task.Run(async () =>
+                    {
+                        var newacct = await user.GetAccountList(value.Currency, AccountType.Trading);
+                        
+                        lock(lockObj) AddAccount(newacct.FirstOrDefault(), true);
+                    });
+
+                    break;
+
+                case RelationEventType.Margin:
+
+
+                    foreach (var acct in marginAccounts)
+                    {
+                        if (acct.Currency.Currency.Currency == value.Currency)
+                        {
+                            lock(lockObj)
+                            {
+                                acct.Available = value.Available;
+                                acct.Balance = value.Total;
+                                acct.Holds = value.Hold;
+
+                                return;
+                            }
+                        }
+                    }
+
+                    Task.Run(async () =>
+                    {
+                        var newacct = await user.GetAccountList(value.Currency, AccountType.Margin);
+                        lock(lockObj) AddAccount(newacct.FirstOrDefault(), true);
+                    });
+
+                    break;
+
+                default:
+                    _ = UpdateAccounts();
+                    return;
+            }
+        }
+
+        void IObserver<Ticker>.OnNext(Ticker value)
         {
             lastPrices[value.Symbol] = value.Price;
 

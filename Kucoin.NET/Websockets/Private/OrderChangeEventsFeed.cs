@@ -50,11 +50,11 @@ namespace Kucoin.NET.Websockets.Private
         public event EventHandler<OrderChangeEventArgs> Update;
 
 
-        public OrderChangeEventsFeed(ICredentialsProvider credProvider, bool isSandbox) : base(credProvider, isSandbox)
+        public OrderChangeEventsFeed(ICredentialsProvider credProvider, bool isSandbox = false) : base(credProvider, isSandbox)
         {
         }
 
-        public OrderChangeEventsFeed(string key, string secret, string passphrase, bool isSandbox) : base(key, secret, passphrase, isSandbox)
+        public OrderChangeEventsFeed(string key, string secret, string passphrase, bool isSandbox = false) : base(key, secret, passphrase, isSandbox)
         {
         }
         protected override async Task PushNext(OrderChange obj)
@@ -67,7 +67,6 @@ namespace Kucoin.NET.Websockets.Private
             switch (ch.Type)
             {
                 case OrderEventType.Canceled:
-
                     Canceled?.Invoke(this, e);
                     break;
 
@@ -95,7 +94,7 @@ namespace Kucoin.NET.Websockets.Private
             {
                 if (msg.Subject == Subject)
                 {
-                    var change = msg.Data["data"].ToObject<OrderChange>();
+                    var change = msg.Data.ToObject<OrderChange>();
                     await PushNext(change);
                 }
             }

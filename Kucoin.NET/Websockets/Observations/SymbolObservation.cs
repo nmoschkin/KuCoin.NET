@@ -7,13 +7,13 @@ using System.Text;
 namespace Kucoin.NET.Websockets
 {
     /// <summary>
-    /// Provides granular observation filtering based on trading symbols.
+    /// Provides symbol-level observation filtering based on trading symbols.
     /// </summary>
     /// <typeparam name="T">The type of the object to observe.</typeparam>
     /// <remarks>
     /// The active symbols can be changed at any time and will be instantly reflected on the next <see cref="IObserver{T}.OnNext(T)"/> call.
     /// </remarks>
-    public class GranularObservation<T> : FeedObservation<T> where T: class
+    public class SymbolObservation<T> : FeedObservation<T> where T: class
     {
         private List<string> activeSymbols;
 
@@ -38,7 +38,7 @@ namespace Kucoin.NET.Websockets
         /// <param name="symbols">The symbols that are active for the specified observer.</param>
         /// <param name="feed">The origin feed.</param>
         /// <param name="observer">The observer.</param>
-        public GranularObservation(IEnumerable<string> symbols, KucoinBaseWebsocketFeed<T> feed, IObserver<T> observer) : base(feed, observer)
+        public SymbolObservation(IEnumerable<string> symbols, KucoinBaseWebsocketFeed<T> feed, IObserver<T> observer) : base(feed, observer)
         {
             activeSymbols = new List<string>(symbols);
         }
@@ -48,7 +48,7 @@ namespace Kucoin.NET.Websockets
         /// </summary>
         /// <param name="feed">The origin feed.</param>
         /// <param name="observer">The observer.</param>
-        public GranularObservation(KucoinBaseWebsocketFeed<T> feed, IObserver<T> observer) : base(feed, observer)
+        public SymbolObservation(KucoinBaseWebsocketFeed<T> feed, IObserver<T> observer) : base(feed, observer)
         {
             activeSymbols = new List<string>();
         }

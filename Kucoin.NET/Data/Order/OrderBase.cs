@@ -14,6 +14,7 @@ namespace Kucoin.NET.Data.Order
     /// </summary>
     public abstract class OrderBase : JsonDictBase
     {
+        protected string remark;
 
         /// <summary>
         /// Unique order id created by users to identify their orders, e.g. UUID.
@@ -43,7 +44,21 @@ namespace Kucoin.NET.Data.Order
         /// [Optional] remark for the order, length cannot exceed 100 utf8 characters
         /// </summary>
         [JsonProperty("remark")]
-        public string Remark { get; set; }
+        public virtual string Remark
+        {
+            get => remark;
+            set
+            {
+                if (value?.Length > 100)
+                {
+                    throw new InvalidOperationException("Remark cannot exceed 100 characters in length.");
+                }
+                else
+                {
+                    remark = value;
+                }
+            }
+        }
 
         /// <summary>
         /// [Optional] self trade prevention , CN, CO, CB or DC

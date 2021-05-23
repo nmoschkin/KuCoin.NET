@@ -29,4 +29,20 @@ namespace Kucoin.NET.Data.Order
         [JsonProperty("funds")]
         public decimal? Funds { get; set; }
     }
+
+    public class MarketStopOrder : MarketOrder
+    {
+        /// <summary>
+        ///  stop type
+        /// </summary>
+        [JsonProperty("stop")]
+        public StopType Stop { get; set; }
+
+        /// <summary>
+        ///  stop price
+        /// </summary>
+        [JsonProperty("stopPrice")]
+        public decimal StopPrice { get; set; }
+
+    }
 }

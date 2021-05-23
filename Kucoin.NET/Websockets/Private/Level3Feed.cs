@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 
 namespace Kucoin.NET.Websockets.Private
 {
-    public class Level3Feed : GranularFeedBase<Level2Update>
+    public class Level3Feed : SymbolTopicFeedBase<Level2Update>
     {
         public override bool IsPublic => throw new NotImplementedException();
 

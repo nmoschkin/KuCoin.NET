@@ -277,7 +277,7 @@ namespace Kucoin.NET.Websockets
         /// </remarks>
         public virtual void Disconnect()
         {
-            socket.Dispose();
+            socket?.Dispose();
             socket = null;
             token = null;
 
@@ -366,13 +366,13 @@ namespace Kucoin.NET.Websockets
                 // observer notification pump
                 msgPumpThread = Task.Run(() => MessagePumpThread(), ctsReceive.Token);
 
-                OnPropertyChanged(nameof(Connected));
-                FeedConnected?.Invoke(this, new FeedConnectedEventArgs(connectId, server, token.Data.Token));
-
                 if (initAsMultiplexParent)
                 {
                     await MultiplexInit(tunnelId);
                 }
+
+                OnPropertyChanged(nameof(Connected));
+                OnConnected();
 
                 return true;
             }
@@ -380,6 +380,11 @@ namespace Kucoin.NET.Websockets
             {
                 return false;
             }
+        }
+
+        protected virtual void OnConnected()
+        {
+            FeedConnected?.Invoke(this, new FeedConnectedEventArgs(connectId, server, token.Data.Token));
         }
 
         #endregion
@@ -883,7 +888,7 @@ namespace Kucoin.NET.Websockets
         /// <param name="disposing">True if being called from the <see cref="Dispose"/> method, false if being called by the destructor.</param>
         protected virtual void Dispose(bool disposing)
         {
-            if (disposed) throw new ObjectDisposedException(nameof(KucoinBaseWebsocketFeed));
+            if (disposed) return; // throw new ObjectDisposedException(nameof(KucoinBaseWebsocketFeed));
             
             Disconnect();
 
@@ -997,6 +1002,20 @@ namespace Kucoin.NET.Websockets
 
         }
 
+        internal virtual void RemoveObservation(FeedObservation<T> observation)
+        {
+            observation.Observer.OnCompleted();
+
+            lock(observers)
+            {
+                if (observers.Contains(observation))
+                {
+                    observers.Remove(observation);
+                }
+            }
+
+        }
+
         /// <summary>
         /// Push the object to the observers.
         /// </summary>
@@ -1005,11 +1024,14 @@ namespace Kucoin.NET.Websockets
         {
             await Task.Run(() =>
             {
+                List<Action> actions = new List<Action>();
 
                 foreach (var obs in observers)
                 {
-                    obs.Observer.OnNext(obj);
+                    actions.Add(() => obs.Observer.OnNext(obj));
                 }
+
+                Parallel.Invoke(actions.ToArray());
 
                 if (FeedDataReceived != null)
                 {

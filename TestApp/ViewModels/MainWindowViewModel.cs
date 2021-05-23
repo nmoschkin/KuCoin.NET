@@ -28,7 +28,7 @@ namespace KuCoinApp
 
         private Accounts accountWnd;
 
-        private Level2Depth50 level2Feed50;
+        //private Level2Depth50 level2Feed50;
 
         private TickerFeed tickerFeed;
 
@@ -248,15 +248,17 @@ namespace KuCoinApp
                 if (SetProperty(ref symbol, value))
                 {
                     UpdateSymbol((string)ot, (string)value);
-                    
+
+                    var tp = symbol.TradingPair;
+
                     foreach (var curr in currencies)
                     {
-                        if (curr.Currency.Currency == symbol.TradingPair[0])
+                        if (curr.Currency.Currency == tp[0])
                         {
                             if (!curr.ImageLoaded) _ = curr.LoadImage();
                             Currency = curr;
                         }
-                        else if (curr.Currency.Currency == symbol.TradingPair[1])
+                        else if (curr.Currency.Currency == tp[1])
                         {
                             if (!curr.ImageLoaded) _ = curr.LoadImage();
                             QuoteCurrency = curr;
@@ -356,8 +358,6 @@ namespace KuCoinApp
             {
                 RefreshData().ContinueWith(async (t2) =>
                 {
-
-
                     level2Feed?.AddSymbol(newSymbol, 50).ContinueWith((t) =>
                     {
                         App.Current?.Dispatcher?.Invoke(() =>
@@ -628,6 +628,7 @@ namespace KuCoinApp
                 if (accountWnd == null || !accountWnd.IsLoaded)
                 {
                     accountWnd = new Accounts(cred);
+                    accountWnd.Closed += AccountWnd_Closed;
                 }
 
                 accountWnd.Show();
@@ -648,6 +649,14 @@ namespace KuCoinApp
             {
                 await Initialize();
             });
+        }
+
+        private void AccountWnd_Closed(object sender, EventArgs e)
+        {
+            accountWnd.Closed -= AccountWnd_Closed;
+            accountWnd = null;
+
+            GC.Collect(0);
         }
 
         protected async Task Initialize()
@@ -690,8 +699,8 @@ namespace KuCoinApp
                         //level2Feed50 = new Level2Depth50(cred);
 
                         level2Feed.UpdateInterval = 50;
-
                         await level2Feed.Connect();
+
                         //await level2Feed50.Connect();
 
                     }
@@ -707,11 +716,6 @@ namespace KuCoinApp
 
                             return;
                         }
-                    }
-
-                    if (!await LoginUser())
-                    {
-                        EditCredentials();
                     }
 
                 });

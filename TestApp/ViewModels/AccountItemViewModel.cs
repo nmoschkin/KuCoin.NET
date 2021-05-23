@@ -22,6 +22,7 @@ namespace KuCoinApp.ViewModels
         private CurrencyViewModel currency;
 
         private decimal quoteAmount;
+        private decimal lastQuotePrice = 1.0M;
 
         public Account Source
         {
@@ -72,9 +73,41 @@ namespace KuCoinApp.ViewModels
 
         public string CurrencyFullName => currency?.Currency?.FullName;
 
-        public decimal Balance => source?.Balance ?? 0M;
-        public decimal Holds => source?.Holds ?? 0M;
-        public decimal Available => source?.Available ?? 0M;
+        public decimal Balance
+        {
+            get => source?.Balance ?? 0M;
+            set
+            {
+                if (source == null || source.Balance == value) return;
+
+                source.Balance = value;
+                OnPropertyChanged(nameof(Balance));
+                QuoteAmount = value * lastQuotePrice;
+            }
+        }
+
+        public decimal Holds
+        {
+            get => source?.Holds ?? 0M;
+            set
+            {
+                if (source == null || source.Holds == value) return;
+
+                source.Holds = value;
+                OnPropertyChanged(nameof(Holds));
+            }
+        }
+        public decimal Available
+        {
+            get => source?.Available ?? 0M;
+            set
+            {
+                if (source == null || source.Available == value) return;
+
+                source.Available = value;
+                OnPropertyChanged(nameof(Available));
+            }
+        }
 
         public decimal QuoteAmount
         {
@@ -85,9 +118,10 @@ namespace KuCoinApp.ViewModels
             }
         }
 
-        public void UpdateQuoteAmount(decimal quoteAmount)
+        public void UpdateQuoteAmount(decimal quotePrice)
         {
-            QuoteAmount = Balance * quoteAmount;
+            lastQuotePrice = quotePrice;
+            QuoteAmount = Balance * quotePrice;
         }
 
         public async Task UpdateQuoteAmount(string quoteCurrency)

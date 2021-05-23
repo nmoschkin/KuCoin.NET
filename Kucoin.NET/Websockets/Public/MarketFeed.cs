@@ -89,7 +89,7 @@ namespace Kucoin.NET.Websockets.Public
                     if (obs.Observer == observer) return obs;
                 }
 
-                var obsNew = new GranularObservation<SnapshotItem>(this, observer);
+                var obsNew = new SymbolObservation<SnapshotItem>(this, observer);
                 observers.Add(obsNew);
 
                 return obsNew;
@@ -112,7 +112,7 @@ namespace Kucoin.NET.Websockets.Public
                     if (obs.Observer == observer) return obs;
                 }
 
-                var obsNew = new GranularObservation<SnapshotItem>(symbols, this, observer);
+                var obsNew = new SymbolObservation<SnapshotItem>(symbols, this, observer);
                 observers.Add(obsNew);
 
                 return obsNew;
@@ -127,7 +127,7 @@ namespace Kucoin.NET.Websockets.Public
         {
             await Task.Run(() =>
             {
-                foreach (GranularObservation<SnapshotItem> obs in observers)
+                foreach (SymbolObservation<SnapshotItem> obs in observers)
                 {
                     if (obs.ActiveSymbols.Count == 0 || obs.ActiveSymbols.Contains(obj.Symbol))
                     {

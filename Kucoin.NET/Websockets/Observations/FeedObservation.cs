@@ -36,11 +36,7 @@ namespace Kucoin.NET.Websockets
         {
             if (disposed) return; // throw new ObjectDisposedException(nameof(FeedObservation<T>));
 
-            observer.OnCompleted();
-            if (feed?.observers.Contains(this) ?? false)
-            {
-                feed?.observers.Remove(this);
-            }
+            feed.RemoveObservation(this);
 
             disposed = true;
         }

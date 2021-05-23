@@ -16,7 +16,7 @@ namespace Kucoin.NET.Websockets.Private
     /// <summary>
     /// Level 2 5 best asks/bids.
     /// </summary>
-    public class Level2Depth5 : GranularFeedBase<StaticMarketDepthUpdate>
+    public class Level2Depth5 : SymbolTopicFeedBase<StaticMarketDepthUpdate>
     {               
         public override bool IsPublic => false;
 

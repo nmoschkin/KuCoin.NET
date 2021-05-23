@@ -11,7 +11,7 @@ namespace Kucoin.NET.Websockets.Public
     /// <summary>
     /// Implements the symbol snapshot feed (Level 2).
     /// </summary>
-    public class SnapshotFeed : GranularFeedBase<SnapshotItem>
+    public class SnapshotFeed : SymbolTopicFeedBase<SnapshotItem>
     {
         private List<string> activeSnapshots = new List<string>();
 

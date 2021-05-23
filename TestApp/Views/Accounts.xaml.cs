@@ -45,8 +45,10 @@ namespace KuCoinApp.Views
 
         protected override void OnClosing(CancelEventArgs e)
         {
-            base.OnClosing(e);
             vm?.Dispose();
+            vm = null;
+
+            base.OnClosing(e);
         }
 
         public Accounts(ICredentialsProvider credProvider)

@@ -9,7 +9,7 @@ namespace Kucoin.NET.Websockets.Public
     /// <summary>
     /// Market symbol price ticker feed.
     /// </summary>
-    public class TickerFeed : GranularFeedBase<Ticker>
+    public class TickerFeed : SymbolTopicFeedBase<Ticker>
     {
         public override bool IsPublic => true;
 

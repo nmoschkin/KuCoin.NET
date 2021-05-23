@@ -10,9 +10,9 @@ using System.Threading.Tasks;
 namespace Kucoin.NET.Websockets
 {
     /// <summary>
-    /// Base class for symbol-granulated live feeds.
+    /// Base class for symbol-level live feeds.
     /// </summary>
-    public abstract class GranularFeedBase<T> : KucoinBaseWebsocketFeed<T> where T: class, ISymbol
+    public abstract class SymbolTopicFeedBase<T> : KucoinBaseWebsocketFeed<T> where T: class, ISymbol
     {
         protected List<string> activeSymbols = new List<string>();
 
@@ -20,7 +20,7 @@ namespace Kucoin.NET.Websockets
         
         protected string topic;
 
-        public GranularFeedBase(
+        public SymbolTopicFeedBase(
           string key,
           string secret,
           string passphrase,
@@ -29,7 +29,7 @@ namespace Kucoin.NET.Websockets
         {
         }
 
-        public GranularFeedBase(ICredentialsProvider credProvider, bool isSandbox = false) : base(credProvider, isSandbox)
+        public SymbolTopicFeedBase(ICredentialsProvider credProvider, bool isSandbox = false) : base(credProvider, isSandbox)
         {
         }
 
@@ -77,7 +77,7 @@ namespace Kucoin.NET.Websockets
             if (subject == null) subject = Subject;
             if (this.topic == null) this.topic = Topic;
 
-            if (disposed) throw new ObjectDisposedException(nameof(GranularFeedBase<T>));
+            if (disposed) throw new ObjectDisposedException(nameof(SymbolTopicFeedBase<T>));
             if (!Connected)
             {
                 await Connect();
@@ -127,7 +127,7 @@ namespace Kucoin.NET.Websockets
         /// <returns></returns>
         public virtual async Task RemoveSymbols(IEnumerable<string> symbols)
         {
-            if (disposed) throw new ObjectDisposedException(nameof(GranularFeedBase<T>));
+            if (disposed) throw new ObjectDisposedException(nameof(SymbolTopicFeedBase<T>));
             if (!Connected) return;
 
             var sb = new StringBuilder();
@@ -180,7 +180,7 @@ namespace Kucoin.NET.Websockets
                     if (obs.Observer == observer) return obs;
                 }
 
-                var obsNew = new GranularObservation<T>(this, observer);
+                var obsNew = new SymbolObservation<T>(this, observer);
                 observers.Add(obsNew);
 
                 return obsNew;
@@ -203,7 +203,7 @@ namespace Kucoin.NET.Websockets
                     if (obs.Observer == observer) return obs;
                 }
 
-                var obsNew = new GranularObservation<T>(symbols, this, observer);
+                var obsNew = new SymbolObservation<T>(symbols, this, observer);
                 observers.Add(obsNew);
 
                 return obsNew;
@@ -220,7 +220,7 @@ namespace Kucoin.NET.Websockets
 
             await Task.Run(() =>
             {
-                foreach (GranularObservation<T> obs in observers)
+                foreach (SymbolObservation<T> obs in observers)
                 {
                     if (obs.ActiveSymbols.Count == 0 || obs.ActiveSymbols.Contains(obj.Symbol))
                     {
@@ -241,7 +241,7 @@ namespace Kucoin.NET.Websockets
         /// <typeparam name="F">The feed type to create</typeparam>
         /// <param name="inheritSymbols">True to initialize the child with all the active symbols of the current feed.</param>
         /// <returns></returns>
-        public virtual async Task<F> CreateMultiplexedChild<F, G>(bool inheritSymbols) where F : GranularFeedBase<G>, new() where G: class, ISymbol
+        public virtual async Task<F> CreateMultiplexedChild<F, G>(bool inheritSymbols) where F : SymbolTopicFeedBase<G>, new() where G: class, ISymbol
         {
             if (tunnelId != null && !isMultiplexParent)
             {

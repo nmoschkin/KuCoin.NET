@@ -67,4 +67,22 @@ namespace Kucoin.NET.Data.Order
         public decimal? VisibleSize { get; set; }
 
     }
+
+    public class LimitStopOrder : LimitOrder
+    {
+        /// <summary>
+        ///  stop type
+        /// </summary>
+        [JsonProperty("stop")]
+        public StopType Stop { get; set; }
+
+        /// <summary>
+        ///  stop price
+        /// </summary>
+        [JsonProperty("stopPrice")]
+        public decimal StopPrice { get; set; }
+    
+    }
+
+
 }
