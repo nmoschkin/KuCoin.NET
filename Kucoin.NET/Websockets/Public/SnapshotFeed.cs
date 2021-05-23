@@ -13,8 +13,6 @@ namespace Kucoin.NET.Websockets.Public
     /// </summary>
     public class SnapshotFeed : SymbolTopicFeedBase<SnapshotItem>
     {
-        private List<string> activeSnapshots = new List<string>();
-
         /// <summary>
         /// Instantiate a new symbol snapshot feed.
         /// </summary>

@@ -35,7 +35,7 @@ namespace Kucoin.NET.Websockets.Public
                 {
                     var i = msg.Topic.IndexOf(":");
                     // TO DO: Rework data for SnapshotListItem
-                    var marketItem = msg.Data["data"].ToObject<SnapshotItem>();
+                    var marketItem = msg.Data.ToObject<SnapshotItem>();
 
                     if (i != -1)
                     {

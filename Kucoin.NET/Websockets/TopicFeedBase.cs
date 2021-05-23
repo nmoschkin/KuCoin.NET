@@ -10,7 +10,11 @@ namespace Kucoin.NET.Websockets
 {
     public abstract class TopicFeedBase<T> : KucoinBaseWebsocketFeed<T> where T: class
     {
-        protected bool feedStarted;
+        protected bool feedStarted = false;
+
+        protected object lockObj = new object();
+
+        protected bool autoStartStop = true;
 
         public TopicFeedBase(
         string key,
@@ -25,6 +29,27 @@ namespace Kucoin.NET.Websockets
         {
         }
 
+        protected override async Task HandleMessage(FeedMessage msg)
+        {
+            if (msg.Type == "message")
+            {
+                if (msg.Subject == Subject)
+                {
+                    var obj = msg.Data.ToObject<T>();
+                    await PushNext(obj);
+                }
+            }
+        }
+
+        public virtual bool AutoStartStop
+        {
+            get => autoStartStop;
+            set 
+            {
+                SetProperty(ref autoStartStop, value);
+            }
+        }
+
         public virtual bool FeedStarted
         {
             get => feedStarted;
@@ -36,6 +61,12 @@ namespace Kucoin.NET.Websockets
 
         public virtual async Task StartFeed()
         {
+            lock(lockObj)
+            {
+                if (feedStarted) return;
+                feedStarted = true;
+            }
+
             if (disposed) throw new ObjectDisposedException(nameof(TopicFeedBase<T>));
             if (!Connected)
             {
@@ -57,6 +88,12 @@ namespace Kucoin.NET.Websockets
 
         public virtual async Task StopFeed()
         {
+            lock(lockObj)
+            {
+                if (!feedStarted) return;
+                feedStarted = false;
+            }
+
             if (disposed) throw new ObjectDisposedException(nameof(TopicFeedBase<T>));
             if (!Connected) return;
 
@@ -76,18 +113,21 @@ namespace Kucoin.NET.Websockets
         internal override void RemoveObservation(FeedObservation<T> observation)
         {
             base.RemoveObservation(observation);
-            if (observers.Count == 0)
+            if (autoStartStop && observers.Count == 0)
             {
-                _ = StopFeed();
+                StopFeed().Wait();
             }
         }
 
         public override IDisposable Subscribe(IObserver<T> observer)
         {
+            if (autoStartStop && !feedStarted)
+            {
+                StartFeed().Wait();
+            }
+        
             return base.Subscribe(observer);
         }
-
-
 
     }
 }

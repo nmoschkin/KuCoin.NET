@@ -13,7 +13,7 @@ namespace Kucoin.NET.Websockets.Private
     /// <summary>
     /// Monitors the private order changed events feed.
     /// </summary>
-    public class OrderChangeEventsFeed : KucoinBaseWebsocketFeed<OrderChange>
+    public class OrderChangeEventsFeed : TopicFeedBase<OrderChange>
     {
         public override bool IsPublic => false;
 

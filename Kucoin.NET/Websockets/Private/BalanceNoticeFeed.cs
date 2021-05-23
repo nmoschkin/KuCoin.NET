@@ -2,6 +2,8 @@
 using Kucoin.NET.Data.Websockets;
 using Kucoin.NET.Data.Websockets.User;
 
+using Newtonsoft.Json;
+
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -9,7 +11,7 @@ using System.Threading.Tasks;
 
 namespace Kucoin.NET.Websockets.Private
 {
-    public class BalanceNoticeFeed : KucoinBaseWebsocketFeed<BalanceNotice>
+    public class BalanceNoticeFeed : TopicFeedBase<BalanceNotice>
     {
 
         public event EventHandler<BalanceNoticeEventArgs> BalanceNotification;
@@ -28,21 +30,12 @@ namespace Kucoin.NET.Websockets.Private
         {
         }
 
-        protected override async Task HandleMessage(FeedMessage msg)
-        {
-            if (msg.Subject == Subject)
-            {
-                var obj = msg.Data.ToObject<BalanceNotice>();
-                await PushNext(obj);
-            }
-        }
-
         protected override async Task PushNext(BalanceNotice obj)
         {
             var bn = obj.Clone();
 
+            _ = Task.Run(() => BalanceNotification?.Invoke(this, new BalanceNoticeEventArgs(bn)));
             await base.PushNext(obj);
-            BalanceNotification?.Invoke(this, new BalanceNoticeEventArgs(bn));
         }
 
     }

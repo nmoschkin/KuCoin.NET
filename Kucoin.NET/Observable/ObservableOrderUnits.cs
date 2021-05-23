@@ -14,6 +14,8 @@ namespace Kucoin.NET.Observable
     {
         public event NotifyCollectionChangedEventHandler CollectionChanged;
 
+        private object lockObj = new object();
+
         protected override decimal GetKeyForItem(OrderUnit item) => item.Price;
 
         bool descending;
@@ -98,59 +100,68 @@ namespace Kucoin.NET.Observable
 
         public OrderUnit[] ToArray()
         {
+
             if (Count == 0) return new OrderUnit[0];
             OrderUnit[] output = new OrderUnit[Count];
 
-            CopyTo(output, 0);
+            lock(lockObj)
+            {
+                CopyTo(output, 0);
+            }
+
             return output;
         }
 
         protected override void ClearItems()
         {
-            base.ClearItems();
-            OnCollectionChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset));
+            lock(lockObj)
+            {
+                base.ClearItems();
+                OnCollectionChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset));
+            }
         }
 
         protected override void InsertItem(int index, OrderUnit item)
         {
-            index = GetInsertIndex(item);
+            lock(lockObj)
+            {
+                index = GetInsertIndex(item);
 
-            base.InsertItem(index, item);
-            OnCollectionChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Add, item, index));
+                base.InsertItem(index, item);
+                OnCollectionChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Add, item, index));
+            }
         }
 
         protected override void RemoveItem(int index)
         {
-            var oldItem = ((IList<OrderUnit>)this)[index];
-            base.RemoveItem(index);
-
-            OnCollectionChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Remove, oldItem, index));
+            lock (lockObj)
+            {
+                var oldItem = ((IList<OrderUnit>)this)[index];
+                base.RemoveItem(index);
+                OnCollectionChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Remove, oldItem, index));
+            }
         }
 
         protected override void SetItem(int index, OrderUnit item)
         {
-            if (index >= Count)
+            lock (lockObj)
             {
-                InsertItem(0, item);
-                return;
+                if (index >= Count)
+                {
+                    InsertItem(0, item);
+                    return;
+                }
+                var oldItem = ((IList<OrderUnit>)this)[index];
+                if (Contains(item.Price))
+                {
+                    var orgitem = this[item.Price];
+                    orgitem.Size = item.Size;
+                    orgitem.Sequence = item.Sequence;
+                    return;
+                }
+                base.SetItem(index, item);
+                OnCollectionChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Replace, item, oldItem, index));
             }
-
-            var oldItem = ((IList<OrderUnit>)this)[index];
-
-            if (Contains(item.Price))
-            {
-                var orgitem = this[item.Price];
-
-                orgitem.Size = item.Size;
-                orgitem.Sequence = item.Sequence;
-
-                //Remove(item.Price);
-                //InsertItem(0, item);
-                return;
-            }
-            base.SetItem(index, item);
-
-            OnCollectionChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Replace, item, oldItem, index));
         }
 
         protected void OnCollectionChanged(NotifyCollectionChangedEventArgs e)

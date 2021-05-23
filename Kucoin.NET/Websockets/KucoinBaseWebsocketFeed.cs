@@ -22,41 +22,7 @@ using Kucoin.NET.Helpers;
 
 namespace Kucoin.NET.Websockets
 {
-    /// <summary>
-    /// Pong message event handler.
-    /// </summary>
-    /// <param name="sender"></param>
-    /// <param name="e"></param>
-    public delegate void PongHandler(object sender, EventArgs e);
-
-    /// <summary>
-    /// Data received event handler.
-    /// </summary>
-    /// <param name="sender"></param>
-    /// <param name="e"></param>
-    public delegate void DataReceivedHandler(object sender, DataReceivedEventArgs e);
-
-    /// <summary>
-    /// Data received event handler.
-    /// </summary>
-    /// <param name="sender"></param>
-    /// <param name="e"></param>
-    public delegate void DataReceivedHandler<T>(object sender, FeedDataReceivedEventArgs<T> e) where T: class;
-
-    /// <summary>
-    /// Feed connected event handler.
-    /// </summary>
-    /// <param name="sender"></param>
-    /// <param name="e"></param>
-    public delegate void FeedConnectedHandler(object sender, FeedConnectedEventArgs e);
-
-    /// <summary>
-    /// Feed disconnected event handler.
-    /// </summary>
-    /// <param name="sender"></param>
-    /// <param name="e"></param>
-    public delegate void FeedDisconnectedHandler(object sender, EventArgs e);
-
+    
     /// <summary>
     /// Websocket feed abstract base class.
     /// </summary>
@@ -102,12 +68,12 @@ namespace Kucoin.NET.Websockets
         /// <summary>
         /// Event that is raised when the client received a Pong response to a Ping.
         /// </summary>
-        public virtual event PongHandler Pong;
+        public virtual event EventHandler Pong;
 
         /// <summary>
         /// Event that is raised when the client has established a connection with the server.
         /// </summary>
-        public virtual event FeedConnectedHandler FeedConnected;
+        public virtual event EventHandler<FeedConnectedEventArgs> FeedConnected;
 
         /// <summary>
         /// Event that is raised when the client has disconnected from the server.
@@ -116,7 +82,7 @@ namespace Kucoin.NET.Websockets
         /// This event is raised when the object is manually disposed or disposed via the 'using' statement,
         /// but not when the destructor is called by the garbage collector.
         /// </remarks>
-        public virtual event FeedDisconnectedHandler FeedDisconnected;
+        public virtual event EventHandler FeedDisconnected;
 
         /// <summary>
         /// Event that is raised for every single JSON entity that is received.
@@ -124,7 +90,7 @@ namespace Kucoin.NET.Websockets
         /// <remarks>
         /// Avoid using, if possible, as calling this handler will have a performance impact.
         /// </remarks>
-        public virtual event DataReceivedHandler DataReceived;
+        public virtual event EventHandler<DataReceivedEventArgs> DataReceived;
 
         #endregion
 
@@ -344,15 +310,17 @@ namespace Kucoin.NET.Websockets
             {
                 // The Pinger: 
 
-                keepAlive = Task.Run(async () =>
+                keepAlive = Task.Factory.StartNew(async () =>
                 {
                     while (!ctsPing.IsCancellationRequested && Connected)
                     {
                         await Task.Delay(server.PingInterval);
+                        if (ctsPing.IsCancellationRequested) return;
+
                         await Ping();
                     }
 
-                }, ctsPing.Token);
+                }, TaskCreationOptions.LongRunning | TaskCreationOptions.DenyChildAttach);
 
                 // The Reader: 
                 // -----------
@@ -361,10 +329,10 @@ namespace Kucoin.NET.Websockets
                 msgQueue = new List<string>();
 
                 // data receiver
-                inputReaderThread = Task.Run(() => DataReceiveThread(), ctsReceive.Token);
+                inputReaderThread = Task.Factory.StartNew(DataReceiveThread, TaskCreationOptions.LongRunning | TaskCreationOptions.DenyChildAttach);
 
                 // observer notification pump
-                msgPumpThread = Task.Run(() => MessagePumpThread(), ctsReceive.Token);
+                msgPumpThread = Task.Factory.StartNew(MessagePumpThread, TaskCreationOptions.LongRunning | TaskCreationOptions.DenyChildAttach);
 
                 if (initAsMultiplexParent)
                 {
@@ -797,6 +765,11 @@ namespace Kucoin.NET.Websockets
                 data.TunnelId = tunnelId;
             }
 
+            if (!IsPublic)
+            {
+                data.PrivateChannel = true;
+            }
+
             await Send(data.ToString(), encoding);
         }
 
@@ -939,7 +912,7 @@ namespace Kucoin.NET.Websockets
         /// <remarks>
         /// Avoid using, if possible, as calling this handler will have a performance impact.
         /// </remarks>
-        public virtual event DataReceivedHandler<T> FeedDataReceived;
+        public virtual event EventHandler<FeedDataReceivedEventArgs<T>> FeedDataReceived;
 
         /// <summary>
         /// Gets the message subject for the feed cycle.

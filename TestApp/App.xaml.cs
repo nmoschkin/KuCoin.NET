@@ -11,6 +11,9 @@ using Microsoft.Win32;
 using System.Windows.Media.Animation;
 
 using Kucoin.NET.Helpers;
+using Microsoft.AppCenter;
+using Microsoft.AppCenter.Analytics;
+using Microsoft.AppCenter.Crashes;
 
 namespace KuCoinApp
 {
@@ -30,6 +33,9 @@ namespace KuCoinApp
 
         public App() : base()
         {
+            AppCenter.Start("6e9f9975-8980-452b-be36-b5c9b087896f",
+                      typeof(Analytics), typeof(Crashes));
+            
             Settings = new Settings();
             Seed = Guid.Parse(Settings.Hvcyp);
         }

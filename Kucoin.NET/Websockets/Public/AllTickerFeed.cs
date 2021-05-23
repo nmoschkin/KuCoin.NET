@@ -11,7 +11,7 @@ namespace Kucoin.NET.Websockets.Public
     /// <summary>
     /// Implements the all symbol ticker feed (Level 2).
     /// </summary>
-    public class AllTickerFeed : KucoinBaseWebsocketFeed<Ticker>
+    public class AllTickerFeed : TopicFeedBase<Ticker>
     {
         private List<string> activeTickers = new List<string>();
 
@@ -39,58 +39,6 @@ namespace Kucoin.NET.Websockets.Public
                     await PushNext(ticker);
                 }
             }
-        }
-
-        /// <summary>
-        /// Subscribe to the feed.
-        /// </summary>
-        /// <param name="symbols"></param>
-        /// <returns></returns>
-        public virtual async Task StartFeed()
-        {
-            if (disposed) throw new ObjectDisposedException(nameof(AllTickerFeed));
-            if (!Connected)
-            {
-                await Connect();
-            }
-
-            var topic = Topic;
-
-            var e = new FeedMessage()
-            {
-                Type = "subscribe",
-                Id = connectId.ToString("d"),
-                Topic = topic,
-                Response = true
-            };
-
-            await Send(e);
-        }
-
-        /// <summary>
-        /// Unsubscribe from the feed.
-        /// </summary>
-        /// <returns></returns>
-        public virtual async Task StopFeed()
-        {
-
-            if (disposed) throw new ObjectDisposedException(nameof(AllTickerFeed));
-            if (!Connected)
-            {
-                await Connect();
-            }
-
-            var topic = Topic;
-
-            var e = new FeedMessage()
-            {
-                Type = "unsubscribe",
-                Id = connectId.ToString("d"),
-                Topic = topic,
-                Response = true
-            };
-
-            await Send(e);
         }
 
         #region IObservable<T> Pattern

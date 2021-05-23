@@ -49,6 +49,8 @@ namespace KuCoinApp.ViewModels
         private Dictionary<string, AccountItemViewModel> marginDict;
         private Dictionary<string, AccountItemViewModel> poolxDict;
 
+        private Market market = new Market();
+
         public ICommand RefreshAccountsCommand { get; private set; }
 
         public CurrencyViewModel QuoteCurrency
@@ -245,6 +247,8 @@ namespace KuCoinApp.ViewModels
 
             ticker = new TickerFeed();
             await ticker.MultiplexInit(balances);
+            
+            await balances.StartFeed();
 
             balanceContext = (FeedObservation<BalanceNotice>)balances.Subscribe(this);
 
@@ -257,6 +261,9 @@ namespace KuCoinApp.ViewModels
 
                 try
                 {
+                    var tick = await market.GetTicker(pair);
+                    ((IObserver<Ticker>)this).OnNext(tick);
+
                     await ticker.AddSymbol(pair);
                 }
                 catch
