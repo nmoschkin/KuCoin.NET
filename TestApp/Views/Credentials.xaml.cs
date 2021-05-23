@@ -20,7 +20,7 @@ namespace KuCoinApp
     public partial class Credentials : Window
     {
 
-        private CredViewModel vm;
+        private CredentialsViewModel vm;
 
         public Credentials()
         {
@@ -30,10 +30,9 @@ namespace KuCoinApp
 
         public Credentials(CryptoCredentials cred) : this()
         {
-
             if (cred != null)
             {
-                vm = new CredViewModel(cred);
+                vm = new CredentialsViewModel(cred);
                 vm.CloseWindow += Vm_CloseWindow;
 
                 DataContext = vm;
@@ -50,11 +49,47 @@ namespace KuCoinApp
                     if (pin == null) return;
                     App.Current?.Dispatcher?.Invoke(() =>
                     {
-                        vm = new CredViewModel(t.Result);
+                        vm = new CredentialsViewModel(t.Result);
                         vm.CloseWindow += Vm_CloseWindow;
                         DataContext = vm;
                     });
                 });
+            }
+
+            vm.PropertyChanged += Vm_PropertyChanged;
+            InitBoxes();
+        }
+
+        private void Vm_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
+        {
+            if (e.PropertyName == nameof(CredentialsViewModel.ShowPassword))
+            {
+                InitBoxes();
+            }
+        }
+
+        private void InitBoxes()
+        {
+            if (vm.ShowPassword)
+            {
+                ApiKeyBox.Text = vm.Credential.Key;
+                ApiSecretBox.Text = vm.Credential.Secret;
+                ApiPassphraseBox.Text = vm.Credential.Passphrase;
+
+                ApiKeyPwd.Password = "";
+                ApiSecretPwd.Password = "";
+                ApiPassphrasePwd.Password = "";
+            }
+            else
+            {
+                ApiKeyPwd.Password = vm.Credential.Key;
+                ApiSecretPwd.Password = vm.Credential.Secret;
+                ApiPassphrasePwd.Password = vm.Credential.Passphrase;
+
+                ApiKeyBox.Text = "";
+                ApiSecretBox.Text = "";
+                ApiPassphraseBox.Text = "";
+
             }
         }
 
@@ -74,6 +109,70 @@ namespace KuCoinApp
 
         private void TitleGrid_MouseMove(object sender, MouseEventArgs e)
         {
+        }
+
+        private void ApiKeyPwd_PasswordChanged(object sender, RoutedEventArgs e)
+        {
+            if (vm.ShowPassword) return;
+
+            if (ApiKeyPwd.Password != vm.Credential.Key)
+            {
+                vm.Credential.Key = ApiKeyPwd.Password;
+            }
+
+        }
+
+        private void ApiSecretPwd_PasswordChanged(object sender, RoutedEventArgs e)
+        {
+            if (vm.ShowPassword) return;
+
+            if (ApiSecretPwd.Password != vm.Credential.Secret)
+            {
+                vm.Credential.Secret = ApiSecretPwd.Password;
+            }
+
+        }
+
+        private void ApiPassphrasePwd_PasswordChanged(object sender, RoutedEventArgs e)
+        {
+            if (vm.ShowPassword) return;
+
+            if (ApiPassphrasePwd.Password != vm.Credential.Passphrase)
+            {
+                vm.Credential.Passphrase = ApiPassphrasePwd.Password;
+            }
+
+        }
+
+        private void ApiKeyBox_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            if (!vm.ShowPassword) return;
+
+            if (ApiKeyBox.Text != vm.Credential.Key)
+            {
+                vm.Credential.Key = ApiKeyBox.Text;
+            }
+
+        }
+
+        private void ApiSecretBox_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            if (!vm.ShowPassword) return;
+
+            if (ApiSecretBox.Text != vm.Credential.Secret)
+            {
+                vm.Credential.Secret = ApiSecretBox.Text;
+            }
+        }
+
+        private void ApiPassphraseBox_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            if (!vm.ShowPassword) return;
+
+            if (ApiPassphraseBox.Text != vm.Credential.Passphrase)
+            {
+                vm.Credential.Passphrase = ApiPassphraseBox.Text;
+            }
         }
     }
 }

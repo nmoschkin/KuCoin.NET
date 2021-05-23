@@ -243,13 +243,13 @@ namespace Kucoin.NET.Websockets
         /// <returns></returns>
         public virtual async Task<F> CreateMultiplexedChild<F, G>(bool inheritSymbols) where F : SymbolTopicFeedBase<G>, new() where G: class, ISymbol
         {
-            if (tunnelId != null && !isMultiplexParent)
+            if (tunnelId != null && !isMultiplexHost)
             {
                 throw new InvalidOperationException("Cannot initialize as multiplex parent when already initialized as multiplex child.");
             }
             var child = new F();
 
-            if (!isMultiplexParent)
+            if (!isMultiplexHost)
             {
                 await MultiplexInit();
             }

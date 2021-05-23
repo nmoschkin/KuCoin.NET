@@ -1,15 +1,22 @@
 ﻿using Kucoin.NET.Data.Interfaces;
+using Kucoin.NET.Observable;
 
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
+using System.Globalization;
+using System.Net;
+using System.Runtime.InteropServices.ComTypes;
+using System.Runtime.Serialization;
 using System.Text;
+using System.Threading;
 
 namespace Kucoin.NET.Helpers
 {
     /// <summary>
     /// Stores credentials encrypted in memory until needed.
     /// </summary>
-    public class MemoryEncryptedCredentialsProvider : ICredentialsProvider
+    public class MemoryEncryptedCredentialsProvider : ObservableBase, ICredentialsProvider
     {
         protected string key;
         protected string secret;
@@ -26,16 +33,16 @@ namespace Kucoin.NET.Helpers
         {
             if (seed == null)
             {
-                this.seed = Makeseed();
+                this.seed = MakeZipper();
             }
             else
             {
-                this.seed = Makeseed((Guid)seed);
+                this.seed = MakeZipper((Guid)seed);
             }
 
-            this.key = AesOperation.EncryptString(Makeseed(this.seed), credProvider.GetKey(), out _);
-            this.secret = AesOperation.EncryptString(Makeseed(this.seed), credProvider.GetSecret(), out _);
-            this.passphrase = AesOperation.EncryptString(Makeseed(this.seed), credProvider.GetPassphrase(), out _);
+            this.key = EncryptIt(credProvider.GetKey());
+            this.secret = EncryptIt(credProvider.GetSecret());
+            this.passphrase = EncryptIt(credProvider.GetPassphrase());
 
         }
 
@@ -52,21 +59,22 @@ namespace Kucoin.NET.Helpers
 
             if (seed == null)
             {
-                this.seed = Makeseed();
+                this.seed = MakeZipper();
             }
             else
             {
-                this.seed = Makeseed((Guid)seed);
+                this.seed = MakeZipper((Guid)seed);
                 seed = null;
             }
 
-            if (!string.IsNullOrEmpty(key)) this.key = AesOperation.EncryptString(Makeseed(this.seed), key, out _);
+
+            if (!string.IsNullOrEmpty(key)) this.key = EncryptIt(key);
             key = null;
 
-            if (!string.IsNullOrEmpty(secret)) this.secret = AesOperation.EncryptString(Makeseed(this.seed), secret, out _);
+            if (!string.IsNullOrEmpty(secret)) this.secret = EncryptIt(secret);
             secret = null;
 
-            if (!string.IsNullOrEmpty(passphrase)) this.passphrase = AesOperation.EncryptString(Makeseed(this.seed), passphrase, out _);
+            if (!string.IsNullOrEmpty(passphrase)) this.passphrase = EncryptIt(passphrase);
             passphrase = null;
 
 #pragma warning restore IDE0059 // Unnecessary assignment of a value
@@ -75,34 +83,237 @@ namespace Kucoin.NET.Helpers
 
         }
 
-        protected static Guid Makeseed(Guid? seed = null)
+        // AES does the real encryption, but these functions make the data a little trickier to decipher.
+        #region Mangling
+
+        int keystone = -1;
+
+        protected virtual Guid MakeZipper(Guid? seed = null)
         {
             var g = seed ?? Guid.NewGuid();
-
+                        
             var b = g.ToByteArray();
-            Array.Reverse(b);
-
-            for(int i = 0; i < 16; i++)
+            var bout = new byte[16];
+            if (keystone == -1)
             {
-                b[i] = (byte)(~b[i] & 0xff);
+                foreach (var btest in b)
+                {
+                    if ((~btest & 0xff) <= 15)
+                    {
+                        keystone = ~btest & 0xff;
+                        break;
+                    }
+                }
+
+                if (keystone == -1)
+                {
+                    var bt = (byte)(DateTime.Now.Ticks & 0xffL);
+                    keystone = (~bt) & 0xf;
+                }
             }
 
-            return new Guid(b);
+            Array.Reverse(b);
+
+            int j = 0;
+
+            for(int i = keystone; i < 16; i++)
+            {
+                bout[j++] = (byte)(~b[i] & 0xff);
+            }
+
+            for (int i = 0; i < keystone; i++)
+            {
+                bout[j++] = (byte)(~b[i] & 0xff);
+            }
+
+            var result = new Guid(bout);
+            return result;
+        }
+
+        protected virtual int bulkadd(IEnumerable<int> values)
+        {
+            int i = 0;
+            foreach (int j in values)
+            {
+                i += j;
+            }
+
+            return i;
+        }
+
+        protected virtual List<int> get_lengths(string value)
+        {
+            int thax;
+            List<int> lengths = new List<int>();
+
+            while (int.TryParse(value.Substring(value.Length - 4), NumberStyles.HexNumber, CultureInfo.CurrentCulture, out thax))
+            {
+                lengths.Add((short)~thax);
+                value = value.Substring(0, value.Length - 4);
+
+                if (bulkadd(lengths) == value.Length) break;
+            }
+
+            lengths.Reverse();
+            return lengths;
+        }
+
+        protected virtual char zip_right(char ch, byte[] zipper = null, char lastChar = '0')
+        {
+            var s = (int)ch;
+
+            s = (~lastChar) ^ (char)s;
+
+            if (zipper == null) zipper = MakeZipper(this.seed).ToByteArray();
+
+            foreach (var b in zipper)
+            {
+                s = s ^ (char)b;
+            }
+
+            return (char)~(s & 0xffff);
+        }
+
+
+        protected virtual char zip_left(char ch, byte[] zipper = null, char lastChar = '0')
+        {
+            var s = (int)ch;
+
+            if (zipper == null) zipper = MakeZipper(this.seed).ToByteArray();
+            Array.Reverse(zipper);
+
+            foreach (var b in zipper)
+            {
+                s = s ^ b;
+            }
+
+            s = (~lastChar) ^ (char)s;
+
+            return (char)~(s & 0xffff);
+        }
+
+        protected virtual string zip_right(string s)
+        {
+            var sb = new StringBuilder();
+            var zipper = MakeZipper(this.seed).ToByteArray();
+            char lch = '0';
+            char cha;
+
+            foreach (char ch in s)
+            {
+                cha = zip_right(ch, zipper, lch);
+                sb.Append(cha);
+                lch = ch;
+            }
+
+            return sb.ToString();
+        }
+
+        protected virtual string zip_left(string s)
+        {
+            var sb = new StringBuilder();
+            var zipper = MakeZipper(this.seed).ToByteArray();
+            char lch = '0';
+            char cha;
+
+            foreach (char ch in s)
+            {
+                cha = zip_left(ch, zipper, lch);
+                sb.Append(cha);
+                lch = cha;
+            }
+
+            return sb.ToString();
+        }
+
+        protected virtual string multi_zip_right(params string[] values)
+        {
+            var sb = new StringBuilder();
+            var zipper = MakeZipper(this.seed).ToByteArray();
+            char lch = '0';
+            char cha;
+
+
+            foreach (var s in values)
+            {
+                foreach (char ch in s)
+                {
+                    cha = zip_right(ch, zipper, lch);
+                    sb.Append(cha);
+                    lch = ch;
+                }
+            }
+
+            foreach (var s in values)
+            {
+                short lb = (short)~s.Length;
+                sb.Append(lb.ToString("x04"));
+            }
+
+            return sb.ToString();
+        }
+
+        protected virtual string[] multi_zip_left(string value)
+        {
+            var sb = new StringBuilder();
+            var zipper = MakeZipper(this.seed).ToByteArray();
+            char lch = '0';
+            char cha;
+
+            List<int> lengths = get_lengths(value);
+            List<string> values = new List<string>();
+            List<string> results = new List<string>();
+
+            foreach (var l in lengths)
+            {
+                values.Add(value.Substring(0, l));
+                value = value.Substring(l);
+            }
+
+            foreach (var s in values)
+            {
+                foreach (char ch in s)
+                {
+                    cha = zip_left(ch, zipper, lch);
+                    sb.Append(cha);
+                    lch = cha;
+                }
+
+                results.Add(sb.ToString());
+                sb.Clear();
+            }
+
+            return results.ToArray();
+
+        }
+
+        #endregion
+
+        protected virtual string EncryptIt(string source)
+        {
+            var work = zip_right(source);
+            return AesOperation.EncryptString(MakeZipper(this.seed), work, out _);
+        }
+
+        protected virtual string DecryptIt(string source)
+        {
+            var work = AesOperation.DecryptString(MakeZipper(this.seed), source);
+            return zip_left(work);
         }
 
         public virtual string GetKey()
         {
-            return !string.IsNullOrEmpty(key) ? AesOperation.DecryptString(Makeseed(seed), key) : null;
+            return !string.IsNullOrEmpty(key) ? DecryptIt(key) : null;
         }
 
         public virtual string GetPassphrase()
         {
-            return !string.IsNullOrEmpty(passphrase) ? AesOperation.DecryptString(Makeseed(seed), passphrase) : null;
+            return !string.IsNullOrEmpty(passphrase) ? DecryptIt(passphrase) : null;
         }
 
         public virtual string GetSecret()
         {
-            return !string.IsNullOrEmpty(secret) ? AesOperation.DecryptString(Makeseed(seed), secret) : null;
+            return !string.IsNullOrEmpty(secret) ? DecryptIt(secret) : null;
         }
     }
 }

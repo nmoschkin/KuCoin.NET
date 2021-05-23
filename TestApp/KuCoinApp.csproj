@@ -9,6 +9,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="ViewModels\LowRefresh.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="Microsoft.AppCenter" Version="4.2.0" />
     <PackageReference Include="Microsoft.AppCenter.Analytics" Version="4.2.0" />
     <PackageReference Include="Microsoft.AppCenter.Crashes" Version="4.2.0" />
@@ -23,7 +27,12 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Compile Update="AppResources.Designer.cs">
+    <Compile Update="CoinResources.Designer.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>CoinResources.resx</DependentUpon>
+    </Compile>
+    <Compile Update="Localization\Resources\AppResources.Designer.cs">
       <DesignTime>True</DesignTime>
       <AutoGen>True</AutoGen>
       <DependentUpon>AppResources.resx</DependentUpon>
@@ -31,7 +40,11 @@
   </ItemGroup>
 
   <ItemGroup>
-    <EmbeddedResource Update="AppResources.resx">
+    <EmbeddedResource Update="CoinResources.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>CoinResources.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Update="Localization\Resources\AppResources.resx">
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>AppResources.Designer.cs</LastGenOutput>
     </EmbeddedResource>

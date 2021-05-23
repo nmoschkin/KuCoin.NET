@@ -63,7 +63,7 @@ namespace KuCoinApp
 
     public delegate void CloseWindowEventHandler(object sender, CloseWindowEventArgs e);
 
-    public class CredViewModel : ObservableBase
+    public class CredentialsViewModel : ObservableBase
     {
 
         public event CloseWindowEventHandler CloseWindow;
@@ -74,9 +74,13 @@ namespace KuCoinApp
 
         public ICommand CancelCommand { get; private set; }
 
-
         public ICommand ClearCommand { get; private set; }
 
+        public ICommand ShowHidePasswordCommand { get; private set; }
+
+
+
+        private bool showPassword;
 
         public CryptoCredentials Credential
         {
@@ -87,8 +91,21 @@ namespace KuCoinApp
             }
         }
 
-        public CredViewModel()
+        public bool ShowPassword
         {
+            get => showPassword;
+            set
+            {
+                if (SetProperty(ref showPassword, value))
+                {
+                    App.Current.Settings.ShowPassword = value;
+                }
+            }
+        }
+
+        public CredentialsViewModel()
+        {
+            showPassword = App.Current.Settings.ShowPassword;
 
             SaveCommand = new SimpleCommand((p) =>
             {
@@ -108,14 +125,19 @@ namespace KuCoinApp
 
             });
 
+            ShowHidePasswordCommand = new SimpleCommand((p) =>
+            {
+                ShowPassword = !ShowPassword;
+            });
+
         }
 
-        public CredViewModel(CryptoCredentials cred)
+        public CredentialsViewModel(CryptoCredentials cred) : this()
         {
             Credential = cred;
         }
 
-        public CredViewModel(string pin) : this()
+        public CredentialsViewModel(string pin) : this()
         {
             CryptoCredentials.Pin = pin;
 

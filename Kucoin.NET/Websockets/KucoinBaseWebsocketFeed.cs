@@ -33,11 +33,11 @@ namespace Kucoin.NET.Websockets
     {
         #region Protected fields
 
-        protected KucoinBaseWebsocketFeed multiplexParent;
+        protected KucoinBaseWebsocketFeed multiplexHost;
 
-        protected bool isMultiplexParent = false;
+        protected bool isMultiplexHost = false;
 
-        protected List<KucoinBaseWebsocketFeed> multiplexChildren;
+        protected List<KucoinBaseWebsocketFeed> multiplexClients;
 
         protected string tunnelId = null;
 
@@ -174,9 +174,9 @@ namespace Kucoin.NET.Websockets
         {
             get
             {
-                if (multiplexParent != null)
+                if (multiplexHost != null)
                 {
-                    return multiplexParent.Connected;
+                    return multiplexHost.Connected;
                 }
                 else if (socket?.State == WebSocketState.Open)
                 {
@@ -212,12 +212,12 @@ namespace Kucoin.NET.Websockets
         /// <summary>
         /// For multiplexed connections, gets the object that owns the connection.
         /// </summary>
-        public KucoinBaseWebsocketFeed MultiplexParent => multiplexParent;
+        public KucoinBaseWebsocketFeed MultiplexHost => multiplexHost;
 
         /// <summary>
-        /// True if this object is the connection holder (parent) of a multiplexed connection.
+        /// True if this object is the connection holder (host) of a multiplexed connection.
         /// </summary>
-        public bool IsMultiplexParent => isMultiplexParent;
+        public bool IsMultiplexHost => isMultiplexHost;
 
         /// <summary>
         /// Returns true if the current connection is multiplexed.
@@ -397,11 +397,16 @@ namespace Kucoin.NET.Websockets
             await Send(m.ToString());
         }
 
+        /// <summary>
+        /// Cancel all tunnel subscriptions and remove all
+        /// multiplexed tunnels (including host and clients).
+        /// </summary>
+        /// <returns></returns>
         public virtual async Task<bool> RemoveMultiplexChannels()
         {
-            if (isMultiplexParent)
+            if (isMultiplexHost)
             {
-                foreach (var child in multiplexChildren)
+                foreach (var child in multiplexClients)
                 {                    
                     await child.RemoveMultiplexChannels();
                 }
@@ -418,16 +423,16 @@ namespace Kucoin.NET.Websockets
         }
 
         /// <summary>
-        /// Initialize multiplexing as the parent.
+        /// Initialize multiplexing as the host.
         /// </summary>
         /// <returns></returns>
         public virtual async Task<bool> MultiplexInit(string newTunnelId = null)
         {
-            if (!Connected || isMultiplexParent || multiplexParent != null) return false;
+            if (!Connected || isMultiplexHost || multiplexHost != null) return false;
 
-            isMultiplexParent = true;
+            isMultiplexHost = true;
             tunnelId = newTunnelId ?? Guid.NewGuid().ToString("d");
-            multiplexChildren = new List<KucoinBaseWebsocketFeed>();
+            multiplexClients = new List<KucoinBaseWebsocketFeed>();
 
             await OpenMultiplexChannel(tunnelId);
 
@@ -435,19 +440,19 @@ namespace Kucoin.NET.Websockets
         }
 
         /// <summary>
-        /// Create a multiplexed child of the specified type to share the connection of this <see cref="KucoinBaseWebsocketFeed"/>-derived instance.
+        /// Create a multiplexed client of the specified type to share the connection of this <see cref="KucoinBaseWebsocketFeed"/>-derived instance.
         /// </summary>
         /// <typeparam name="F">The feed type to create</typeparam>
         /// <returns>A new feed that shares a connection with the current object.</returns>
-        public virtual async Task<F> CreateMultiplexedChild<F>() where F: KucoinBaseWebsocketFeed, new()
+        public virtual async Task<F> CreateMultiplexClient<F>() where F: KucoinBaseWebsocketFeed, new()
         {
-            if (tunnelId != null && !isMultiplexParent)
+            if (tunnelId != null && !isMultiplexHost)
             {
                 throw new InvalidOperationException("Cannot initialize as multiplex parent when already initialized as multiplex child.");
             }
-            var child = new F();
+            var client = new F();
 
-            if (IsPublic && !child.IsPublic)
+            if (IsPublic && !client.IsPublic)
             {
                 throw new InvalidOperationException("Cannot initialize a private multiplex child from a public multiplex parent.");
             }
@@ -455,24 +460,24 @@ namespace Kucoin.NET.Websockets
             {
                 await Connect(true);
             }
-            else if (!isMultiplexParent)
+            else if (!isMultiplexHost)
             {
                 await MultiplexInit();
             }
 
-            await child.MultiplexInit(this);
-            return child;
+            await client.MultiplexInit(this);
+            return client;
         }
 
         /// <summary>
-        /// Initialize multiplexing as a child.
+        /// Initialize multiplexing as a client.
         /// </summary>
-        /// <param name="parent"></param>
+        /// <param name="host"></param>
         /// <returns></returns>
-        public virtual async Task<bool> MultiplexInit(KucoinBaseWebsocketFeed parent, string newTunnelId = null)
+        public virtual async Task<bool> MultiplexInit(KucoinBaseWebsocketFeed host, string newTunnelId = null)
         {
 
-            if (!IsPublic && parent.IsPublic)
+            if (!IsPublic && host.IsPublic)
             {
                 throw new InvalidOperationException("Cannot initialize a private multiplex child from a public multiplex parent.");
             }
@@ -483,23 +488,23 @@ namespace Kucoin.NET.Websockets
             }
 
             tunnelId = newTunnelId ?? Guid.NewGuid().ToString("d");
-            multiplexParent = parent;
+            multiplexHost = host;
 
-            if (parent.multiplexChildren == null)
+            if (!host.IsMultiplexHost)
             {
-                if (!await parent.MultiplexInit()) return false;
+                if (!await host.MultiplexInit()) return false;
             }
-            else if (parent.multiplexChildren.Contains(this))
+            else if (host.multiplexClients.Contains(this))
             {
                 return false;
             }
-            else if (parent.multiplexChildren.Count >= 4)
+            else if (host.multiplexClients.Count >= 4)
             {
                 return false;
             }
 
-            parent.multiplexChildren.Add(this);
-            await parent.OpenMultiplexChannel(tunnelId);
+            host.multiplexClients.Add(this);
+            await host.OpenMultiplexChannel(tunnelId);
 
             return true;
         }
@@ -693,9 +698,9 @@ namespace Kucoin.NET.Websockets
                 {
                     await HandleMessage(e);
                 }
-                else if (isMultiplexParent)
+                else if (isMultiplexHost)
                 {
-                    var p = multiplexChildren.Where((child) => child.tunnelId == e.TunnelId).FirstOrDefault();
+                    var p = multiplexClients.Where((child) => child.tunnelId == e.TunnelId).FirstOrDefault();
                     
                     if (p != null)
                     {
@@ -731,9 +736,9 @@ namespace Kucoin.NET.Websockets
         {
             if (disposed) throw new ObjectDisposedException(nameof(KucoinBaseWebsocketFeed));
 
-            if (multiplexParent != null)
+            if (multiplexHost != null)
             {
-                await multiplexParent.socket.SendAsync(new ArraySegment<byte>(data), WebSocketMessageType.Text, true, multiplexParent.ctsSend.Token);
+                await multiplexHost.socket.SendAsync(new ArraySegment<byte>(data), WebSocketMessageType.Text, true, multiplexHost.ctsSend.Token);
             }
             else
             {
@@ -882,10 +887,10 @@ namespace Kucoin.NET.Websockets
 
             CancelAllThreads();
 
-            if (isMultiplexParent && multiplexChildren != null && multiplexChildren.Count > 0)
+            if (isMultiplexHost && multiplexClients != null && multiplexClients.Count > 0)
             {
                 // multiplexed children need to go, too.
-                foreach (var child in multiplexChildren)
+                foreach (var child in multiplexClients)
                 {
                     child.Dispose();
                 }

@@ -148,7 +148,7 @@ namespace KuCoinApp
             {
                 try
                 {
-                    byte[] b = (byte[])AppResources.ResourceManager.GetObject(curr.Currency.ToLower());
+                    byte[] b = (byte[])CoinResources.ResourceManager.GetObject(curr.Currency.ToLower());
                     if (b == null)
                     {
                         return;

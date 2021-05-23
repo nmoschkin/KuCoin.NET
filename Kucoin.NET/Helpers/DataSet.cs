@@ -5,6 +5,10 @@ using System.Text;
 
 namespace Kucoin.NET.Helpers
 {
+    /// <summary>
+    /// Represents a collection of items upon which logical operations can be performed.
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
     public class DataSet<T> : List<T>
     {
 
@@ -20,123 +24,159 @@ namespace Kucoin.NET.Helpers
         {
         }
 
-
-        public static DataSet<T> operator &(DataSet<T> val1, DataSet<T> val2)
+        /// <summary>
+        /// Returns all the keys that are mutual between set 1 and set 2 (logical AND.)
+        /// </summary>
+        /// <param name="set1"></param>
+        /// <param name="set2"></param>
+        /// <returns></returns>
+        public static DataSet<T> operator &(DataSet<T> set1, DataSet<T> set2)
         {
             int i, c;
 
             DataSet<T> result = new DataSet<T>();
 
-            c = val1.Count;
+            c = set1.Count;
 
             for (i = 0; i < c; i++)
             {
-                if (result.Contains(val1[i])) continue;
+                if (result.Contains(set1[i])) continue;
 
-                if (val2.Contains(val1[i]))
+                if (set2.Contains(set1[i]))
                 {
-                    result.Add(val1[i]);
+                    result.Add(set1[i]);
                 }
             }
 
             return result;
         }
 
-        public static DataSet<T> operator ^(DataSet<T> val1, DataSet<T> val2)
+        /// <summary>
+        /// Returns all the keys that are not mutual to set 1 and set 2 (logical XOR.)
+        /// </summary>
+        /// <param name="set1"></param>
+        /// <param name="set2"></param>
+        /// <returns></returns>
+        public static DataSet<T> operator ^(DataSet<T> set1, DataSet<T> set2)
         {
             int i, c;
 
             DataSet<T> result = new DataSet<T>();
 
-            c = val1.Count;
+            c = set1.Count;
 
             for (i = 0; i < c; i++)
             {
-                if (result.Contains(val1[i])) continue;
+                if (result.Contains(set1[i])) continue;
 
-                if (!val2.Contains(val1[i]))
+                if (!set2.Contains(set1[i]))
                 {
-                    result.Add(val1[i]);
+                    result.Add(set1[i]);
                 }
             }
 
-            c = val2.Count;
+            c = set2.Count;
 
             for (i = 0; i < c; i++)
             {
-                if (result.Contains(val2[i])) continue;
+                if (result.Contains(set2[i])) continue;
 
-                if (!val1.Contains(val2[i]))
+                if (!set1.Contains(set2[i]))
                 {
-                    result.Add(val2[i]);
+                    result.Add(set2[i]);
                 }
             }
 
             return result;
         }
 
-        public static DataSet<T> operator |(DataSet<T> val1, DataSet<T> val2)
+        /// <summary>
+        /// Returns a set containing all unique keys present in both set 1 and set 2 (logical OR.)
+        /// </summary>
+        /// <param name="set1"></param>
+        /// <param name="set2"></param>
+        /// <returns></returns>
+        public static DataSet<T> operator |(DataSet<T> set1, DataSet<T> set2)
         {
             int i, c;
 
             DataSet<T> result = new DataSet<T>();
 
-            c = val1.Count;
+            c = set1.Count;
 
             for (i = 0; i < c; i++)
             {
-                if (result.Contains(val1[i])) continue;
-                result.Add(val1[i]);
+                if (result.Contains(set1[i])) continue;
+                result.Add(set1[i]);
             }
 
-            c = val2.Count;
+            c = set2.Count;
 
             for (i = 0; i < c; i++)
             {
-                if (result.Contains(val2[i])) continue;
-                result.Add(val2[i]);
+                if (result.Contains(set2[i])) continue;
+                result.Add(set2[i]);
             }
 
             return result;
         }
 
-        public static DataSet<T> operator %(DataSet<T> val1, DataSet<T> val2)
+        /// <summary>
+        /// Returns a set containing all keys in set 1 that do not exist in set 2 (Logical remainder.)
+        /// </summary>
+        /// <param name="set1"></param>
+        /// <param name="set2"></param>
+        /// <returns></returns>
+        public static DataSet<T> operator %(DataSet<T> set1, DataSet<T> set2)
         {
             int i, c;
 
             DataSet<T> result = new DataSet<T>();
 
-            c = val1.Count;
+            c = set1.Count;
 
             for (i = 0; i < c; i++)
             {
-                if (result.Contains(val1[i])) continue;
+                if (result.Contains(set1[i])) continue;
 
-                if (!val2.Contains(val1[i]))
+                if (!set2.Contains(set1[i]))
                 {
-                    result.Add(val1[i]);
+                    result.Add(set1[i]);
                 }
             }
 
             return result;
         }
 
-        public static bool operator ==(DataSet<T> val1, DataSet<T> val2)
+        public static bool operator ==(DataSet<T> set1, DataSet<T> set2)
         {
-            if (val1.Count != val2.Count) return false;
+            if (set1 is object && !(set2 is object))
+            {
+                return false;
+            }
+            else if (!(set1 is object) && (set2 is object))
+            {
+                return false;
+            }
+            else if (!(set1 is object) && !(set2 is object))
+            {
+                return true;
+            }
+
+            if (set1.Count != set2.Count) return false;
 
             int i, c;
-            c = val1.Count;
+            c = set1.Count;
 
             for (i = 0; i < c; i++)
             {
-                if (val1[i] is object)
+                if (set1[i] is object)
                 {
-                    if (!val1[i].Equals(val2[i])) return false;
+                    if (!set1[i].Equals(set2[i])) return false;
                 }
-                else if (val2[i] is object)
+                else if (set2[i] is object)
                 {
-                    if (!val2[i].Equals(val1[i])) return false;
+                    if (!set2[i].Equals(set1[i])) return false;
                 }
             }
 
@@ -144,23 +184,35 @@ namespace Kucoin.NET.Helpers
 
         }
 
-
-        public static bool operator !=(DataSet<T> val1, DataSet<T> val2)
+        public static bool operator !=(DataSet<T> set1, DataSet<T> set2)
         {
-            if (val1.Count != val2.Count) return true;
+            if (set1 is object && !(set2 is object))
+            {
+                return true;
+            }
+            else if (!(set1 is object) && (set2 is object))
+            {
+                return true;
+            }
+            else if (!(set1 is object) && !(set2 is object))
+            {
+                return false;
+            }
+
+            if (set1.Count != set2.Count) return true;
 
             int i, c;
-            c = val1.Count;
+            c = set1.Count;
 
             for (i = 0; i < c; i++)
             {
-                if (val1[i] is object)
+                if (set1[i] is object)
                 {
-                    if (!val1[i].Equals(val2[i])) return true;
+                    if (!set1[i].Equals(set2[i])) return true;
                 }
-                else if (val2[i] is object)
+                else if (set2[i] is object)
                 {
-                    if (!val2[i].Equals(val1[i])) return true;
+                    if (!set2[i].Equals(set1[i])) return true;
                 }
             }
 
