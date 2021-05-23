@@ -8,6 +8,7 @@ These are __not__ official libraries from KuCoin.  They are new implementations.
 This library is in active development, and it's brand new so things will undoubtedly change while I consider next steps.
 
 May 23rd, 2021: Some major refactoring/finalizing of the guts of the library (especially the websocket feed), and I'm settling on better-chosen names for classes.
+I will be moving some code between files, in the coming days.
 
 
 ## Installation
