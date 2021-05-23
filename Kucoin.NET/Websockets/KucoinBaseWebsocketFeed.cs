@@ -777,7 +777,7 @@ namespace Kucoin.NET.Websockets
                 data.TunnelId = tunnelId;
             }
 
-            if (!IsPublic)
+            if (!IsPublic && data.PrivateChannel == null)
             {
                 data.PrivateChannel = true;
             }

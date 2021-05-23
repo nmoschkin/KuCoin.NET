@@ -582,7 +582,7 @@ namespace KuCoinApp
         public MainWindowViewModel()
         {
             KucoinBaseRestApi.GlobalSandbox = false;
-            Dispatcher.Initialize();
+            //Dispatcher.Initialize();
 
             App.Current.Settings.PropertyChanged += Settings_PropertyChanged;
             market = new Market();
