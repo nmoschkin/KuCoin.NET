@@ -24,7 +24,7 @@ namespace Kucoin.NET.Websockets.Private
 
         internal readonly Dictionary<string, Level2Observation> activeFeeds = new Dictionary<string, Level2Observation>();
 
-        private int updateInterval = 500;
+        protected int updateInterval = 500;
 
         public override bool IsPublic => false;
 

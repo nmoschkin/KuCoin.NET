@@ -87,17 +87,6 @@ namespace Kucoin.NET.Websockets.Private
                     break;
             }
         }
-
-        protected override async Task HandleMessage(FeedMessage msg)
-        {
-            if (msg.Type == "message")
-            {
-                if (msg.Subject == Subject)
-                {
-                    var change = msg.Data.ToObject<OrderChange>();
-                    await PushNext(change);
-                }
-            }
-        }
+     
     }
 }

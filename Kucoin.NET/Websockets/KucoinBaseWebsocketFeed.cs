@@ -94,6 +94,18 @@ namespace Kucoin.NET.Websockets
 
         #endregion
 
+        #region Static Constructor
+
+        static KucoinBaseWebsocketFeed()
+        {
+            if (!Dispatcher.Initialized && SynchronizationContext.Current != null)
+            {
+                Dispatcher.Initialize(SynchronizationContext.Current);
+            }
+        }
+
+        #endregion
+
         #region Default Constructor
 
         public KucoinBaseWebsocketFeed(

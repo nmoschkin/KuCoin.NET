@@ -330,13 +330,23 @@ namespace Kucoin.NET.Websockets.Observations
                 OrderBook = ob;
             }
 
-            Dispatcher.InvokeOnMainThread((o) =>
+            if (Dispatcher.Initialized)
+            {
+                Dispatcher.InvokeOnMainThread((o) =>
+                {
+                    orderBook.Sequence = preflightBook.Sequence;
+                    orderBook.Time = EpochTime.DateToNanoseconds(DateTime.Now);
+
+                    CopyBook();
+                });
+            }
+            else
             {
                 orderBook.Sequence = preflightBook.Sequence;
                 orderBook.Time = EpochTime.DateToNanoseconds(DateTime.Now);
 
                 CopyBook();
-            });
+            }
         }
 
         protected void CopyBook()
