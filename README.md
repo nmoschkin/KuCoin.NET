@@ -20,7 +20,7 @@ When you clone the project, you must run __git submodule init__ and __git submod
 
 ## REST API 
 
-Inside the __Kucoin.NET.Rest__ namespace you will find three objects, __Market__, __Trade__, and __User__.  __User__ and __Order__ require API Keys.  
+Inside the __Kucoin.NET.Rest__ namespace you will find three objects, __Market__, __Trade__, __Margin__, and __User__.  __Margin__, __Trade__, and __User__ require API Keys.  
 
 There are two credentials providers, there is the default __MemoryEncryptedCredentialsProvider__ that is in the Kucoin.NET library, and then the __CryptoCredentials__ class in the example app.
 
