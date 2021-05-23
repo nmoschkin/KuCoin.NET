@@ -460,7 +460,7 @@
                 Width="200"
                 Margin="8"
                 HorizontalAlignment="Left"
-                ItemsSource="{Binding Currencies}"
+                ItemsSource="{Binding QuoteCurrencies}"
                 SelectedItem="{Binding QuoteCurrency}">
 
                 <ComboBox.ItemTemplate>

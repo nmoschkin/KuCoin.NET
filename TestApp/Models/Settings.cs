@@ -145,6 +145,19 @@ namespace KuCoinApp
             }
         }
 
+        public string QuoteCurrency
+        {
+            get
+            {
+                return GetProperty<string>("USDT");
+            }
+            set
+            {
+                SetProperty(value);
+                OnPropertyChanged();
+            }
+        }
+
         public string Hvcyp
         {
             get

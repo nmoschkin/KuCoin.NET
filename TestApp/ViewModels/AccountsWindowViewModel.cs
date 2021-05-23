@@ -38,6 +38,7 @@ namespace KuCoinApp.ViewModels
 
         private CurrencyViewModel quoteCurrency;
         private ObservableCollection<CurrencyViewModel> currencies;
+        private ObservableCollection<CurrencyViewModel> quoteCurrencies;
 
         private ObservableCollection<AccountItemViewModel> mainAccounts;
         private ObservableCollection<AccountItemViewModel> tradingAccounts;
@@ -58,7 +59,20 @@ namespace KuCoinApp.ViewModels
             get => quoteCurrency;
             set
             {
-                SetProperty(ref quoteCurrency, value);
+                if (SetProperty(ref quoteCurrency, value))
+                {
+                    App.Current.Settings.QuoteCurrency = value.Currency.Currency;
+                    _ = UpdateAccounts();
+                }
+            }
+        }
+
+        public ObservableCollection<CurrencyViewModel> QuoteCurrencies
+        {
+            get => quoteCurrencies;
+            set
+            {
+                SetProperty(ref quoteCurrencies, value);
             }
         }
 
@@ -138,8 +152,11 @@ namespace KuCoinApp.ViewModels
             App.Current?.Dispatcher?.Invoke(() =>
             {
                 Currencies = new ObservableCollection<CurrencyViewModel>();
+                QuoteCurrencies = new ObservableCollection<CurrencyViewModel>();
 
                 CurrencyViewModel usdt = null;
+                
+                var cq = App.Current.Settings.QuoteCurrency;
 
                 foreach (var curr in CurrencyViewModel.Currencies)
                 {
@@ -148,7 +165,17 @@ namespace KuCoinApp.ViewModels
                     _ = newCurr.LoadImage();
 
                     currencies.Add(newCurr);
-                    if (curr.Currency == "USDT") usdt = newCurr;
+
+                    foreach (var curr2 in CurrencyViewModel.QuoteCurrencies)
+                    {
+                        if (curr2.Currency == curr.Currency)
+                        {
+                            quoteCurrencies.Add(newCurr);
+                            break;
+                        }
+                    }
+
+                    if (curr.Currency == cq) usdt = newCurr;
                 }
 
                 if (quoteCurrency == null)
@@ -159,14 +186,23 @@ namespace KuCoinApp.ViewModels
             });
 
         }
-        private void AddAccount(Account acct, bool addTicker = false)
+
+        private void InsertAccount(Account acct, bool addTicker = false)
         {
+            bool isquote = acct.Currency == QuoteCurrency.Currency.Currency;
             var pair = $"{acct.Currency}-{QuoteCurrency.Currency.Currency}";
             var acctvm = new AccountItemViewModel(acct);
 
             accounts.Add(acctvm);
 
-            acctvm.UpdateQuoteAmount(1);
+            if (isquote)
+            {
+                acctvm.UpdateQuoteAmount(1.0M);
+            }
+            else
+            {
+                acctvm.UpdateQuoteAmount((decimal?)null);
+            }
 
             if (acct.Type == AccountType.Main)
             {
@@ -234,7 +270,7 @@ namespace KuCoinApp.ViewModels
                         newTypes.Add(acct.TypeDescription);
                     }
 
-                    AddAccount(acct);
+                    InsertAccount(acct);
                 }
 
                 AccountTypes = newTypes;
@@ -257,7 +293,9 @@ namespace KuCoinApp.ViewModels
 
             foreach (var pair in pairs)
             {
-                if (pair == "USDT-USDT") continue;
+                var ps = pair.Split('-');
+
+                if (ps[0] == ps[1]) continue;
 
                 try
                 {
@@ -321,7 +359,7 @@ namespace KuCoinApp.ViewModels
                     Task.Run(async () =>
                     {
                         var newacct = await user.GetAccountList(value.Currency, AccountType.Main);
-                        lock (lockObj) AddAccount(newacct.FirstOrDefault(), true);
+                        lock (lockObj) InsertAccount(newacct.FirstOrDefault(), true);
                     });
 
                     break;
@@ -347,7 +385,7 @@ namespace KuCoinApp.ViewModels
                     {
                         var newacct = await user.GetAccountList(value.Currency, AccountType.Trading);
                         
-                        lock(lockObj) AddAccount(newacct.FirstOrDefault(), true);
+                        lock(lockObj) InsertAccount(newacct.FirstOrDefault(), true);
                     });
 
                     break;
@@ -373,7 +411,7 @@ namespace KuCoinApp.ViewModels
                     Task.Run(async () =>
                     {
                         var newacct = await user.GetAccountList(value.Currency, AccountType.Margin);
-                        lock(lockObj) AddAccount(newacct.FirstOrDefault(), true);
+                        lock(lockObj) InsertAccount(newacct.FirstOrDefault(), true);
                     });
 
                     break;
@@ -459,7 +497,7 @@ namespace KuCoinApp.ViewModels
                 cred = CryptoCredentials.LoadFromStorage(App.Current.Seed, pin, false);
                 user = new User(cred);
 
-                await UpdateCurrencies().ContinueWith((t) => UpdateAccounts());
+                await UpdateCurrencies(); //.ContinueWith((t) => UpdateAccounts());
 
             });
 

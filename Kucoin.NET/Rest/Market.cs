@@ -30,6 +30,43 @@ namespace Kucoin.NET.Rest
 
         protected List<MarketCurrency> currencies;
 
+        public async Task<MarketCurrency[]> GetAllQuoteCurrencies()
+        {
+
+            if (currencies == null)
+            {
+                await RefreshCurrenciesAsync();
+            }
+
+            if (symbols == null)
+            {
+                await RefreshSymbolsAsync();
+            }
+
+            var syms = symbols.ToArray();
+
+            var curs = currencies.ToArray();
+
+            var distinct = new Dictionary<string, MarketCurrency>();
+
+            foreach (var sym in syms) 
+            {
+                if (distinct.ContainsKey(sym.QuoteCurrency)) continue;
+
+                foreach (var cur in curs)
+                {
+                    if (cur.Currency == sym.QuoteCurrency)
+                    {
+                        distinct.Add(cur.Currency, cur);
+                        break;
+                    }
+                }
+
+            }
+
+            return distinct.Values.ToArray();
+        }
+
         public IReadOnlyList<MarketCurrency> Currencies => currencies;
 
         /// <summary>

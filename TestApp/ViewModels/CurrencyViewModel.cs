@@ -22,6 +22,8 @@ namespace KuCoinApp
         BitmapSource bmp = null;
         MarketCurrency curr;
 
+        public static IReadOnlyList<MarketCurrency> QuoteCurrencies { get; private set; }
+
         public static CurrencyViewModel GetCurrency(string currency, bool loadImage = true)
         {
             foreach (var curr in Currencies)
@@ -43,6 +45,8 @@ namespace KuCoinApp
 
             await market.RefreshCurrenciesAsync();
             await market.RefreshSymbolsAsync();
+
+            QuoteCurrencies = await market.GetAllQuoteCurrencies();
 
             var l = new List<MarketCurrency>(market.Currencies);
 

@@ -21,8 +21,8 @@ namespace KuCoinApp.ViewModels
         private Account source;
         private CurrencyViewModel currency;
 
-        private decimal quoteAmount;
-        private decimal lastQuotePrice = 1.0M;
+        private decimal? quoteAmount = null;
+        private decimal? lastQuotePrice = null;
 
         public Account Source
         {
@@ -82,7 +82,8 @@ namespace KuCoinApp.ViewModels
 
                 source.Balance = value;
                 OnPropertyChanged(nameof(Balance));
-                QuoteAmount = value * lastQuotePrice;
+                
+                QuoteAmount = lastQuotePrice * value;
             }
         }
 
@@ -109,7 +110,7 @@ namespace KuCoinApp.ViewModels
             }
         }
 
-        public decimal QuoteAmount
+        public decimal? QuoteAmount
         {
             get => quoteAmount;
             set
@@ -118,17 +119,26 @@ namespace KuCoinApp.ViewModels
             }
         }
 
-        public void UpdateQuoteAmount(decimal quotePrice)
+        public void UpdateQuoteAmount(decimal? quotePrice)
         {
             lastQuotePrice = quotePrice;
-            QuoteAmount = Balance * quotePrice;
+            QuoteAmount = quotePrice * Balance;
         }
 
         public async Task UpdateQuoteAmount(string quoteCurrency)
         {
+            if (quoteCurrency == CurrencyName)
+            {
+                lastQuotePrice = 1;
+                QuoteAmount = Balance;
+
+                return;
+            }
+
             var market = new Market();
             var ticker = await market.GetTicker($"{CurrencyName}-{quoteCurrency}");
-
+            
+            lastQuotePrice = ticker.Price;
             QuoteAmount = Balance * ticker.Price;
         }
 
