@@ -712,6 +712,11 @@ namespace KuCoinApp
                         if (sym.Symbol == rec)
                         {
                             Symbol = sym;
+
+                            var marg = new Margin(cred);
+
+                            var results = await marg.GetMarginAccounts();
+                            
                             //_ = Program.TestMain(cred);
 
                             return;

@@ -7,7 +7,8 @@ These are __not__ official libraries from KuCoin.  They are new implementations.
 
 This library is in active development, and it's brand new so things will undoubtedly change while I consider next steps.
 
-As of May 13th, 2021, I would guage that the library, itself, is about 70-80% complete. 
+May 23rd, 2021: Some major refactoring/finalizing of the guts of the library (especially the websocket feed), and I'm settling on better-chosen names for classes.
+
 
 ## Installation
 
@@ -19,7 +20,7 @@ When you clone the project, you must run __git submodule init__ and __git submod
 
 ## REST API 
 
-Inside the __Kucoin.NET.Rest__ namespace you will find three objects, __Market__, __Order__, and __User__.  __User__ and __Order__ require API Keys.  
+Inside the __Kucoin.NET.Rest__ namespace you will find three objects, __Market__, __Trade__, and __User__.  __User__ and __Order__ require API Keys.  
 
 There are two credentials providers, there is the default __MemoryEncryptedCredentialsProvider__ that is in the Kucoin.NET library, and then the __CryptoCredentials__ class in the example app.
 

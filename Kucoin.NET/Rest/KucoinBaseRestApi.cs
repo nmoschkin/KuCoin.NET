@@ -434,24 +434,21 @@ namespace Kucoin.NET.Rest
                     throw new Exception(string.Format("{0}-{1}", response_data.StatusCode, content));
                 }
 
-                if (data != null && data.ContainsKey("code"))
+                if (wholeResponseJson && data != null)
+                {
+                    return data;
+                }
+                else if (data != null && data.ContainsKey("code"))
                 {
                     if (data["code"].ToObject<string>() == "200000")
                     {
-                        if (wholeResponseJson)
+                        if (data.ContainsKey("data"))
                         {
-                            return data;
+                            return data["data"];
                         }
                         else
                         {
-                            if (data.ContainsKey("data"))
-                            {
-                                return data["data"];
-                            }
-                            else
-                            {
-                                return data;
-                            }
+                            return data;
                         }
                     }
                     else

@@ -249,7 +249,7 @@ namespace Kucoin.NET.Rest
         }
 
 
-        public async Task<List<Order>> GetPartList(string symbol, int pieces)
+        public async Task<List<Trade>> GetPartList(string symbol, int pieces)
         {
             var curl = pieces > 0 ? string.Format("/api/v3/market/orderbook/level2_{0}", pieces) : "/api/v3/market/orderbook/level2";
             var param = new Dictionary<string, object>();
@@ -257,17 +257,17 @@ namespace Kucoin.NET.Rest
             param.Add("symbol", symbol);
 
             var jobj = await MakeRequest(HttpMethod.Get, curl, 5, false, param);
-            return jobj.ToObject<List<Order>>();
+            return jobj.ToObject<List<Trade>>();
         }
 
-        public Task<List<Order>> GetAggregatedOrder(string symbol) => GetPartList(symbol, 0);
+        public Task<List<Trade>> GetAggregatedOrder(string symbol) => GetPartList(symbol, 0);
 
-        public async Task<Order> GetAtomicOrder(string symbol)
+        public async Task<Trade> GetAtomicOrder(string symbol)
         {
             var curl = string.Format("/api/v3/market/orderbook/level3?symbol={0}", symbol);
 
             var jobj = await MakeRequest(HttpMethod.Get, curl, 5, false);
-            return jobj.ToObject<Order>();
+            return jobj.ToObject<Trade>();
 
         }
 
