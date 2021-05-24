@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 namespace Kucoin.NET.Websockets
 {
     /// <summary>
-    /// Base class for symbol-level live feeds.
+    /// Base class for live feeds supporting multiple symbols per feed.
     /// </summary>
     public abstract class SymbolTopicFeedBase<T> : KucoinBaseWebsocketFeed<T> where T: class, ISymbol
     {
@@ -20,6 +20,13 @@ namespace Kucoin.NET.Websockets
         
         protected string topic;
 
+        /// <summary>
+        /// Default constructor
+        /// </summary>
+        /// <param name="key">API Key</param>
+        /// <param name="secret">API Secret</param>
+        /// <param name="passphrase">API Passphrase</param>
+        /// <param name="isSandbox">Is Sandbox Mode</param>
         public SymbolTopicFeedBase(
           string key,
           string secret,
@@ -29,6 +36,10 @@ namespace Kucoin.NET.Websockets
         {
         }
 
+        /// <summary>
+        /// Default Constructor
+        /// </summary>
+        /// <param name="credProvider"><see cref="ICredentialsProvider"/> implementation.</param>
         public SymbolTopicFeedBase(ICredentialsProvider credProvider) : base(credProvider)
         {
         }
@@ -173,15 +184,15 @@ namespace Kucoin.NET.Websockets
         /// <returns>An <see cref="IDisposable"/> implementation that can be used to cancel the subscription.</returns>
         public override IDisposable Subscribe(IObserver<T> observer)
         {
-            lock (observers)
+            lock (observations)
             {
-                foreach (var obs in observers)
+                foreach (var obs in observations)
                 {
                     if (obs.Observer == observer) return obs;
                 }
 
                 var obsNew = new SymbolObservation<T>(this, observer);
-                observers.Add(obsNew);
+                observations.Add(obsNew);
 
                 return obsNew;
             }
@@ -196,15 +207,15 @@ namespace Kucoin.NET.Websockets
         /// <returns>An <see cref="IDisposable"/> implementation that can be used to cancel the subscription.</returns>
         public IDisposable Subscribe(IObserver<T> observer, IEnumerable<string> symbols)
         {
-            lock (observers)
+            lock (observations)
             {
-                foreach (var obs in observers)
+                foreach (var obs in observations)
                 {
                     if (obs.Observer == observer) return obs;
                 }
 
                 var obsNew = new SymbolObservation<T>(symbols, this, observer);
-                observers.Add(obsNew);
+                observations.Add(obsNew);
 
                 return obsNew;
             }
@@ -216,11 +227,11 @@ namespace Kucoin.NET.Websockets
         /// <param name="obj"></param>
         protected override async Task PushNext(T obj)
         {
-            if (observers == null || observers.Count == 0) return;
+            if (observations == null || observations.Count == 0) return;
 
             await Task.Run(() =>
             {
-                foreach (SymbolObservation<T> obs in observers)
+                foreach (SymbolObservation<T> obs in observations)
                 {
                     if (obs.ActiveSymbols.Count == 0 || obs.ActiveSymbols.Contains(obj.Symbol))
                     {
@@ -236,18 +247,24 @@ namespace Kucoin.NET.Websockets
         #region Multiplexing
 
         /// <summary>
-        /// Create a multiplexed child of the specified type to share the connection of this <see cref="KucoinBaseWebsocketFeed"/>-derived instance.
+        /// Create a multiplexed client of the specified type to share the connection of this <see cref="KucoinBaseWebsocketFeed"/>-derived instance.
         /// </summary>
-        /// <typeparam name="F">The feed type to create</typeparam>
+        /// <typeparam name="TFeed">The feed type to create.</typeparam>
+        /// <typeparam name="TObj">The type of object that is pushed by the feed.</typeparam>
         /// <param name="inheritSymbols">True to initialize the child with all the active symbols of the current feed.</param>
-        /// <returns></returns>
-        public virtual async Task<F> CreateMultiplexedChild<F, G>(bool inheritSymbols) where F : SymbolTopicFeedBase<G>, new() where G: class, ISymbol
+        /// <returns>A new <see cref="SymbolTopicFeedBase{T}"/>.</returns>
+        /// <remarks>
+        /// TFeed must be an object derived from <see cref="SymbolTopicFeedBase{T}"/>.
+        /// 
+        /// An <see cref="InvalidOperationException"/> will be raised if an attempt is made to initialize a new feed on to a class instance that is already initialized as a multiplex client.
+        /// </remarks>
+        public virtual async Task<TFeed> CreateMultiplexedClient<TFeed, TObj>(bool inheritSymbols) where TFeed : SymbolTopicFeedBase<TObj>, new() where TObj: class, ISymbol
         {
             if (tunnelId != null && !isMultiplexHost)
             {
-                throw new InvalidOperationException("Cannot initialize as multiplex parent when already initialized as multiplex child.");
+                throw new InvalidOperationException("Cannot initialize as multiplex client when already initialized as multiplex connection host.");
             }
-            var child = new F();
+            var child = new TFeed();
 
             if (!isMultiplexHost)
             {
@@ -266,8 +283,6 @@ namespace Kucoin.NET.Websockets
 
 
         #endregion
-
-
 
     }
 }

@@ -9,8 +9,11 @@ using System.Threading.Tasks;
 namespace Kucoin.NET.Websockets.Public
 {
     /// <summary>
-    /// Implements the all symbol market feed (Level 2).
+    /// A <see cref="SnapshotItem"/> feed that pushes updates for all trading pairs (symbols) in the specified market.
     /// </summary>
+    /// <remarks>
+    /// To get a list of valid markets, call <see cref="Kucoin.NET.Rest.Market.GetMarketList"/>.
+    /// </remarks>
     public class MarketFeed : KucoinBaseWebsocketFeed<SnapshotItem>
     {
         private List<string> activeTickers = new List<string>();
@@ -82,15 +85,15 @@ namespace Kucoin.NET.Websockets.Public
         /// <returns>An <see cref="IDisposable"/> implementation that can be used to cancel the subscription.</returns>
         public override IDisposable Subscribe(IObserver<SnapshotItem> observer)
         {
-            lock (observers)
+            lock (observations)
             {
-                foreach (var obs in observers)
+                foreach (var obs in observations)
                 {
                     if (obs.Observer == observer) return obs;
                 }
 
                 var obsNew = new SymbolObservation<SnapshotItem>(this, observer);
-                observers.Add(obsNew);
+                observations.Add(obsNew);
 
                 return obsNew;
             }
@@ -105,15 +108,15 @@ namespace Kucoin.NET.Websockets.Public
         /// <returns>An <see cref="IDisposable"/> implementation that can be used to cancel the subscription.</returns>
         public IDisposable Subscribe(IObserver<SnapshotItem> observer, IEnumerable<string> symbols)
         {
-            lock (observers)
+            lock (observations)
             {
-                foreach (var obs in observers)
+                foreach (var obs in observations)
                 {
                     if (obs.Observer == observer) return obs;
                 }
 
                 var obsNew = new SymbolObservation<SnapshotItem>(symbols, this, observer);
-                observers.Add(obsNew);
+                observations.Add(obsNew);
 
                 return obsNew;
             }
@@ -127,7 +130,7 @@ namespace Kucoin.NET.Websockets.Public
         {
             await Task.Run(() =>
             {
-                foreach (SymbolObservation<SnapshotItem> obs in observers)
+                foreach (SymbolObservation<SnapshotItem> obs in observations)
                 {
                     if (obs.ActiveSymbols.Count == 0 || obs.ActiveSymbols.Contains(obj.Symbol))
                     {

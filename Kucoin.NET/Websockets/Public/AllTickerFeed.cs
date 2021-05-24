@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 namespace Kucoin.NET.Websockets.Public
 {
     /// <summary>
-    /// Implements the all symbol ticker feed (Level 2).
+    /// A <see cref="Ticker"/> feed that pushes updates for all trading pairs (symbols).
     /// </summary>
     public class AllTickerFeed : TopicFeedBase<Ticker>
     {
@@ -50,15 +50,15 @@ namespace Kucoin.NET.Websockets.Public
         /// <returns>An <see cref="IDisposable"/> implementation that can be used to cancel the subscription.</returns>
         public override IDisposable Subscribe(IObserver<Ticker> observer)
         {
-            lock (observers)
+            lock (observations)
             {
-                foreach (var obs in observers)
+                foreach (var obs in observations)
                 {
                     if (obs.Observer == observer) return obs;
                 }
 
                 var obsNew = new SymbolObservation<Ticker>(this, observer);
-                observers.Add(obsNew);
+                observations.Add(obsNew);
 
                 return obsNew;
             }
@@ -73,15 +73,15 @@ namespace Kucoin.NET.Websockets.Public
         /// <returns>An <see cref="IDisposable"/> implementation that can be used to cancel the subscription.</returns>
         public IDisposable Subscribe(IObserver<Ticker> observer, IEnumerable<string> symbols)
         {
-            lock (observers)
+            lock (observations)
             {
-                foreach (var obs in observers)
+                foreach (var obs in observations)
                 {
                     if (obs.Observer == observer) return obs;
                 }
 
                 var obsNew = new SymbolObservation<Ticker>(symbols, this, observer);
-                observers.Add(obsNew);
+                observations.Add(obsNew);
 
                 return obsNew;
             }
@@ -95,7 +95,7 @@ namespace Kucoin.NET.Websockets.Public
         {
             await Task.Run(() =>
             {
-                foreach (SymbolObservation<Ticker> obs in observers)
+                foreach (SymbolObservation<Ticker> obs in observations)
                 {
                     if (obs.ActiveSymbols.Count == 0 || obs.ActiveSymbols.Contains(obj.Symbol))
                     {

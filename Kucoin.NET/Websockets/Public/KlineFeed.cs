@@ -11,54 +11,6 @@ using Kucoin.NET.Helpers;
 namespace Kucoin.NET.Websockets.Public
 {
 
-    public class SymbolKline
-    {
-        KlineType type;
-
-        string symbol;
-
-        public KlineType KlineType
-        {
-            get => type;
-            set => type = value;
-        }
-
-        public string Symbol
-        {
-            get => symbol;
-            set => symbol = value;
-        }
-
-        public SymbolKline(string symbol, KlineType type)
-        {
-            this.type = type;
-            this.symbol = symbol;
-        }
-        public SymbolKline()
-        {
-
-        }
-
-        public override string ToString()
-        {
-            return $"{symbol}_{type}";
-        }
-
-        public static SymbolKline Parse(string s)
-        {
-            var parts = s.Split('_');
-
-            var output = new SymbolKline();
-
-            output.Symbol = parts[0];
-            output.KlineType = KlineType.Parse(parts[1]);
-
-            return output;
-        }
-
-    }
-
-
     /// <summary>
     /// Implements the symbol candles feed (Level 2).
     /// </summary>
@@ -136,11 +88,22 @@ namespace Kucoin.NET.Websockets.Public
         }
 
         /// <summary>
-        /// Add to the specified ticker
+        /// Subscribe to the specified ticker.
         /// </summary>
-        /// <param name="symbol"></param>
+        /// <param name="symbolKline">The <see cref="SymbolKline"/> combination of the ticker to add.</param>
         /// <returns></returns>
-        public async Task AddSymbol(string symbol, KlineType type)
+        public virtual async Task AddSymbol(SymbolKline symbolKline)
+        {
+            await AddSymbol(symbolKline.Symbol, symbolKline.KlineType);
+        }
+
+        /// <summary>
+        /// Subscribe to the specified ticker.
+        /// </summary>
+        /// <param name="symbol">The trading pair (symbol) of the ticker to add.</param>
+        /// <param name="type">The <see cref="KlineType"/> of the ticker to add.</param>
+        /// <returns></returns>
+        public virtual async Task AddSymbol(string symbol, KlineType type)
         {
             if (disposed) throw new ObjectDisposedException(nameof(KlineFeed<T>));
             if (!Connected)
@@ -172,11 +135,22 @@ namespace Kucoin.NET.Websockets.Public
 
         }
 
+
         /// <summary>
-        /// Remove from the specified ticker
+        /// Unsubscribe from the specified ticker.
         /// </summary>
-        /// <param name="symbol"></param>
+        /// <param name="symbolKline">The <see cref="SymbolKline"/> combination of the ticker to remove.</param>
         /// <returns></returns>
+        public virtual async Task RemoveSymbol(SymbolKline symbolKline)
+        {
+            await RemoveSymbol(symbolKline.Symbol, symbolKline.KlineType);
+        }
+
+        /// <summary>
+        /// Unsubscribe from the specified ticker.
+        /// </summary>
+        /// <param name="symbol">The trading pair (symbol) of the ticker to remove.</param>
+        /// <param name="type">The <see cref="KlineType"/> of the ticker to remove.</param>
         public virtual async Task RemoveSymbol(string symbol, KlineType type)
         {
             if (disposed) throw new ObjectDisposedException(nameof(KlineFeed<T>));
@@ -210,10 +184,10 @@ namespace Kucoin.NET.Websockets.Public
         }
 
         /// <summary>
-        /// Remove from all tickers
+        /// Unsubscribe from all tickers.
         /// </summary>
         /// <returns></returns>
-        public virtual async Task RemoveAllTickers()
+        public virtual async Task ClearAllTickers()
         {
             foreach (var s in activeTickers)
             {

@@ -49,14 +49,25 @@ namespace Kucoin.NET.Websockets.Private
         /// </summary>
         public event EventHandler<OrderChangeEventArgs> Update;
 
-
+        /// <summary>
+        /// Create a new feed to follow order change events with the specified credentials.
+        /// </summary>
+        /// <param name="credProvider"><see cref="ICredentialsProvider"/> implementation.</param>
         public OrderChangeEventsFeed(ICredentialsProvider credProvider) : base(credProvider)
         {
         }
 
+        /// <summary>
+        /// Create a new feed to follow order change events with the specified credentials.
+        /// </summary>
+        /// <param name="key">API Key</param>
+        /// <param name="secret">API Secret</param>
+        /// <param name="passphrase">API Passphrase</param>
+        /// <param name="isSandbox">Is Sandbox Mode</param>
         public OrderChangeEventsFeed(string key, string secret, string passphrase, bool isSandbox = false) : base(key, secret, passphrase, isSandbox)
         {
         }
+
         protected override async Task PushNext(OrderChange obj)
         {            
             var ch = obj.Clone();

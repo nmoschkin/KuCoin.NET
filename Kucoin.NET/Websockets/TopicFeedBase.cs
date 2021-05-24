@@ -8,6 +8,10 @@ using System.Threading.Tasks;
 
 namespace Kucoin.NET.Websockets
 {
+    /// <summary>
+    /// Base class for simple topic feeds.
+    /// </summary>
+    /// <typeparam name="T">The type of object that is pushed on the feed.</typeparam>
     public abstract class TopicFeedBase<T> : KucoinBaseWebsocketFeed<T> where T: class
     {
         protected bool feedStarted = false;
@@ -16,15 +20,26 @@ namespace Kucoin.NET.Websockets
 
         protected bool autoStartStop = true;
 
+        /// <summary>
+        /// Default constructor
+        /// </summary>
+        /// <param name="key">API Key</param>
+        /// <param name="secret">API Secret</param>
+        /// <param name="passphrase">API Passphrase</param>
+        /// <param name="isSandbox">Is Sandbox Mode</param>
         public TopicFeedBase(
-        string key,
-        string secret,
-        string passphrase,
-        bool isSandbox = false)
+                string key,
+                string secret,
+                string passphrase,
+                bool isSandbox = false)
         : base(key, secret, passphrase, isSandbox)
         {
         }
 
+        /// <summary>
+        /// Default Constructor
+        /// </summary>
+        /// <param name="credProvider"><see cref="ICredentialsProvider"/> implementation.</param>
         public TopicFeedBase(ICredentialsProvider credProvider) : base(credProvider)
         {
         }
@@ -41,6 +56,9 @@ namespace Kucoin.NET.Websockets
             }
         }
 
+        /// <summary>
+        /// Gets or sets a value indicating whether to automatically start the feed with the addition of the first subscription and stop the feed with the removal of the last subscription.
+        /// </summary>
         public virtual bool AutoStartStop
         {
             get => autoStartStop;
@@ -50,6 +68,9 @@ namespace Kucoin.NET.Websockets
             }
         }
 
+        /// <summary>
+        /// True if the feed is running.
+        /// </summary>
         public virtual bool FeedStarted
         {
             get => feedStarted;
@@ -59,6 +80,10 @@ namespace Kucoin.NET.Websockets
             }
         }
 
+        /// <summary>
+        /// Subscribe to the remote topic and start the feed.
+        /// </summary>
+        /// <returns></returns>
         public virtual async Task StartFeed()
         {
             lock(lockObj)
@@ -86,6 +111,10 @@ namespace Kucoin.NET.Websockets
             await Send(e);
         }
 
+        /// <summary>
+        /// Unsubscribe from the remote topic and stop the feed.
+        /// </summary>
+        /// <returns></returns>
         public virtual async Task StopFeed()
         {
             lock(lockObj)
@@ -113,7 +142,7 @@ namespace Kucoin.NET.Websockets
         internal override void RemoveObservation(FeedObservation<T> observation)
         {
             base.RemoveObservation(observation);
-            if (autoStartStop && observers.Count == 0)
+            if (autoStartStop && observations.Count == 0)
             {
                 StopFeed().Wait();
             }
