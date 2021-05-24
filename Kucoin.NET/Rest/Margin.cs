@@ -23,7 +23,7 @@ namespace Kucoin.NET.Rest
         {
         }
 
-        public Margin(ICredentialsProvider credProvider, bool isSandbox = false) : base(credProvider, isSandbox)
+        public Margin(ICredentialsProvider credProvider) : base(credProvider)
         {
         }
 

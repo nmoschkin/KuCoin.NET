@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Kucoin.NET.Rest;
 
 namespace KuCoinApp
 {
@@ -26,9 +27,7 @@ namespace KuCoinApp
         protected bool isPassphraseRequired = true;
 
         protected int version = DefaultVersion;
-
-        protected bool sandbox;
-
+                
         protected CryptoCredentials() : base(null, null, null)
         {
         }
@@ -375,15 +374,17 @@ namespace KuCoinApp
 
                     File.Delete(oldpath);                    
                 }
+                
+                
 
 #pragma warning disable IDE0059 // Unnecessary assignment of a value
                 json = null;
 #pragma warning restore IDE0059 // Unnecessary assignment of a value
 
             }
-            catch(Exception ex)
+            catch
             {
-                var n = 0; // File.Delete(path);
+             
             }
 
             cred.CheckIsClear();

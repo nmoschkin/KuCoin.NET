@@ -25,8 +25,6 @@ namespace Kucoin.NET.Rest
         protected bool isSandbox;
         protected bool isv1api;
 
-        public static bool? GlobalSandbox { get; set; } = null;
-
         /// <summary>
         /// Gets credentials for access.
         /// </summary>
@@ -40,7 +38,7 @@ namespace Kucoin.NET.Rest
         /// <summary>
         /// True if running in sandbox mode.
         /// </summary>
-        public virtual bool IsSandbox => isSandbox;
+        public virtual bool IsSandbox => cred?.GetSandbox() ?? isSandbox;
 
         /// <summary>
         /// True if using the Version 1 API
@@ -59,23 +57,22 @@ namespace Kucoin.NET.Rest
         /// Initialize a new instance of a REST API client with a credentials provider.
         /// </summary>
         /// <param name="credProvider">An object that implements <see cref="ICredentialsProvider"/>.</param>
-        /// <param name="isSandbox">Is sandbox / not real-time.</param>
         /// <param name="url">REST API url.</param>
         /// <param name="isv1api">Is version 1 api.</param>
         public KucoinBaseRestApi(
             ICredentialsProvider credProvider,
-            bool isSandbox = false, 
             string url = null, 
             bool isv1api = false) 
             : this(
                   null, 
                   null, 
                   null, 
-                  isSandbox, 
+                  false, 
                   url, 
                   isv1api)
         {
             cred = new MemoryEncryptedCredentialsProvider(credProvider);
+            isSandbox = cred.GetSandbox();
         }
 
         /// <summary>
@@ -97,12 +94,6 @@ namespace Kucoin.NET.Rest
             )
         {
 
-            // universal override
-            if (GlobalSandbox != null)
-            {
-                isSandbox = (bool)GlobalSandbox;
-            }
-
             if (!string.IsNullOrEmpty(url))
             {
                 this.url = url;
@@ -121,7 +112,7 @@ namespace Kucoin.NET.Rest
             
             if (key != null && secret != null)
             {
-                cred = new MemoryEncryptedCredentialsProvider(key, secret, passphrase);
+                cred = new MemoryEncryptedCredentialsProvider(key, secret, passphrase, null, isSandbox);
 
 #pragma warning disable IDE0059 // Unnecessary assignment of a value
                 key = secret = passphrase = null;
@@ -130,9 +121,8 @@ namespace Kucoin.NET.Rest
                 GC.Collect();
             }
 
-
-            this.isv1api = isv1api;
             this.isSandbox = isSandbox;
+            this.isv1api = isv1api;
         }
 
         
@@ -198,8 +188,8 @@ namespace Kucoin.NET.Rest
         /// <summary>
         /// Gets the results of a paginated list of <see cref="R"/> by page.
         /// </summary>
-        /// <typeparam name="R">A type of result to return.</typeparam>
-        /// <typeparam name="P">A page of the type of result to return (must implement <see cref="IPaginated{T}"/> of <see cref="R"/>.</typeparam>
+        /// <typeparam name="TItem">A type of result to return.</typeparam>
+        /// <typeparam name="TPage">A page of the type of result to return (must implement <see cref="IPaginated{T}"/> of <see cref="R"/>.</typeparam>
         /// <param name="method">The <see cref="HttpMethod"/> of the new call.</param>
         /// <param name="uri">The relative path of the endpoint.</param>
         /// <param name="currentPage">The page to retrieve.</param>
@@ -209,7 +199,7 @@ namespace Kucoin.NET.Rest
         /// <param name="reqParams">Optional parameters for the call.</param>
         /// <param name="wholeResponseJson">True to return the whole response, or false to just return the 'data' portion.</param>
         /// <returns></returns>
-        protected async Task<IList<R>> GetResultsByPage<R, P>(
+        protected async Task<IList<TItem>> GetResultsByPage<TItem, TPage>(
             HttpMethod method, 
             string uri, 
             int currentPage = 1, 
@@ -218,22 +208,22 @@ namespace Kucoin.NET.Rest
             bool auth = true, 
             IDictionary<string, object> reqParams = null, 
             bool wholeResponseJson = false) 
-            where R : class, new() 
-            where P : class, IPaginated<R>, new()
+            where TItem : class, new() 
+            where TPage : class, IPaginated<TItem>, new()
         {
             var param = new Dictionary<string, object>();
-            var l = new List<R>();
+            var l = new List<TItem>();
 
             param.Add("pageSize", pageSize);
             param.Add("currentPage", currentPage);
 
             var jobj = await MakeRequest(method, uri, timeout, auth, reqParams, wholeResponseJson);
 
-            P p = null;
+            TPage p = null;
 
             try
             {
-                p = jobj.ToObject<P>();
+                p = jobj.ToObject<TPage>();
                 l.AddRange(p.Items);
             }
             catch (Exception jex)
@@ -247,8 +237,8 @@ namespace Kucoin.NET.Rest
         /// <summary>
         /// Gets all results of a paginated list of <see cref="R"/>.
         /// </summary>
-        /// <typeparam name="R">A type of result to return.</typeparam>
-        /// <typeparam name="P">A page of the type of result to return (must implement <see cref="IPaginated{T}"/> of <see cref="R"/>.</typeparam>
+        /// <typeparam name="TItem">A type of result to return.</typeparam>
+        /// <typeparam name="TPage">A page of the type of result to return (must implement <see cref="IPaginated{T}"/> of <see cref="R"/>.</typeparam>
         /// <param name="method">The <see cref="HttpMethod"/> of the new call.</param>
         /// <param name="uri">The relative path of the endpoint.</param>
         /// <param name="timeout">Timeout value, in seconds.</param>
@@ -256,32 +246,32 @@ namespace Kucoin.NET.Rest
         /// <param name="reqParams">Optional parameters for the call.</param>
         /// <param name="wholeResponseJson">True to return the whole response, or false to just return the 'data' portion.</param>
         /// <returns></returns>
-        protected async Task<IList<R>> GetAllPaginatedResults<R, P>(
+        protected async Task<IList<TItem>> GetAllPaginatedResults<TItem, TPage>(
             HttpMethod method, 
             string uri, 
             int timeout = 5,
             bool auth = true, 
             IDictionary<string, object> reqParams = null, 
             bool wholeResponseJson = false) 
-            where R : class, new() 
-            where P : class, IPaginated<R>, new()
+            where TItem : class, new() 
+            where TPage : class, IPaginated<TItem>, new()
         {
             int pageSize = 500;
             int currPage = 1;
 
             var param = new Dictionary<string, object>();
-            var l = new List<R>();
+            var l = new List<TItem>();
 
             param.Add("pageSize", pageSize);
             param.Add("currentPage", currPage);
 
             var jobj = await MakeRequest(method, uri, timeout, auth, reqParams, wholeResponseJson);
 
-            P p = null;
+            TPage p = null;
 
             try
             {
-                p = jobj.ToObject<P>();
+                p = jobj.ToObject<TPage>();
                 l.AddRange(p.Items);
             }
             catch (Exception jex)
@@ -297,7 +287,7 @@ namespace Kucoin.NET.Rest
                 {
                     param["currentPage"] = ++currPage;
                     jobj = await MakeRequest(method, uri, timeout, auth, reqParams, wholeResponseJson);
-                    p = jobj.ToObject<P>();
+                    p = jobj.ToObject<TPage>();
 
                     l.AddRange(p.Items);
                 }

@@ -22,7 +22,7 @@ namespace Kucoin.NET.Rest
     /// </summary>
     public class User : KucoinBaseRestApi
     {
-        public User(ICredentialsProvider credProvider, bool isSandbox = false) : base(credProvider, isSandbox)
+        public User(ICredentialsProvider credProvider) : base(credProvider)
         {
         }
 

@@ -21,6 +21,7 @@ namespace Kucoin.NET.Helpers
         protected string key;
         protected string secret;
         protected string passphrase;
+        protected bool sandbox;
 
         protected Guid seed;
 
@@ -45,7 +46,7 @@ namespace Kucoin.NET.Helpers
             this.key = EncryptIt(credProvider.GetKey());
             this.secret = EncryptIt(credProvider.GetSecret());
             this.passphrase = EncryptIt(credProvider.GetPassphrase());
-
+            this.sandbox = credProvider.GetSandbox();
         }
 
         /// <summary>
@@ -55,7 +56,7 @@ namespace Kucoin.NET.Helpers
         /// <param name="secret">Secret </param>
         /// <param name="passphrase">Passphrase</param>
         /// <param name="seed">UUID encryption seed (optional)</param>
-        public MemoryEncryptedCredentialsProvider(string key, string secret, string passphrase, Guid? seed = null)
+        public MemoryEncryptedCredentialsProvider(string key, string secret, string passphrase, Guid? seed = null, bool sandbox = false)
         {
 #pragma warning disable IDE0059 // Unnecessary assignment of a value
 
@@ -78,6 +79,8 @@ namespace Kucoin.NET.Helpers
 
             if (!string.IsNullOrEmpty(passphrase)) this.passphrase = EncryptIt(passphrase);
             passphrase = null;
+
+            this.sandbox = sandbox;
 
 #pragma warning restore IDE0059 // Unnecessary assignment of a value
 
@@ -317,5 +320,8 @@ namespace Kucoin.NET.Helpers
         {
             return !string.IsNullOrEmpty(secret) ? DecryptIt(secret) : null;
         }
+
+        public virtual bool GetSandbox() => sandbox;
+
     }
 }

@@ -573,6 +573,8 @@ namespace KuCoinApp
                         }
                         catch { }
 
+                        
+
                         level2Feed = new Level2(cred);
                         tickerFeed = new TickerFeed();
                         klineFeed = new KlineFeed<KlineCandle>();
@@ -610,7 +612,7 @@ namespace KuCoinApp
 
         public MainWindowViewModel()
         {
-            KucoinBaseRestApi.GlobalSandbox = false;
+            
 
             App.Current.Settings.PropertyChanged += Settings_PropertyChanged;
             market = new Market();
@@ -717,41 +719,50 @@ namespace KuCoinApp
                         pin = CryptoCredentials.Pin;
                     }
 
-                    cred = CryptoCredentials.LoadFromStorage(App.Current.Seed, pin, false);
+                    cred = CryptoCredentials.LoadFromStorage(App.Current.Seed, pin, false);                    
 
                     Symbols = market.Symbols;
 
                     var rec = App.Current.Settings.MostRecentSymbol;
                     OnPropertyChanged(nameof(RecentSymbols));
 
-
                     if (cred != null)
                     {
-                        
                         level2Feed = new Level2(cred);
                         level2Feed.UpdateInterval = 50;
 
-                        // connection sharing / multiplexing
+                        if (!cred.Sandbox)
+                        {
 
-                        // you can attach a public client feed
-                        // to a private host feed, but not vice-versa.
-                        // the private feed needs credentials, 
-                        // and the public feed does not include them.
+                            // connection sharing / multiplexing
 
-                        // we connect level2Feed, as it is
-                        // the credentialed feed.
-                        await level2Feed.Connect(true);
+                            // you can attach a public client feed
+                            // to a private host feed, but not vice-versa.
+                            // the private feed needs credentials, 
+                            // and the public feed does not include them.
 
-                        // we attach tickerFeed and klineFeed 
-                        // by calling MultiplexInit with the host feed.
-                        await tickerFeed.MultiplexInit(level2Feed);
-                        await klineFeed.MultiplexInit(level2Feed);
+                            // we connect level2Feed, as it is
+                            // the credentialed feed.
+                            await level2Feed.Connect(true);
 
-                        // Now we have the multiplex host (level2Feed)
-                        // and two multiplexed clients (tickerFeed and klineFeed)
+                            // we attach tickerFeed and klineFeed 
+                            // by calling MultiplexInit with the host feed.
+                            await tickerFeed.MultiplexInit(level2Feed);
+                            await klineFeed.MultiplexInit(level2Feed);
 
-                        // the connection only exists on the multiplex host
-                        // which serves as the connection maintainer.
+                            // Now we have the multiplex host (level2Feed)
+                            // and two multiplexed clients (tickerFeed and klineFeed)
+
+                            // the connection only exists on the multiplex host
+                            // which serves as the connection maintainer.
+                        }
+                        else
+                        {
+                            await level2Feed.Connect();
+
+                            await tickerFeed.Connect(true);
+                            await klineFeed.MultiplexInit(tickerFeed);
+                        }
                     }
                     else
                     {

@@ -18,7 +18,7 @@ namespace Kucoin.NET.Rest
     public class Trade : KucoinBaseRestApi
     {
 
-        public Trade(ICredentialsProvider credProvider, bool isSandbox = false) : base(credProvider, isSandbox)
+        public Trade(ICredentialsProvider credProvider) : base(credProvider)
         {
         }
 

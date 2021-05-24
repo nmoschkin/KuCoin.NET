@@ -110,13 +110,11 @@ namespace Kucoin.NET.Websockets
 
         public KucoinBaseWebsocketFeed(
             ICredentialsProvider credProvider,
-            bool isSandbox = false,
             string url = null,
             bool isv1api = false,
             KucoinBaseWebsocketFeed multiplexParent = null) 
             : base(
                   credProvider, 
-                  isSandbox, 
                   url, 
                   isv1api
                   )
@@ -442,15 +440,15 @@ namespace Kucoin.NET.Websockets
         /// <summary>
         /// Create a multiplexed client of the specified type to share the connection of this <see cref="KucoinBaseWebsocketFeed"/>-derived instance.
         /// </summary>
-        /// <typeparam name="F">The feed type to create</typeparam>
+        /// <typeparam name="TFeed">The feed type to create</typeparam>
         /// <returns>A new feed that shares a connection with the current object.</returns>
-        public virtual async Task<F> CreateMultiplexClient<F>() where F: KucoinBaseWebsocketFeed, new()
+        public virtual async Task<TFeed> CreateMultiplexClient<TFeed>() where TFeed: KucoinBaseWebsocketFeed, new()
         {
             if (tunnelId != null && !isMultiplexHost)
             {
                 throw new InvalidOperationException("Cannot initialize as multiplex parent when already initialized as multiplex child.");
             }
-            var client = new F();
+            var client = new TFeed();
 
             if (IsPublic && !client.IsPublic)
             {
@@ -957,10 +955,9 @@ namespace Kucoin.NET.Websockets
 
         public KucoinBaseWebsocketFeed( 
             ICredentialsProvider credProvider,
-            bool isSandbox = false,
             string url = null,
             bool isv1api = false,
-            KucoinBaseWebsocketFeed multiplexParent = null) : base(credProvider, isSandbox, url, isv1api, multiplexParent)
+            KucoinBaseWebsocketFeed multiplexParent = null) : base(credProvider, url, isv1api, multiplexParent)
         {
         }
 

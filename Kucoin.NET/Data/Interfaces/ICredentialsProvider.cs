@@ -29,5 +29,11 @@ namespace Kucoin.NET.Data.Interfaces
         /// <returns></returns>
         string GetPassphrase();
 
+        /// <summary>
+        /// Gets a value indicating if these credentials are for a sandbox account.
+        /// </summary>
+        /// <returns></returns>
+        bool GetSandbox();
+
     }
 }
