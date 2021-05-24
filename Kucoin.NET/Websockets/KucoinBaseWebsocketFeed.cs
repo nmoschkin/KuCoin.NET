@@ -519,44 +519,6 @@ namespace Kucoin.NET.Websockets
 
         private Task msgPumpThread;
 
-        /// <summary>
-        /// Separate thread that runs to pump messages to the observers in
-        /// the order in which they were received without delaying the data
-        /// receiving thread.
-        /// </summary>
-        /// <returns></returns>
-        private async Task MessagePumpThread()
-        {
-            string[] queue;
-
-            // loop forever
-            while (!ctsReceive.IsCancellationRequested && socket?.State == WebSocketState.Open)
-            {
-                await Task.Delay(10);
-
-                if (msgQueue.Count == 0)
-                {
-                    continue;
-                }
-
-                // lock on msgQueue.
-                lock (msgQueue)
-                {
-                    queue = msgQueue.ToArray();
-                    msgQueue.Clear();
-                }
-
-                foreach (var s in queue)
-                {
-                    await InternalJsonReceive(s);
-                }
-            }
-        }
-
-        protected virtual void OnJsonReceived(string json)
-        {
-            DataReceived?.Invoke(this, new DataReceivedEventArgs(json));
-        }
 
         /// <summary>
         /// The data receive thread.
@@ -673,6 +635,40 @@ namespace Kucoin.NET.Websockets
 
 
         /// <summary>
+        /// Separate thread that runs to pump messages to the observers in
+        /// the order in which they were received without delaying the data
+        /// receiving thread.
+        /// </summary>
+        /// <returns></returns>
+        private async Task MessagePumpThread()
+        {
+            string[] queue;
+
+            // loop forever
+            while (!ctsReceive.IsCancellationRequested && socket?.State == WebSocketState.Open)
+            {
+                await Task.Delay(10);
+
+                if (msgQueue.Count == 0)
+                {
+                    continue;
+                }
+
+                // lock on msgQueue.
+                lock (msgQueue)
+                {
+                    queue = msgQueue.ToArray();
+                    msgQueue.Clear();
+                }
+
+                foreach (var s in queue)
+                {
+                    await InternalJsonReceive(s);
+                }
+            }
+        }
+
+        /// <summary>
         /// Handles receiving of JSON data.
         /// </summary>
         /// <param name="json">The JSON string that was received from the remote endpoint.</param>
@@ -699,7 +695,7 @@ namespace Kucoin.NET.Websockets
                 else if (isMultiplexHost)
                 {
                     var p = multiplexClients.Where((child) => child.tunnelId == e.TunnelId).FirstOrDefault();
-                    
+
                     if (p != null)
                     {
                         await p.InternalJsonReceive(json);
@@ -708,6 +704,11 @@ namespace Kucoin.NET.Websockets
             }
 
             OnJsonReceived(json);
+        }
+
+        protected virtual void OnJsonReceived(string json)
+        {
+            DataReceived?.Invoke(this, new DataReceivedEventArgs(json));
         }
 
         /// <summary>

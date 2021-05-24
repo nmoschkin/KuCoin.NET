@@ -21,20 +21,20 @@ namespace Kucoin.NET.Data.Order
         /// Price per base currency
         /// </summary>
         [JsonProperty("price")]
-        public decimal Price { get; set; }
+        public decimal? Price { get; set; }
 
         /// <summary>
         /// Amount of base currency to buy or sell
         /// </summary>
         [JsonProperty("size")]
-        public decimal Size { get; set; }
+        public decimal? Size { get; set; }
 
 
         /// <summary>
         /// [Optional] GTC, GTT, IOC, or FOK (default is GTC), read Time In Force.
         /// </summary>
         [JsonProperty("timeInForce")]
-        public TimeInForce? TimeInForce { get; set; }
+        public TimeInForce? TimeInForce { get; set; } = Order.TimeInForce.GoodTillCanceled;
 
         /// <summary>
         /// [Optional] cancel after n seconds, requires timeInForce to be GTT
