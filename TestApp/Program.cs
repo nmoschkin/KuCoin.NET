@@ -261,10 +261,6 @@ namespace KuCoinApp
 
             //Console.WriteLine("Now going to attempt API key log in to get user data: ");
 
-
-
-
-
             //var l2 = new Level2(cred);
             //var pl = await l2.GetPartList("ETH-USDT", 20);
 
