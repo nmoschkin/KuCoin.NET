@@ -50,7 +50,7 @@ namespace Kucoin.NET.Websockets.Private
         public event EventHandler<OrderChangeEventArgs> Update;
 
 
-        public OrderChangeEventsFeed(ICredentialsProvider credProvider, bool isSandbox = false) : base(credProvider, isSandbox)
+        public OrderChangeEventsFeed(ICredentialsProvider credProvider) : base(credProvider)
         {
         }
 

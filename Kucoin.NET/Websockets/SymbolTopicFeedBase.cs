@@ -29,7 +29,7 @@ namespace Kucoin.NET.Websockets
         {
         }
 
-        public SymbolTopicFeedBase(ICredentialsProvider credProvider, bool isSandbox = false) : base(credProvider, isSandbox)
+        public SymbolTopicFeedBase(ICredentialsProvider credProvider) : base(credProvider)
         {
         }
 

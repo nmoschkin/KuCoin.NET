@@ -22,7 +22,7 @@ namespace Kucoin.NET.Websockets.Private
 
         protected override string Topic => "/account/balance";
 
-        public BalanceNoticeFeed(ICredentialsProvider credProvider, bool isSandbox = false) : base(credProvider, isSandbox)
+        public BalanceNoticeFeed(ICredentialsProvider credProvider) : base(credProvider)
         {
         }
 

@@ -37,7 +37,7 @@ namespace Kucoin.NET.Websockets.Private
         {
         }
 
-        public Level3Feed(ICredentialsProvider credProvider, bool isSandbox = false) : base(credProvider, isSandbox)
+        public Level3Feed(ICredentialsProvider credProvider) : base(credProvider)
         {
         }
 

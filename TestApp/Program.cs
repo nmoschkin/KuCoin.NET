@@ -268,7 +268,7 @@ namespace KuCoinApp
             //var l2 = new Level2(cred);
             //var pl = await l2.GetPartList("ETH-USDT", 20);
 
-            var u = new User(cred, false);
+            var u = new User(cred);
 
             var ledgeAcct = await u.GetAccountList("XLM", AccountType.Trading);
 

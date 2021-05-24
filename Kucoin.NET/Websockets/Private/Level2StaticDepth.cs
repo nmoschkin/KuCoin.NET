@@ -145,7 +145,7 @@ namespace Kucoin.NET.Websockets.Private
             }
         }
 
-        public Level2Depth5(ICredentialsProvider credProvider, bool isSandbox = false) : base(credProvider, isSandbox)
+        public Level2Depth5(ICredentialsProvider credProvider) : base(credProvider)
         {
             if (!Dispatcher.Initialized)
             {
@@ -204,9 +204,9 @@ namespace Kucoin.NET.Websockets.Private
         /// </summary>
         /// <param name="symbols">The symbols to watch.</param>
         public Level2Depth5(IEnumerable<string> symbols,
-          ICredentialsProvider credProvider,
-          bool isSandbox = false)
-            : base(credProvider, isSandbox)
+          ICredentialsProvider credProvider
+          )
+            : base(credProvider)
         {
             if (!Dispatcher.Initialized)
             {
@@ -224,9 +224,8 @@ namespace Kucoin.NET.Websockets.Private
         /// </summary>
         /// <param name="symbol">The symbol to watch.</param>
         public Level2Depth5(string symbol,
-          ICredentialsProvider credProvider,
-          bool isSandbox = false)
-            : base(credProvider, isSandbox)
+          ICredentialsProvider credProvider)
+            : base(credProvider)
 
         {
             if (!Dispatcher.Initialized)
@@ -265,9 +264,9 @@ namespace Kucoin.NET.Websockets.Private
         /// </summary>
         /// <param name="symbols">The symbols to watch.</param>
         public Level2Depth50(IEnumerable<string> symbols,
-          ICredentialsProvider credProvider,
-          bool isSandbox = false)
-            : base(credProvider, isSandbox)
+          ICredentialsProvider credProvider
+          )
+            : base(credProvider)
         {
             Connect().ContinueWith(async (t) =>
             {
@@ -280,9 +279,9 @@ namespace Kucoin.NET.Websockets.Private
         /// </summary>
         /// <param name="symbol">The symbol to watch.</param>
         public Level2Depth50(string symbol,
-          ICredentialsProvider credProvider,
-          bool isSandbox = false)
-            : base(credProvider, isSandbox)
+          ICredentialsProvider credProvider
+          )
+            : base(credProvider)
 
         {
             Connect().ContinueWith(async (t) =>
@@ -295,9 +294,7 @@ namespace Kucoin.NET.Websockets.Private
         /// Instantiate and connect a new Level 2 data feed.
         /// </summary>
         /// <param name="symbol">The symbol to watch.</param>
-        public Level2Depth50(ICredentialsProvider credProvider,
-            bool isSandbox = false)
-            : base(credProvider, isSandbox)
+        public Level2Depth50(ICredentialsProvider credProvider) : base(credProvider)
 
         {
         }

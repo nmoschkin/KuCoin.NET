@@ -46,7 +46,7 @@ namespace Kucoin.NET.Websockets.Private
             }
         }
 
-        public Level2(ICredentialsProvider credProvider, bool isSandbox = false) :base(credProvider, isSandbox)
+        public Level2(ICredentialsProvider credProvider) :base(credProvider)
         {
             if (!Dispatcher.Initialized)
             {
