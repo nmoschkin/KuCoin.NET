@@ -59,18 +59,20 @@ namespace Kucoin.NET.Helpers
         /// Synchronously execute the code inside of the callback on the main application thread.
         /// </summary>
         /// <param name="callback">Code to execute.</param>
-        public static void InvokeOnMainThread(SendOrPostCallback callback)
+        /// <param name="param">Optional parameter to pass to the function.</param>
+        public static void InvokeOnMainThread(SendOrPostCallback callback, object param = null)
         {
-            Context.Send(callback, null);            
+            Context.Send(callback, param);            
         }
 
         /// <summary>
         /// Asynchronously execute the code inside of the callback on the main application thread.
         /// </summary>
         /// <param name="callback">Code to execute.</param>
-        public static void BeginInvokeOnMainThread(SendOrPostCallback callback)
+        /// <param name="param">Optional parameter to pass to the function.</param>
+        public static void BeginInvokeOnMainThread(SendOrPostCallback callback, object param = null)
         {
-            Context.Post(callback, null);
+            Context.Post(callback, param);
         }
 
     }

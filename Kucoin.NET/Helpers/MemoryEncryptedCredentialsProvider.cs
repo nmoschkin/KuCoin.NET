@@ -40,6 +40,8 @@ namespace Kucoin.NET.Helpers
                 this.seed = MakeZipper((Guid)seed);
             }
 
+            if (credProvider == null) return;
+
             this.key = EncryptIt(credProvider.GetKey());
             this.secret = EncryptIt(credProvider.GetSecret());
             this.passphrase = EncryptIt(credProvider.GetPassphrase());

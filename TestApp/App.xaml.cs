@@ -37,6 +37,13 @@ namespace KuCoinApp
                       typeof(Analytics), typeof(Crashes));
             
             Settings = new Settings();
+
+            if (Settings.RegistryPropertyExists("Hvcyp"))
+            {
+                Settings.Hvcyp = Settings.HvcypOld;
+                Settings.DeleteRegistryProperty("Hvcyp");
+            }
+
             Seed = Guid.Parse(Settings.Hvcyp);
         }
 

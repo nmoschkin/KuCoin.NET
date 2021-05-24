@@ -18,6 +18,7 @@ using System.Windows.Input;
 using KuCoinApp.Views;
 using Kucoin.NET.Data.Interfaces;
 using Kucoin.NET.Helpers;
+using System.Linq.Expressions;
 
 namespace KuCoinApp
 {
@@ -549,12 +550,40 @@ namespace KuCoinApp
             {
                 try
                 {
-                    user = new User(cred.Key, cred.Secret, cred.Passphrase);
+                    user = new User(cred);
                     Accounts = await user.GetAccountList();
 
                     IsLoggedIn = true;
 
-                    await Initialize();
+                    Dispatcher.InvokeOnMainThread(async (o) =>
+                    {
+                        try
+                        {
+                            tickerFeed?.Dispose();
+                        }
+                        catch { }
+                        try
+                        {
+                            klineFeed?.Dispose();
+                        }
+                        catch { }
+                        try
+                        {
+                            level2Feed?.Dispose();
+                        }
+                        catch { }
+
+                        level2Feed = new Level2(cred);
+                        tickerFeed = new TickerFeed();
+                        klineFeed = new KlineFeed<KlineCandle>();
+
+                        tickerFeed.Subscribe(this);
+                        klineFeed.Subscribe(this);
+
+                        symbol = null;
+
+                        await Initialize();
+                    });
 
                     return true;
                 }
@@ -726,6 +755,7 @@ namespace KuCoinApp
                     }
                     else
                     {
+                        CryptoCredentials.Pin = pin;
                         // if we don't have a credentialed feed
                         // we can just attach one public feed to the other.
                         await tickerFeed.Connect(true);
@@ -740,11 +770,26 @@ namespace KuCoinApp
                         {
                             Symbol = sym;
 
-                            var marg = new Margin(cred);
+                            //var marg = new Margin(cred);
 
-                            var results = await marg.GetMarginAccounts();
+                            //var results = await marg.GetMarginAccounts();
                             
                             //_ = Program.TestMain(cred);
+
+                            if (cred == null)
+                            {
+                                _ = Task.Run(() =>
+                                {
+                                    Dispatcher.InvokeOnMainThread(async (obj) =>
+                                    {
+                                        if (EditCredentials())
+                                        {
+                                            await LoginUser();
+                                        }
+                                    });
+                                });
+                                
+                            }
 
                             return;
                         }

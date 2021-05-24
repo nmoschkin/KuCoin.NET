@@ -59,7 +59,7 @@ The example application will ask you for a 6 digit pin when you first start it. 
 
 ![](docs/Sample2.png?raw=true)
 
-Once the application starts for the first time, it will create a new random __Guid__ and store it in the registry. This Guid value, together with your pin, will be used to encrypt credentials on both disk and in memory, when not in use.  
+Once the application starts for the first time, it will create a new random __Guid__ and save it to local storage as an encrypted file. This Guid value is generated for every new pin and it, together with your pin, will be used to encrypt credentials on both disk and in memory, when not in use.  
 
 Click the button on the bottom right-hand side that says 'Edit Credentials' to enter and save your credentials.  When you start the app the next time, enter the same pin to automatically load the credentials.
 

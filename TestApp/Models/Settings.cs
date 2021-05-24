@@ -162,11 +162,24 @@ namespace KuCoinApp
         {
             get
             {
-                return GetProperty<string>(Guid.NewGuid().ToString("d"));
+                return CryptoCredentials.GetHvcyp().ToString("d");
             }
             set
             {
-                SetProperty(value);
+                var g = Guid.Parse(value);
+                CryptoCredentials.GetHvcyp(g);
+            }
+        }
+
+        public string HvcypOld
+        {
+            get
+            {
+                return GetProperty<string>(Guid.NewGuid().ToString("d"), "Hvcyp");
+            }
+            set
+            {
+                SetProperty(value, "Hvcyp");
                 OnPropertyChanged();
             }
         }
@@ -378,6 +391,37 @@ namespace KuCoinApp
 
                 return (T)ret;
             }
+        }
+
+        public void DeleteRegistryProperty(string propertyName)
+        {
+            using (var rkey = Registry.CurrentUser.CreateSubKey(SubKey, true))
+            {
+                var l = new List<string>(rkey.GetValueNames());
+
+                if (l.Contains(propertyName))
+                {
+                    rkey.DeleteValue(propertyName);
+                }
+            }
+        }
+
+        public bool RegistryPropertyExists(string propertyName)
+        {
+            using (var rkey = Registry.CurrentUser.CreateSubKey(SubKey, true))
+            {
+                var l = new List<string>(rkey.GetValueNames());
+
+                if (l.Contains(propertyName))
+                {
+                    return true;
+                }
+                else
+                {
+                    return false;
+                }
+            }
+
         }
 
         protected virtual bool SetProperty<T>(T value, [CallerMemberName] string propertyName = null)

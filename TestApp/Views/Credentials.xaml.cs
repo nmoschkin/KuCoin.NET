@@ -43,6 +43,17 @@ namespace KuCoinApp
         {
             if (vm == null)
             {
+                if (CryptoCredentials.Pin != null)
+                {
+                    vm = new CredentialsViewModel(CryptoCredentials.Pin);
+                    vm.CloseWindow += Vm_CloseWindow;
+                    vm.PropertyChanged += Vm_PropertyChanged;
+                    DataContext = vm;
+
+                    InitBoxes();
+                    return;
+                }
+
                 PinWindow.GetPin(App.Current.MainWindow).ContinueWith((t) =>
                 {
                     var pin = t.Result;
@@ -51,13 +62,18 @@ namespace KuCoinApp
                     {
                         vm = new CredentialsViewModel(t.Result);
                         vm.CloseWindow += Vm_CloseWindow;
+                        vm.PropertyChanged += Vm_PropertyChanged;
                         DataContext = vm;
+
+                        InitBoxes();
                     });
                 });
             }
-
-            vm.PropertyChanged += Vm_PropertyChanged;
-            InitBoxes();
+            else
+            {
+                vm.PropertyChanged += Vm_PropertyChanged;
+                InitBoxes();
+            }
         }
 
         private void Vm_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)

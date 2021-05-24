@@ -1,27 +1,23 @@
 ﻿using Kucoin.NET.Helpers;
-using Kucoin.NET.Observable;
-using Kucoin.NET.Data.Interfaces;
 
 using Newtonsoft.Json;
 
 using System;
 using System.IO;
+using System.Collections.Generic;
+using System.Linq;
 using System.Text;
-
+using System.Threading.Tasks;
 
 namespace KuCoinApp
 {
-    public class CryptoCredentials : ObservableBase, ICredentialsProvider
+    public class CryptoCredentials : MemoryEncryptedCredentialsProvider
     {
+        public const int DefaultVersion = 2;
+
         protected static string pin;
 
         protected string name;
-
-        protected string key;
-
-        protected string secret;
-
-        protected string passphrase;
 
         protected MemoryEncryptedCredentialsProvider cred;
 
@@ -29,11 +25,12 @@ namespace KuCoinApp
 
         protected bool isPassphraseRequired = true;
 
-        protected Guid seed;
+        protected int version = DefaultVersion;
 
-        protected CryptoCredentials()
+        protected bool sandbox;
+
+        protected CryptoCredentials() : base(null, null, null)
         {
-
         }
 
         /// <summary>
@@ -51,6 +48,201 @@ namespace KuCoinApp
                 {
                     pin = value;
                 }
+            }
+        }
+
+
+        /// <summary>
+        /// True if the contents are not clean
+        /// </summary>
+        [JsonIgnore]
+        public bool IsDirty => !isClear;
+
+        /// <summary>
+        /// True if all the required fields have been populated.
+        /// </summary>
+        [JsonIgnore]
+        public bool IsFilled
+        {
+            get
+            {
+                return (!string.IsNullOrEmpty(secret) && (!isPassphraseRequired || !string.IsNullOrEmpty(passphrase)) && !string.IsNullOrEmpty(key));
+            }
+        }
+
+        /// <summary>
+        /// The seed that is used to encrypt this set of credentials.
+        /// </summary>
+        /// <remarks>
+        /// The value can only be assigned via the <see cref="LoadFromStorage(Guid, string, bool)"/> method.
+        /// </remarks>
+        [JsonIgnore]
+        public Guid Seed
+        {
+            get => MakeSeed(seed);
+            protected set
+            {
+                var newSeed = MakeSeed(value);
+
+                if (newSeed != seed)
+                {
+                    seed = newSeed;
+                    OnPropertyChanged();
+                }
+            }
+        }
+
+        /// <summary>
+        /// True if all properties are empty.
+        /// </summary>
+        [JsonIgnore]
+        public bool IsClear
+        {
+            get => isClear;
+            protected set
+            {
+                if (SetProperty(ref isClear, value))
+                {
+                    OnPropertyChanged(nameof(IsDirty));
+                }
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether the passphrase component of the API credentials is a required field.
+        /// </summary>
+        [JsonProperty("passphraseRequired")]
+        public bool IsPassphraseRequired
+        {
+            get => isPassphraseRequired;
+            set
+            {
+                if (SetProperty(ref isPassphraseRequired, value)) CheckIsClear();
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the name of this credential set.
+        /// </summary>
+        [JsonProperty("name")]
+        public string Name
+        {
+            get => name;
+            set
+            {
+                if (SetProperty(ref name, value)) CheckIsClear();
+            }
+        }
+
+        [JsonProperty("version")]
+        public int Version
+        {
+            get => version;
+            internal set
+            {
+                SetProperty(ref version, value);
+            }
+        }
+
+        [JsonProperty("sandBox")]
+        public bool Sandbox
+        {
+            get => sandbox;
+            set
+            {
+                SetProperty(ref sandbox, value);
+            }
+        }
+
+
+        /// <summary>
+        /// Gets or sets the API Key.
+        /// </summary>
+        [JsonProperty("key")]
+        public string Key
+        {
+            get => GetKey();
+            set
+            {
+                string str;
+
+                if (version == 1)
+                {
+                    str = AesOperation.EncryptString(MakeSeed(seed), value, out _);
+                }
+                else
+                {
+                    str = EncryptIt(value);
+                }
+
+                if (key != str)
+                {
+                    key = str;
+
+                    OnPropertyChanged();
+                    CheckIsClear();
+                }
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the API Secret.
+        /// </summary>
+        [JsonProperty("secret")]
+        public string Secret
+        {
+            get => GetSecret();
+            set
+            {
+                string str;
+
+                if (version == 1)
+                {
+                    str = AesOperation.EncryptString(MakeSeed(seed), value, out _);
+                }
+                else
+                {
+                    str = EncryptIt(value);
+                }
+
+                if (secret != str)
+                {
+                    secret = str;
+
+                    OnPropertyChanged();
+                    CheckIsClear();
+                }
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the API Passphrase.
+        /// </summary>
+        [JsonProperty("passphrase")]
+        public string Passphrase
+        {
+            get => GetPassphrase();
+            set
+            {
+                string str;
+
+                if (version == 1)
+                {
+                    str = AesOperation.EncryptString(MakeSeed(seed), value, out _);
+                }
+                else
+                {
+                    str = EncryptIt(value);
+                }
+
+                if (passphrase != str)
+                {
+                    passphrase = str;
+
+                    OnPropertyChanged();
+                    CheckIsClear();
+                }
+
             }
         }
 
@@ -106,7 +298,7 @@ namespace KuCoinApp
         /// <param name="pin">The pin to use to decrypt the storage.</param>
         /// <param name="create">True to create a new credentials file that does not exist.</param>
         /// <returns></returns>
-        public static CryptoCredentials LoadFromStorage(Guid seed, string pin = null, bool create = true)
+        public static CryptoCredentials LoadFromStorage(Guid seed, string pin = null, bool create = true, bool autoUpgrade = true)
         {
             if (pin == null) pin = CryptoCredentials.pin;
 
@@ -114,19 +306,21 @@ namespace KuCoinApp
 
             var path = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
             var cred = new CryptoCredentials();
+            int vers;
 
             path = Path.Join(path, "KuCoin.NET");
             if (!Directory.Exists(path)) Directory.CreateDirectory(path);
 
             var file = GetCryptName(pin);
-
+            
             path = Path.Join(path, file);
 
-            if (!File.Exists(path))
+            if (!CheckExists(path, out vers))
             {
                 if (create)
                 {
-                    cred.Seed = seed;
+                    cred.version = DefaultVersion;
+                    cred.Seed = GetCipherSeed(seed, pin);
                     return cred;
                 }
                 else
@@ -134,24 +328,62 @@ namespace KuCoinApp
                     return null;
                 }
             }
-
+            else if (vers > 1)
+            {
+                path += $".{vers}";
+            }
             var crypted = File.ReadAllText(path);
-
+            
             try
             {
-                cred.Seed = seed;
+                cred.version = vers;
 
-                var json = AesOperation.DecryptString(GetCipherSeed(seed, pin), crypted);
+                string json = null;
+
+                if (vers == 1)
+                {
+                    cred.Seed = seed;
+                    json = AesOperation.DecryptString(GetCipherSeed(seed, pin), crypted);
+
+                }
+                else if (vers >= 2)
+                {
+                    cred.Seed = GetCipherSeed(seed, pin);
+                    json = cred.DecryptIt(crypted);
+                }
+
                 JsonConvert.PopulateObject(json, cred);
+
+                if (vers == 1 && autoUpgrade)
+                {
+                    vers = DefaultVersion;
+                    var oldpath = path;
+                    path += $".{vers}";
+
+                    cred.Seed = GetCipherSeed(seed, pin);
+                    cred.Version = DefaultVersion;
+
+                    JsonConvert.PopulateObject(json, cred);
+                    json = JsonConvert.SerializeObject(cred);
+
+                    crypted = cred.EncryptIt(json);
+
+                    if (File.Exists(path)) File.Delete(path);
+
+                    File.WriteAllText(path, crypted);
+                    File.Encrypt(path);
+
+                    File.Delete(oldpath);                    
+                }
 
 #pragma warning disable IDE0059 // Unnecessary assignment of a value
                 json = null;
 #pragma warning restore IDE0059 // Unnecessary assignment of a value
 
             }
-            catch
+            catch(Exception ex)
             {
-                File.Delete(path);
+                var n = 0; // File.Delete(path);
             }
 
             cred.CheckIsClear();
@@ -159,7 +391,38 @@ namespace KuCoinApp
 
             GC.Collect();
 
-            return cred;
+            return cred;                
+        }
+
+        public static Guid GetHvcyp(Guid? newval = null)
+        {
+            var path = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
+
+            path = Path.Join(path, "KuCoin.NET");
+            if (!Directory.Exists(path)) Directory.CreateDirectory(path);
+
+            var file = GetCryptName("999999", true);
+
+            path = Path.Join(path, file);
+            Guid g;
+
+            if (newval != null && File.Exists(path)) File.Delete(path);
+
+            if (File.Exists(path))
+            {
+                g = Guid.Parse(File.ReadAllText(path));
+
+                return g;
+            }
+            else
+            {
+                g = newval ?? Guid.NewGuid();
+
+                File.WriteAllText(path, g.ToString("d"));
+                File.Encrypt(path);
+
+                return g;
+            }
         }
 
         /// <summary>
@@ -167,9 +430,19 @@ namespace KuCoinApp
         /// </summary>
         /// <param name="pin">The pin to use.</param>
         /// <returns></returns>
-        protected static string GetCryptName(string pin)
+        protected static string GetCryptName(string pin, bool userKey = false)
         {
-            var seedPath = new Guid(Encoding.UTF8.GetBytes(pin + "0e!._tt_t0"));
+            Guid seedPath;
+
+            if (userKey)
+            {
+                seedPath = new Guid(Encoding.UTF8.GetBytes(pin + "0e!._aa_t0"));
+            }
+            else
+            {
+                seedPath = new Guid(Encoding.UTF8.GetBytes(pin + "0e!._tt_t0"));
+            }
+
             var results = AesOperation.EncryptString(seedPath, pin, out _);
 
             StringBuilder sb = new StringBuilder();
@@ -197,173 +470,26 @@ namespace KuCoinApp
             return new Guid(raw);
         }
 
-
-        /// <summary>
-        /// True if the contents are not clean
-        /// </summary>
-        [JsonIgnore]
-        public bool IsDirty => !isClear;
-
-        /// <summary>
-        /// True if all the required fields have been populated.
-        /// </summary>
-        [JsonIgnore]
-        public bool IsFilled
+        protected static bool CheckExists(string filename, out int version)
         {
-            get
+            for (int i = DefaultVersion; i >= 2; i--)
             {
-                return (!string.IsNullOrEmpty(secret) && (!isPassphraseRequired || !string.IsNullOrEmpty(passphrase)) && !string.IsNullOrEmpty(key));
-            }
-        }
-
-        /// <summary>
-        /// The seed that is used to encrypt this set of credentials.
-        /// </summary>
-        /// <remarks>
-        /// The value can only be assigned via the <see cref="LoadFromStorage(Guid, string, bool)"/> method.
-        /// </remarks>
-        [JsonIgnore]
-        public Guid Seed
-        {
-            get => Makeseed(seed);
-            protected set
-            {
-                var newSeed = Makeseed(value);
-
-                if (newSeed != seed)
+                if (File.Exists(filename + $".{i}"))
                 {
-                    seed = newSeed;
-                    OnPropertyChanged();
+                    version = i;
+                    return true;
                 }
             }
-        }
 
-        /// <summary>
-        /// True if all properties are empty.
-        /// </summary>
-        [JsonIgnore]
-        public bool IsClear
-        {
-            get => isClear;
-            protected set
+            if (File.Exists(filename))
             {
-                if (SetProperty(ref isClear, value))
-                {
-                    OnPropertyChanged(nameof(IsDirty));
-                }
+                version = 1;
+                return true;
             }
+
+            version = DefaultVersion;
+            return false;
         }
-
-        /// <summary>
-        /// Gets or sets a value indicating whether the passphrase component of the API credentials is a required field.
-        /// </summary>
-        [JsonProperty("passphraseRequired")]
-        public bool IsPassphraseRequired
-        {
-            get => isPassphraseRequired;
-            set
-            {
-                if (SetProperty(ref isPassphraseRequired, value)) CheckIsClear();
-            }
-        }
-
-        /// <summary>
-        /// Gets or sets the name of this credential set.
-        /// </summary>
-        [JsonProperty("name")]
-        public string Name
-        {
-            get => name;
-            set
-            {
-                if (SetProperty(ref name, value)) CheckIsClear();
-            }
-        }
-
-        /// <summary>
-        /// Gets or sets the API Key.
-        /// </summary>
-        [JsonProperty("key")]
-        public string Key
-        {
-            get => GetKey();
-            set
-            {
-                var str = AesOperation.EncryptString(Makeseed(seed), value, out _);
-
-                if (key != str)
-                {
-                    key = str;
-
-                    OnPropertyChanged();
-                    CheckIsClear();
-                }
-            }
-        }
-
-        /// <summary>
-        /// Gets or sets the API Secret.
-        /// </summary>
-        [JsonProperty("secret")]
-        public string Secret
-        {
-            get => GetSecret();
-            set
-            {
-                var str = AesOperation.EncryptString(Makeseed(seed), value, out _);
-
-                if (secret != str)
-                {
-                    secret = str;
-
-                    OnPropertyChanged();
-                    CheckIsClear();
-                }
-            }
-        }
-
-        /// <summary>
-        /// Gets or sets the API Passphrase.
-        /// </summary>
-        [JsonProperty("passphrase")]
-        public string Passphrase
-        {
-            get => GetPassphrase();
-            set
-            {
-                var str = AesOperation.EncryptString(Makeseed(seed), value, out _);
-
-                if (passphrase != str)
-                {
-                    passphrase = str;
-
-                    OnPropertyChanged();
-                    CheckIsClear();
-                }
-
-            }
-        }
-
-
-
-        #region ICredentialsProvider Implementation
-
-        public virtual string GetKey()
-        {
-            return !string.IsNullOrEmpty(key) ? AesOperation.DecryptString(Makeseed(seed), key) : null;
-        }
-
-        public virtual string GetPassphrase()
-        {
-            return !string.IsNullOrEmpty(passphrase) ? AesOperation.DecryptString(Makeseed(seed), passphrase) : null;
-        }
-
-        public virtual string GetSecret()
-        {
-            return !string.IsNullOrEmpty(secret) ? AesOperation.DecryptString(Makeseed(seed), secret) : null;
-        }
-
-        #endregion
 
         /// <summary>
         /// Save the credentials to encrypted storage.
@@ -383,9 +509,24 @@ namespace KuCoinApp
             path = Path.Join(path, file);
 
             var json = JsonConvert.SerializeObject(this);
-            var crypted = AesOperation.EncryptString(GetCipherSeed(Seed, pin), json, out _);
+            string crypted = null;
+
+            if (version == 1)
+            {
+                crypted = AesOperation.EncryptString(GetCipherSeed(Seed, pin), json, out _);
+            }
+            else if (version >= 2)
+            {
+                path += $".{version}";
+                crypted = EncryptIt(json);
+            }
+
+            if (File.Exists(path)) File.Delete(path);
 
             File.WriteAllText(path, crypted);
+            
+            if (version >= 2) 
+                File.Encrypt(path);
         }
 
         /// <summary>
@@ -410,21 +551,70 @@ namespace KuCoinApp
             OnPropertyChanged(nameof(IsFilled));
         }
 
-        protected static Guid Makeseed(Guid? seed = null)
+        protected Guid MakeSeed(Guid? seed = null)
         {
-            var g = seed ?? Guid.NewGuid();
-
-            var b = g.ToByteArray();
-            Array.Reverse(b);
-
-            for (int i = 0; i < 16; i++)
+            if (version == 1)
             {
-                b[i] = (byte)(~b[i] & 0xff);
+                var g = seed ?? Guid.NewGuid();
+
+                var b = g.ToByteArray();
+                Array.Reverse(b);
+
+                for (int i = 0; i < 16; i++)
+                {
+                    b[i] = (byte)(~b[i] & 0xff);
+                }
+
+                return new Guid(b);
+            }
+            else
+            {
+                return MakeZipper(seed);
             }
 
-            return new Guid(b);
         }
 
-      
+
+        #region ICredentialsProvider Implementation
+
+        public override string GetKey()
+        {
+            if (version == 1)
+            {
+                return !string.IsNullOrEmpty(key) ? AesOperation.DecryptString(MakeSeed(seed), key) : null;
+            }
+            else
+            {
+                return base.GetKey();
+            }
+        }
+
+        public override string GetPassphrase()
+        {
+            if (version == 1)
+            {
+                return !string.IsNullOrEmpty(passphrase) ? AesOperation.DecryptString(MakeSeed(seed), passphrase) : null;
+            }
+            else
+            {
+                return base.GetPassphrase();   
+            }
+        }
+
+        public override string GetSecret()
+        {
+            if (version == 1)
+            {
+                return !string.IsNullOrEmpty(secret) ? AesOperation.DecryptString(MakeSeed(seed), secret) : null;
+            }
+            else
+            {
+                return base.GetSecret();
+            }
+        }
+
+        #endregion
+
     }
+
 }
