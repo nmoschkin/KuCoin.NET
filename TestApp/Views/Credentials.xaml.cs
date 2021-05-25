@@ -20,7 +20,7 @@ namespace KuCoinApp
     public partial class Credentials : Window
     {
 
-        private CredentialsViewModel vm;
+        internal CredentialsViewModel vm;
 
         public Credentials()
         {

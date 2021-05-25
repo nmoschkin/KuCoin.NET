@@ -1,4 +1,7 @@
-﻿using Kucoin.NET.Observable;
+﻿
+using KuCoinApp.Localization.Resources;
+
+using Kucoin.NET.Observable;
 
 using System;
 using System.Collections.Generic;
@@ -25,6 +28,7 @@ namespace KuCoinApp
         private SimpleCanExecuteHandler canExec;
 
         private bool? canExecStatus;
+
         public void ChangeExecutionStatus(bool? canExecute)
         {
             if (canExecStatus != canExecute)
@@ -63,8 +67,11 @@ namespace KuCoinApp
 
     public delegate void CloseWindowEventHandler(object sender, CloseWindowEventArgs e);
 
+
     public class CredentialsViewModel : ObservableBase
     {
+
+        private CryptoCredentials oldCred;
 
         public event CloseWindowEventHandler CloseWindow;
 
@@ -75,9 +82,41 @@ namespace KuCoinApp
         public ICommand CancelCommand { get; private set; }
 
         public ICommand ClearCommand { get; private set; }
+        public ICommand FuturesCommand { get; private set; }
 
         public ICommand ShowHidePasswordCommand { get; private set; }
 
+        private string oktext = AppResources.Save;
+
+        private string wndTitle = AppResources.CredentialsTitle;
+
+
+        public string WindowTitle
+        {
+            get => wndTitle;
+            private set
+            {
+                SetProperty(ref wndTitle, value);
+            }
+        }
+
+        public string OKText
+        {
+            get => oktext;
+            private set
+            {
+                SetProperty(ref oktext, value);
+            }
+        }
+
+        public CryptoCredentials OldCredentials
+        {
+            get => oldCred;
+            private set
+            {
+                SetProperty(ref oldCred, value);
+            }
+        }
 
 
         private bool showPassword;
@@ -96,20 +135,37 @@ namespace KuCoinApp
             get => showPassword;
             set
             {
-                if (SetProperty(ref showPassword, value))
-                {
-                    App.Current.Settings.ShowPassword = value;
-                }
+                SetProperty(ref showPassword, value);
             }
+        }
+
+        private void NewToOld()
+        {
+            oldCred.Key = cred.Key;
+            oldCred.Secret = cred.Secret;
+            oldCred.Passphrase = cred.Passphrase;
         }
 
         public CredentialsViewModel()
         {
             showPassword = App.Current.Settings.ShowPassword;
 
+            FuturesCommand = new SimpleCommand((p) =>
+            {
+                App.Current.Dispatcher.Invoke(() =>
+                {
+                    var futures = new Credentials((CryptoCredentials)cred.AttachedAccount);
+                    futures.ShowDialog();
+                });
+            });
+
             SaveCommand = new SimpleCommand((p) =>
             {
-                Credential.SaveToStorage();
+                NewToOld();
+                App.Current.Settings.ShowPassword = showPassword;
+
+                if (!cred.Futures) Credential.SaveToStorage();
+
                 CloseWindow?.Invoke(this, new CloseWindowEventArgs(true));
             });
 
@@ -122,7 +178,6 @@ namespace KuCoinApp
             ClearCommand = new SimpleCommand((p) =>
             {
                 Credential.Clear();
-
             });
 
             ShowHidePasswordCommand = new SimpleCommand((p) =>
@@ -134,7 +189,13 @@ namespace KuCoinApp
 
         public CredentialsViewModel(CryptoCredentials cred) : this()
         {
-            Credential = cred;
+            oldCred = cred;
+            Credential = cred.Clone();
+            if (cred.Futures)
+            {
+                OKText = AppResources.OK;
+                WindowTitle = AppResources.FuturesCredentialsTitle;
+            }
         }
 
         public CredentialsViewModel(string pin) : this()

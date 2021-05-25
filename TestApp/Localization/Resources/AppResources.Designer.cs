@@ -169,6 +169,15 @@ namespace KuCoinApp.Localization.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Clear.
+        /// </summary>
+        internal static string Clear {
+            get {
+                return ResourceManager.GetString("Clear", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Close.
         /// </summary>
         internal static string Close {
@@ -232,11 +241,38 @@ namespace KuCoinApp.Localization.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Edit Futures.
+        /// </summary>
+        internal static string EditFutures {
+            get {
+                return ResourceManager.GetString("EditFutures", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to File.
         /// </summary>
         internal static string File {
             get {
                 return ResourceManager.GetString("File", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Futures.
+        /// </summary>
+        internal static string Futures {
+            get {
+                return ResourceManager.GetString("Futures", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Edit Futures API Credentials.
+        /// </summary>
+        internal static string FuturesCredentialsTitle {
+            get {
+                return ResourceManager.GetString("FuturesCredentialsTitle", resourceCulture);
             }
         }
         

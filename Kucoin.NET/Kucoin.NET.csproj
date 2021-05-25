@@ -33,4 +33,9 @@
     </EmbeddedResource>
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Futures\Data\User\" />
+    <Folder Include="Futures\Websockets\" />
+  </ItemGroup>
+
 </Project>

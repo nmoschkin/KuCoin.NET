@@ -1,6 +1,8 @@
 ﻿using Kucoin.NET.Data.Interfaces;
 using Kucoin.NET.Observable;
 
+using Newtonsoft.Json;
+
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -22,8 +24,11 @@ namespace Kucoin.NET.Helpers
         protected string secret;
         protected string passphrase;
         protected bool sandbox;
+        protected bool futures;
 
         protected Guid seed;
+
+        protected ICredentialsProvider attachedAccount;
 
         /// <summary>
         /// Initialize object from another <see cref="ICredentialsProvider"/> implementation.
@@ -47,6 +52,7 @@ namespace Kucoin.NET.Helpers
             this.secret = EncryptIt(credProvider.GetSecret());
             this.passphrase = EncryptIt(credProvider.GetPassphrase());
             this.sandbox = credProvider.GetSandbox();
+            this.futures = credProvider.GetFutures();
         }
 
         /// <summary>
@@ -56,7 +62,9 @@ namespace Kucoin.NET.Helpers
         /// <param name="secret">Secret </param>
         /// <param name="passphrase">Passphrase</param>
         /// <param name="seed">UUID encryption seed (optional)</param>
-        public MemoryEncryptedCredentialsProvider(string key, string secret, string passphrase, Guid? seed = null, bool sandbox = false)
+        /// <param name="sandbox">Is a sandbox account</param>
+        /// <param name="futures">Is a futures account</param>
+        public MemoryEncryptedCredentialsProvider(string key, string secret, string passphrase, Guid? seed = null, bool sandbox = false, bool futures = false)
         {
 #pragma warning disable IDE0059 // Unnecessary assignment of a value
 
@@ -81,11 +89,22 @@ namespace Kucoin.NET.Helpers
             passphrase = null;
 
             this.sandbox = sandbox;
+            this.futures = futures;
 
 #pragma warning restore IDE0059 // Unnecessary assignment of a value
 
             GC.Collect();
 
+        }
+
+
+        /// <summary>
+        /// Gets or sets the value of another account attached to this instance (e.g. a KuCoin Futures account).
+        /// </summary>
+        public virtual ICredentialsProvider AttachedAccount
+        {
+            get => attachedAccount;
+            set => attachedAccount = value;
         }
 
         // AES does the real encryption, but these functions make the data a little trickier to decipher.
@@ -322,6 +341,9 @@ namespace Kucoin.NET.Helpers
         }
 
         public virtual bool GetSandbox() => sandbox;
+
+
+        public virtual bool GetFutures() => futures;
 
     }
 }

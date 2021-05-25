@@ -9,10 +9,15 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Kucoin.NET.Rest;
+using Kucoin.NET.Data.Interfaces;
+using KuCoinApp.Converters;
 
 namespace KuCoinApp
 {
-    public class CryptoCredentials : MemoryEncryptedCredentialsProvider
+    /// <summary>
+    /// Secure storage for cryptographic credentials.
+    /// </summary>
+    public class CryptoCredentials : MemoryEncryptedCredentialsProvider, ICloneable
     {
         public const int DefaultVersion = 2;
 
@@ -153,6 +158,17 @@ namespace KuCoinApp
             }
         }
 
+        [JsonProperty("futures")]
+        public bool Futures
+        {
+            get => futures;
+            set
+            {
+                SetProperty(ref futures, value);
+            }
+        }
+
+        
 
         /// <summary>
         /// Gets or sets the API Key.
@@ -242,6 +258,31 @@ namespace KuCoinApp
                     CheckIsClear();
                 }
 
+            }
+        }
+
+        [JsonProperty("attachedAccount")]
+        [JsonConverter(typeof(AttachedAccountConverter))]
+        public override ICredentialsProvider AttachedAccount 
+        { 
+            get
+            {
+                if (attachedAccount == null && !futures)
+                {
+                    var c = new CryptoCredentials();
+
+                    c.Sandbox = sandbox;
+                    c.Futures = true;
+
+                    attachedAccount = c;
+                }
+
+                return attachedAccount;
+            }
+            set
+            {
+                if (futures) value = null;
+                SetProperty(ref attachedAccount, value);
             }
         }
 
@@ -351,7 +392,12 @@ namespace KuCoinApp
                     json = cred.DecryptIt(crypted);
                 }
 
-                JsonConvert.PopulateObject(json, cred);
+                var jcfg = new JsonSerializerSettings()
+                {
+                    ConstructorHandling = ConstructorHandling.AllowNonPublicDefaultConstructor
+                };
+
+                JsonConvert.PopulateObject(json, cred, jcfg);
 
                 if (vers == 1 && autoUpgrade)
                 {
@@ -612,6 +658,20 @@ namespace KuCoinApp
             {
                 return base.GetSecret();
             }
+        }
+
+        #endregion
+
+        #region ICloneable
+
+        object ICloneable.Clone()
+        {
+            return MemberwiseClone();
+        }
+
+        public CryptoCredentials Clone()
+        {
+            return (CryptoCredentials)MemberwiseClone();
         }
 
         #endregion

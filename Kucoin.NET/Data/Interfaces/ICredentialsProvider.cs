@@ -35,5 +35,12 @@ namespace Kucoin.NET.Data.Interfaces
         /// <returns></returns>
         bool GetSandbox();
 
+
+        /// <summary>
+        /// Gets a value indicating if these credentials are for a KuCoin Futures account.
+        /// </summary>
+        /// <returns></returns>
+        bool GetFutures();
+
     }
 }

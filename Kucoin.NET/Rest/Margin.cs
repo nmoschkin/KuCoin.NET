@@ -83,7 +83,7 @@ namespace Kucoin.NET.Rest
             
             if (currency != null)
             {
-                dict.Add("currency", currency)
+                dict.Add("currency", currency);
             }
             return await GetAllPaginatedResults<RepayItem, RepayRecord>(HttpMethod.Get, url, reqParams: dict);
 
@@ -99,7 +99,7 @@ namespace Kucoin.NET.Rest
 
             if (currency != null)
             {
-                dict.Add("currency", currency)
+                dict.Add("currency", currency);
             }
             return await GetAllPaginatedResults<RepayItem, RepayRecord>(HttpMethod.Get, url, reqParams: dict);
 

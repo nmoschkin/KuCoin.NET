@@ -62,14 +62,16 @@ namespace Kucoin.NET.Rest
         public KucoinBaseRestApi(
             ICredentialsProvider credProvider,
             string url = null, 
-            bool isv1api = false) 
+            bool isv1api = false,
+            bool futures = false) 
             : this(
                   null, 
                   null, 
                   null, 
                   false, 
                   url, 
-                  isv1api)
+                  isv1api,
+                  futures)
         {
             cred = new MemoryEncryptedCredentialsProvider(credProvider);
             isSandbox = cred.GetSandbox();
@@ -90,7 +92,8 @@ namespace Kucoin.NET.Rest
             string passphrase,
             bool isSandbox = false,
             string url = null,
-            bool isv1api = false
+            bool isv1api = false,
+            bool futures = false
             )
         {
 
@@ -100,13 +103,27 @@ namespace Kucoin.NET.Rest
             }
             else
             {
-                if (isSandbox)
+                if (futures)
                 {
-                    this.url = "https://openapi-sandbox.kucoin.com";
+                    if (isSandbox)
+                    {
+                        this.url = "https://api-sandbox-futures.kucoin.com";
+                    }
+                    else
+                    {
+                        this.url = "https://api-futures.kucoin.com";
+                    }
                 }
                 else
                 {
-                    this.url = "https://api.kucoin.com";
+                    if (isSandbox)
+                    {
+                        this.url = "https://openapi-sandbox.kucoin.com";
+                    }
+                    else
+                    {
+                        this.url = "https://api.kucoin.com";
+                    }
                 }
             }
             
