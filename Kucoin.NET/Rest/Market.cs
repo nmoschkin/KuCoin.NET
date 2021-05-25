@@ -118,10 +118,17 @@ namespace Kucoin.NET.Rest
 
             var jobj = await MakeRequest(HttpMethod.Get, "/api/v1/market/orderbook/level1", 5, false, param);
 
-            var obj = jobj.ToObject<Ticker>();
-            obj.Symbol = symbol;
+            try
+            {
+                var obj = jobj.ToObject<Ticker>();
+                obj.Symbol = symbol;
+                return obj;
+            }
+            catch
+            {
+                return null;
+            }
 
-            return obj;
         }
 
         /// <summary>

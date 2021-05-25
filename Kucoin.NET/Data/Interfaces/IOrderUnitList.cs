@@ -9,6 +9,14 @@ namespace Kucoin.NET.Data.Interfaces
         decimal Price { get; set; }
 
         decimal Size { get; set; }
+    }
+
+    public interface IAtomicOrderUnit : IOrderUnit
+    {
+
+        string OrderId { get; set; }
+
+        DateTime Timestamp { get; set; }
 
     }
 
@@ -25,6 +33,14 @@ namespace Kucoin.NET.Data.Interfaces
 
     }
 
+    public interface IAtomicOrderUnitList : IOrderUnitList
+    {
+        new IList<IAtomicOrderUnit> Asks { get; }
+
+        new IList<IAtomicOrderUnit> Bids { get; }
+
+    }
+
     public interface IOrderBook : IOrderUnitList
     {
         long Sequence { get; set; }
@@ -32,6 +48,11 @@ namespace Kucoin.NET.Data.Interfaces
         DateTime Timestamp { get; set; }
     }
 
+    public interface IAtomicOrderBook : IAtomicOrderUnitList
+    {
+        long Sequence { get; set; }
 
+        DateTime Timestamp { get; set; }
+    }
 
 }

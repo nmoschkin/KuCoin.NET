@@ -56,10 +56,53 @@ namespace Kucoin.NET.Rest
 
         public async Task<BorrowReceipt> CreateBorrowOrder(BorrowParams borrowParams)
         {
-            var url = $"/api/v1/margin/barrow";
+            var url = $"/api/v1/margin/borrow";
 
-            var jobj = await MakeRequest(HttpMethod.Get, url, reqParams: borrowParams.ToDict());
+            var jobj = await MakeRequest(HttpMethod.Post, url, reqParams: borrowParams.ToDict());
             return jobj.ToObject<BorrowReceipt>();
+
+        }
+
+        public async Task<BorrowOrder> GetBorrowOrder(string orderId)
+        {
+            var url = $"/api/v1/margin/borrow";
+            var dict = new Dictionary<string, object>();
+            
+            dict.Add("orderId", orderId);
+
+            var jobj = await MakeRequest(HttpMethod.Get, url, reqParams: dict);
+            return jobj.ToObject<BorrowOrder>();
+
+        }
+
+        public async Task<IList<RepayItem>> GetRepayRecord(string currency = null)
+        {
+            var url = "/api/v1/margin/borrow/outstanding";
+
+            var dict = new Dictionary<string, object>();
+            
+            if (currency != null)
+            {
+                dict.Add("currency", currency)
+            }
+            return await GetAllPaginatedResults<RepayItem, RepayRecord>(HttpMethod.Get, url, reqParams: dict);
+
+
+        }
+
+
+        public async Task<IList<RepayItem>> GetRepaymentRecord(string currency = null)
+        {
+            var url = "/api/v1/margin/borrow/repaid";
+
+            var dict = new Dictionary<string, object>();
+
+            if (currency != null)
+            {
+                dict.Add("currency", currency)
+            }
+            return await GetAllPaginatedResults<RepayItem, RepayRecord>(HttpMethod.Get, url, reqParams: dict);
+
 
         }
 

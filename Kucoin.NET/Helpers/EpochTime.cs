@@ -5,6 +5,14 @@ using System.Text;
 
 namespace Kucoin.NET.Helpers
 {
+
+    public enum TimeTypes
+    {
+        InSeconds,
+        InMilliseconds,
+        InNanoseconds
+    }
+
     /// <summary>
     /// Methods for converting between Unix and .NET DateTime stamps.
     /// </summary>
