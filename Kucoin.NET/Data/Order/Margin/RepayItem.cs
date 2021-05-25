@@ -1,13 +1,25 @@
 ﻿using Kucoin.NET.Helpers;
+using Kucoin.NET.Json;
 
 using Newtonsoft.Json;
 
 using System;
 using System.Collections.Generic;
+using System.Runtime.Serialization;
 using System.Text;
 
 namespace Kucoin.NET.Data.Order.Margin
 {
+    [JsonConverter(typeof(EnumToStringConverter<RepaySequence>))]
+    public enum RepaySequence
+    {
+        [EnumMember(Value = "RECENTLY_EXPIRE_FIRST")]
+        RecentlyExpiredFirst,
+
+        [EnumMember(Value = "HIGHEST_RATE_FIRST")]
+        HighestRateFirst
+    }
+
     public class RepayItem
     {
 
