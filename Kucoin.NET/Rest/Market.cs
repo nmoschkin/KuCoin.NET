@@ -12,6 +12,7 @@ using System.IO;
 using System.Net;
 using Kucoin.NET.Helpers;
 using Kucoin.NET.Data.Interfaces;
+using System.ComponentModel;
 
 namespace Kucoin.NET.Rest
 {
@@ -28,7 +29,7 @@ namespace Kucoin.NET.Rest
 
         protected TickerList tickers = null;
 
-        protected List<MarketCurrency> currencies;
+        protected ObservableDictionary<string, MarketCurrency> currencies;
 
         public async Task<MarketCurrency[]> GetAllQuoteCurrencies()
         {
@@ -67,7 +68,14 @@ namespace Kucoin.NET.Rest
             return distinct.Values.ToArray();
         }
 
-        public IReadOnlyList<MarketCurrency> Currencies => currencies;
+        public ObservableDictionary<string, MarketCurrency> Currencies
+        {
+            get => currencies;
+            set
+            {
+                SetProperty(ref currencies, value);
+            }
+        }
 
         /// <summary>
         /// Create a new instance of the MarketData class.
@@ -386,13 +394,10 @@ namespace Kucoin.NET.Rest
 
             var results = jobj.ToObject<List<MarketCurrency>>();
 
-            currencies = results;
-            currencies.Sort((a, b) =>
-            {
+            Currencies = new ObservableDictionary<string, MarketCurrency>(
+                new Comparison<MarketCurrency>((a, b) => {
                 return string.Compare(a.Currency, b.Currency);
-            });
-
-            OnPropertyChanged(nameof(Currencies));
+            }), ListSortDirection.Ascending, results);
 
             return results;
         }

@@ -79,6 +79,10 @@ namespace KuCoinApp
 
         private ObservableStaticMarketDepthUpdate marketUpdate;
 
+        private string priceFormat = "0.00";
+
+        private string sizeFormat = "0.00";
+
         public ICommand RefreshSymbolsCommand { get; private set; }
         public ICommand RefreshKlineCommand { get; private set; }
         public ICommand RefreshPriceCommand { get; private set; }
@@ -164,6 +168,24 @@ namespace KuCoinApp
             set
             {
                 SetProperty(ref quoteCurrency, value);
+            }
+        }
+
+        public string PriceFormat
+        {
+            get => priceFormat;
+            set
+            {
+                SetProperty(ref priceFormat, value);
+            }
+        }
+
+        public string SizeFormat
+        {
+            get => sizeFormat;
+            set
+            {
+                SetProperty(ref sizeFormat, value);
             }
         }
 
@@ -309,10 +331,26 @@ namespace KuCoinApp
             }
         }
 
+        private void MakeFormats(string symbol)
+        {
+            var sym = market.Symbols[symbol];
+            var inc = "0" + sym.QuoteIncrement.ToString().Replace("1", "0");
+
+            SizeFormat = inc;
+            
+            inc = sym.PriceIncrement.ToString().Replace("1", "0");
+
+            PriceFormat = inc;
+        }
+
+     
+
         private void UpdateSymbol(string oldSymbol, string newSymbol, bool force = false, bool isKlineChange = false, KlineType? oldKline = null)
         {
 
             App.Current.Settings.PushSymbol(newSymbol);
+
+            MakeFormats(newSymbol);
 
             if (force || (oldSymbol != (string)symbol && oldSymbol != null))
             {
@@ -331,13 +369,10 @@ namespace KuCoinApp
 
                             if (isKlineChange) return;
 
-                            //level2Feed50?.RemoveSymbol(oldSymbol).ContinueWith(async (t) =>
-                            //{
-                            //    MarketUpdate = await level2Feed50.AddSymbol(newSymbol);
-                            //});
-
-
-                            Level2?.Dispose();
+                            if (Level2 != null)
+                            {
+                                Level2.Dispose();
+                            }
 
                             if (isKlineChange) return;
 
@@ -367,15 +402,6 @@ namespace KuCoinApp
                         });
 
                     });
-
-                    //level2Feed50?.AddSymbol(newSymbol).ContinueWith((t) =>
-                    //{
-                    //    App.Current?.Dispatcher?.Invoke(() =>
-                    //    {
-                    //        MarketUpdate = t.Result;
-                    //    });
-
-                    //});
 
                     await tickerFeed.AddSymbol(newSymbol);
                     await klineFeed.AddSymbol(newSymbol, KlineType);

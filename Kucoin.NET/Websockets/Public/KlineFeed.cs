@@ -128,7 +128,8 @@ namespace Kucoin.NET.Websockets.Public
                 Type = "subscribe",
                 Id = connectId.ToString("d"),
                 Topic = topic,
-                Response = true
+                Response = true,
+                PrivateChannel = false
             };
 
             await Send(e);

@@ -13,6 +13,7 @@ namespace Kucoin.NET.Data.Market
 
 
         [JsonProperty("currency")]
+        [KeyProperty]
         public string Currency { get; set; }
 
         [JsonProperty("name")]

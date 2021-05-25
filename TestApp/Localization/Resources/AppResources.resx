@@ -147,6 +147,12 @@
   <data name="Cancel" xml:space="preserve">
     <value>Cancel</value>
   </data>
+  <data name="Candle" xml:space="preserve">
+    <value>Candle</value>
+  </data>
+  <data name="Candles" xml:space="preserve">
+    <value>Candles</value>
+  </data>
   <data name="Close" xml:space="preserve">
     <value>Close</value>
   </data>
@@ -173,6 +179,12 @@
   </data>
   <data name="Holds" xml:space="preserve">
     <value>Holds</value>
+  </data>
+  <data name="K-Line" xml:space="preserve">
+    <value>K-Line</value>
+  </data>
+  <data name="K-Lines" xml:space="preserve">
+    <value>K-Lines</value>
   </data>
   <data name="Lend" xml:space="preserve">
     <value>Lend</value>
@@ -251,6 +263,9 @@
   </data>
   <data name="ShowCredentials" xml:space="preserve">
     <value>Show Credentials</value>
+  </data>
+  <data name="Size" xml:space="preserve">
+    <value>Size</value>
   </data>
   <data name="Spot" xml:space="preserve">
     <value>Spot</value>

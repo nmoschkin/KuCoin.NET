@@ -13,11 +13,24 @@ using System.Threading;
 using Kucoin.NET.Helpers;
 using Kucoin.NET.Data.Interfaces;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace Kucoin.NET.Websockets.Observations
 {
+
+    public class OrderBookUpdatedEventArgs : EventArgs 
+    {
+
+        public string Symbol { get; private set; }
+        public OrderBookUpdatedEventArgs(string symbol)
+        {
+            Symbol = symbol;
+        }
+    }
     public interface ILevel2OrderBookProvider : INotifyPropertyChanged, IDisposable, ISymbol, IObserver<Level2Update>
     {
+        event EventHandler<OrderBookUpdatedEventArgs> OrderBookUpdated;
+
         /// <summary>
         /// The sorted and sliced order book (user-facing data).
         /// </summary>
@@ -50,6 +63,8 @@ namespace Kucoin.NET.Websockets.Observations
     /// </summary>
     public class Level2Observation : ObservableBase, ILevel2OrderBookProvider
     {
+        public event EventHandler<OrderBookUpdatedEventArgs> OrderBookUpdated;
+
         protected OrderBook preflightBook;
         protected OrderBook orderBook;
         protected string symbol;
@@ -58,9 +73,11 @@ namespace Kucoin.NET.Websockets.Observations
         protected bool calibrated; 
         protected bool initialized; 
         protected Level2 connectedFeed;
-
+        protected Task PushThread;
+        protected CancellationTokenSource cts;
+        protected bool pushRequested;
         protected List<Level2Update> orderBuffer = new List<Level2Update>();
-
+        protected object lockObj = new object();
         internal Level2Observation(Level2 parent, string symbol, int pieces = 50)
         {
             this.symbol = symbol;
@@ -69,8 +86,43 @@ namespace Kucoin.NET.Websockets.Observations
             this.pieces = pieces;
 
             orderBook = new OrderBook();
+            cts = new CancellationTokenSource();
+            PushThread = Task.Factory.StartNew(async () =>
+            {
+                bool pr = false;
+
+                while (!cts.IsCancellationRequested)
+                {
+                    lock(lockObj)
+                    {
+                        if (pushRequested)
+                        {
+                            pushRequested = false;
+                            pr = true;
+                        }
+                    }
+
+                    if (pr)
+                    {
+                        pr = false;
+                        PushPreflight();
+                        OrderBookUpdated?.Invoke(this, new OrderBookUpdatedEventArgs(this.symbol));
+                    }
+
+                    await Task.Delay(10);
+                }
+
+
+            }, cts.Token);
         }
 
+        public void RequestPush()
+        {
+            lock(lockObj)
+            {
+                pushRequested = true;
+            }
+        }
 
         public Level2 ConnectedFeed => !disposed ? connectedFeed : throw new ObjectDisposedException(nameof(Level2Observation));
 
@@ -322,30 +374,33 @@ namespace Kucoin.NET.Websockets.Observations
         /// <summary>
         /// Push the preflight book to the live feed.
         /// </summary>
-        public void PushPreflight()
+        protected virtual void PushPreflight()
         {
-            if (orderBook == null)
+            lock(lockObj)
             {
-                var ob = new OrderBook();
-                OrderBook = ob;
-            }
+                if (orderBook == null)
+                {
+                    var ob = new OrderBook();
+                    OrderBook = ob;
+                }
 
-            if (Dispatcher.Initialized)
-            {
-                Dispatcher.InvokeOnMainThread((o) =>
+                if (Dispatcher.Initialized)
+                {
+                    Dispatcher.InvokeOnMainThread((o) =>
+                    {
+                        orderBook.Sequence = preflightBook.Sequence;
+                        orderBook.Time = EpochTime.DateToNanoseconds(DateTime.Now);
+
+                        CopyBook();
+                    });
+                }
+                else
                 {
                     orderBook.Sequence = preflightBook.Sequence;
                     orderBook.Time = EpochTime.DateToNanoseconds(DateTime.Now);
 
                     CopyBook();
-                });
-            }
-            else
-            {
-                orderBook.Sequence = preflightBook.Sequence;
-                orderBook.Time = EpochTime.DateToNanoseconds(DateTime.Now);
-
-                CopyBook();
+                }
             }
         }
 
@@ -375,6 +430,10 @@ namespace Kucoin.NET.Websockets.Observations
             if (disposed) return;
 
             disposed = true;
+
+            cts?.Cancel();
+            PushThread.Dispose();
+            PushThread = null;
 
             if (disposing)
             {

@@ -151,6 +151,24 @@ namespace KuCoinApp.Localization.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Candle.
+        /// </summary>
+        internal static string Candle {
+            get {
+                return ResourceManager.GetString("Candle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Candles.
+        /// </summary>
+        internal static string Candles {
+            get {
+                return ResourceManager.GetString("Candles", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Close.
         /// </summary>
         internal static string Close {
@@ -228,6 +246,24 @@ namespace KuCoinApp.Localization.Resources {
         internal static string Holds {
             get {
                 return ResourceManager.GetString("Holds", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to K-Line.
+        /// </summary>
+        internal static string K_Line {
+            get {
+                return ResourceManager.GetString("K-Line", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to K-Lines.
+        /// </summary>
+        internal static string K_Lines {
+            get {
+                return ResourceManager.GetString("K-Lines", resourceCulture);
             }
         }
         
@@ -462,6 +498,15 @@ namespace KuCoinApp.Localization.Resources {
         internal static string ShowCredentials {
             get {
                 return ResourceManager.GetString("ShowCredentials", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Size.
+        /// </summary>
+        internal static string Size {
+            get {
+                return ResourceManager.GetString("Size", resourceCulture);
             }
         }
         

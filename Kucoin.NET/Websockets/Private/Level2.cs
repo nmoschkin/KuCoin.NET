@@ -315,7 +315,7 @@ namespace Kucoin.NET.Websockets.Private
 
                                     if ((DateTime.Now - cycle).TotalMilliseconds >= updateInterval)
                                     {
-                                        af.PushPreflight();
+                                        af.RequestPush();
                                         cycle = DateTime.Now;
                                     }
                                 }
