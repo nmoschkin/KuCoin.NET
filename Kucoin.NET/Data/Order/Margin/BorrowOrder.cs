@@ -1,4 +1,5 @@
 ﻿using Kucoin.NET.Helpers;
+using Kucoin.NET.Json;
 
 using Newtonsoft.Json;
 
@@ -8,9 +9,11 @@ using System.Text;
 
 namespace Kucoin.NET.Data.Order.Margin
 {
+    /// <summary>
+    /// Borrow Order
+    /// </summary>
     public class BorrowOrder
     {
-
 
         /// <summary>
         /// OrderId
@@ -55,10 +58,11 @@ namespace Kucoin.NET.Data.Order.Margin
 
     }
 
+    /// <summary>
+    /// Borrow Order Match Data
+    /// </summary>
     public class BorrowMatch
     {
-
-
         /// <summary>
         /// Currency
         /// </summary>
@@ -67,7 +71,7 @@ namespace Kucoin.NET.Data.Order.Margin
 
 
         /// <summary>
-        /// DailyIntRate
+        /// Daily intereest rate
         /// </summary>
         [JsonProperty("dailyIntRate")]
         public decimal DailyIntRate { get; set; }
@@ -81,20 +85,18 @@ namespace Kucoin.NET.Data.Order.Margin
 
 
         /// <summary>
-        /// Term
+        /// Term (in days)
         /// </summary>
         [JsonProperty("term")]
         public long Term { get; set; }
 
 
         /// <summary>
-        /// InternalTimestamp
+        /// Timestamp
         /// </summary>
         [JsonProperty("timestamp")]
-        internal long InternalTimestamp { get; set; }
-
-        [JsonIgnore]
-        public DateTime Timestamp => EpochTime.MillisecondsToDate(InternalTimestamp);
+        [JsonConverter(typeof(AutoTimeConverter), TimeTypes.InMilliseconds)]
+        public DateTime Timestamp { get; set; }
 
 
 

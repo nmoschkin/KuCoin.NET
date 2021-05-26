@@ -1,6 +1,7 @@
 ﻿using Kucoin.NET.Data.Interfaces;
 using Kucoin.NET.Data.Market;
 using Kucoin.NET.Helpers;
+using Kucoin.NET.Json;
 
 using Newtonsoft.Json;
 
@@ -43,13 +44,11 @@ namespace Kucoin.NET.Data.Websockets
 
 
         /// <summary>
-        /// InternalTs
+        /// Time Stamp
         /// </summary>
         [JsonProperty("ts")]
-        internal long InternalTs { get; set; }
-
-        [JsonIgnore]
-        public DateTime Timestamp => EpochTime.NanosecondsToDate(InternalTs);
+        [JsonConverter(typeof(AutoTimeConverter), TimeTypes.InNanoseconds)]
+        public DateTime Timestamp { get; set; }
 
 
         /// <summary>
@@ -77,10 +76,8 @@ namespace Kucoin.NET.Data.Websockets
         /// InternalOrderTime
         /// </summary>
         [JsonProperty("orderTime")]
-        internal long InternalOrderTime { get; set; }
-
-        [JsonIgnore]
-        public DateTime OrderTime => EpochTime.NanosecondsToDate(InternalOrderTime);
+        [JsonConverter(typeof(AutoTimeConverter), TimeTypes.InNanoseconds)]
+        public DateTime OrderTime { get; set; }
 
 
 

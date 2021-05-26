@@ -229,7 +229,7 @@
     <value>Liquidation Warning</value>
   </data>
   <data name="MainTitle" xml:space="preserve">
-    <value>KuCoin Example App</value>
+    <value>KuCoin App</value>
   </data>
   <data name="Margin" xml:space="preserve">
     <value>Margin</value>
@@ -260,6 +260,12 @@
   </data>
   <data name="Refresh" xml:space="preserve">
     <value>Refresh</value>
+  </data>
+  <data name="RefreshChart" xml:space="preserve">
+    <value>Refresh K-Line</value>
+  </data>
+  <data name="RefreshSymbols" xml:space="preserve">
+    <value>Refresh Symbols</value>
   </data>
   <data name="Reset" xml:space="preserve">
     <value>Reset</value>

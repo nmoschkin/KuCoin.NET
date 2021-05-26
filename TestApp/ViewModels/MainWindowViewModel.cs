@@ -810,8 +810,6 @@ namespace KuCoinApp
                             //var marg = new Margin(cred);
 
                             //var results = await marg.GetMarginAccounts();
-                            
-                            //_ = Program.TestMain(cred);
 
                             if (cred == null)
                             {
@@ -825,8 +823,12 @@ namespace KuCoinApp
                                         }
                                     });
                                 });
-                                
+
+                                return;
                             }
+
+                            _ = Program.TestMain(cred);
+
 
                             return;
                         }

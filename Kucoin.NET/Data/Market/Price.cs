@@ -1,4 +1,5 @@
 ﻿using Kucoin.NET.Helpers;
+using Kucoin.NET.Json;
 
 using Newtonsoft.Json;
 
@@ -9,11 +10,10 @@ using System.Text;
 namespace Kucoin.NET.Data.Market
 {
     /// <summary>
-    /// Mark price structure.
+    /// Spot / Mark Price Data
     /// </summary>
     public class Price
     {
-
         /// <summary>
         /// Symbol
         /// </summary>
@@ -27,20 +27,24 @@ namespace Kucoin.NET.Data.Market
         public long Granularity { get; set; }
 
         /// <summary>
-        /// InternalTimestamp
+        /// Timestamp
         /// </summary>
         [JsonProperty("timestamp")]
-        internal long? InternalTimestamp { get; set; }
+        [JsonConverter(typeof(AutoTimeConverter), TimeTypes.InMilliseconds)]
+        internal DateTime? InternalTimestamp { get; set; }
 
         /// <summary>
-        /// InternalTimestamp
+        /// Timepoint
         /// </summary>
         [JsonProperty("timePoint")]
-        internal long? InternalTimepoint { get; set; }
+        [JsonConverter(typeof(AutoTimeConverter), TimeTypes.InMilliseconds)]
+        internal DateTime? InternalTimepoint { get; set; }
 
+        /// <summary>
+        /// Time Stamp
+        /// </summary>
         [JsonIgnore]
-        public DateTime Timestamp => EpochTime.MillisecondsToDate(InternalTimestamp ?? InternalTimepoint ?? 0);
-
+        public DateTime Timestamp => InternalTimestamp ?? InternalTimepoint ?? DateTime.Now;
 
         /// <summary>
         /// Value

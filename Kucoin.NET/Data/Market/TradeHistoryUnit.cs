@@ -6,6 +6,7 @@ using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Text;
+using Kucoin.NET.Json;
 
 namespace Kucoin.NET.Data.Market
 {
@@ -25,16 +26,8 @@ namespace Kucoin.NET.Data.Market
         public Side Side { get; set; }
 
         [JsonProperty("time")]
-        internal long Time { get; set; }
-
-        [JsonIgnore]
-        public DateTime Timestamp
-        {
-            get
-            {
-                return EpochTime.NanosecondsToDate(Time);
-            }
-        }
+        [JsonConverter(typeof(AutoTimeConverter), TimeTypes.InNanoseconds)]
+        public DateTime Timestamp { get; set; }
 
         public override string ToString()
         {

@@ -1,5 +1,6 @@
 ﻿using Kucoin.NET.Data.Interfaces;
 using Kucoin.NET.Helpers;
+using Kucoin.NET.Json;
 using Kucoin.NET.Observable;
 using Kucoin.NET.Rest;
 
@@ -52,12 +53,8 @@ namespace Kucoin.NET.Data.Websockets
         public string SymbolCode { get; set; }
 
         [JsonProperty("datetime")]
-        public long Time { get; set; }
-
-        public DateTime Timestamp
-        {
-            get => EpochTime.MillisecondsToDate(Time);
-        }
+        [JsonConverter(typeof(AutoTimeConverter), TimeTypes.InMilliseconds)]
+        public DateTime Timestamp { get; set; }
 
         [JsonProperty("high")]
         public decimal? High { get; set; }

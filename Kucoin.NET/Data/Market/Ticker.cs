@@ -1,5 +1,6 @@
 ﻿using Kucoin.NET.Data.Interfaces;
 using Kucoin.NET.Helpers;
+using Kucoin.NET.Json;
 using Kucoin.NET.Observable;
 using Kucoin.NET.Rest;
 
@@ -18,6 +19,9 @@ namespace Kucoin.NET.Data.Market
     /// </summary>
     public class Ticker : ISymbol 
     {
+        /// <summary>
+        /// Trading symbol
+        /// </summary>
         [JsonIgnore]
         public string Symbol
         {
@@ -30,43 +34,54 @@ namespace Kucoin.NET.Data.Market
             Symbol = symbol;
         }
 
+        /// <summary>
+        /// Sequence Number
+        /// </summary>
         [JsonProperty("sequence")]
         public long Sequence { get; set; }
 
-
+        /// <summary>
+        /// Best Ask  (selling)
+        /// </summary>
         [JsonProperty("bestAsk")]
         public decimal BestAsk { get; set; }
 
+        /// <summary>
+        /// Filled Size
+        /// </summary>
         [JsonProperty("size")]
         public decimal Size { get; set; }
 
+        /// <summary>
+        /// Filled Size
+        /// </summary>
         [JsonProperty("price")]
         public decimal Price { get; set; }
 
+        /// <summary>
+        /// Best Bid Size (buying)
+        /// </summary>
         [JsonProperty("bestBidSize")]
         public decimal BestBidSize { get; set; }
 
-
+        /// <summary>
+        /// Best Bid (buying)
+        /// </summary>
         [JsonProperty("bestBid")]
         public decimal BestBid { get; set; }
 
-
+        /// <summary>
+        /// Best Ask Size (selling)
+        /// </summary>
         [JsonProperty("bestAskSize")]
-        public decimal BestAskPrice { get; set; }
-        
+        public decimal BestAskSize { get; set; }
 
+        /// <summary>
+        /// Time Stamp
+        /// </summary>
         [JsonProperty("time")]
-        public long Time { get; set; }
-
-
-        [JsonIgnore]
-        public DateTime Timestamp
-        {
-            get
-            {
-                return EpochTime.MillisecondsToDate(Time);
-            }
-        }
+        [JsonConverter(typeof(AutoTimeConverter), TimeTypes.InMilliseconds)]
+        public virtual DateTime Timestamp { get; set; }
 
     }
 }

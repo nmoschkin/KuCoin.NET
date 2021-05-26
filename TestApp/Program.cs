@@ -148,6 +148,26 @@ namespace KuCoinApp
                 AllocConsole();
             }
 
+            var fmarket = new Kucoin.NET.Futures.Rest.FuturesMarket();
+
+            var futures = await fmarket.GetOpenContractList();
+
+            foreach (var contract in futures)
+            {
+                Console.WriteLine(contract.Symbol);
+                Console.WriteLine(contract.RootSymbol);
+
+                if (contract.Symbol.Contains("ETH") || contract.Symbol.Contains("XLM"))
+                {
+                    var fticker = await fmarket.GetTicker(contract.Symbol);
+                    Console.WriteLine($"Current Price: {fticker.Price}");
+                    Console.WriteLine($"Price Time: {fticker.Timestamp}");
+                }
+
+            }
+
+            return;
+
             if (cred == null)
             {
                 Console.Clear();

@@ -46,7 +46,7 @@ namespace Kucoin.NET.Data.Order.Margin
 
 
         /// <summary>
-        /// InternalTimestamp
+        /// Timestamp 
         /// </summary>
         [JsonProperty("timestamp")]
         [JsonConverter(typeof(AutoTimeConverter), TimeTypes.InNanoseconds)]

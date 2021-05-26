@@ -106,24 +106,20 @@ namespace Kucoin.NET.Data.User
 
 
         /// <summary>
-        /// InternalCreatedAt
+        /// Created At
         /// </summary>
         [JsonProperty("createdAt")]
-        internal long InternalCreatedAt { get; set; }
-
-        [JsonIgnore]
-        public DateTime CreatedAt => EpochTime.MillisecondsToDate(InternalCreatedAt);
+        [JsonConverter(typeof(AutoTimeConverter), TimeTypes.InMilliseconds)]
+        public DateTime CreatedAt { get; set; }
 
 
 
         /// <summary>
-        /// InternalUpdatedAt
+        /// Updated At
         /// </summary>
         [JsonProperty("updatedAt")]
-        internal long InternalUpdatedAt { get; set; }
-
-        [JsonIgnore]
-        public DateTime UpdatedAt => EpochTime.MillisecondsToDate(InternalUpdatedAt);
+        [JsonConverter(typeof(AutoTimeConverter), TimeTypes.InMilliseconds)]
+        public DateTime UpdatedAt { get; set; }
 
 
     }

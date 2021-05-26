@@ -1,6 +1,7 @@
 ﻿using Kucoin.NET.Data.Interfaces;
 using Kucoin.NET.Data.Market;
 using Kucoin.NET.Helpers;
+using Kucoin.NET.Json;
 
 using Newtonsoft.Json;
 
@@ -65,13 +66,11 @@ namespace Kucoin.NET.Data.Websockets
         }
 
         /// <summary>
-        /// InternalTimestamp
+        /// Time Stamp
         /// </summary>
         [JsonProperty("timestamp")]
-        internal virtual long InternalTimestamp { get; set; }
-
-        [JsonIgnore]
-        public virtual DateTime Timestamp => EpochTime.MillisecondsToDate(InternalTimestamp);
+        [JsonConverter(typeof(AutoTimeConverter), TimeTypes.InMilliseconds)]
+        public virtual DateTime Timestamp { get; set; }
 
     }
 
@@ -82,7 +81,7 @@ namespace Kucoin.NET.Data.Websockets
     public class ObservableStaticMarketDepthUpdate : StaticMarketDepthUpdate, IOrderUnitList, INotifyPropertyChanged, ISymbol
     {
         private string symbol = null;
-        private long time = 0;
+        private DateTime time;
 
         private ObservableCollection<OrderUnit> observableAsks = null;
         private ObservableCollection<OrderUnit> observableBids = null;
@@ -246,20 +245,13 @@ namespace Kucoin.NET.Data.Websockets
         }
 
         [JsonProperty("timestamp")]
-        internal override long InternalTimestamp
+        public override DateTime Timestamp
         {
             get => time;
             set
             {
-                if (SetProperty(ref time, value))
-                {
-                    OnPropertyChanged(nameof(Timestamp));
-                }
+                SetProperty(ref time, value);
             }
         }
-
-        [JsonIgnore]
-        public override DateTime Timestamp => EpochTime.MillisecondsToDate(time);
-
     }
 }

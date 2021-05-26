@@ -4,12 +4,13 @@ using Kucoin.NET.Rest;
 using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace Kucoin.NET.Futures.Rest
 {
-    public class User : KucoinBaseRestApi
+    public class User : FuturesBaseRestApi
     {
-        public User(ICredentialsProvider cred) : base(cred, futures: true)
+        public User(ICredentialsProvider cred) : base(cred)
         {
         }
 
@@ -22,10 +23,22 @@ namespace Kucoin.NET.Futures.Rest
                 key, 
                 secret, 
                 passphrase, 
-                isSandbox: 
-                isSandbox, 
-                futures: true)
+                isSandbox)
         {
+        }
+
+        public async Task GetAccountsOverview(string currency = null)
+        {
+            var dict = new Dictionary<string, object>();
+
+            if (currency != null)
+            {
+                dict.Add("currency", currency);
+
+            }
+
+            var url = "/api/v1/contracts/active";
+
 
 
 

@@ -97,10 +97,8 @@ namespace Kucoin.NET.Data.Websockets.User
         /// InternalOrderTime
         /// </summary>
         [JsonProperty("orderTime")]
-        internal long InternalOrderTime { get; set; }
-
-        [JsonIgnore]
-        public DateTime OrderTime => EpochTime.NanosecondsToDate(InternalOrderTime);
+        [JsonConverter(typeof(AutoTimeConverter), TimeTypes.InNanoseconds)]
+        public DateTime OrderTime { get; set; }
 
 
 
@@ -142,13 +140,11 @@ namespace Kucoin.NET.Data.Websockets.User
 
 
         /// <summary>
-        /// InternalTs
+        /// Time Stamp
         /// </summary>
         [JsonProperty("ts")]
-        internal long InternalTs { get; set; }
-
-        [JsonIgnore]
-        public DateTime Timestamp => EpochTime.NanosecondsToDate(InternalTs);
+        [JsonConverter(typeof(AutoTimeConverter), TimeTypes.InNanoseconds)]
+        public DateTime Timestamp { get; set; }
 
 
 

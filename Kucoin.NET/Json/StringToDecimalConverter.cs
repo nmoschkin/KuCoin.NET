@@ -21,9 +21,13 @@ namespace Kucoin.NET.Json
             {
                 return reader.Value;
             }
-            if (reader.Value is decimal de || reader.Value is double du)
+            if (reader.Value is decimal de)
             {
                 return (decimal)reader.Value;
+            }
+            else if (reader.Value is double du)
+            {
+                return (decimal)du;
             }
             else if (reader.Value is string s)
             {

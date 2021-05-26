@@ -67,13 +67,11 @@ namespace Kucoin.NET.Data.Websockets.User
         public RelationContext RelationContext { get; set; }
 
         /// <summary>
-        /// InternalTime
+        /// Time Stamp
         /// </summary>
         [JsonProperty("time")]
-        internal long InternalTime { get; set; }
-
-        [JsonIgnore]
-        public DateTime Time => EpochTime.MillisecondsToDate(InternalTime);
+        [JsonConverter(typeof(AutoTimeConverter), TimeTypes.InMilliseconds)]
+        public DateTime Time { get; set; }
 
         object ICloneable.Clone() => MemberwiseClone();
 

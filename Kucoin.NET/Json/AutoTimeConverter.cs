@@ -9,14 +9,15 @@ using Newtonsoft.Json;
 namespace Kucoin.NET.Json
 {
 
-
+    /// <summary>
+    /// Automatically convert timestamps from the REST API.
+    /// </summary>
     public class AutoTimeConverter : JsonConverter
     {
-        public TimeTypes Type { get; set; }
+        public TimeTypes? Type { get; set; } = null;
 
         public AutoTimeConverter()
         {
-            Type = TimeTypes.InMilliseconds;
         }
 
         public AutoTimeConverter(TimeTypes type)
@@ -70,53 +71,70 @@ namespace Kucoin.NET.Json
 
         private DateTime GetTime(long value)
         {
-            DateTime t = EpochTime.Epoch;
-            DateTime t2;
+            switch (Type)
+            {
+                case TimeTypes.InSeconds:
+                    return EpochTime.SecondsToDate(value);
 
-            try
-            {
-                t2 = t.AddMilliseconds(value);
-            }
-            catch
-            {
-                t2 = t;
-            }
-            var now = DateTime.Now;
+                case TimeTypes.InNanoseconds:
+                    return EpochTime.NanosecondsToDate(value);
 
-            if (now.Year - t2.Year < 5)
-            {
-                return t2;
+                case TimeTypes.InMilliseconds:
+                    return EpochTime.MillisecondsToDate(value);
+
+                case null:
+                default:
+
+                    DateTime t = EpochTime.Epoch;
+                    DateTime t2;
+
+                    try
+                    {
+                        t2 = t.AddMilliseconds(value);
+                    }
+                    catch
+                    {
+                        t2 = t;
+                    }
+                    var now = DateTime.Now;
+
+                    if (now.Year - t2.Year < 5)
+                    {
+                        return t2;
+                    }
+
+                    try
+                    {
+                        t2 = t.AddSeconds(value);
+                    }
+                    catch
+                    {
+                        t2 = t;
+                    }
+
+                    if (now.Year - t2.Year < 5)
+                    {
+                        return t2;
+                    }
+
+                    try
+                    {
+                        t2 = t.AddTicks(value / 100);
+                    }
+                    catch
+                    {
+                        return t;
+                    }
+
+                    if (now.Year - t2.Year < 5)
+                    {
+                        return t2;
+                    }
+
+                    return t;
+
             }
 
-            try
-            {
-                t2 = t.AddSeconds(value);
-            }
-            catch
-            {
-                t2 = t;
-            }
-
-            if (now.Year - t2.Year < 5)
-            {
-                return t2;
-            }
-
-            try
-            {
-                t2 = t.AddTicks(value / 100);
-            }
-            catch
-            {
-                return t;
-            }
-
-            if (now.Year - t2.Year < 5)
-            {
-                return t2;
-            }
-
-            return t;
         }
 
     }

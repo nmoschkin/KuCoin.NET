@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 using Kucoin.NET.Helpers;
+using Kucoin.NET.Json;
 
 using Newtonsoft.Json;
 
@@ -70,29 +71,23 @@ namespace Kucoin.NET.Data.User
         [JsonProperty("remark")]
         public string Remark { get; set; }
 
+
         /// <summary>
-        /// CreatedAt
+        /// Created At
         /// </summary>
         [JsonProperty("createdAt")]
-        internal long InternalCreatedAt { get; set; }
+        [JsonConverter(typeof(AutoTimeConverter), TimeTypes.InMilliseconds)]
+        public DateTime CreatedAt { get; set; }
+
+
 
         /// <summary>
-        /// UpdatedAt
+        /// Updated At
         /// </summary>
         [JsonProperty("updatedAt")]
-        internal long InternalUpdatedAt { get; set; }
+        [JsonConverter(typeof(AutoTimeConverter), TimeTypes.InMilliseconds)]
+        public DateTime UpdatedAt { get; set; }
 
-        [JsonIgnore]
-        public DateTime CreatedAt
-        {
-            get => EpochTime.MillisecondsToDate(InternalCreatedAt);
-        }
-
-        [JsonIgnore]
-        public DateTime UpdatedAt
-        {
-            get => EpochTime.MillisecondsToDate(InternalUpdatedAt);
-        }
 
     }
 

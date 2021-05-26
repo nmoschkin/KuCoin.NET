@@ -18,13 +18,13 @@ namespace Kucoin.NET.Data.Market
     /// <summary>
     /// All Symbols Ticker list.
     /// </summary>
-    public class TickerList : ObservableBase
+    public class AllSymbolsTicker : ObservableBase
     {
-        private ObservableDictionary<string, TickerListItem> ticker = new ObservableDictionary<string, TickerListItem>();
+        private ObservableDictionary<string, AllSymbolsTickerItem> ticker = new ObservableDictionary<string, AllSymbolsTickerItem>();
 
         [JsonProperty("ticker")]
-        [JsonConverter(typeof(ListToDictionaryConverter<string, TickerListItem>), new object[] { "Symbol" })]
-        public ObservableDictionary<string, TickerListItem> Ticker
+        [JsonConverter(typeof(ListToDictionaryConverter<string, AllSymbolsTickerItem>), new object[] { "Symbol" })]
+        public ObservableDictionary<string, AllSymbolsTickerItem> Ticker
         {
             get => ticker;
             set

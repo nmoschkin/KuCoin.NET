@@ -1,5 +1,6 @@
 ﻿using Kucoin.NET.Data.Market;
 using Kucoin.NET.Helpers;
+using Kucoin.NET.Json;
 
 using Newtonsoft.Json;
 
@@ -55,13 +56,11 @@ namespace Kucoin.NET.Data.Websockets
         public Side Side { get; set; }
 
         /// <summary>
-        /// InternalTs
+        /// Time Stamp
         /// </summary>
         [JsonProperty("ts")]
-        internal long InternalTs { get; set; }
-
-        [JsonIgnore]
-        public DateTime Ts => EpochTime.NanosecondsToDate(InternalTs);
+        [JsonConverter(typeof(AutoTimeConverter), TimeTypes.InNanoseconds)]
+        public DateTime Timestamp { get; set; }
 
 
     }

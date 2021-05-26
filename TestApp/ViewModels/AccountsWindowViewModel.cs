@@ -300,9 +300,12 @@ namespace KuCoinApp.ViewModels
                 try
                 {
                     var tick = await market.GetTicker(pair);
-                    ((IObserver<Ticker>)this).OnNext(tick);
 
-                    await ticker.AddSymbol(pair);
+                    if (tick != null)
+                    {
+                        ((IObserver<Ticker>)this).OnNext(tick);
+                        await ticker.AddSymbol(pair);
+                    }
                 }
                 catch
                 {

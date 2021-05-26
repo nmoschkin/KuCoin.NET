@@ -57,7 +57,7 @@ namespace Kucoin.NET.Websockets.Public
                     
                     var sk = SymbolKline.Parse(msg.Topic.Substring(i + 1));
 
-                    ticker.Time = msg.Data["time"].ToObject<long>();
+                    ticker.Timestamp = EpochTime.NanosecondsToDate(msg.Data["time"].ToObject<long>());
                     ticker.Symbol = msg.Data["symbol"].ToObject<string>();
 
                     var values = msg.Data["candles"].ToObject<string[]>();

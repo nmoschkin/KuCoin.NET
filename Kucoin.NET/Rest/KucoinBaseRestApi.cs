@@ -73,8 +73,11 @@ namespace Kucoin.NET.Rest
                   isv1api,
                   futures)
         {
-            cred = new MemoryEncryptedCredentialsProvider(credProvider);
-            isSandbox = cred.GetSandbox();
+            if (credProvider != null)
+            {
+                cred = new MemoryEncryptedCredentialsProvider(credProvider);
+                isSandbox = cred.GetSandbox();
+            }
         }
 
         /// <summary>

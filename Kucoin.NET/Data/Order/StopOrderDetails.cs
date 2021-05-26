@@ -1,4 +1,5 @@
 ﻿using Kucoin.NET.Helpers;
+using Kucoin.NET.Json;
 
 using Newtonsoft.Json;
 
@@ -56,10 +57,8 @@ namespace Kucoin.NET.Data.Order
         /// order creation time
         /// </summary>
         [JsonProperty("createdAt")]
-        internal long InternalCreatedAt { get; set; }
-
-        [JsonIgnore]
-        public DateTime CreatedAt => EpochTime.MillisecondsToDate(InternalCreatedAt);
+        [JsonConverter(typeof(AutoTimeConverter), TimeTypes.InMilliseconds)]
+        public DateTime CreatedAt { get; set; }
 
 
 

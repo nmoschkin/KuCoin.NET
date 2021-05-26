@@ -60,13 +60,11 @@ namespace Kucoin.NET.Data.Order.Margin
 
 
         /// <summary>
-        /// InternalMaturityTime
+        /// Maturity Time
         /// </summary>
         [JsonProperty("maturityTime")]
-        internal long InternalMaturityTime { get; set; }
-
-        [JsonIgnore]
-        public DateTime MaturityTime => EpochTime.MillisecondsToDate(InternalMaturityTime);
+        [JsonConverter(typeof(AutoTimeConverter), TimeTypes.InMilliseconds)]
+        public DateTime MaturityTime { get; set; }
 
 
 
@@ -95,10 +93,8 @@ namespace Kucoin.NET.Data.Order.Margin
         /// InternalCreatedAt
         /// </summary>
         [JsonProperty("createdAt")]
-        internal long InternalCreatedAt { get; set; }
-
-        [JsonIgnore]
-        public DateTime CreatedAt => EpochTime.MillisecondsToDate(InternalCreatedAt);
+        [JsonConverter(typeof(AutoTimeConverter), TimeTypes.InMilliseconds)]
+        public DateTime CreatedAt { get; set; }
 
 
     }

@@ -1,4 +1,5 @@
 ﻿using Kucoin.NET.Helpers;
+using Kucoin.NET.Json;
 using Kucoin.NET.Observable;
 using Kucoin.NET.Rest;
 
@@ -15,26 +16,15 @@ namespace Kucoin.NET.Data.Market
     /// <summary>
     /// All Symbols Ticker list item.
     /// </summary>
-    public class TickerListItem 
+    public class AllSymbolsTickerItem 
     {
 
         /// <summary>
         /// time
         /// </summary>
         [JsonProperty("time")]
-        public long Time { get; set; }
-
-
-
-        [JsonIgnore]
-        public DateTime Timestamp
-        {
-            get
-            {
-                return EpochTime.MillisecondsToDate(Time);
-            }
-        }
-
+        [JsonConverter(typeof(AutoTimeConverter), TimeTypes.InMilliseconds)]
+        public DateTime Time { get; set; }
 
         /// <summary>
         /// symbol

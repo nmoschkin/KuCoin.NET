@@ -394,7 +394,7 @@ namespace KuCoinApp.Localization.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to KuCoin Example App.
+        ///   Looks up a localized string similar to KuCoin App.
         /// </summary>
         internal static string MainTitle {
             get {
@@ -489,6 +489,24 @@ namespace KuCoinApp.Localization.Resources {
         internal static string Refresh {
             get {
                 return ResourceManager.GetString("Refresh", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Refresh K-Line.
+        /// </summary>
+        internal static string RefreshChart {
+            get {
+                return ResourceManager.GetString("RefreshChart", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Refresh Symbols.
+        /// </summary>
+        internal static string RefreshSymbols {
+            get {
+                return ResourceManager.GetString("RefreshSymbols", resourceCulture);
             }
         }
         

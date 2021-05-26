@@ -294,7 +294,7 @@ namespace Kucoin.NET.Websockets.Observations
         {
             if (disposed || preflightBook == null) return;
 
-            lock (preflightBook)
+            lock (lockObj)
             {
                 try
                 {
@@ -443,7 +443,7 @@ namespace Kucoin.NET.Websockets.Observations
                 }
             }
 
-            lock (preflightBook)
+            lock(lockObj)
             {
                 connectedFeed = null;
                 preflightBook = null;

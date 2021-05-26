@@ -98,7 +98,7 @@
                 Margin="8"
                 HorizontalAlignment="Center"
                 VerticalAlignment="Center"
-                Content="KuCoin Tool"
+                Content="{i18n:Translate ResourceKey=MainTitle}"
                 FontSize="20"
                 FontWeight="Bold"
                 Foreground="{StaticResource KuCoinForegroundWhite}" />
@@ -343,7 +343,7 @@
                 HorizontalAlignment="Center"
                 VerticalAlignment="Stretch"
                 Command="{Binding RefreshKlineCommand}"
-                Content="_Refresh Chart"
+                Content="{i18n:Translate ResourceKey=RefreshChart}"
                 FontSize="12"
                 IsDefault="True">
                 <Button.Resources>
@@ -364,7 +364,7 @@
                 HorizontalAlignment="Center"
                 VerticalAlignment="Stretch"
                 Command="{Binding RefreshSymbolsCommand}"
-                Content="_Refresh Symbols"
+                Content="{i18n:Translate ResourceKey=RefreshSymbols}"
                 FontSize="12"
                 IsDefault="True">
                 <Button.Resources>
@@ -385,7 +385,7 @@
                 HorizontalAlignment="Center"
                 VerticalAlignment="Stretch"
                 Command="{Binding EditCredentialsCommand}"
-                Content="_Edit Credentials"
+                Content="{i18n:Translate ResourceKey=EditCredentials}"
                 FontSize="12"
                 IsDefault="True">
                 <Button.Resources>
@@ -405,7 +405,7 @@
                 HorizontalAlignment="Center"
                 VerticalAlignment="Stretch"
                 Command="{Binding ShowAccountsCommand}"
-                Content="_Show Accounts"
+                Content="{i18n:Translate ResourceKey=ShowAccounts}"
                 FontSize="12"
                 IsDefault="True">
                 <Button.Resources>

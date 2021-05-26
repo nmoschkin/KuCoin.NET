@@ -27,7 +27,7 @@ namespace Kucoin.NET.Rest
     {
         protected ObservableDictionary<string, TradingSymbol> symbols = null;
 
-        protected TickerList tickers = null;
+        protected AllSymbolsTicker tickers = null;
 
         protected ObservableDictionary<string, MarketCurrency> currencies;
 
@@ -96,7 +96,7 @@ namespace Kucoin.NET.Rest
             }
         }
 
-        public TickerList Tickers
+        public AllSymbolsTicker Tickers
         {
             get => tickers;
             set
@@ -121,7 +121,10 @@ namespace Kucoin.NET.Rest
             try
             {
                 var obj = jobj.ToObject<Ticker>();
-                obj.Symbol = symbol;
+                if (obj != null)
+                {
+                    obj.Symbol = symbol;
+                }
                 return obj;
             }
             catch
@@ -203,14 +206,14 @@ namespace Kucoin.NET.Rest
         /// Get the list of all tickers.
         /// </summary>
         /// <returns></returns>
-        public async Task<TickerList> GetAllTickers()
+        public async Task<AllSymbolsTicker> GetAllTickers()
         {
             var jobj = await MakeRequest(HttpMethod.Get, "/api/v1/market/allTickers", auth: false);
 
 
             //var l = new TickerList();
             //l.Populate(jobj);
-            var l = jobj.ToObject<TickerList>();
+            var l = jobj.ToObject<AllSymbolsTicker>();
 
             Tickers = l;
             return l;
@@ -239,7 +242,7 @@ namespace Kucoin.NET.Rest
         /// </summary>
         /// <param name="symbol"></param>
         /// <returns></returns>
-        public async Task<TickerListItem> Get24HourStats(string symbol)
+        public async Task<AllSymbolsTickerItem> Get24HourStats(string symbol)
         {
             var param = new Dictionary<string, object>();
 
@@ -247,7 +250,7 @@ namespace Kucoin.NET.Rest
 
             var jobj = await MakeRequest(HttpMethod.Get, "/api/v1/market/stats", 5, false, param);
 
-            var obj = jobj.ToObject<TickerListItem>();
+            var obj = jobj.ToObject<AllSymbolsTickerItem>();
             obj.Symbol = symbol;
 
             return obj;
