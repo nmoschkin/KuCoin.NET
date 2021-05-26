@@ -166,7 +166,7 @@ namespace KuCoinApp
 
             }
 
-            return;
+            //return;
 
             if (cred == null)
             {

@@ -19,12 +19,15 @@ using KuCoinApp.Views;
 using Kucoin.NET.Data.Interfaces;
 using Kucoin.NET.Helpers;
 using System.Linq.Expressions;
+using FancyCandles;
 
 namespace KuCoinApp
 {
 
     public class MainWindowViewModel : ObservableBase, IObserver<Ticker>, IObserver<KlineFeedMessage<KlineCandle>>
     {
+        bool init = false;
+
         private Level2 level2Feed;
 
         private Accounts accountWnd;
@@ -42,6 +45,8 @@ namespace KuCoinApp
         private Credentials credWnd;
 
         private CryptoCredentials cred;
+
+        private IntRange lastRange;
 
         private bool isCredWndShowing;
 
@@ -83,6 +88,10 @@ namespace KuCoinApp
 
         private string sizeFormat = "0.00";
 
+        public event EventHandler AskQuit;
+
+        public ICommand QuitCommand { get; private set; }
+
         public ICommand RefreshSymbolsCommand { get; private set; }
         public ICommand RefreshKlineCommand { get; private set; }
         public ICommand RefreshPriceCommand { get; private set; }
@@ -96,6 +105,18 @@ namespace KuCoinApp
             set
             {
                 SetProperty(ref marketUpdate, value);
+            }
+        }
+
+        public IntRange LastCandleRange
+        {
+            get => lastRange;
+            set
+            {
+                if (SetProperty(ref lastRange, value))
+                {
+                    App.Current.Settings.LastCandleRange = value;
+                }
             }
         }
 
@@ -424,6 +445,7 @@ namespace KuCoinApp
             App.Current?.Dispatcher?.Invoke(() =>
             {
                 LastCandle = (KlineCandle)kc?.LastOrDefault();
+
             });
         }
 
@@ -510,6 +532,7 @@ namespace KuCoinApp
                 {
                     Volume = ticker.Candles.Volume;
                     VolumeTime = ticker.Timestamp;
+                   
                 });
             }
             else
@@ -522,43 +545,37 @@ namespace KuCoinApp
         void IObserver<Ticker>.OnNext(Ticker ticker)
         {
             if ((string)ticker.Symbol != (string)symbol) return;
-            Task.Run(async () =>
+            Task.Run(() =>
             {
                 decimal p = ticker.Price;
+                var n = DateTime.Now;
 
-                KlineCandle kl;
+                n = n.AddSeconds(-1 * n.Second);
+
+                KlineCandle kl = null;
 
                 if ((data?.Count ?? 0) == 0 || !Candle.IsTimeInCandle(LastCandle, ticker.Timestamp))
                 {
-                    await RefreshData();
+                    _ = RefreshData();
+                    return;
                 }
-                else
+
+                kl = ((KlineCandle)data.LastOrDefault()) ?? new KlineCandle() { Timestamp = n, Type = this.KlineType };
+
+                if (p < kl.LowPrice)
                 {
-                    var n = DateTime.Now;
+                    kl.LowPrice = p;
+                }
+                else if (p > kl.HighPrice)
+                {
+                    kl.HighPrice = p;
+                }
                     
-                    n = n.AddSeconds(-1 * n.Second);
+                kl.ClosePrice = p;
 
-                    kl = ((KlineCandle)data.LastOrDefault()) ?? new KlineCandle() { Timestamp = n, Type = this.KlineType };
-
-                    if (p < kl.LowPrice)
-                    {
-                        kl.LowPrice = p;
-                    }
-                    else if (p > kl.HighPrice)
-                    {
-                        kl.HighPrice = p;
-                    }
-                    
-                    kl.ClosePrice = p;
-
-                    if (VolumeTime != null && Candle.IsTimeInCandle(kl, (DateTime)VolumeTime)) 
-                    {
-                        kl.Volume = Volume ?? 0;
-                    }
-
-                    //App.Current?.Dispatcher?.Invoke(() => {
-                    //    LastCandle = kl.Clone();
-                    //});
+                if (VolumeTime != null && Candle.IsTimeInCandle(kl, (DateTime)VolumeTime)) 
+                {
+                    kl.Volume = Volume ?? 0;
                 }
 
                 RealTimeTicker = ticker;
@@ -642,6 +659,7 @@ namespace KuCoinApp
 
             App.Current.Settings.PropertyChanged += Settings_PropertyChanged;
             market = new Market();
+            lastRange = App.Current.Settings.LastCandleRange;
 
             // Make sure you call this from the main thread,
             // alternately, create the feeds on the main thread
@@ -707,6 +725,11 @@ namespace KuCoinApp
                 }
             });
 
+            QuitCommand = new SimpleCommand((obj) =>
+            {
+                AskQuit?.Invoke(this, new EventArgs());
+            });
+
             Task.Run(async () =>
             {
                 await Initialize();
@@ -744,8 +767,14 @@ namespace KuCoinApp
                     {
                         pin = CryptoCredentials.Pin;
                     }
-
+                   
                     cred = CryptoCredentials.LoadFromStorage(App.Current.Seed, pin, false);                    
+
+                    if (cred == null)
+                    {
+                        AskQuit?.Invoke(this, new EventArgs());
+                        return;
+                    }
 
                     Symbols = market.Symbols;
 
@@ -769,12 +798,12 @@ namespace KuCoinApp
 
                             // we connect level2Feed, as it is
                             // the credentialed feed.
-                            await level2Feed.Connect(true);
+                            await level2Feed.Connect();
 
                             // we attach tickerFeed and klineFeed 
                             // by calling MultiplexInit with the host feed.
-                            await tickerFeed.MultiplexInit(level2Feed);
-                            await klineFeed.MultiplexInit(level2Feed);
+                            await tickerFeed.Connect(true);
+                            await klineFeed.MultiplexInit(tickerFeed);
 
                             // Now we have the multiplex host (level2Feed)
                             // and two multiplexed clients (tickerFeed and klineFeed)
@@ -827,7 +856,7 @@ namespace KuCoinApp
                                 return;
                             }
 
-                            _ = Program.TestMain(cred);
+                            // _ = Program.TestMain(cred);
 
 
                             return;

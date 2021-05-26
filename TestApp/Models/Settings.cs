@@ -8,6 +8,8 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
 
+using FancyCandles;
+
 using Kucoin.NET.Observable;
 
 using Microsoft.Win32;
@@ -155,6 +157,19 @@ namespace KuCoinApp
             {
                 SetProperty(value);
                 OnPropertyChanged();
+            }
+        }
+
+        public IntRange LastCandleRange
+        {
+            get
+            {
+                var s = GetProperty<string>(new IntRange(99, 100).ToString());
+                return IntRange.Parse(s);
+            }
+            set
+            {
+                SetProperty(value.ToString());
             }
         }
 

@@ -30,14 +30,19 @@ namespace KuCoinApp
             InitializeComponent();
 
             DataContext = vm = new MainWindowViewModel();
-            
+
+            vm.AskQuit += Vm_AskQuit;
             this.SizeChanged += MainWindow_SizeChanged;
             this.LocationChanged += MainWindow_LocationChanged;
             this.Loaded += MainWindow_Loaded;
             this.Activated += MainWindow_Activated;
-
             App.Current.Settings.ApplyWindowSettings(this);
             init = true;
+        }
+
+        private void Vm_AskQuit(object sender, EventArgs e)
+        {
+            App.Current.Shutdown();
         }
 
         private void MainWindow_Activated(object sender, EventArgs e)
