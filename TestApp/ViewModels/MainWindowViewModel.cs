@@ -770,7 +770,7 @@ namespace KuCoinApp
                    
                     cred = CryptoCredentials.LoadFromStorage(App.Current.Seed, pin, false);                    
 
-                    if (cred == null)
+                    if (cred == null && PinWindow.LastCloseResult == false)
                     {
                         AskQuit?.Invoke(this, new EventArgs());
                         return;

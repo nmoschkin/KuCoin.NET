@@ -25,6 +25,8 @@ namespace KuCoinApp
     {
         Settings settings = new Settings();
 
+        public static bool? LastCloseResult { get; private set; }
+
         public PinWindow()
         {
             
@@ -64,6 +66,8 @@ namespace KuCoinApp
                     wnd.Owner = owner;
 
                     wnd.ShowDialog();
+
+                    LastCloseResult = wnd.DialogResult;
 
                     if (wnd.DialogResult == true)
                     {
