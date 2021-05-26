@@ -80,7 +80,7 @@ namespace KuCoinApp
 
         private ObservableCollection<CurrencyViewModel> currencies = new ObservableCollection<CurrencyViewModel>();
 
-        private ILevel2OrderBookProvider level2;
+        private ILevel2OrderBookProvider<OrderUnit> level2;
 
         private ObservableStaticMarketDepthUpdate marketUpdate;
 
@@ -129,7 +129,7 @@ namespace KuCoinApp
             }
         }
 
-        public ILevel2OrderBookProvider Level2
+        public ILevel2OrderBookProvider<OrderUnit> Level2
         {
             get => level2;
             set
@@ -445,7 +445,6 @@ namespace KuCoinApp
             App.Current?.Dispatcher?.Invoke(() =>
             {
                 LastCandle = (KlineCandle)kc?.LastOrDefault();
-
             });
         }
 
@@ -796,17 +795,19 @@ namespace KuCoinApp
                             // the private feed needs credentials, 
                             // and the public feed does not include them.
 
-                            // we connect level2Feed, as it is
-                            // the credentialed feed.
+                            // we connect level2Feed.
+                            
+                            // give its own socket because of the speed of data.
                             await level2Feed.Connect();
+
 
                             // we attach tickerFeed and klineFeed 
                             // by calling MultiplexInit with the host feed.
                             await tickerFeed.Connect(true);
                             await klineFeed.MultiplexInit(tickerFeed);
 
-                            // Now we have the multiplex host (level2Feed)
-                            // and two multiplexed clients (tickerFeed and klineFeed)
+                            // Now we have the multiplex host (tickerfeed)
+                            // and the multiplexed client (klineFeed)
 
                             // the connection only exists on the multiplex host
                             // which serves as the connection maintainer.

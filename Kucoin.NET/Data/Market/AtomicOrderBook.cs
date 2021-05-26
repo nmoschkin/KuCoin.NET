@@ -7,6 +7,7 @@ using Newtonsoft.Json;
 
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Text;
 
 namespace Kucoin.NET.Data.Market
@@ -14,14 +15,14 @@ namespace Kucoin.NET.Data.Market
     /// <summary>
     /// Represents Level 3 Market Data
     /// </summary>
-    public class AtomicOrderBook : ObservableBase, IAtomicOrderBook
+    public class AtomicOrderBook : ObservableBase, IOrderBook<AtomicOrderUnit>, IOrderUnitList
     {
         private DateTime time;
         private long seq;
 
-        private ObservableAtomicOrderUnits asks = new ObservableAtomicOrderUnits();
+        private ObservableAtomicOrderUnits<AtomicOrderUnit> asks = new ObservableAtomicOrderUnits<AtomicOrderUnit>();
 
-        private ObservableAtomicOrderUnits bids = new ObservableAtomicOrderUnits(true);
+        private ObservableAtomicOrderUnits<AtomicOrderUnit> bids = new ObservableAtomicOrderUnits<AtomicOrderUnit>(true);
 
         [JsonProperty("sequence")]
         public long Sequence
@@ -43,19 +44,14 @@ namespace Kucoin.NET.Data.Market
                 SetProperty(ref time, value);
             }
         }
-                
-        [JsonProperty("asks")]
-        IList<IAtomicOrderUnit> IAtomicOrderUnitList.Asks => (IList<IAtomicOrderUnit>)asks;
-
-        [JsonProperty("bids")]
-        IList<IAtomicOrderUnit> IAtomicOrderUnitList.Bids => (IList<IAtomicOrderUnit>)bids;
 
         IList<IOrderUnit> IOrderUnitList.Asks => (IList<IOrderUnit>)bids;
 
         IList<IOrderUnit> IOrderUnitList.Bids => (IList<IOrderUnit>)bids;
 
 
-        public ObservableAtomicOrderUnits Asks
+        [JsonProperty("asks")]
+        public ObservableAtomicOrderUnits<AtomicOrderUnit> Asks
         {
             get => asks;
             set
@@ -64,7 +60,8 @@ namespace Kucoin.NET.Data.Market
             }
         }
 
-        public ObservableAtomicOrderUnits Bids
+        [JsonProperty("bids")]
+        public ObservableAtomicOrderUnits<AtomicOrderUnit> Bids
         {
             get => bids;
             set
@@ -73,7 +70,8 @@ namespace Kucoin.NET.Data.Market
             }
         }
 
+        KeyedCollection<decimal, AtomicOrderUnit> IKeyedOrderUnitList<AtomicOrderUnit>.Asks => asks;
 
-
+        KeyedCollection<decimal, AtomicOrderUnit> IKeyedOrderUnitList<AtomicOrderUnit>.Bids => asks;
     }
 }

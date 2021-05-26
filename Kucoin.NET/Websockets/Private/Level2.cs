@@ -19,10 +19,10 @@ namespace Kucoin.NET.Websockets.Private
     /// <summary>
     /// Calibrated Level 2 Market Feed
     /// </summary>
-    public class Level2 : KucoinBaseWebsocketFeed
+    public class Level2<T> : KucoinBaseWebsocketFeed where T : IOrderUnit
     {
 
-        internal readonly Dictionary<string, Level2Observation> activeFeeds = new Dictionary<string, Level2Observation>();
+        internal readonly Dictionary<string, Level2Observation<T>> activeFeeds = new Dictionary<string, Level2Observation<T>>();
 
         protected int updateInterval = 500;
 
@@ -31,7 +31,7 @@ namespace Kucoin.NET.Websockets.Private
         /// <summary>
         /// Event that gets fired when the feed for a symbol has been calibrated and is ready to be used.
         /// </summary>
-        public EventHandler<SymbolCalibratedEventArgs> SymbolCalibrated;
+        public EventHandler<SymbolCalibratedEventArgs<T>> SymbolCalibrated;
 
         /// <summary>
         /// Create a new Level 2 feed with the specified credentials.
@@ -45,10 +45,10 @@ namespace Kucoin.NET.Websockets.Private
         /// creating an instance of this class or an <see cref="InvalidOperationException"/> will be raised.
         /// </remarks>
         public Level2(
-            string key, 
-            string secret, 
-            string passphrase, 
-            bool isSandbox = false )
+            string key,
+            string secret,
+            string passphrase,
+            bool isSandbox = false)
             : base(key, secret, passphrase, isSandbox)
         {
             if (!Dispatcher.Initialized)
@@ -65,7 +65,7 @@ namespace Kucoin.NET.Websockets.Private
         /// You must either create this instance on the main / UI thread or call <see cref="Dispatcher.Initialize"/> prior to 
         /// creating an instance of this class or an <see cref="InvalidOperationException"/> will be raised.
         /// </remarks>
-        public Level2(ICredentialsProvider credProvider) :base(credProvider)
+        public Level2(ICredentialsProvider credProvider) : base(credProvider)
         {
             if (!Dispatcher.Initialized)
             {
@@ -94,7 +94,7 @@ namespace Kucoin.NET.Websockets.Private
         /// <param name="symbol">The symbol to subscribe.</param>
         /// <param name="pieces">Market depth, or 0 for full depth.</param>
         /// <returns></returns>
-        public async Task<ILevel2OrderBookProvider> AddSymbol(string symbol, int pieces)
+        public async Task<ILevel2OrderBookProvider<T>> AddSymbol(string symbol, int pieces)
         {
             var p = await AddSymbols(new string[] { symbol }, pieces);
             return p[symbol];
@@ -106,16 +106,16 @@ namespace Kucoin.NET.Websockets.Private
         /// <param name="symbols">The symbols to subscribe.</param>
         /// <param name="pieces">Market depth, or 0 for full depth.</param>
         /// <returns></returns>
-        public async Task<Dictionary<string, ILevel2OrderBookProvider>> AddSymbols(IEnumerable<string> symbols, int pieces = 200)
+        public async Task<Dictionary<string, ILevel2OrderBookProvider<T>>> AddSymbols(IEnumerable<string> symbols, int pieces = 200)
         {
-            if (disposed) throw new ObjectDisposedException(nameof(Level2));
+            if (disposed) throw new ObjectDisposedException(nameof(Level2<T>));
             if (!Connected)
             {
                 await Connect();
             }
 
             var sb = new StringBuilder();
-            var lnew = new Dictionary<string, ILevel2OrderBookProvider>();
+            var lnew = new Dictionary<string, ILevel2OrderBookProvider<T>>();
 
             foreach (var sym in symbols)
             {
@@ -128,7 +128,7 @@ namespace Kucoin.NET.Websockets.Private
                 if (sb.Length > 0) sb.Append(',');
                 sb.Append(sym);
 
-                var obs = new Level2Observation(this, sym, pieces);
+                var obs = new Level2Observation<T>(this, sym, pieces);
                 activeFeeds.Add(sym, obs);
 
                 lnew.Add(sym, obs);
@@ -167,7 +167,7 @@ namespace Kucoin.NET.Websockets.Private
         /// <returns></returns>
         internal virtual async Task RemoveSymbols(IEnumerable<string> symbols)
         {
-            if (disposed) throw new ObjectDisposedException(nameof(Level2));
+            if (disposed) throw new ObjectDisposedException(nameof(Level2<T>));
             if (!Connected) return;
 
             var sb = new StringBuilder();
@@ -213,7 +213,7 @@ namespace Kucoin.NET.Websockets.Private
         /// Settings the number of pieces to 0 returns the full market depth. 
         /// Use 0 to calibrate a full level 2 feed.
         /// </remarks>
-        public async Task<OrderBook> GetPartList(string symbol, int pieces = 20)
+        public async Task<OrderBook<T>> GetPartList(string symbol, int pieces = 20)
         {
             var curl = pieces > 0 ? string.Format("/api/v1/market/orderbook/level2_{0}", pieces) : "/api/v2/market/orderbook/level2";
             var param = new Dictionary<string, object>();
@@ -221,16 +221,18 @@ namespace Kucoin.NET.Websockets.Private
             param.Add("symbol", (string)symbol);
 
             var jobj = await MakeRequest(HttpMethod.Get, curl, 5, false, param);
-            var result = jobj.ToObject<OrderBook>();
+            var result = jobj.ToObject<OrderBook<T>>();
 
             foreach (var ask in result.Asks)
             {
-                ask.Sequence = result.Sequence;
+                if (ask is ISequencedOrderUnit seq)
+                    seq.Sequence = result.Sequence;
             }
 
             foreach (var bid in result.Bids)
             {
-                bid.Sequence = result.Sequence;
+                if (bid is ISequencedOrderUnit seq)
+                    seq.Sequence = result.Sequence;
             }
 
             return result;
@@ -246,8 +248,8 @@ namespace Kucoin.NET.Websockets.Private
         /// Returns the full market depth. 
         /// Use this to calibrate a full level 2 feed.
         /// </remarks>
-        public Task<OrderBook> GetAggregatedOrder(string symbol) => GetPartList(symbol, 0);
-    
+        public Task<OrderBook<T>> GetAggregatedOrder(string symbol) => GetPartList(symbol, 0);
+
         /// <summary>
         /// Initialize the order book with a call to <see cref="GetAggregatedOrder(string)"/>.
         /// </summary>
@@ -263,7 +265,7 @@ namespace Kucoin.NET.Websockets.Private
 
             var data = await GetAggregatedOrder(af.Symbol);
 
-            af.FullDepthOrderBook = data;
+            af.FullDepthOrderBook = (IOrderBook<T>)data;
             af.Initialized = true;
         }
 
@@ -284,7 +286,7 @@ namespace Kucoin.NET.Websockets.Private
                     {
                         var symbol = msg.Topic.Substring(i + 1);
 
-                        if (activeFeeds.TryGetValue(symbol, out Level2Observation af))
+                        if (activeFeeds.TryGetValue(symbol, out Level2Observation<T> af))
                         {
                             var update = msg.Data.ToObject<Level2Update>();
 
@@ -303,11 +305,11 @@ namespace Kucoin.NET.Websockets.Private
                                     }
                                     _ = Task.Run(() =>
                                     {
-                                        SymbolCalibrated?.Invoke(this, new SymbolCalibratedEventArgs(af));
+                                        SymbolCalibrated?.Invoke(this, new SymbolCalibratedEventArgs<T>(af));
                                     });
                                 }
                             }
-                            else 
+                            else
                             {
                                 lock (lockObj)
                                 {
@@ -327,4 +329,20 @@ namespace Kucoin.NET.Websockets.Private
             }
         }
     }
+
+    public class Level2 : Level2<OrderUnit>
+    {
+
+        public Level2(ICredentialsProvider credProvider) : base(credProvider)
+        {
+        }
+
+        public Level2(string key, string secret, string passphrase, bool isSandbox = false) : base(key, secret, passphrase, isSandbox)
+        {
+        }
+
+
+    }
+
+
 }

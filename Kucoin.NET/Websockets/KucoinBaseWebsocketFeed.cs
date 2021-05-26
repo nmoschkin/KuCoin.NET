@@ -129,11 +129,13 @@ namespace Kucoin.NET.Websockets
             ICredentialsProvider credProvider,
             string url = null,
             bool isv1api = false,
-            KucoinBaseWebsocketFeed multiplexHost = null) 
+            KucoinBaseWebsocketFeed multiplexHost = null, 
+            bool futures = false) 
             : base(
                   credProvider, 
                   url, 
-                  isv1api
+                  isv1api,
+                  futures
                   )
         {
             if (multiplexHost != null)
@@ -166,14 +168,16 @@ namespace Kucoin.NET.Websockets
             bool isSandbox = false,
             string url = null,
             bool isv1api = false, 
-            KucoinBaseWebsocketFeed multiplexHost = null) 
+            KucoinBaseWebsocketFeed multiplexHost = null,
+            bool futures = false) 
             : base(
                   key, 
                   secret, 
                   passphrase, 
                   isSandbox, 
                   url, 
-                  isv1api
+                  isv1api,
+                  futures
                   )
         {
             if (multiplexHost != null)

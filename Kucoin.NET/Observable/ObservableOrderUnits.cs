@@ -1,4 +1,5 @@
-﻿using Kucoin.NET.Data.Market;
+﻿using Kucoin.NET.Data.Interfaces;
+using Kucoin.NET.Data.Market;
 using Kucoin.NET.Helpers;
 
 using System;
@@ -10,13 +11,13 @@ using System.Text;
 
 namespace Kucoin.NET.Observable
 {
-    public class ObservableOrderUnits : KeyedCollection<decimal, OrderUnit>, INotifyCollectionChanged
+    public class ObservableOrderUnits<T> : KeyedCollection<decimal, T>, INotifyCollectionChanged where T: IOrderUnit
     {
         public event NotifyCollectionChangedEventHandler CollectionChanged;
 
         private object lockObj = new object();
 
-        protected override decimal GetKeyForItem(OrderUnit item) => item.Price;
+        protected override decimal GetKeyForItem(T item) => item.Price;
 
         bool descending;
 
@@ -29,7 +30,7 @@ namespace Kucoin.NET.Observable
             this.descending = descending;
         }
 
-        int GetInsertIndex(OrderUnit unit)
+        int GetInsertIndex(T unit)
         {
             if (Count == 0) return 0;
 
@@ -37,7 +38,7 @@ namespace Kucoin.NET.Observable
             int lo = 0;
             int mid; 
             
-            var l = this as IList<OrderUnit>;
+            var l = this as IList<T>;
             var uprice = unit.Price;
             decimal cprice;
 
@@ -98,11 +99,11 @@ namespace Kucoin.NET.Observable
 
         }
 
-        public OrderUnit[] ToArray()
+        public T[] ToArray()
         {
 
-            if (Count == 0) return new OrderUnit[0];
-            OrderUnit[] output = new OrderUnit[Count];
+            if (Count == 0) return new T[0];
+            T[] output = new T[Count];
 
             lock(lockObj)
             {
@@ -121,7 +122,7 @@ namespace Kucoin.NET.Observable
             }
         }
 
-        protected override void InsertItem(int index, OrderUnit item)
+        protected override void InsertItem(int index, T item)
         {
             lock(lockObj)
             {
@@ -136,13 +137,13 @@ namespace Kucoin.NET.Observable
         {
             lock (lockObj)
             {
-                var oldItem = ((IList<OrderUnit>)this)[index];
+                var oldItem = ((IList<T>)this)[index];
                 base.RemoveItem(index);
                 OnCollectionChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Remove, oldItem, index));
             }
         }
 
-        protected override void SetItem(int index, OrderUnit item)
+        protected override void SetItem(int index, T item)
         {
             lock (lockObj)
             {
@@ -151,12 +152,15 @@ namespace Kucoin.NET.Observable
                     InsertItem(0, item);
                     return;
                 }
-                var oldItem = ((IList<OrderUnit>)this)[index];
+                var oldItem = ((IList<T>)this)[index];
                 if (Contains(item.Price))
                 {
                     var orgitem = this[item.Price];
                     orgitem.Size = item.Size;
-                    orgitem.Sequence = item.Sequence;
+
+                    if (item is ISequencedOrderUnit seq && orgitem is ISequencedOrderUnit orgseq)
+                        orgseq.Sequence = seq.Sequence;
+
                     return;
                 }
                 base.SetItem(index, item);

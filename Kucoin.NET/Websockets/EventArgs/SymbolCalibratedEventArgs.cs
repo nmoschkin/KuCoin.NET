@@ -3,13 +3,14 @@ using System.Collections.Generic;
 using System.Text;
 using System.ComponentModel;
 using Kucoin.NET.Websockets.Observations;
+using Kucoin.NET.Data.Interfaces;
 
 namespace Kucoin.NET.Websockets
 {
     /// <summary>
     /// Provides data for a SymbolCalibrated event.
     /// </summary>
-    public class SymbolCalibratedEventArgs : EventArgs
+    public class SymbolCalibratedEventArgs<T> : EventArgs where T: IOrderUnit
     {
         /// <summary>
         /// Gets the symbol of the calibrated feed.
@@ -22,9 +23,9 @@ namespace Kucoin.NET.Websockets
         public int MarketDepth { get; private set; }
 
 
-        public ILevel2OrderBookProvider Provider { get; private set; }
+        public ILevel2OrderBookProvider<T> Provider { get; private set; }
 
-        public SymbolCalibratedEventArgs(ILevel2OrderBookProvider provider)
+        public SymbolCalibratedEventArgs(ILevel2OrderBookProvider<T> provider)
 
         {
             Provider = provider;

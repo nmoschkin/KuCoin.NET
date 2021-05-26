@@ -8,15 +8,16 @@ using Newtonsoft.Json;
 using Kucoin.NET.Rest;
 using Kucoin.NET.Helpers;
 using Kucoin.NET.Data.Interfaces;
+using Kucoin.NET.Json;
 
 namespace Kucoin.NET.Data.Market
 {
 
-    public class OrderBook : ObservableBase, IOrderBook
+    public class OrderBook<T> : ObservableBase, IOrderBook<T> where T: IOrderUnit 
     {
-        private ObservableOrderUnits asks = new ObservableOrderUnits();
+        private ObservableOrderUnits<T> asks = new ObservableOrderUnits<T>();
 
-        private ObservableOrderUnits bids = new ObservableOrderUnits(true);
+        private ObservableOrderUnits<T> bids = new ObservableOrderUnits<T>(true);
 
         private long sequence;
 
@@ -31,12 +32,12 @@ namespace Kucoin.NET.Data.Market
             }
         }
 
-        IList<IOrderUnit> IOrderUnitList.Asks => (IList<IOrderUnit>)asks;
+        KeyedCollection<decimal, T> IKeyedOrderUnitList<T>.Asks => asks;
 
-        IList<IOrderUnit> IOrderUnitList.Bids => (IList<IOrderUnit>)bids;
+        KeyedCollection<decimal, T> IKeyedOrderUnitList<T>.Bids => bids;
 
         [JsonProperty("asks")]
-        public ObservableOrderUnits Asks
+        public ObservableOrderUnits<T> Asks
         {
             get => asks;
             set
@@ -46,7 +47,7 @@ namespace Kucoin.NET.Data.Market
         }
 
         [JsonProperty("bids")]
-        public ObservableOrderUnits Bids
+        public ObservableOrderUnits<T> Bids
         {
             get => bids;
             set
@@ -55,32 +56,17 @@ namespace Kucoin.NET.Data.Market
             }
         }
 
-        private long time;
+        private DateTime time;
 
         [JsonProperty("time")]
-        public long Time
+        [JsonConverter(typeof(AutoTimeConverter), TimeTypes.InNanoseconds)]
+        public virtual DateTime Timestamp 
         {
             get => time;
             set
             {
                 SetProperty(ref time, value);
             }
-        }
-
-
-        [JsonIgnore]
-        public DateTime Timestamp
-        {
-            get
-            {
-                return EpochTime.NanosecondsToDate(time);
-            }
-        }
-
-        DateTime IOrderBook.Timestamp
-        {
-            get => EpochTime.NanosecondsToDate(time);
-            set => time = EpochTime.DateToNanoseconds(value);
         }
 
     }

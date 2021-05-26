@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 
 namespace Kucoin.NET.Websockets.Private
 {
-    public class Level3Feed : SymbolTopicFeedBase<Level2Update>
+    public class Level3Feed<T> : SymbolTopicFeedBase<Level2Update> where T: IAtomicOrderUnit
     {
         public override bool IsPublic => throw new NotImplementedException();
 
@@ -77,12 +77,12 @@ namespace Kucoin.NET.Websockets.Private
         }
 
 
-        protected async Task<OrderBook> GetAtomicOrder(string symbol)
+        protected async Task<OrderBook<T>> GetAtomicOrder(string symbol)
         {
             var curl = string.Format("/api/v3/market/orderbook/level3?symbol={0}", symbol);
 
             var jobj = await MakeRequest(HttpMethod.Get, curl, 5, false);
-            return jobj.ToObject<OrderBook>();
+            return jobj.ToObject<OrderBook<T>>();
         }
 
     }
