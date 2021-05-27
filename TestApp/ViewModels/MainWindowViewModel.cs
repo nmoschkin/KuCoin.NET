@@ -448,17 +448,19 @@ namespace KuCoinApp
 
         }
 
+        bool finit = false;
+
         public async Task RefreshData()
         {
-            bool finit = false;
-
             if (!Kucoin.NET.Helpers.Dispatcher.Initialized)
             {
                 Kucoin.NET.Helpers.Dispatcher.Initialize(new DispatcherSynchronizationContext(App.Current.Dispatcher));
             }
 
-            if (level2Feed == null || level2Feed.Connected == false)
+            if (cred != null && (level2Feed == null || level2Feed.Connected == false))
             {
+                if (finit) return;
+
                 level2Feed = new Level2(cred);
                 await level2Feed.Connect();
 
@@ -477,6 +479,8 @@ namespace KuCoinApp
 
             if (tickerFeed == null || tickerFeed.Connected == false)
             {
+                if (finit) return;
+
                 tickerFeed = new TickerFeed();
                 klineFeed = new KlineFeed<KlineCandle>();
 
@@ -685,9 +689,8 @@ namespace KuCoinApp
                         }
                         catch { }
 
-                        
-
                         level2Feed = new Level2(cred);
+
                         tickerFeed = new TickerFeed();
                         klineFeed = new KlineFeed<KlineCandle>();
 

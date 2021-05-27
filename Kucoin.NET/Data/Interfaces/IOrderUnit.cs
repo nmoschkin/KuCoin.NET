@@ -1,4 +1,6 @@
-﻿using System;
+﻿using Kucoin.NET.Data.Market;
+
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Text;
@@ -22,6 +24,11 @@ namespace Kucoin.NET.Data.Interfaces
     public interface ISequencedOrderUnit : IOrderUnit
     {
         long Sequence { get; set; }
+    }
+
+    public interface IFuturesOrderUnit : ISequencedOrderUnit
+    {
+        Side Side { get; set; }
     }
 
     public interface IOrderUnitList<T> where T: IOrderUnit
