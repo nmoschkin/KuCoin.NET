@@ -250,6 +250,15 @@ namespace KuCoinApp.Localization.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Cannot connect to the internet..
+        /// </summary>
+        internal static string ErrorNoInternet {
+            get {
+                return ResourceManager.GetString("ErrorNoInternet", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to File.
         /// </summary>
         internal static string File {

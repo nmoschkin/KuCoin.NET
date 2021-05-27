@@ -18,11 +18,11 @@ namespace Kucoin.NET.Data.Websockets
     /// <summary>
     /// Level 2 New Sequence Changes
     /// </summary>
-    public class Changes : IOrderUnitList
+    public class Changes : IOrderUnitList<IOrderUnit>
     {
-        IList<IOrderUnit> IOrderUnitList.Asks => (IList<IOrderUnit>)Asks;
+        IList<IOrderUnit> IOrderUnitList<IOrderUnit>.Asks => (IList<IOrderUnit>)Asks;
 
-        IList<IOrderUnit> IOrderUnitList.Bids => (IList<IOrderUnit>)Bids;
+        IList<IOrderUnit> IOrderUnitList<IOrderUnit>.Bids => (IList<IOrderUnit>)Bids;
 
         /// <summary>
         /// Asks (from sellers)

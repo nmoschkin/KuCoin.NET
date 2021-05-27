@@ -20,14 +20,14 @@ using Kucoin.NET.Data.Interfaces;
 using Kucoin.NET.Helpers;
 using System.Linq.Expressions;
 using FancyCandles;
+using KuCoinApp.Localization.Resources;
+using System.Windows.Threading;
 
 namespace KuCoinApp
 {
 
     public class MainWindowViewModel : ObservableBase, IObserver<Ticker>, IObserver<KlineFeedMessage<KlineCandle>>
     {
-        bool init = false;
-
         private Level2 level2Feed;
 
         private Accounts accountWnd;
@@ -80,7 +80,7 @@ namespace KuCoinApp
 
         private ObservableCollection<CurrencyViewModel> currencies = new ObservableCollection<CurrencyViewModel>();
 
-        private ILevel2OrderBookProvider<OrderUnit> level2;
+        private ILevel2OrderBookProvider<OrderBook<OrderUnit>, OrderUnit> level2;
 
         private ObservableStaticMarketDepthUpdate marketUpdate;
 
@@ -129,7 +129,7 @@ namespace KuCoinApp
             }
         }
 
-        public ILevel2OrderBookProvider<OrderUnit> Level2
+        public ILevel2OrderBookProvider<OrderBook<OrderUnit>, OrderUnit> Level2
         {
             get => level2;
             set
@@ -366,7 +366,12 @@ namespace KuCoinApp
 
      
 
-        private void UpdateSymbol(string oldSymbol, string newSymbol, bool force = false, bool isKlineChange = false, KlineType? oldKline = null)
+        private void UpdateSymbol(
+            string oldSymbol, 
+            string newSymbol, 
+            bool force = false, 
+            bool isKlineChange = false, 
+            KlineType? oldKline = null)
         {
 
             App.Current.Settings.PushSymbol(newSymbol);
@@ -394,8 +399,12 @@ namespace KuCoinApp
                             {
                                 Level2.Dispose();
                             }
-
-                            if (isKlineChange) return;
+                            
+                            if (level2Feed == null || level2Feed.Connected == false)
+                            {
+                                level2Feed = new Level2(cred);
+                                await level2Feed.Connect();
+                            }
 
                             await level2Feed.AddSymbol(newSymbol, 50).ContinueWith((t) =>
                             {
@@ -415,6 +424,12 @@ namespace KuCoinApp
             {
                 RefreshData().ContinueWith(async (t2) =>
                 {
+                    if (level2Feed == null || level2Feed.Connected == false)
+                    {
+                        level2Feed = new Level2(cred);
+                        await level2Feed.Connect();
+                    }
+
                     level2Feed?.AddSymbol(newSymbol, 50).ContinueWith((t) =>
                     {
                         App.Current?.Dispatcher?.Invoke(() =>
@@ -435,17 +450,72 @@ namespace KuCoinApp
 
         public async Task RefreshData()
         {
-            var kc = await market.GetKline<KlineCandle, FancyCandles.ICandle, ObservableCollection<FancyCandles.ICandle>>((string)symbol, KlineType, startTime: KlineType.GetStartDate(200));
+            bool finit = false;
 
-            Volume = null;
-            VolumeTime = null;
-
-            Data = kc;
-
-            App.Current?.Dispatcher?.Invoke(() =>
+            if (!Kucoin.NET.Helpers.Dispatcher.Initialized)
             {
-                LastCandle = (KlineCandle)kc?.LastOrDefault();
-            });
+                Kucoin.NET.Helpers.Dispatcher.Initialize(new DispatcherSynchronizationContext(App.Current.Dispatcher));
+            }
+
+            if (level2Feed == null || level2Feed.Connected == false)
+            {
+                level2Feed = new Level2(cred);
+                await level2Feed.Connect();
+
+                if (level2Feed.Connected == false)
+                {
+                    System.Windows.MessageBox.Show(
+                        AppResources.ErrorNoInternet, 
+                        "", 
+                        System.Windows.MessageBoxButton.OK, 
+                        System.Windows.MessageBoxImage.Error);
+
+                    return;
+                }
+                finit = true;
+            }
+
+            if (tickerFeed == null || tickerFeed.Connected == false)
+            {
+                tickerFeed = new TickerFeed();
+                klineFeed = new KlineFeed<KlineCandle>();
+
+                await tickerFeed.Connect(true);
+
+                if (tickerFeed.Connected == false)
+                {
+                    System.Windows.MessageBox.Show(
+                        AppResources.ErrorNoInternet,
+                        "",
+                        System.Windows.MessageBoxButton.OK,
+                        System.Windows.MessageBoxImage.Error);
+                    
+                    return;
+
+                }
+
+                await klineFeed.MultiplexInit(tickerFeed);
+                finit = true;
+            }
+
+            if (finit)
+            {
+                UpdateSymbol((string)symbol, (string)symbol, true);
+            }
+            else
+            {
+                var kc = await market.GetKline<KlineCandle, FancyCandles.ICandle, ObservableCollection<FancyCandles.ICandle>>((string)symbol, KlineType, startTime: KlineType.GetStartDate(200));
+
+                Volume = null;
+                VolumeTime = null;
+
+                Data = kc;
+
+                App.Current?.Dispatcher?.Invoke(() =>
+                {
+                    LastCandle = (KlineCandle)kc?.LastOrDefault();
+                });
+            }
         }
 
         public void FocusCredWindow()
@@ -597,7 +667,7 @@ namespace KuCoinApp
 
                     IsLoggedIn = true;
 
-                    Dispatcher.InvokeOnMainThread(async (o) =>
+                    Kucoin.NET.Helpers.Dispatcher.InvokeOnMainThread(async (o) =>
                     {
                         try
                         {
@@ -837,15 +907,11 @@ namespace KuCoinApp
                         {
                             Symbol = sym;
 
-                            //var marg = new Margin(cred);
-
-                            //var results = await marg.GetMarginAccounts();
-
                             if (cred == null)
                             {
                                 _ = Task.Run(() =>
                                 {
-                                    Dispatcher.InvokeOnMainThread(async (obj) =>
+                                    Kucoin.NET.Helpers.Dispatcher.InvokeOnMainThread(async (obj) =>
                                     {
                                         if (EditCredentials())
                                         {
@@ -857,8 +923,12 @@ namespace KuCoinApp
                                 return;
                             }
 
+                            // Bring up the testing console.
+
+                            // Uncomment to use.
                             // _ = Program.TestMain(cred);
 
+                            // Note, closing the testing console once it is open will close the program.
 
                             return;
                         }

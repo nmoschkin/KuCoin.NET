@@ -34,7 +34,7 @@ namespace Kucoin.NET.Data.Websockets
     /// <summary>
     /// Level 2 Static Market Depth Feed (5/50) Changes
     /// </summary>
-    public class StaticMarketDepthUpdate : ISymbol, IOrderUnitList
+    public class StaticMarketDepthUpdate : ISymbol, IOrderUnitList<IOrderUnit>
     {
         public virtual string Symbol { get; set; }
 
@@ -50,9 +50,9 @@ namespace Kucoin.NET.Data.Websockets
         [JsonProperty("bids")]
         public OrderUnit[] Bids { get; set; }
 
-        IList<IOrderUnit> IOrderUnitList.Asks => Asks;
+        IList<IOrderUnit> IOrderUnitList<IOrderUnit>.Asks => Asks;
 
-        IList<IOrderUnit> IOrderUnitList.Bids => Bids;
+        IList<IOrderUnit> IOrderUnitList<IOrderUnit>.Bids => Bids;
 
 
         /// <summary>
@@ -78,7 +78,7 @@ namespace Kucoin.NET.Data.Websockets
     /// <summary>
     /// Level 2 Static Market Depth Feed (5/50) Changes
     /// </summary>
-    public class ObservableStaticMarketDepthUpdate : StaticMarketDepthUpdate, IOrderUnitList, INotifyPropertyChanged, ISymbol
+    public class ObservableStaticMarketDepthUpdate : StaticMarketDepthUpdate, IOrderUnitList<IOrderUnit>, INotifyPropertyChanged, ISymbol
     {
         private string symbol = null;
         private DateTime time;
@@ -90,9 +90,9 @@ namespace Kucoin.NET.Data.Websockets
 
         public event PropertyChangedEventHandler PropertyChanged;
 
-        IList<IOrderUnit> IOrderUnitList.Asks => asks;
+        IList<IOrderUnit> IOrderUnitList<IOrderUnit>.Asks => asks;
 
-        IList<IOrderUnit> IOrderUnitList.Bids => bids;
+        IList<IOrderUnit> IOrderUnitList<IOrderUnit>.Bids => bids;
 
         protected void OnPropertyChanged([CallerMemberName] string propertyName = null)
         {

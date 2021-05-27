@@ -180,6 +180,9 @@
   <data name="EditFutures" xml:space="preserve">
     <value>Edit Futures</value>
   </data>
+  <data name="ErrorNoInternet" xml:space="preserve">
+    <value>Cannot connect to the internet.</value>
+  </data>
   <data name="File" xml:space="preserve">
     <value>File</value>
   </data>

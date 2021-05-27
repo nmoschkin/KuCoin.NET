@@ -79,7 +79,7 @@ namespace Kucoin.NET.Websockets.Private
 
         protected async Task<OrderBook<T>> GetAtomicOrder(string symbol)
         {
-            var curl = string.Format("/api/v3/market/orderbook/level3?symbol={0}", symbol);
+            var curl = $"/api/v3/market/orderbook/level3?symbol={symbol}";
 
             var jobj = await MakeRequest(HttpMethod.Get, curl, 5, false);
             return jobj.ToObject<OrderBook<T>>();

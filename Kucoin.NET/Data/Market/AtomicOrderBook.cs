@@ -15,14 +15,14 @@ namespace Kucoin.NET.Data.Market
     /// <summary>
     /// Represents Level 3 Market Data
     /// </summary>
-    public class AtomicOrderBook : ObservableBase, IOrderBook<AtomicOrderUnit>, IOrderUnitList
+    public class AtomicOrderBook<T> : ObservableBase, IOrderBook<T>, IOrderUnitList<T> where T: IAtomicOrderUnit
     {
         private DateTime time;
         private long seq;
 
-        private ObservableAtomicOrderUnits<AtomicOrderUnit> asks = new ObservableAtomicOrderUnits<AtomicOrderUnit>();
+        private ObservableAtomicOrderUnits<T> asks = new ObservableAtomicOrderUnits<T>();
 
-        private ObservableAtomicOrderUnits<AtomicOrderUnit> bids = new ObservableAtomicOrderUnits<AtomicOrderUnit>(true);
+        private ObservableAtomicOrderUnits<T> bids = new ObservableAtomicOrderUnits<T>(true);
 
         [JsonProperty("sequence")]
         public long Sequence
@@ -45,13 +45,9 @@ namespace Kucoin.NET.Data.Market
             }
         }
 
-        IList<IOrderUnit> IOrderUnitList.Asks => (IList<IOrderUnit>)bids;
-
-        IList<IOrderUnit> IOrderUnitList.Bids => (IList<IOrderUnit>)bids;
-
 
         [JsonProperty("asks")]
-        public ObservableAtomicOrderUnits<AtomicOrderUnit> Asks
+        public ObservableAtomicOrderUnits<T> Asks
         {
             get => asks;
             set
@@ -61,7 +57,7 @@ namespace Kucoin.NET.Data.Market
         }
 
         [JsonProperty("bids")]
-        public ObservableAtomicOrderUnits<AtomicOrderUnit> Bids
+        public ObservableAtomicOrderUnits<T> Bids
         {
             get => bids;
             set
@@ -70,8 +66,12 @@ namespace Kucoin.NET.Data.Market
             }
         }
 
-        KeyedCollection<decimal, AtomicOrderUnit> IKeyedOrderUnitList<AtomicOrderUnit>.Asks => asks;
+        KeyedCollection<decimal, T> IKeyedOrderUnitList<T>.Asks => asks;
 
-        KeyedCollection<decimal, AtomicOrderUnit> IKeyedOrderUnitList<AtomicOrderUnit>.Bids => asks;
+        IList<T> IOrderUnitList<T>.Asks => asks;
+
+        KeyedCollection<decimal, T> IKeyedOrderUnitList<T>.Bids => bids;
+
+        IList<T> IOrderUnitList<T>.Bids => bids;
     }
 }

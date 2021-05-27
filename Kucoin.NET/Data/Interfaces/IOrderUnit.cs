@@ -24,11 +24,11 @@ namespace Kucoin.NET.Data.Interfaces
         long Sequence { get; set; }
     }
 
-    public interface IOrderUnitList
+    public interface IOrderUnitList<T> where T: IOrderUnit
     {
-        IList<IOrderUnit> Asks { get; }
+        IList<T> Asks { get; }
 
-        IList<IOrderUnit> Bids { get; }
+        IList<T> Bids { get; }
     }
 
 

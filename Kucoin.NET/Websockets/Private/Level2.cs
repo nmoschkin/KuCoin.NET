@@ -19,10 +19,13 @@ namespace Kucoin.NET.Websockets.Private
     /// <summary>
     /// Calibrated Level 2 Market Feed
     /// </summary>
-    public class Level2<T> : KucoinBaseWebsocketFeed where T : IOrderUnit
+    public class Level2<TBook, TUnit> : 
+        KucoinBaseWebsocketFeed
+        where TBook : IOrderBook<TUnit>, new()
+        where TUnit : IOrderUnit, new()
     {
 
-        internal readonly Dictionary<string, Level2Observation<T>> activeFeeds = new Dictionary<string, Level2Observation<T>>();
+        internal readonly Dictionary<string, Level2Observation<TBook, TUnit>> activeFeeds = new Dictionary<string, Level2Observation<TBook, TUnit>>();
 
         protected int updateInterval = 500;
 
@@ -31,7 +34,7 @@ namespace Kucoin.NET.Websockets.Private
         /// <summary>
         /// Event that gets fired when the feed for a symbol has been calibrated and is ready to be used.
         /// </summary>
-        public EventHandler<SymbolCalibratedEventArgs<T>> SymbolCalibrated;
+        public EventHandler<SymbolCalibratedEventArgs<TBook, TUnit>> SymbolCalibrated;
 
         /// <summary>
         /// Create a new Level 2 feed with the specified credentials.
@@ -94,7 +97,7 @@ namespace Kucoin.NET.Websockets.Private
         /// <param name="symbol">The symbol to subscribe.</param>
         /// <param name="pieces">Market depth, or 0 for full depth.</param>
         /// <returns></returns>
-        public async Task<ILevel2OrderBookProvider<T>> AddSymbol(string symbol, int pieces)
+        public async Task<ILevel2OrderBookProvider<TBook, TUnit>> AddSymbol(string symbol, int pieces)
         {
             var p = await AddSymbols(new string[] { symbol }, pieces);
             return p[symbol];
@@ -106,16 +109,16 @@ namespace Kucoin.NET.Websockets.Private
         /// <param name="symbols">The symbols to subscribe.</param>
         /// <param name="pieces">Market depth, or 0 for full depth.</param>
         /// <returns></returns>
-        public async Task<Dictionary<string, ILevel2OrderBookProvider<T>>> AddSymbols(IEnumerable<string> symbols, int pieces = 200)
+        public async Task<Dictionary<string, ILevel2OrderBookProvider<TBook, TUnit>>> AddSymbols(IEnumerable<string> symbols, int pieces = 200)
         {
-            if (disposed) throw new ObjectDisposedException(nameof(Level2<T>));
+            if (disposed) throw new ObjectDisposedException(nameof(Level2<TBook, TUnit>));
             if (!Connected)
             {
                 await Connect();
             }
 
             var sb = new StringBuilder();
-            var lnew = new Dictionary<string, ILevel2OrderBookProvider<T>>();
+            var lnew = new Dictionary<string, ILevel2OrderBookProvider<TBook, TUnit>>();
 
             foreach (var sym in symbols)
             {
@@ -128,7 +131,7 @@ namespace Kucoin.NET.Websockets.Private
                 if (sb.Length > 0) sb.Append(',');
                 sb.Append(sym);
 
-                var obs = new Level2Observation<T>(this, sym, pieces);
+                var obs = new Level2Observation<TBook, TUnit>(this, sym, pieces);
                 activeFeeds.Add(sym, obs);
 
                 lnew.Add(sym, obs);
@@ -167,7 +170,7 @@ namespace Kucoin.NET.Websockets.Private
         /// <returns></returns>
         internal virtual async Task RemoveSymbols(IEnumerable<string> symbols)
         {
-            if (disposed) throw new ObjectDisposedException(nameof(Level2<T>));
+            if (disposed) throw new ObjectDisposedException(nameof(Level2<TBook, TUnit>));
             if (!Connected) return;
 
             var sb = new StringBuilder();
@@ -213,7 +216,7 @@ namespace Kucoin.NET.Websockets.Private
         /// Settings the number of pieces to 0 returns the full market depth. 
         /// Use 0 to calibrate a full level 2 feed.
         /// </remarks>
-        public async Task<OrderBook<T>> GetPartList(string symbol, int pieces = 20)
+        public async Task<TBook> GetPartList(string symbol, int pieces = 20)
         {
             var curl = pieces > 0 ? string.Format("/api/v1/market/orderbook/level2_{0}", pieces) : "/api/v2/market/orderbook/level2";
             var param = new Dictionary<string, object>();
@@ -221,7 +224,7 @@ namespace Kucoin.NET.Websockets.Private
             param.Add("symbol", (string)symbol);
 
             var jobj = await MakeRequest(HttpMethod.Get, curl, 5, false, param);
-            var result = jobj.ToObject<OrderBook<T>>();
+            var result = jobj.ToObject<TBook>();
 
             foreach (var ask in result.Asks)
             {
@@ -248,7 +251,7 @@ namespace Kucoin.NET.Websockets.Private
         /// Returns the full market depth. 
         /// Use this to calibrate a full level 2 feed.
         /// </remarks>
-        public Task<OrderBook<T>> GetAggregatedOrder(string symbol) => GetPartList(symbol, 0);
+        public Task<TBook> GetAggregatedOrder(string symbol) => GetPartList(symbol, 0);
 
         /// <summary>
         /// Initialize the order book with a call to <see cref="GetAggregatedOrder(string)"/>.
@@ -265,7 +268,7 @@ namespace Kucoin.NET.Websockets.Private
 
             var data = await GetAggregatedOrder(af.Symbol);
 
-            af.FullDepthOrderBook = (IOrderBook<T>)data;
+            af.FullDepthOrderBook = data;
             af.Initialized = true;
         }
 
@@ -286,7 +289,7 @@ namespace Kucoin.NET.Websockets.Private
                     {
                         var symbol = msg.Topic.Substring(i + 1);
 
-                        if (activeFeeds.TryGetValue(symbol, out Level2Observation<T> af))
+                        if (activeFeeds.TryGetValue(symbol, out Level2Observation<TBook, TUnit> af))
                         {
                             var update = msg.Data.ToObject<Level2Update>();
 
@@ -305,7 +308,7 @@ namespace Kucoin.NET.Websockets.Private
                                     }
                                     _ = Task.Run(() =>
                                     {
-                                        SymbolCalibrated?.Invoke(this, new SymbolCalibratedEventArgs<T>(af));
+                                        SymbolCalibrated?.Invoke(this, new SymbolCalibratedEventArgs<TBook, TUnit>(af));
                                     });
                                 }
                             }
@@ -330,7 +333,7 @@ namespace Kucoin.NET.Websockets.Private
         }
     }
 
-    public class Level2 : Level2<OrderUnit>
+    public class Level2 : Level2<OrderBook<OrderUnit>, OrderUnit>
     {
 
         public Level2(ICredentialsProvider credProvider) : base(credProvider)
