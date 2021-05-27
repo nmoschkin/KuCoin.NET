@@ -45,12 +45,12 @@ namespace KuCoinApp
         /// </remarks>
         public static string Pin
         {
-            get => pin;
+            get => string.IsNullOrEmpty(pin) ? pin : AesOperation.DecryptString(App.Current.Seed, pin);
             set
             {
                 if (ValidatePin(value))
                 {
-                    pin = value;
+                    pin = AesOperation.EncryptString(App.Current.Seed, value, out _);
                 }
             }
         }
@@ -66,7 +66,7 @@ namespace KuCoinApp
         /// True if all the required fields have been populated.
         /// </summary>
         [JsonIgnore]
-        public bool IsFilled
+        public virtual bool IsFilled
         {
             get
             {
@@ -81,7 +81,7 @@ namespace KuCoinApp
         /// The value can only be assigned via the <see cref="LoadFromStorage(Guid, string, bool)"/> method.
         /// </remarks>
         [JsonIgnore]
-        public Guid Seed
+        public virtual Guid Seed
         {
             get => MakeSeed(seed);
             protected set
@@ -100,7 +100,7 @@ namespace KuCoinApp
         /// True if all properties are empty.
         /// </summary>
         [JsonIgnore]
-        public bool IsClear
+        public virtual bool IsClear
         {
             get => isClear;
             protected set
@@ -116,7 +116,7 @@ namespace KuCoinApp
         /// Gets or sets a value indicating whether the passphrase component of the API credentials is a required field.
         /// </summary>
         [JsonProperty("passphraseRequired")]
-        public bool IsPassphraseRequired
+        public virtual bool IsPassphraseRequired
         {
             get => isPassphraseRequired;
             set
@@ -129,7 +129,7 @@ namespace KuCoinApp
         /// Gets or sets the name of this credential set.
         /// </summary>
         [JsonProperty("name")]
-        public string Name
+        public virtual string Name
         {
             get => name;
             set
@@ -139,7 +139,7 @@ namespace KuCoinApp
         }
 
         [JsonProperty("version")]
-        public int Version
+        public virtual int Version
         {
             get => version;
             internal set
@@ -149,7 +149,7 @@ namespace KuCoinApp
         }
 
         [JsonProperty("sandBox")]
-        public bool Sandbox
+        public virtual bool Sandbox
         {
             get => sandbox;
             set
@@ -159,7 +159,7 @@ namespace KuCoinApp
         }
 
         [JsonProperty("futures")]
-        public bool Futures
+        public virtual bool Futures
         {
             get => futures;
             set
@@ -174,7 +174,7 @@ namespace KuCoinApp
         /// Gets or sets the API Key.
         /// </summary>
         [JsonProperty("key")]
-        public string Key
+        public virtual string Key
         {
             get => GetKey();
             set
@@ -204,7 +204,7 @@ namespace KuCoinApp
         /// Gets or sets the API Secret.
         /// </summary>
         [JsonProperty("secret")]
-        public string Secret
+        public virtual string Secret
         {
             get => GetSecret();
             set
@@ -234,7 +234,7 @@ namespace KuCoinApp
         /// Gets or sets the API Passphrase.
         /// </summary>
         [JsonProperty("passphrase")]
-        public string Passphrase
+        public virtual string Passphrase
         {
             get => GetPassphrase();
             set
@@ -312,7 +312,7 @@ namespace KuCoinApp
 
         public static void DeleteCredentials(string pin = null)
         {
-            if (pin == null) pin = CryptoCredentials.pin;
+            if (pin == null) pin = CryptoCredentials.Pin;
             if (!ValidatePin(pin)) return;
 
             var path = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
@@ -340,7 +340,7 @@ namespace KuCoinApp
         /// <returns></returns>
         public static CryptoCredentials LoadFromStorage(Guid seed, string pin = null, bool create = true, bool autoUpgrade = true)
         {
-            if (pin == null) pin = CryptoCredentials.pin;
+            if (pin == null) pin = CryptoCredentials.Pin;
 
             if (!ValidatePin(pin)) return null;
 
@@ -542,9 +542,9 @@ namespace KuCoinApp
         /// Save the credentials to encrypted storage.
         /// </summary>
         /// <param name="pin">The pin with which to save the credentials.</param>
-        public void SaveToStorage(string pin = null)
+        public virtual void SaveToStorage(string pin = null)
         {
-            if (pin == null) pin = CryptoCredentials.pin;
+            if (pin == null) pin = CryptoCredentials.Pin;
 
             var path = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
 
@@ -579,7 +579,7 @@ namespace KuCoinApp
         /// <summary>
         /// Clear the credentials.
         /// </summary>
-        public void Clear()
+        public virtual void Clear()
         {
             SetProperty(ref secret, "", nameof(Secret));
             SetProperty(ref key, "", nameof(Key));
@@ -592,13 +592,13 @@ namespace KuCoinApp
         /// <summary>
         /// Check if the credentials properties are clear.
         /// </summary>
-        protected void CheckIsClear()
+        protected virtual void CheckIsClear()
         {
             IsClear = string.IsNullOrEmpty(name) && string.IsNullOrEmpty(key) && string.IsNullOrEmpty(passphrase) && string.IsNullOrEmpty(secret);
             OnPropertyChanged(nameof(IsFilled));
         }
 
-        protected Guid MakeSeed(Guid? seed = null)
+        protected virtual Guid MakeSeed(Guid? seed = null)
         {
             if (version == 1)
             {
@@ -669,7 +669,7 @@ namespace KuCoinApp
             return MemberwiseClone();
         }
 
-        public CryptoCredentials Clone()
+        public virtual CryptoCredentials Clone()
         {
             return (CryptoCredentials)MemberwiseClone();
         }

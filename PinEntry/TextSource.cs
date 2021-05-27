@@ -88,6 +88,8 @@ namespace DataTools.PinEntry
     /// </summary>
     public class TextSource : ObservableBase
     {
+        private Guid key = Guid.NewGuid();
+
         /// <summary>
         /// Event that is fired when a character is changed via the default indexer.
         /// </summary>
@@ -152,10 +154,9 @@ namespace DataTools.PinEntry
             }
 
             length = text.Length;
-            this.text = text;
+            this.text = AesOperation.EncryptString(key, text, out _);
         
             CheckTextLength();
-            
         }
 
 
@@ -183,7 +184,7 @@ namespace DataTools.PinEntry
             get
             {
                 if (index < 0 || index >= length) throw new ArgumentOutOfRangeException();
-                return text[index];
+                return Text[index];
             }
             set
             {
@@ -204,16 +205,18 @@ namespace DataTools.PinEntry
                     }
                 }
 
-                var chars = text?.ToCharArray();
+                var chars = AesOperation.DecryptString(key, text).ToCharArray();
 
                 if (chars[index] != value)
                 {
                     var oldChar = chars[index];
                     chars[index] = value;
-                    text = new string(chars);
+                    var output = new string(chars);
+                    text = AesOperation.EncryptString(key, output, out _);
+
                     System.Windows.Application.Current.Dispatcher.Invoke(() =>
                     {
-                        CharacterChanged?.Invoke(this, new CharacterChangedEventArgs(text, index, oldChar));
+                        CharacterChanged?.Invoke(this, new CharacterChangedEventArgs(output, index, oldChar));
                         OnPropertyChanged(nameof(Text));
                     });
                 }
@@ -238,7 +241,7 @@ namespace DataTools.PinEntry
 
             if (flags == TextValidationFlags.AllowAll) return true;
 
-            var chars = text.ToCharArray();
+            var chars = Text.ToCharArray();
 
             foreach (char ch in chars)
             {
@@ -291,19 +294,27 @@ namespace DataTools.PinEntry
         /// <returns>The length of the text.</returns>
         protected int CheckTextLength(bool suppressEvent = false)
         {
+            string decrypt;
+
             if (string.IsNullOrEmpty(text))
             {
-                text = new string(' ', length);
+                text = AesOperation.EncryptString(key, new string(' ', length), out _);
                 if (!suppressEvent) OnPropertyChanged(nameof(Text));
             }
-            else if (text.Length > length)
+            else if (Text.Length > length)
             {
-                text = text.Substring(0, length);
+                decrypt = AesOperation.DecryptString(key, text);               
+                decrypt = decrypt.Substring(0, length);
+                text = AesOperation.EncryptString(key, decrypt, out _);
+
                 if (!suppressEvent) OnPropertyChanged(nameof(Text));
             }
-            else if (text.Length < length)
+            else if (Text.Length < length)
             {
-                text = text + new string(' ', length - text.Length);
+                decrypt = AesOperation.DecryptString(key, text);
+                decrypt = decrypt + new string(' ', length - decrypt.Length);
+                text = AesOperation.EncryptString(key, decrypt, out _);
+
                 if (!suppressEvent) OnPropertyChanged(nameof(Text));
             }
 
@@ -318,30 +329,42 @@ namespace DataTools.PinEntry
         /// </remarks>
         public string Text
         {
-            get => text;
+            get => string.IsNullOrEmpty(text) ? text : AesOperation.DecryptString(key, text);
             set
             {
-                if (SetProperty(ref text, value))
+                if (string.IsNullOrEmpty(value))
                 {
-                    if (length != text.Length)
+                    if (SetProperty(ref text, value))
                     {
-                        Length = text.Length;
+                        if (length != 0) Length = 0;
+                    }                   
+                }
+                else
+                {
+                    var crypt = AesOperation.EncryptString(key, value, out _);
+
+                    if (SetProperty(ref text, crypt))
+                    {
+                        if (length != value.Length)
+                        {
+                            Length = value.Length;
+                        }
                     }
                 }
             }
         }
 
         #region object overrides
-        
+
         public override bool Equals(object obj)
         {
             if (obj is string s)
             {
-                return s.Equals(text);
+                return s.Equals(Text);
             }
             else if (obj is TextSource t)
             {
-                return text == t.text;
+                return Text == t.Text;
             }
             else
             {
@@ -349,11 +372,11 @@ namespace DataTools.PinEntry
             }
         }
 
-        public override string ToString() => text;
+        public override string ToString() => Text;
 
         public override int GetHashCode()
         {
-            return text?.GetHashCode() ?? 0;
+            return Text?.GetHashCode() ?? 0;
         }
 
         #endregion
@@ -362,7 +385,7 @@ namespace DataTools.PinEntry
 
         public static implicit operator string(TextSource t)
         {
-            return t.text;
+            return t.Text;
         }
 
         public static implicit operator TextSource(string s)
