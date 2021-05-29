@@ -18,115 +18,33 @@ using System.Threading.Tasks;
 namespace Kucoin.NET.Websockets.Observations
 {
 
-    public class OrderBookUpdatedEventArgs : EventArgs 
+    public class Level2Observation : Level2Observation<OrderBook<OrderUnit>, OrderUnit>, ILevel2OrderBookProvider
     {
-
-        public string Symbol { get; private set; }
-        public OrderBookUpdatedEventArgs(string symbol)
+        internal Level2Observation(Level2 parent, string symbol, int pieces = 50) : base(parent, symbol, pieces)
         {
-            Symbol = symbol;
         }
-    }
-    public interface ILevel2OrderBookProvider<TBook, TUnit> : 
-        INotifyPropertyChanged, 
-        IDisposable, 
-        ISymbol, 
-        IObserver<Level2Update> 
-        where TBook: IOrderBook<TUnit>
-        where TUnit: IOrderUnit 
-    {
-        event EventHandler<OrderBookUpdatedEventArgs> OrderBookUpdated;
-
-        /// <summary>
-        /// The sorted and sliced order book (user-facing data).
-        /// </summary>
-        TBook OrderBook { get; }
-
-        /// <summary>
-        /// The number of pieces to push to the order book from the preflight book.
-        /// </summary>
-        int Pieces { get; }
-
-        /// <summary>
-        /// The raw preflight (full depth) order book.
-        /// </summary>
-        TBook FullDepthOrderBook { get; }
-
-        /// <summary>
-        /// Specifies whether or not the order size is updated for each price in the live book
-        /// or only in the preflight book.
-        /// </summary>
-        bool UseObservableOrders { get; set; }
-
-        /// <summary>
-        /// Reset and de-initialize the feed to trigger recalibration.
-        /// </summary>
-        void Reset();
     }
 
     /// <summary>
     /// Level 2 Observation Cache
     /// </summary>
     public class Level2Observation<TBook, TUnit> : 
-        ObservableBase, 
-        ILevel2OrderBookProvider<TBook, TUnit> 
+        Level2ObservationBase<TBook, TUnit, Level2Update>
         where TBook: IOrderBook<TUnit>, new()
         where TUnit: IOrderUnit, new()
     {
-        public event EventHandler<OrderBookUpdatedEventArgs> OrderBookUpdated;
+        public override event EventHandler<OrderBookUpdatedEventArgs<TBook, TUnit>> OrderBookUpdated;
 
-        protected TBook preflightBook;
-        protected TBook orderBook;
-        protected string symbol;
-        protected int pieces;
         protected bool useObservableOrders = true;
         protected bool calibrated; 
         protected bool initialized; 
-        protected Level2<TBook, TUnit> connectedFeed;
-        protected Task PushThread;
-        protected CancellationTokenSource cts;
-        protected bool pushRequested;
+
         protected List<Level2Update> orderBuffer = new List<Level2Update>();
-        protected object lockObj = new object();
-        internal Level2Observation(Level2<TBook, TUnit> parent, string symbol, int pieces = 50)
+        internal Level2Observation(Level2<TBook, TUnit> parent, string symbol, int pieces = 50) : base(parent, symbol, pieces)
         {
-            this.symbol = symbol;
-
-            this.connectedFeed = parent;
-            this.pieces = pieces;
-
-            orderBook = new TBook();
-            cts = new CancellationTokenSource();
-            PushThread = Task.Factory.StartNew(async () =>
-            {
-                bool pr = false;
-
-                while (!cts.IsCancellationRequested)
-                {
-                    lock(lockObj)
-                    {
-                        if (pushRequested)
-                        {
-                            pushRequested = false;
-                            pr = true;
-                        }
-                    }
-
-                    if (pr)
-                    {
-                        pr = false;
-                        PushPreflight();
-                        OrderBookUpdated?.Invoke(this, new OrderBookUpdatedEventArgs(this.symbol));
-                    }
-
-                    await Task.Delay(10);
-                }
-
-
-            }, cts.Token);
         }
 
-        public void RequestPush()
+        public override void RequestPush()
         {
             lock(lockObj)
             {
@@ -134,66 +52,12 @@ namespace Kucoin.NET.Websockets.Observations
             }
         }
 
-        public Level2<TBook, TUnit> ConnectedFeed => !disposed ? connectedFeed : throw new ObjectDisposedException(nameof(Level2Observation<TBook, TUnit>));
-
-        public virtual IList<Level2Update> OrderBuffer => orderBuffer;
-
-        public string Symbol => !disposed ? symbol : throw new ObjectDisposedException(nameof(Level2Observation<TBook, TUnit>));
-
-        public virtual bool UseObservableOrders
-        {
-            get => useObservableOrders;
-            set
-            {
-                SetProperty(ref useObservableOrders, value);
-            }
-        }
-
-        void ISymbol.SetSymbol(string symbol)
-        {
-            base.SetProperty(ref this.symbol, symbol);
-        }
-
-        /// <summary>
-        /// The number of pieces to serve to the live order book feed.
-        /// </summary>
-        public int Pieces
-        {
-            get => !disposed ? pieces : throw new ObjectDisposedException(nameof(Level2Observation<TBook, TUnit>));
-            internal set
-            {
-                SetProperty(ref pieces, value);
-            }
-        }
-
-        /// <summary>
-        /// Gets the full-depth order book.
-        /// </summary>
-        public TBook FullDepthOrderBook
-        {
-            get => preflightBook;
-            internal set
-            {
-                SetProperty(ref preflightBook, value);
-            }
-        }
-
-        /// <summary>
-        /// Gets the order book truncated to <see cref="Pieces"/> asks and bids.
-        /// </summary>
-        public TBook OrderBook
-        {
-            get => orderBook;
-            internal set
-            {
-                SetProperty(ref orderBook, value);
-            }
-        }
+        public override bool ObservablePieces => true;
 
         /// <summary>
         /// Gets a value indicating that this order book is initialized with the full-depth (preflight) order book.
         /// </summary>
-        public bool Initialized
+        public override bool Initialized
         {
             get => !disposed ? initialized : throw new ObjectDisposedException(nameof(Level2Observation<TBook, TUnit>));
             internal set
@@ -206,7 +70,7 @@ namespace Kucoin.NET.Websockets.Observations
         /// <summary>
         /// Gets a value indicating that this observation has been calibrated.
         /// </summary>
-        public bool Calibrated
+        public override bool Calibrated
         {
             get => !disposed ? calibrated : throw new ObjectDisposedException(nameof(Level2Observation<TBook, TUnit>));
             protected set
@@ -240,7 +104,7 @@ namespace Kucoin.NET.Websockets.Observations
         /// </summary>
         /// <param name="changes">The changes to sequence.</param>
         /// <param name="pieces">The collection to change (either an ask or a bid collection)</param>
-        protected virtual void SequencePieces(IList<TUnit> changes, KeyedCollection<decimal, TUnit> pieces)
+        protected void SequencePieces(IList<TUnit> changes, KeyedCollection<decimal, TUnit> pieces)
         {
             foreach (var change in changes)
             {
@@ -272,7 +136,7 @@ namespace Kucoin.NET.Websockets.Observations
         /// De-initialize and clear all data and begin a new calibration.
         /// 
         /// </summary>
-        public void Reset()
+        public override void Reset()
         {
             orderBuffer = new List<Level2Update>();
 
@@ -283,13 +147,13 @@ namespace Kucoin.NET.Websockets.Observations
         /// <summary>
         /// Calibrate the order book from cached data.
         /// </summary>
-        public void Calibrate()
+        public override void Calibrate()
         {
             calibrated = true;
 
             foreach (var q in orderBuffer)
             {
-                if (q.SequenceStart > preflightBook.Sequence) OnNext(q);
+                if (q.SequenceStart > fullDepth.Sequence) OnNext(q);
             }
 
             orderBuffer.Clear();
@@ -301,9 +165,9 @@ namespace Kucoin.NET.Websockets.Observations
         /// <see cref="IObserver{T}"/> implementation for <see cref="Level2Update"/> data.
         /// </summary>
         /// <param name="value"></param>
-        public void OnNext(Level2Update value)
+        public override void OnNext(Level2Update value)
         {
-            if (disposed || preflightBook == null) return;
+            if (disposed || fullDepth == null) return;
 
             lock (lockObj)
             {
@@ -315,10 +179,10 @@ namespace Kucoin.NET.Websockets.Observations
                         return;
                     }
 
-                    SequencePieces((IList<TUnit>)value.Changes.Asks, preflightBook.Asks);
-                    SequencePieces((IList<TUnit>)value.Changes.Bids, preflightBook.Bids);
+                    SequencePieces((IList<TUnit>)value.Changes.Asks, fullDepth.Asks);
+                    SequencePieces((IList<TUnit>)value.Changes.Bids, fullDepth.Bids);
 
-                    preflightBook.Sequence = value.SequenceEnd;
+                    fullDepth.Sequence = value.SequenceEnd;
                 }
                 catch (Exception ex)
                 {
@@ -385,7 +249,7 @@ namespace Kucoin.NET.Websockets.Observations
         /// <summary>
         /// Push the preflight book to the live feed.
         /// </summary>
-        protected virtual void PushPreflight()
+        protected override void PushLive()
         {
             lock(lockObj)
             {
@@ -399,7 +263,7 @@ namespace Kucoin.NET.Websockets.Observations
                 {
                     Dispatcher.InvokeOnMainThread((o) =>
                     {
-                        orderBook.Sequence = preflightBook.Sequence;
+                        orderBook.Sequence = fullDepth.Sequence;
                         orderBook.Timestamp = DateTime.Now;
 
                         CopyBook();
@@ -407,7 +271,7 @@ namespace Kucoin.NET.Websockets.Observations
                 }
                 else
                 {
-                    orderBook.Sequence = preflightBook.Sequence;
+                    orderBook.Sequence = fullDepth.Sequence;
                     orderBook.Timestamp = DateTime.Now;
 
                     CopyBook();
@@ -417,26 +281,13 @@ namespace Kucoin.NET.Websockets.Observations
 
         protected void CopyBook()
         {
-            CopyTo(preflightBook.Asks, orderBook.Asks, pieces, !useObservableOrders);
-            CopyTo(preflightBook.Bids, orderBook.Bids, pieces, !useObservableOrders);
+            CopyTo(fullDepth.Asks, orderBook.Asks, pieces, !useObservableOrders);
+            CopyTo(fullDepth.Bids, orderBook.Bids, pieces, !useObservableOrders);
         }
-
-        public override string ToString() => $"{symbol} : {pieces}";
-
 
         #region IDisposable pattern
 
-        /// <summary>
-        /// Terminate the feed for this symbol from the server, nullify all resources and remove this object from the parent feed's list of listeners.
-        /// </summary>
-        public void Dispose()
-        {
-            Dispose(true);
-        }
-
-        public bool disposed;
-
-        protected void Dispose(bool disposing)
+        protected override void Dispose(bool disposing)
         {
             if (disposed) return;
 
@@ -450,14 +301,14 @@ namespace Kucoin.NET.Websockets.Observations
             {
                 if (connectedFeed != null)
                 {
-                    connectedFeed.RemoveSymbol(symbol).Wait();
+                    ((Level2<TBook, TUnit>)connectedFeed).RemoveSymbol(symbol).Wait();
                 }
             }
 
             lock(lockObj)
             {
                 connectedFeed = null;
-                preflightBook = default;
+                fullDepth = default;
                 orderBook = default;
                 pieces = 0;
                 symbol = null;
@@ -466,11 +317,11 @@ namespace Kucoin.NET.Websockets.Observations
             }
         }
 
-        public void OnCompleted()
+        public override void OnCompleted()
         {
         }
 
-        public void OnError(Exception error)
+        public override void OnError(Exception error)
         {
             throw error;
         }

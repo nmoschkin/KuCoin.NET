@@ -80,7 +80,7 @@ namespace KuCoinApp
 
         private ObservableCollection<CurrencyViewModel> currencies = new ObservableCollection<CurrencyViewModel>();
 
-        private ILevel2OrderBookProvider<OrderBook<OrderUnit>, OrderUnit> level2;
+        private ILevel2OrderBookProvider level2;
 
         private ObservableStaticMarketDepthUpdate marketUpdate;
 
@@ -129,7 +129,7 @@ namespace KuCoinApp
             }
         }
 
-        public ILevel2OrderBookProvider<OrderBook<OrderUnit>, OrderUnit> Level2
+        public ILevel2OrderBookProvider Level2
         {
             get => level2;
             set

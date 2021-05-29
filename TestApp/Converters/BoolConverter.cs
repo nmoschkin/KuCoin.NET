@@ -25,7 +25,9 @@ namespace KuCoinApp.Converters
     public class BoolConverter : IValueConverter
     {
         public BoolConverterModes Mode { get; set; } = BoolConverterModes.InverseBool;
-        
+
+        public Visibility HiddenVisibility { get; set; } = Visibility.Collapsed;
+
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
 
@@ -57,7 +59,7 @@ namespace KuCoinApp.Converters
                         }
                         else
                         {
-                            return Visibility.Collapsed;
+                            return HiddenVisibility;
                         }
                     }
                     break;
@@ -72,7 +74,7 @@ namespace KuCoinApp.Converters
                         }
                         else
                         {
-                            return Visibility.Collapsed;
+                            return HiddenVisibility;
                         }
                     }
                     break;
