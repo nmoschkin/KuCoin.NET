@@ -926,7 +926,7 @@ namespace KuCoinApp
                             
                             // give its own socket because of the speed of data.
                             await level2Feed.Connect();
-                            await futuresl2.Connect();
+                            //await futuresl2.Connect();
 
                             // we attach tickerFeed and klineFeed 
                             // by calling MultiplexInit with the host feed.
