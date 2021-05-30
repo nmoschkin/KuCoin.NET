@@ -150,11 +150,6 @@ namespace Kucoin.NET.Websockets.Observations
         }
 
         /// <summary>
-        /// True if the order pieces are observable
-        /// </summary>
-        public abstract bool ObservablePieces { get; }
-
-        /// <summary>
         /// Gets a value indicating that this order book is initialized with the full-depth (preflight) order book.
         /// </summary>
         public abstract bool Initialized { get; internal set; }

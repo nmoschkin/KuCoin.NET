@@ -17,7 +17,9 @@ using System.Threading.Tasks;
 
 namespace Kucoin.NET.Websockets.Observations
 {
-
+    /// <summary>
+    /// Standard Spot Market Level 2 observation and order book provider.
+    /// </summary>
     public class Level2Observation : Level2ObservationBase<OrderBook<OrderUnit>, OrderUnit, Level2Update>, ILevel2OrderBookProvider
     {
     
@@ -36,8 +38,6 @@ namespace Kucoin.NET.Websockets.Observations
                 pushRequested = true;
             }
         }
-
-        public override bool ObservablePieces => true;
 
         /// <summary>
         /// Gets a value indicating that this order book is initialized with the full-depth (preflight) order book.
@@ -194,40 +194,18 @@ namespace Kucoin.NET.Websockets.Observations
                 x = 0;
                 dest.Clear();
 
-                if (ObservablePieces)
+                foreach (var piece in src)
                 {
-                    foreach (var piece in src)
-                    {
-                        dest.Add(piece);
-                        if (++x == c) break;
-                    }
-                }
-                else
-                {
-                    foreach (var piece in src)
-                    {
-                        dest.Add(piece.Clone());
-                        if (++x == c) break;
-                    }
+                    dest.Add(piece);
+                    if (++x == c) break;
                 }
             }
             else
             {
-                if (ObservablePieces)
+                for (i = 0; i < c; i++)
                 {
-                    for (i = 0; i < c; i++)
-                    {
-                        dest[i] = src[i];
-                    }
+                    dest[i] = src[i];
                 }
-                else
-                {
-                    for (i = 0; i < c; i++)
-                    {
-                        dest[i] = src[i].Clone();
-                    }
-                }
-
             }
 
         }

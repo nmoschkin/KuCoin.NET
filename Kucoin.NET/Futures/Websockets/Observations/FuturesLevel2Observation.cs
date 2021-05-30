@@ -33,8 +33,6 @@ namespace Kucoin.NET.Futures.Websockets.Observations
             }
         }
 
-        public override bool ObservablePieces => true;
-
         /// <summary>
         /// Gets a value indicating that this order book is initialized with the full-depth (preflight) order book.
         /// </summary>
@@ -201,40 +199,18 @@ namespace Kucoin.NET.Futures.Websockets.Observations
                 x = 0;
                 dest.Clear();
 
-                if (ObservablePieces)
+                foreach (var piece in src)
                 {
-                    foreach (var piece in src)
-                    {
-                        dest.Add(piece);
-                        if (++x == c) break;
-                    }
-                }
-                else
-                {
-                    foreach (var piece in src)
-                    {
-                        dest.Add(piece.Clone());
-                        if (++x == c) break;
-                    }
+                    dest.Add(piece);
+                    if (++x == c) break;
                 }
             }
             else
             {
-                if (ObservablePieces)
+                for (i = 0; i < c; i++)
                 {
-                    for (i = 0; i < c; i++)
-                    {
-                        dest[i] = src[i];
-                    }
+                    dest[i] = src[i];
                 }
-                else
-                {
-                    for (i = 0; i < c; i++)
-                    {
-                        dest[i] = src[i].Clone();
-                    }
-                }
-
             }
 
         }
