@@ -45,7 +45,7 @@ namespace Kucoin.NET.Data.Order
         /// <summary>
         /// Get the appropriate insert index for the configured sort direction, based on price.
         /// </summary>
-        /// <param name="unit">The order unit.</param>
+        /// <param name="unit">The order unit to test.</param>
         /// <returns>The calculated insert index based on the sort direction.</returns>
         protected int GetInsertIndex(T unit)
         {
@@ -141,7 +141,10 @@ namespace Kucoin.NET.Data.Order
             }
         }
 
-
+        /// <summary>
+        /// Returns the contents as an array of <see cref="T"/>.
+        /// </summary>
+        /// <returns></returns>
         public T[] ToArray()
         {
 
