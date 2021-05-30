@@ -42,7 +42,7 @@ namespace Kucoin.NET.Futures.Data.Market
     /// <summary>
     /// Represents a change piece of data on the Futures Level 2 feed.
     /// </summary>
-    public class FuturesChange : IFuturesOrderUnit
+    public class FuturesChange : IFuturesOrderUpdate
     {
         /// <summary>
         /// The change price in quote currency

@@ -408,11 +408,6 @@ namespace KuCoinApp
 
                             if (isKlineChange) return;
 
-                            if (Level2 != null)
-                            {
-                                Level2.Dispose();
-                            }
-
                             //if (cred.AttachedAccount != null && (futuresl2 == null || futuresl2.Connected == false))
                             //{
                             //    futuresl2 = new FuturesLevel2(cred.AttachedAccount);
@@ -420,7 +415,7 @@ namespace KuCoinApp
                             //}
 
                             //var fsym = newSymbol.Replace("-", "") + "M";
-                            //await futuresl2.AddSymbol(fsym, 50).ContinueWith((t) =>
+                            //await futuresl2.AddSymbol(fsym).ContinueWith((t) =>
                             //{
                             //    App.Current?.Dispatcher?.Invoke(() =>
                             //    {
@@ -429,13 +424,18 @@ namespace KuCoinApp
 
                             //});
 
+                            if (Level2 != null)
+                            {
+                                Level2.Dispose();
+                            }
+
                             if (level2Feed == null || level2Feed.Connected == false)
                             {
                                 level2Feed = new Level2(cred);
                                 await level2Feed.Connect();
                             }
 
-                            await level2Feed.AddSymbol(newSymbol, 50).ContinueWith((t) =>
+                            await level2Feed.AddSymbol(newSymbol).ContinueWith((t) =>
                             {
                                 App.Current?.Dispatcher?.Invoke(() =>
                                 {
@@ -459,7 +459,7 @@ namespace KuCoinApp
                         await level2Feed.Connect();
                     }
 
-                    level2Feed?.AddSymbol(newSymbol, 50).ContinueWith((t) =>
+                    level2Feed?.AddSymbol(newSymbol).ContinueWith((t) =>
                     {
                         App.Current?.Dispatcher?.Invoke(() =>
                         {
@@ -475,7 +475,7 @@ namespace KuCoinApp
                     //}
 
                     //var fsym = newSymbol.Replace("-", "") + "M";
-                    //await futuresl2.AddSymbol(fsym, 50).ContinueWith((t) =>
+                    //await futuresl2.AddSymbol(fsym).ContinueWith((t) =>
                     //{
                     //    App.Current?.Dispatcher?.Invoke(() =>
                     //    {
@@ -904,6 +904,7 @@ namespace KuCoinApp
                     {
                         level2Feed = new Level2(cred);
                         level2Feed.UpdateInterval = 50;
+                        level2Feed.DefaultPieces = 50;
 
                         //if (cred.AttachedAccount != null)
                         //{

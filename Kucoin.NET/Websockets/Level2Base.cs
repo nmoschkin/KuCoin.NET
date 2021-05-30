@@ -28,14 +28,21 @@ namespace Kucoin.NET.Websockets
         protected object lockObj = new object();
         protected DateTime cycle = DateTime.MinValue;
 
+        protected int defaultPieces = 50;
         protected int updateInterval = 500;
+
+        public abstract string Subject { get; }
+
+        public abstract string Topic { get; }
+
+        public abstract string AggregateEndpoint { get; }
 
         public override bool IsPublic => false;
 
         /// <summary>
         /// Event that gets fired when the feed for a symbol has been calibrated and is ready to be used.
         /// </summary>
-        public abstract event EventHandler<SymbolCalibratedEventArgs<TBook, TUnit, TUpdate>> SymbolCalibrated;
+        public virtual event EventHandler<SymbolCalibratedEventArgs<TBook, TUnit, TUpdate>> SymbolCalibrated;
 
         /// <summary>
         /// Create a new Level 2 feed with the specified credentials.
@@ -93,18 +100,40 @@ namespace Kucoin.NET.Websockets
             }
         }
 
+        /// <summary>
+        /// Gets or sets the default number of pieces for new observations.
+        /// </summary>
+        /// <remarks>
+        /// To always include the full market depth, set this value to 0.
+        /// 
+        /// The value of this property only affects newly created observations.  Changing this value does not change the number of pieces
+        /// in the live order books of observations that have already been created.  You can use the <see cref="ILevel2OrderBookProvider{TBook, TUnit, TUpdate}.Pieces"/> property
+        /// on individual observations to change their default number of pieces.
+        /// </remarks>
+        public virtual int DefaultPieces
+        {
+            get => defaultPieces;
+            set
+            {
+                SetProperty(ref defaultPieces, value);
+            }
+        }
 
-        protected abstract TObservation CreateNewObserver(string symbol, int pieces = 50);
+        /// <summary>
+        /// Create a new instance of a <see cref="ILevel2OrderBookProvider{TBook, TUnit, TUpdate}"/> implementation.
+        /// </summary>
+        /// <param name="symbol">The trading symbol.</param>
+        /// <returns></returns>
+        protected abstract TObservation CreateNewObservation(string symbol);
 
         /// <summary>
         /// Adds a Level 2 subscription for the specified symbol.
         /// </summary>
         /// <param name="symbol">The symbol to subscribe.</param>
-        /// <param name="pieces">Market depth, or 0 for full depth.</param>
         /// <returns></returns>
-        public async Task<TObservation> AddSymbol(string symbol, int pieces)
+        public async Task<TObservation> AddSymbol(string symbol)
         {
-            var p = await AddSymbols(new string[] { symbol }, pieces);
+            var p = await AddSymbols(new string[] { symbol });
             return p[symbol];
         }
 
@@ -112,9 +141,50 @@ namespace Kucoin.NET.Websockets
         /// Adds a Level 2 subscription for the specified symbols.
         /// </summary>
         /// <param name="symbols">The symbols to subscribe.</param>
-        /// <param name="pieces">Market depth, or 0 for full depth.</param>
         /// <returns></returns>
-        public abstract Task<Dictionary<string, TObservation>> AddSymbols(IEnumerable<string> symbols, int pieces = 200);
+        public virtual async Task<Dictionary<string, TObservation>> AddSymbols(IEnumerable<string> symbols)
+        {
+            if (disposed) throw new ObjectDisposedException(nameof(Level2Base<TBook, TUnit, TUpdate, TObservation>));
+            if (!Connected)
+            {
+                await Connect();
+            }
+
+            var sb = new StringBuilder();
+            var lnew = new Dictionary<string, TObservation>();
+
+            foreach (var sym in symbols)
+            {
+                if (activeFeeds.ContainsKey(sym))
+                {
+                    lnew.Add(sym, activeFeeds[sym]);
+                    continue;
+                }
+
+                if (sb.Length > 0) sb.Append(',');
+                sb.Append(sym);
+
+                var obs = CreateNewObservation(sym);
+                activeFeeds.Add(sym, obs);
+
+                lnew.Add(sym, obs);
+            }
+
+            var topic = $"{Topic}:{sb}";
+
+            var e = new FeedMessage()
+            {
+                Type = "subscribe",
+                Id = connectId.ToString("d"),
+                Topic = topic,
+                Response = true,
+                PrivateChannel = false
+            };
+
+            await Send(e);
+
+            return lnew;
+        }
 
         /// <summary>
         /// Remove a Level 2 subscription for the specified symbol.
@@ -131,20 +201,44 @@ namespace Kucoin.NET.Websockets
         /// </summary>
         /// <param name="symbols">The symbols to remove.</param>
         /// <returns></returns>
-        public abstract Task RemoveSymbols(IEnumerable<string> symbols);
+        internal virtual async Task RemoveSymbols(IEnumerable<string> symbols)
+        {
+            if (disposed) throw new ObjectDisposedException(nameof(Level2Base<TBook, TUnit, TUpdate, TObservation>));
+            if (!Connected) return;
 
+            var sb = new StringBuilder();
 
-        /// <summary>
-        /// Get the Level 2 Data Book for the specified trading symbol.
-        /// </summary>
-        /// <param name="symbol">The trading symbol.</param>
-        /// <param name="pieces">The number of pieces.</param>
-        /// <returns>The part book snapshot.</returns>
-        /// <remarks>
-        /// Settings the number of pieces to 0 returns the full market depth. 
-        /// Use 0 to calibrate a full level 2 feed.
-        /// </remarks>
-        public abstract Task<TBook> GetPartList(string symbol, int pieces = 20);
+            foreach (var sym in symbols)
+            {
+                if (activeFeeds.ContainsKey(sym))
+                {
+                    if (!activeFeeds[sym].Disposed)
+                    {
+                        activeFeeds[sym].Dispose();
+                    }
+
+                    activeFeeds.Remove(sym);
+                }
+
+                if (sb.Length > 0) sb.Append(',');
+                sb.Append(sym);
+            }
+
+            var topic = $"{Topic}:{sb}";
+
+            var e = new FeedMessage()
+            {
+                Type = "unsubscribe",
+                Id = connectId.ToString("d"),
+                Topic = topic,
+                Response = true,
+                PrivateChannel = false
+            };
+
+            await Send(e);
+
+        }
+
 
         /// <summary>
         /// Get the full Level 2 Data Book for the specified trading symbol.
@@ -155,7 +249,30 @@ namespace Kucoin.NET.Websockets
         /// Returns the full market depth. 
         /// Use this to calibrate a full level 2 feed.
         /// </remarks>
-        public Task<TBook> GetAggregatedOrder(string symbol) => GetPartList(symbol, 0);
+        public virtual async Task<TBook> GetAggregatedOrder(string symbol)
+        {
+            var curl = AggregateEndpoint;
+            var param = new Dictionary<string, object>();
+
+            param.Add("symbol", (string)symbol);
+
+            var jobj = await MakeRequest(HttpMethod.Get, curl, 5, false, param);
+            var result = jobj.ToObject<TBook>();
+
+            foreach (var ask in result.Asks)
+            {
+                if (ask is ISequencedOrderUnit seq)
+                    seq.Sequence = result.Sequence;
+            }
+
+            foreach (var bid in result.Bids)
+            {
+                if (bid is ISequencedOrderUnit seq)
+                    seq.Sequence = result.Sequence;
+            }
+
+            return result;
+        }
 
         /// <summary>
         /// Initialize the order book with a call to <see cref="GetAggregatedOrder(string)"/>.
@@ -164,8 +281,75 @@ namespace Kucoin.NET.Websockets
         /// <remarks>
         /// This method is typically called after the feed has been buffered.
         /// </remarks>
-        protected abstract Task InitializeOrderBook(string symbol);
+        protected virtual async Task InitializeOrderBook(string symbol)
+        {
+            if (!activeFeeds.ContainsKey(symbol)) return;
 
+            var af = activeFeeds[symbol];
+
+            var data = await GetAggregatedOrder(af.Symbol);
+
+            af.FullDepthOrderBook = data;
+            af.Initialized = true;
+        }
+
+
+        protected override async Task HandleMessage(FeedMessage msg)
+        {
+            if (msg.Type == "message")
+            {
+                if (msg.Subject == Subject)
+                {
+                    if (cycle == DateTime.MinValue) cycle = DateTime.Now;
+
+                    var i = msg.Topic.IndexOf(":");
+
+                    if (i != -1)
+                    {
+                        var symbol = msg.Topic.Substring(i + 1);
+
+                        if (activeFeeds.TryGetValue(symbol, out TObservation af))
+                        {
+                            var update = msg.Data.ToObject<TUpdate>();
+
+                            if (!af.Calibrated)
+                            {
+                                af.OnNext(update);
+
+                                if ((DateTime.Now - cycle).TotalMilliseconds >= updateInterval)
+                                {
+                                    await InitializeOrderBook(af.Symbol);
+
+                                    lock (lockObj)
+                                    {
+                                        af.Calibrate();
+                                        cycle = DateTime.Now;
+                                    }
+                                    _ = Task.Run(() =>
+                                    {
+                                        SymbolCalibrated?.Invoke(this, new SymbolCalibratedEventArgs<TBook, TUnit, TUpdate>(af));
+                                    });
+                                }
+                            }
+                            else
+                            {
+                                lock (lockObj)
+                                {
+                                    af.OnNext(update);
+
+                                    if ((DateTime.Now - cycle).TotalMilliseconds >= updateInterval)
+                                    {
+                                        af.RequestPush();
+                                        cycle = DateTime.Now;
+                                    }
+                                }
+                            }
+
+                        }
+                    }
+                }
+            }
+        }
     }
 
 
