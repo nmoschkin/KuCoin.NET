@@ -351,22 +351,25 @@ namespace Kucoin.NET.Websockets
             {
                 // The Pinger: 
 
-                keepAlive = Task.Factory.StartNew(async () =>
-                {
-                    int pi = server.PingInterval;
-
-                    while (!ctsPing.IsCancellationRequested && socket?.State == WebSocketState.Open)
+                keepAlive = Task.Factory.StartNew(
+                    async () =>
                     {
-                        for (int i = 0; i < pi; i += 1000)
+                        int pi = server.PingInterval;
+
+                        while (!ctsPing.IsCancellationRequested && socket?.State == WebSocketState.Open)
                         {
-                            await Task.Delay(1000);
-                            if (ctsPing.IsCancellationRequested) return;
+                            for (int i = 0; i < pi; i += 1000)
+                            {
+                                await Task.Delay(1000);
+                                if (ctsPing.IsCancellationRequested) return;
+                            }
+
+                            await Ping();
                         }
 
-                        await Ping();
-                    }
-
-                }, TaskCreationOptions.LongRunning | TaskCreationOptions.DenyChildAttach);
+                    }, 
+                    TaskCreationOptions.LongRunning | TaskCreationOptions.DenyChildAttach
+                );
 
                 // The Reader: 
                 // -----------
@@ -375,10 +378,16 @@ namespace Kucoin.NET.Websockets
                 msgQueue = new List<string>();
 
                 // data receiver
-                inputReaderThread = Task.Factory.StartNew(DataReceiveThread, TaskCreationOptions.LongRunning | TaskCreationOptions.DenyChildAttach);
+                inputReaderThread = Task.Factory.StartNew(
+                    DataReceiveThread, 
+                    TaskCreationOptions.LongRunning | TaskCreationOptions.DenyChildAttach
+                    );
 
                 // observer notification pump
-                msgPumpThread = Task.Factory.StartNew(MessagePumpThread, TaskCreationOptions.LongRunning | TaskCreationOptions.DenyChildAttach);
+                msgPumpThread = Task.Factory.StartNew(
+                    MessagePumpThread, 
+                    TaskCreationOptions.LongRunning | TaskCreationOptions.DenyChildAttach
+                    );
 
                 if (initAsMultiplexHost)
                 {
@@ -740,7 +749,7 @@ namespace Kucoin.NET.Websockets
         /// <see cref="OnPong(FeedMessage)"/> or <see cref="HandleMessage(FeedMessage)"/> methods, and the <see cref="OnJsonReceived(string)"/> method.
         /// OnJsonReceive is called after all other handling has occurred.
         /// </remarks>
-        protected async Task RouteJsonPacket(string json)
+        private async Task RouteJsonPacket(string json)
         {
             var e = JsonConvert.DeserializeObject<FeedMessage>(json);
 

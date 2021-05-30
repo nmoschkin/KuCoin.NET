@@ -19,19 +19,19 @@ namespace Kucoin.NET.Json
         {
             if (reader.Value == null)
             {
-                return reader.Value;
+                return null;
             }
-            if (reader.Value is decimal de)
+            else if (reader.Value is string s)
+            {
+                return decimal.Parse(s);
+            }
+            else if (reader.Value is decimal de)
             {
                 return (decimal)reader.Value;
             }
             else if (reader.Value is double du)
             {
                 return (decimal)du;
-            }
-            else if (reader.Value is string s)
-            {
-                return decimal.Parse(s);
             }
             else if (reader.Value is long l)
             {
