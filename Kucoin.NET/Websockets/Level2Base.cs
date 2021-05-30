@@ -15,6 +15,9 @@ namespace Kucoin.NET.Websockets
     /// <summary>
     /// Calibrated Level 2 Market Feed base class.
     /// </summary>
+    /// <remarks>
+    /// Use this base class to construct your own Level 2 feed handlers.
+    /// </remarks>
     public abstract class Level2Base<TBook, TUnit, TUpdate, TObservation> :
         KucoinBaseWebsocketFeed
         where TBook : IOrderBook<TUnit>, new()
@@ -31,10 +34,19 @@ namespace Kucoin.NET.Websockets
         protected int defaultPieces = 50;
         protected int updateInterval = 500;
 
+        /// <summary>
+        /// Get the feed subscription subject
+        /// </summary>
         public abstract string Subject { get; }
 
+        /// <summary>
+        /// Get the feed subscription topic
+        /// </summary>
         public abstract string Topic { get; }
 
+        /// <summary>
+        /// Get the aggregated order book retrieval end point.
+        /// </summary>
         public abstract string AggregateEndpoint { get; }
 
         public override bool IsPublic => false;
@@ -63,7 +75,7 @@ namespace Kucoin.NET.Websockets
             bool futures = false)
             : base(key, secret, passphrase, isSandbox, futures: futures)
         {
-            if (!Dispatcher.Initialized)
+            if (!Dispatcher.Initialized && !Dispatcher.Initialize())
             {
                 throw new InvalidOperationException("You must call Kucoin.NET.Helpers.Dispatcher.Initialize() with a SynchronizationContext before instantiating this class.");
             }
@@ -79,7 +91,7 @@ namespace Kucoin.NET.Websockets
         /// </remarks>
         public Level2Base(ICredentialsProvider credProvider, bool futures = false) : base(credProvider, futures: futures)
         {
-            if (!Dispatcher.Initialized)
+            if (!Dispatcher.Initialized && !Dispatcher.Initialize())
             {
                 throw new InvalidOperationException("You must call Kucoin.NET.Helpers.Dispatcher.Initialize() with a SynchronizationContext before instantiating this class.");
             }
@@ -120,10 +132,10 @@ namespace Kucoin.NET.Websockets
         }
 
         /// <summary>
-        /// Create a new instance of a <see cref="ILevel2OrderBookProvider{TBook, TUnit, TUpdate}"/> implementation.
+        /// Create a new instance of a class derived from <see cref="Level2ObservationBase{TBook, TUnit, TUpdate}"/>.
         /// </summary>
         /// <param name="symbol">The trading symbol.</param>
-        /// <returns></returns>
+        /// <returns>A new observation.</returns>
         protected abstract TObservation CreateNewObservation(string symbol);
 
         /// <summary>

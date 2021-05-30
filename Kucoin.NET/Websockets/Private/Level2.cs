@@ -17,11 +17,29 @@ using Kucoin.NET.Helpers;
 namespace Kucoin.NET.Websockets.Private
 {
 
+
     /// <summary>
-    /// Standard Level 2 feed implementation with observables and UI data binding support.
+    /// Standard Spot Market Level 2 feed implementation with observable and UI data binding support.
     /// </summary>
     public class Level2 : Level2Base<OrderBook<OrderUnit>, OrderUnit, Level2Update, Level2Observation>
     {
+
+        /// <summary>
+        /// Create a new Level 2 feed with the specified credentials.
+        /// </summary>
+        /// <param name="credProvider"><see cref="ICredentialsProvider"/> implementation.</param>
+        /// <remarks>
+        /// You must either create this instance on the main / UI thread or call <see cref="Dispatcher.Initialize"/> prior to 
+        /// creating an instance of this class or an <see cref="InvalidOperationException"/> will be raised.
+        /// </remarks>
+        public Level2(ICredentialsProvider credProvider) : base(credProvider)
+        {
+            if (!Dispatcher.Initialized && !Dispatcher.Initialize())
+            {
+                throw new InvalidOperationException("You must call Kucoin.NET.Helpers.Dispatcher.Initialize() with a SynchronizationContext before instantiating this class.");
+            }
+        }
+
         /// <summary>
         /// Create a new Level 2 feed with the specified credentials.
         /// </summary>
@@ -40,7 +58,7 @@ namespace Kucoin.NET.Websockets.Private
             bool isSandbox = false)
             : base(key, secret, passphrase, isSandbox)
         {
-            if (!Dispatcher.Initialized)
+            if (!Dispatcher.Initialized && !Dispatcher.Initialize())
             {
                 throw new InvalidOperationException("You must call Kucoin.NET.Helpers.Dispatcher.Initialize() with a SynchronizationContext before instantiating this class.");
             }
@@ -51,22 +69,6 @@ namespace Kucoin.NET.Websockets.Private
         public override string Subject => "trade.l2update";
 
         public override string Topic => "/market/level2";
-
-        /// <summary>
-        /// Create a new Level 2 feed with the specified credentials.
-        /// </summary>
-        /// <param name="credProvider"><see cref="ICredentialsProvider"/> implementation.</param>
-        /// <remarks>
-        /// You must either create this instance on the main / UI thread or call <see cref="Dispatcher.Initialize"/> prior to 
-        /// creating an instance of this class or an <see cref="InvalidOperationException"/> will be raised.
-        /// </remarks>
-        public Level2(ICredentialsProvider credProvider) : base(credProvider)
-        {
-            if (!Dispatcher.Initialized)
-            {
-                throw new InvalidOperationException("You must call Kucoin.NET.Helpers.Dispatcher.Initialize() with a SynchronizationContext before instantiating this class.");
-            }
-        }
 
         public override async Task<OrderBook<OrderUnit>> GetAggregatedOrder(string symbol)
         {
@@ -118,5 +120,41 @@ namespace Kucoin.NET.Websockets.Private
     }
 
 
+    /// <summary>
+    /// Spot Market Level 2 Feed Base Class for custom implementations.
+    /// </summary>
+    /// <typeparam name="TBook">The type of your custom order book.</typeparam>
+    /// <typeparam name="TUnit">The type of your custom order pieces.</typeparam>
+    public abstract class Level2StandardBase<TBook, TUnit> : Level2Base<TBook, TUnit, Level2Update, Level2ObservationBase<TBook, TUnit, Level2Update>>
+        where TBook : IOrderBook<TUnit>, new()
+        where TUnit : IOrderUnit, new()
+    {
+        public Level2StandardBase(ICredentialsProvider credProvider) : base(credProvider)
+        {
+            if (!Dispatcher.Initialized && !Dispatcher.Initialize())
+            {
+                throw new InvalidOperationException("You must call Kucoin.NET.Helpers.Dispatcher.Initialize() with a SynchronizationContext before instantiating this class.");
+            }
+        }
+
+        public Level2StandardBase(
+           string key,
+           string secret,
+           string passphrase,
+           bool isSandbox = false)
+           : base(key, secret, passphrase, isSandbox)
+        {
+            if (!Dispatcher.Initialized && !Dispatcher.Initialize())
+            {
+                throw new InvalidOperationException("You must call Kucoin.NET.Helpers.Dispatcher.Initialize() with a SynchronizationContext before instantiating this class.");
+            }
+        }
+
+        public override string AggregateEndpoint => "/api/v2/market/orderbook/level2";
+
+        public override string Subject => "trade.l2update";
+
+        public override string Topic => "/market/level2";
+    }
 
 }
