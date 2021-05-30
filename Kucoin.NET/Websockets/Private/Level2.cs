@@ -2,16 +2,11 @@
 
 using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
-
-using System.Text;
 using System.Threading.Tasks;
 using Kucoin.NET.Data.Market;
 using Kucoin.NET.Data.Interfaces;
 using System.Net.Http;
 using Kucoin.NET.Websockets.Observations;
-using Kucoin.NET.Observable;
-using System.Linq;
 using Kucoin.NET.Helpers;
 
 namespace Kucoin.NET.Websockets.Private

@@ -1,5 +1,4 @@
 ﻿using Kucoin.NET.Data.Interfaces;
-using Kucoin.NET.Data.Market;
 using Kucoin.NET.Data.Websockets;
 using Kucoin.NET.Helpers;
 using Kucoin.NET.Websockets.Observations;
@@ -9,14 +8,17 @@ using System.Collections.Generic;
 using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
+using Kucoin.NET.Websockets.Private;
+using Kucoin.NET.Futures.Websockets;
 
 namespace Kucoin.NET.Websockets
 {
     /// <summary>
-    /// Calibrated Level 2 Market Feed base class.
+    /// Calibrated Level 2 Market Feed base class and core logic implementation.
     /// </summary>
     /// <remarks>
-    /// Use this base class to construct your own Level 2 feed handlers.
+    /// Generally, you should not use this base class to construct your own Level 2 handlers.
+    /// Use either <see cref="Level2StandardBase{TBook, TUnit}"/> or <see cref="Level2FuturesBase{TBook, TUnit}"/>, instead.
     /// </remarks>
     public abstract class Level2Base<TBook, TUnit, TUpdate, TObservation> :
         KucoinBaseWebsocketFeed

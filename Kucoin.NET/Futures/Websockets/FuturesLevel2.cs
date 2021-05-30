@@ -1,6 +1,5 @@
 ﻿using Kucoin.NET.Data.Interfaces;
 using Kucoin.NET.Data.Market;
-using Kucoin.NET.Data.Websockets;
 using Kucoin.NET.Futures.Data.Market;
 using Kucoin.NET.Futures.Websockets.Observations;
 using Kucoin.NET.Helpers;
@@ -8,10 +7,6 @@ using Kucoin.NET.Websockets;
 using Kucoin.NET.Websockets.Observations;
 
 using System;
-using System.Collections.Generic;
-using System.Net.Http;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Kucoin.NET.Futures.Websockets
 {
@@ -22,7 +17,7 @@ namespace Kucoin.NET.Futures.Websockets
     {
         public FuturesLevel2(ICredentialsProvider credProvider) : base(credProvider, true)
         {
-            if (!Dispatcher.Initialized)
+            if (!Dispatcher.Initialized && !Dispatcher.Initialize())
             {
                 throw new InvalidOperationException("You must call Kucoin.NET.Helpers.Dispatcher.Initialize() with a SynchronizationContext before instantiating this class.");
             }
@@ -30,7 +25,7 @@ namespace Kucoin.NET.Futures.Websockets
 
         public FuturesLevel2(string key, string secret, string passphrase, bool isSandbox = false) : base(key, secret, passphrase, isSandbox, true)
         {
-            if (!Dispatcher.Initialized)
+            if (!Dispatcher.Initialized && !Dispatcher.Initialize())
             {
                 throw new InvalidOperationException("You must call Kucoin.NET.Helpers.Dispatcher.Initialize() with a SynchronizationContext before instantiating this class.");
             }
