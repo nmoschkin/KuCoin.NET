@@ -1,4 +1,5 @@
-﻿using Kucoin.NET.Data.Market;
+﻿using Kucoin.NET.Data.Interfaces;
+using Kucoin.NET.Data.Market;
 using Kucoin.NET.Helpers;
 using Kucoin.NET.Json;
 
@@ -11,8 +12,10 @@ using System.Text;
 namespace Kucoin.NET.Futures.Data.Market
 {
 
-
-    public class FuturesChangeFeedItem
+    /// <summary>
+    /// Represents a change packet pushed from the Futures Level 2 feed.
+    /// </summary>
+    public class FuturesLevel2Update
     {
         /// <summary>
         /// Sequence number which is used to judge the continuity of pushed messages
@@ -36,19 +39,34 @@ namespace Kucoin.NET.Futures.Data.Market
 
     }
 
-    public class FuturesChange
+    /// <summary>
+    /// Represents a change piece of data on the Futures Level 2 feed.
+    /// </summary>
+    public class FuturesChange : IFuturesOrderUnit
     {
+        /// <summary>
+        /// The change price in quote currency
+        /// </summary>
         public decimal Price { get; set; }
 
+        /// <summary>
+        /// The size of units
+        /// </summary>
         public decimal Size { get; set; }
 
+        /// <summary>
+        /// The side of the change (buy or sell)
+        /// </summary>
         public Side Side { get; set; }
 
         public FuturesChange()
         {
-
         }
 
+        /// <summary>
+        /// Initialize the class directly from the feed data.
+        /// </summary>
+        /// <param name="chg"></param>
         public FuturesChange(string chg)
         {
             var p = chg.Split(',');
@@ -58,11 +76,21 @@ namespace Kucoin.NET.Futures.Data.Market
             Size = decimal.Parse(p[2]);
         }
 
+        /// <summary>
+        /// Print the class as feed data.
+        /// </summary>
+        /// <returns></returns>
         public override string ToString()
         {
             return $"{Price},{Side.ToString().ToLower()},{Size}";
         }
 
+        object ICloneable.Clone()
+        {
+            return MemberwiseClone();
+        }
+
+        public FuturesChange Clone() => (FuturesChange)MemberwiseClone();
     }
 
 

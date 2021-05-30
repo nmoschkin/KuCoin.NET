@@ -27,7 +27,7 @@ namespace Kucoin.NET.Data.Interfaces
         long Sequence { get; set; }
     }
 
-    public interface IFuturesOrderUnit : ISequencedOrderUnit
+    public interface IFuturesOrderUnit : IOrderUnit
     {
         Side Side { get; set; }
     }

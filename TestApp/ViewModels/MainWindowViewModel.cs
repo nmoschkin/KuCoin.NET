@@ -85,7 +85,7 @@ namespace KuCoinApp
 
         protected ILevel2OrderBookProvider level2;
 
-        protected ILevel2OrderBookProvider<FuturesOrderBook, OrderUnit, FuturesChangeFeedItem> futureslevel2;
+        protected ILevel2OrderBookProvider<FuturesOrderBook, OrderUnit, FuturesLevel2Update> futureslevel2;
 
 
         protected ObservableStaticMarketDepthUpdate marketUpdate;
@@ -96,7 +96,7 @@ namespace KuCoinApp
 
         public override event EventHandler AskQuit;
 
-        public ILevel2OrderBookProvider<FuturesOrderBook, OrderUnit, FuturesChangeFeedItem> FuturesLevel2
+        public ILevel2OrderBookProvider<FuturesOrderBook, OrderUnit, FuturesLevel2Update> FuturesLevel2
         {
             get => futureslevel2;
             protected set

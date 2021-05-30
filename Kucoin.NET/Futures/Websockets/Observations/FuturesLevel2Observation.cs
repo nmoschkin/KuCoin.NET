@@ -12,12 +12,15 @@ using System.Text;
 
 namespace Kucoin.NET.Futures.Websockets.Observations
 {
-    public class FuturesLevel2Observation : Level2ObservationBase<FuturesOrderBook, OrderUnit, FuturesChangeFeedItem>
+    /// <summary>
+    /// KuCoin Futures Level 2 Observation standard implementation.
+    /// </summary>
+    public class FuturesLevel2Observation : Level2ObservationBase<FuturesOrderBook, OrderUnit, FuturesLevel2Update>
     {
         protected bool calibrated;
         protected bool initialized;
 
-        protected List<FuturesChangeFeedItem> orderBuffer = new List<FuturesChangeFeedItem>();
+        protected List<FuturesLevel2Update> orderBuffer = new List<FuturesLevel2Update>();
         internal FuturesLevel2Observation(KucoinBaseWebsocketFeed parent, string symbol, int pieces = 50) : base(parent, symbol, pieces)
         {
         }
@@ -80,9 +83,9 @@ namespace Kucoin.NET.Futures.Websockets.Observations
         /// <summary>
         /// Sequence the changes into the order book.
         /// </summary>
-        /// <param name="changes">The changes to sequence.</param>
+        /// <param name="change">The change to sequence.</param>
         /// <param name="pieces">The collection to change (either an ask or a bid collection)</param>
-        protected void SequencePieces(FuturesChangeFeedItem change, SortedKeyedOrderUnitBase<OrderUnit> pieces)
+        protected void SequencePieces(FuturesLevel2Update change, SortedKeyedOrderUnitBase<OrderUnit> pieces)
         {
             decimal cp = change.Change.Price;
 
@@ -120,7 +123,7 @@ namespace Kucoin.NET.Futures.Websockets.Observations
         /// </summary>
         public override void Reset()
         {
-            orderBuffer = new List<FuturesChangeFeedItem>();
+            orderBuffer = new List<FuturesLevel2Update>();
 
             Initialized = false;
             Calibrated = false;
@@ -143,10 +146,10 @@ namespace Kucoin.NET.Futures.Websockets.Observations
         }
 
         /// <summary>
-        /// <see cref="IObserver{T}"/> implementation for <see cref="FuturesChangeFeedItem"/> data.
+        /// <see cref="IObserver{T}"/> implementation for <see cref="FuturesLevel2Update"/> data.
         /// </summary>
         /// <param name="value"></param>
-        public override void OnNext(FuturesChangeFeedItem value)
+        public override void OnNext(FuturesLevel2Update value)
         {
             if (disposed || fullDepth == null) return;
 
@@ -291,7 +294,7 @@ namespace Kucoin.NET.Futures.Websockets.Observations
             {
                 if (connectedFeed != null)
                 {
-                    ((Level2Base<FuturesOrderBook, OrderUnit, FuturesChangeFeedItem, FuturesLevel2Observation>)connectedFeed).RemoveSymbol(symbol).Wait();
+                    ((Level2Base<FuturesOrderBook, OrderUnit, FuturesLevel2Update, FuturesLevel2Observation>)connectedFeed).RemoveSymbol(symbol).Wait();
                 }
             }
 

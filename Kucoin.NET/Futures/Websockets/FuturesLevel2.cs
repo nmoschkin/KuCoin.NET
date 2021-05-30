@@ -14,7 +14,7 @@ using System.Threading.Tasks;
 
 namespace Kucoin.NET.Futures.Websockets
 {
-    public class FuturesLevel2 : Level2Base<FuturesOrderBook, OrderUnit, FuturesChangeFeedItem, FuturesLevel2Observation>
+    public class FuturesLevel2 : Level2Base<FuturesOrderBook, OrderUnit, FuturesLevel2Update, FuturesLevel2Observation>
     {
         public FuturesLevel2(ICredentialsProvider credProvider) : base(credProvider, true)
         {
@@ -32,7 +32,7 @@ namespace Kucoin.NET.Futures.Websockets
             }
         }
 
-        public override event EventHandler<SymbolCalibratedEventArgs<FuturesOrderBook, OrderUnit, FuturesChangeFeedItem>> SymbolCalibrated;
+        public override event EventHandler<SymbolCalibratedEventArgs<FuturesOrderBook, OrderUnit, FuturesLevel2Update>> SymbolCalibrated;
 
 
         public override async Task<Dictionary<string, FuturesLevel2Observation>> AddSymbols(IEnumerable<string> symbols, int pieces = 200)
@@ -162,7 +162,7 @@ namespace Kucoin.NET.Futures.Websockets
 
                         if (activeFeeds.TryGetValue(symbol, out FuturesLevel2Observation af))
                         {
-                            var update = msg.Data.ToObject<FuturesChangeFeedItem>();
+                            var update = msg.Data.ToObject<FuturesLevel2Update>();
 
                             if (!af.Calibrated)
                             {
@@ -179,7 +179,7 @@ namespace Kucoin.NET.Futures.Websockets
                                     }
                                     _ = Task.Run(() =>
                                     {
-                                        SymbolCalibrated?.Invoke(this, new SymbolCalibratedEventArgs<FuturesOrderBook, OrderUnit, FuturesChangeFeedItem>(af));
+                                        SymbolCalibrated?.Invoke(this, new SymbolCalibratedEventArgs<FuturesOrderBook, OrderUnit, FuturesLevel2Update>(af));
                                     });
                                 }
                             }
