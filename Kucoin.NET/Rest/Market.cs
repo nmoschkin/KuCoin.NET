@@ -313,22 +313,25 @@ namespace Kucoin.NET.Rest
         /// <summary>
         /// Get a customized K-Line for the specified ticker symbol and the specified time range.
         /// </summary>
-        /// <typeparam name="TBaseCandle">The base type of the candle.</typeparam>
-        /// <typeparam name="TCandle">The sub-classed (usually user-provided) type of the candle.</typeparam>
-        /// <typeparam name="TCol">The type of the collection.</typeparam>
+        /// <typeparam name="TCandle">The type of the K-Line objects to create that implements both <see cref="IWritableCandle"/> and <see cref="TCustom"/>.</typeparam>
+        /// <typeparam name="TCustom">
+        /// The (usually user-provided) type of the objects to return.  
+        /// Objects of this type will be returned in the newly created collection.
+        /// </typeparam>
+        /// <typeparam name="TCol">The type of the collection that contains <see cref="TCustom"/> objects.</typeparam>
         /// <param name="symbol">The symbol</param>
         /// <param name="type">The K-Line type (the length of time represented by a single candlestick)</param>
         /// <param name="startTime">Start time</param>
         /// <param name="endTime">End time</param>
         /// <returns>A list of candlesticks</returns>
-        public async Task<TCol> GetKline<TBaseCandle, TCandle, TCol>(
+        public async Task<TCol> GetKline<TCandle, TCustom, TCol>(
             string symbol, 
             KlineType type, 
             DateTime? startTime = null, 
             DateTime? endTime = null
             ) 
-            where TBaseCandle: IWritableCandle, TCandle, new() 
-            where TCol: IList<TCandle>, new()
+            where TCandle: IWritableCandle, TCustom, new() 
+            where TCol: IList<TCustom>, new()
         {
             var curl = "/api/v1/market/candles";
 
@@ -374,7 +377,7 @@ namespace Kucoin.NET.Rest
 
             foreach (var values in klineRaw)
             {
-                var candle = new TBaseCandle();
+                var candle = new TCandle();
                 
                 if (candle is IWritableTypedCandle tc)
                 {
