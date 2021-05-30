@@ -6,6 +6,9 @@ using Newtonsoft.Json;
 
 namespace Kucoin.NET.Data.User
 {
+    /// <summary>
+    /// Sub-account information
+    /// </summary>
     public class SubAccount
     {
         /// <summary>

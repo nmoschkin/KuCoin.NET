@@ -11,6 +11,9 @@ using System.Text;
 
 namespace Kucoin.NET.Futures.Data.Market
 {
+    /// <summary>
+    /// Standard Futures Level 2 order book implementation
+    /// </summary>
     public class FuturesOrderBook : OrderBook<OrderUnit>
     {
 

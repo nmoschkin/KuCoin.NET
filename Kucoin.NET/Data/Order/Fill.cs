@@ -8,6 +8,9 @@ using Kucoin.NET.Json;
 
 namespace Kucoin.NET.Data.Order
 {
+    /// <summary>
+    /// Order filled data
+    /// </summary>
     public class Fill : OrderBase
     {
 

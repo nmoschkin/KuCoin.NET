@@ -188,7 +188,6 @@ namespace Kucoin.NET.Futures.Websockets.Observations
         /// <param name="src">Source data.</param>
         /// <param name="dest">Destination collection.</param>
         /// <param name="pieces">The number of pieces to copy.</param>
-        /// <param name="clone">True to clone the observable objects so that their changes do not show up in the live feed.</param>
         protected void CopyTo(IList<OrderUnit> src, IList<OrderUnit> dest, int pieces)
         {
             int i, c = pieces < src.Count ? pieces : src.Count;

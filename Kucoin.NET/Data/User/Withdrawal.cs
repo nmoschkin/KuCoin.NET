@@ -8,6 +8,9 @@ using Newtonsoft.Json;
 
 namespace Kucoin.NET.Data.User
 {
+    /// <summary>
+    /// Withdraw order information
+    /// </summary>
     public class Withdrawal
     {
 

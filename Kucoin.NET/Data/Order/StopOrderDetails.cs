@@ -9,6 +9,9 @@ using System.Text;
 
 namespace Kucoin.NET.Data.Order
 {
+    /// <summary>
+    /// Stop order information
+    /// </summary>
     public class StopOrderDetails : LimitStopOrder
     {
         /// <summary>

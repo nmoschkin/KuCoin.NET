@@ -14,11 +14,13 @@ namespace Kucoin.NET.Data.Market
     /// </summary>
     public struct KlineType
     {
-        
-        private string value;
+        /// <summary>
+        /// The internal "kline-type" string value that the KuCoin API recognizes.
+        /// </summary>
+        private readonly string value;
 
         /// <summary>
-        /// Length of the k-line, in seconds.
+        /// Length of an individual candlestick, in seconds.
         /// </summary>
         public readonly int Length;
 
@@ -90,7 +92,7 @@ namespace Kucoin.NET.Data.Market
         public static readonly KlineType Day1 = new KlineType("1day");
 
         /// <summary>
-        /// Candle has a length of 1 week..
+        /// Candle has a length of 1 week.
         /// </summary>
         public static readonly KlineType Week1 = new KlineType("1week");
 
@@ -154,12 +156,12 @@ namespace Kucoin.NET.Data.Market
             {
             }
 
-            value = KlineType.Invalid;
+            value = Invalid;
             return false;
         }
 
         /// <summary>
-        /// Returns all available KlineTypes
+        /// Gets a list of all K-Line types.
         /// </summary>
         public static IEnumerable<KlineType> AllTypes
         {
@@ -176,9 +178,16 @@ namespace Kucoin.NET.Data.Market
             }
         }
 
+        /// <summary>
+        /// Return all valid K-Line types.
+        /// </summary>
+        /// <returns></returns>
         public IEnumerable<KlineType> GetAllTypes() => AllTypes;
 
 
+        /// <summary>
+        /// Returns true if the current value is invalid.
+        /// </summary>
         public bool IsInvalid
         {
             get => value == null;
@@ -215,6 +224,9 @@ namespace Kucoin.NET.Data.Market
             }
         }
 
+        /// <summary>
+        /// Formatted time unit name.
+        /// </summary>
         public string Unit
         {
             get
@@ -237,9 +249,14 @@ namespace Kucoin.NET.Data.Market
             }
         }
 
+        /// <summary>
+        /// Parse and initialize the candlestick length code.
+        /// </summary>
+        /// <param name="type">The KuCoin API code.</param>
         private KlineType(string type)
         {
             value = type;
+
             if (value == null)
             {
                 Length = 0;
@@ -265,10 +282,10 @@ namespace Kucoin.NET.Data.Market
                 }
             }
 
-            var tn = int.Parse(sb1.ToString());
-            var tt = sb2.ToString();
+            var timenum = int.Parse(sb1.ToString());
+            var timeunit = sb2.ToString();
 
-            switch (tt)
+            switch (timeunit)
             {
                 case "hour":
                     m = 60;
@@ -287,7 +304,7 @@ namespace Kucoin.NET.Data.Market
                     break;
             }
 
-            m *= tn;
+            m *= timenum;
             m *= 60;
 
             Length = m;
@@ -305,6 +322,10 @@ namespace Kucoin.NET.Data.Market
             {
                 return s == value;
             }
+            else if (obj is int i)
+            {
+                return i == Length;
+            }
             else
             {
                 return false;
@@ -316,11 +337,20 @@ namespace Kucoin.NET.Data.Market
             return value?.GetHashCode() ?? 0;
         }
 
+        /// <summary>
+        /// Returns the string representation of this object as the valid KuCoin API code.
+        /// </summary>
+        /// <returns></returns>
         public override string ToString()
         {
             return value;
         }
 
+        /// <summary>
+        /// Returns the string representation of this object as either the valid KuCoin API code, or a formatted string.
+        /// </summary>
+        /// <param name="formatted">True to return a formatted string.</param>
+        /// <returns>If formatted == true, a formatted string, otherwise the valid KuCoin API string code.</returns>
         public string ToString(bool formatted)
         {
             if (formatted)

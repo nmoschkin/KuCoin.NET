@@ -7,6 +7,9 @@ using System.Text;
 
 namespace Kucoin.NET.Futures.Websockets
 {
+    /// <summary>
+    /// Base class for most futures websocket feeds
+    /// </summary>
     public abstract class FuturesBaseWebsocketFeed : KucoinBaseWebsocketFeed
     {
 

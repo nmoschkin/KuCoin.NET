@@ -8,13 +8,16 @@ using System.Threading.Tasks;
 
 namespace Kucoin.NET.Futures.Rest
 {
-    public class User : FuturesBaseRestApi
+    /// <summary>
+    /// Futures user account information
+    /// </summary>
+    public class FuturesUser : FuturesBaseRestApi
     {
-        public User(ICredentialsProvider cred) : base(cred)
+        public FuturesUser(ICredentialsProvider cred) : base(cred)
         {
         }
 
-        public User(
+        public FuturesUser(
             string key, 
             string secret, 
             string passphrase, 
@@ -27,6 +30,11 @@ namespace Kucoin.NET.Futures.Rest
         {
         }
 
+        /// <summary>
+        /// Get accounts overview
+        /// </summary>
+        /// <param name="currency">The currency of the account to retrieve (or null for all currencies.)</param>
+        /// <returns></returns>
         public async Task GetAccountsOverview(string currency = null)
         {
             var dict = new Dictionary<string, object>();

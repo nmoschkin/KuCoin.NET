@@ -7,28 +7,49 @@ using Kucoin.NET.Json;
 
 namespace Kucoin.NET.Data.Order
 {
+    /// <summary>
+    /// Trade type
+    /// </summary>
 
     [JsonConverter(typeof(EnumToStringConverter<TradeType>))]
     public enum TradeType
     {
+        /// <summary>
+        /// Spot trade
+        /// </summary>
         [EnumMember(Value = "TRADE")]
         Spot,
 
+        /// <summary>
+        /// Margin trade
+        /// </summary>
         [EnumMember(Value = "MARGIN_TRADE")]
         Margin
 
     }
 
+    /// <summary>
+    /// Applied liquidity type
+    /// </summary>
     [JsonConverter(typeof(EnumToStringConverter<LiquidityType>))]
     public enum LiquidityType
     {
+        /// <summary>
+        /// Taker (market orders)
+        /// </summary>
         [EnumMember(Value = "taker")]
         Taker,
 
+        /// <summary>
+        /// Maker (limit orders)
+        /// </summary>
         [EnumMember(Value = "maker")]
         Maker
     }
 
+    /// <summary>
+    /// Margin mode
+    /// </summary>
     [JsonConverter(typeof(EnumToStringConverter<MarginMode>))]
     public enum MarginMode
     {
@@ -39,6 +60,9 @@ namespace Kucoin.NET.Data.Order
         Isolated
     }
 
+    /// <summary>
+    /// Time-In-Force 
+    /// </summary>
     [JsonConverter(typeof(EnumToStringConverter<TimeInForce>))]
     public enum TimeInForce
     {
@@ -68,6 +92,9 @@ namespace Kucoin.NET.Data.Order
 
     }
 
+    /// <summary>
+    /// Self trade protection options
+    /// </summary>
     [JsonConverter(typeof(EnumToStringConverter<StpMode>))]
     public enum StpMode
     {

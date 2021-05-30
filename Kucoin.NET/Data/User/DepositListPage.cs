@@ -8,6 +8,9 @@ using System.Text;
 
 namespace Kucoin.NET.Data.User
 {
+    /// <summary>
+    /// Paginated deposit list
+    /// </summary>
     class DepositListPage : IPaginated<DepositListItem>
     {
         [JsonProperty("currentPage")]

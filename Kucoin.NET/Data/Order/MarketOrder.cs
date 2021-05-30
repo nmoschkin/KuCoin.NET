@@ -30,6 +30,9 @@ namespace Kucoin.NET.Data.Order
         public decimal? Funds { get; set; }
     }
 
+    /// <summary>
+    /// Market order with stop order parameters.
+    /// </summary>
     public class MarketStopOrder : MarketOrder
     {
         /// <summary>

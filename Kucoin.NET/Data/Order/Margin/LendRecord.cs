@@ -8,6 +8,9 @@ using System.Text;
 
 namespace Kucoin.NET.Data.Order.Margin
 {
+    /// <summary>
+    /// Paginated lend records
+    /// </summary>
     public class LendRecord : IPaginated<LendOrder>
     {
         [JsonProperty("pageSize")]
@@ -26,6 +29,9 @@ namespace Kucoin.NET.Data.Order.Margin
         public int TotalPages { get; set; }
     }
 
+    /// <summary>
+    /// Paginated historical lend records
+    /// </summary>
     public class HistoricalLendRecord : IPaginated<HistoricalLendOrder>
     {
         [JsonProperty("pageSize")]
@@ -44,7 +50,9 @@ namespace Kucoin.NET.Data.Order.Margin
         public int TotalPages { get; set; }
     }
 
-
+    /// <summary>
+    /// Paginated unsettled lend records
+    /// </summary>
     public class UnsettledLendRecord : IPaginated<UnsettledLendOrder>
     {
         [JsonProperty("pageSize")]
@@ -63,6 +71,9 @@ namespace Kucoin.NET.Data.Order.Margin
         public int TotalPages { get; set; }
     }
 
+    /// <summary>
+    /// Paginated settled lend records
+    /// </summary>
     public class SettledLendRecord : IPaginated<SettledLendOrder>
     {
         [JsonProperty("pageSize")]
@@ -81,7 +92,10 @@ namespace Kucoin.NET.Data.Order.Margin
         public int TotalPages { get; set; }
     }
 
-    public class AccountLendRecord : IPaginated<AccountLendRecordEntry>
+    /// <summary>
+    /// Paginated account lend records
+    /// </summary>
+    public class AccountLendRecord : IPaginated<AccountLendRecordItem>
     {
         [JsonProperty("pageSize")]
         public int PageSize { get; set; }
@@ -93,7 +107,7 @@ namespace Kucoin.NET.Data.Order.Margin
         public int TotalNumber { get; set; }
 
         [JsonProperty("items")]
-        public IList<AccountLendRecordEntry> Items { get; set; }
+        public IList<AccountLendRecordItem> Items { get; set; }
 
         [JsonProperty("totalPages")]
         public int TotalPages { get; set; }

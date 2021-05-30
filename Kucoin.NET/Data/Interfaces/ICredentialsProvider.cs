@@ -42,6 +42,9 @@ namespace Kucoin.NET.Data.Interfaces
         /// <returns></returns>
         bool GetFutures();
 
+        /// <summary>
+        /// Gets another credentials provider that is attached to this one (for example, the Futures API.)
+        /// </summary>
         ICredentialsProvider AttachedAccount { get; }
 
     }

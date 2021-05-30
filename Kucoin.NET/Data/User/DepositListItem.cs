@@ -10,36 +10,65 @@ using System.Text;
 
 namespace Kucoin.NET.Data.User
 {
+    /// <summary>
+    /// Deposit status
+    /// </summary>
     [JsonConverter(typeof(EnumToStringConverter<DepositStatus>))]
     public enum DepositStatus
     {
+        /// <summary>
+        /// Success
+        /// </summary>
         [EnumMember(Value = "SUCCESS")]
         Success = 0,
 
+        /// <summary>
+        /// Failure
+        /// </summary>
         [EnumMember(Value = "FAILURE")]
         Failure = 1,
 
+        /// <summary>
+        /// Processing
+        /// </summary>
         [EnumMember(Value = "PROCESSING")]
         Processing = 2
     }
 
+    /// <summary>
+    /// Withdrawal status
+    /// </summary>
     public enum WithdrawalStatus 
     {
+        /// <summary>
+        /// Success
+        /// </summary>
 
         [EnumMember(Value = "SUCCESS")]
         Success = 0,
 
+        /// <summary>
+        /// Failure
+        /// </summary>
         [EnumMember(Value = "FAILURE")]
         Failure = 1,
 
+        /// <summary>
+        /// Processing
+        /// </summary>
         [EnumMember(Value = "PROCESSING")]
         Processing = 2,
 
+        /// <summary>
+        /// Account processing
+        /// </summary>
         [EnumMember(Value = "ACCOUNT_PROCESSING")]
         AccountProcessing = 3
     }
 
-
+    /// <summary>
+    /// Deposit item
+    /// </summary>
     public class DepositListItem
     {
         /// <summary>

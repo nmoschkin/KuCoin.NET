@@ -13,9 +13,15 @@ namespace Kucoin.NET.Data.Market
     [JsonConverter(typeof(EnumToStringConverter<Side>))]
     public enum Side
     {
+        /// <summary>
+        /// Buy (bid)
+        /// </summary>
         [EnumMember(Value = "buy")]
         Buy,
 
+        /// <summary>
+        /// Sell (ask)
+        /// </summary>
         [EnumMember(Value = "sell")]
         Sell
     }

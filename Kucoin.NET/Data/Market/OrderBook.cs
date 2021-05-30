@@ -14,6 +14,10 @@ using Kucoin.NET.Data.Order;
 namespace Kucoin.NET.Data.Market
 {
 
+    /// <summary>
+    /// Provides the standard, observable order book implementation.
+    /// </summary>
+    /// <typeparam name="T">The type of the order unit.</typeparam>
     public class OrderBook<T> : ObservableBase, IOrderBook<T> where T: IOrderUnit 
     {
         private ObservableOrderUnits<T> asks = new ObservableOrderUnits<T>();
@@ -22,6 +26,9 @@ namespace Kucoin.NET.Data.Market
 
         private long sequence;
 
+        /// <summary>
+        /// The sequence number of the order
+        /// </summary>
         [JsonProperty("sequence")]
         [KeyProperty]
         public long Sequence
@@ -37,6 +44,9 @@ namespace Kucoin.NET.Data.Market
 
         SortedKeyedOrderUnitBase<T> IKeyedOrderUnitList<T>.Bids => bids;
 
+        /// <summary>
+        /// Asks (sell)
+        /// </summary>
         [JsonProperty("asks")]
         public ObservableOrderUnits<T> Asks
         {
@@ -47,6 +57,9 @@ namespace Kucoin.NET.Data.Market
             }
         }
 
+        /// <summary>
+        /// Bids (buy)
+        /// </summary>
         [JsonProperty("bids")]
         public ObservableOrderUnits<T> Bids
         {
@@ -59,6 +72,9 @@ namespace Kucoin.NET.Data.Market
 
         private DateTime time;
 
+        /// <summary>
+        /// The time stamp of the order
+        /// </summary>
         [JsonProperty("time")]
         [JsonConverter(typeof(AutoTimeConverter), TimeTypes.InNanoseconds)]
         public virtual DateTime Timestamp 

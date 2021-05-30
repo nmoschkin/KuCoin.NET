@@ -165,26 +165,53 @@ namespace Kucoin.NET.Observable
 
         }
 
+        /// <summary>
+        /// Create a new dictionary with the specified sort configuration.
+        /// </summary>
+        /// <param name="valueComparer">The value comparer</param>
+        /// <param name="direction">The sort direction</param>
         public ObservableDictionary(IComparer<TValue> valueComparer, ListSortDirection direction) : this()
         {
             ChangeSort(valueComparer, direction);
         }
 
+        /// <summary>
+        /// Create a new dictionary with the specified sort configuration.
+        /// </summary>
+        /// <param name="valueComparison">The value comparison</param>
+        /// <param name="direction">The sort direction</param>
         public ObservableDictionary(Comparison<TValue> valueComparison, ListSortDirection direction) : this()
         {
             ChangeSort(valueComparison, direction);
         }
 
+        /// <summary>
+        /// Create a new dictionary with the specified sort configuration.
+        /// </summary>
+        /// <param name="sortPropertyName">The name of the property to sort on</param>
+        /// <param name="direction">The sort direction</param>
         public ObservableDictionary(string sortPropertyName, ListSortDirection direction) : this()
         {
             ChangeSort(sortPropertyName, direction);
         }
 
+        /// <summary>
+        /// Create a new dictionary with the specified sort configuration.
+        /// </summary>
+        /// <param name="valueComparer">The value comparer</param>
+        /// <param name="direction">The sort direction</param>
+        /// <param name="values">Items to initialize the collection with</param>
         public ObservableDictionary(IComparer<TValue> valueComparer, ListSortDirection direction, IEnumerable<TValue> values) : this(valueComparer, direction)
         {
             AddRange(values);
         }
 
+        /// <summary>
+        /// Create a new dictionary with the specified sort configuration.
+        /// </summary>
+        /// <param name="valueComparison">The value comparison</param>
+        /// <param name="direction">The sort direction</param>
+        /// <param name="values">Items to initialize the collection with</param>
         public ObservableDictionary(Comparison<TValue> valueComparison, ListSortDirection direction, IEnumerable<TValue> values) : this(valueComparison, direction)
         {
             AddRange(values);
@@ -246,8 +273,6 @@ namespace Kucoin.NET.Observable
         {
             ChangeSort(valueComparison, direction);
         }
-
-
         public ObservableDictionary(string keyPropertyName, string sortPropertyName, ListSortDirection direction, IEnumerable<TValue> values) : this(keyPropertyName)
         {
             ChangeSort(sortPropertyName, direction);
@@ -267,6 +292,9 @@ namespace Kucoin.NET.Observable
         }
 
 
+        /// <summary>
+        /// Gets a value indicating whether this collection sorted.
+        /// </summary>
         [JsonProperty("sorted")]
         public bool Sorted
         {
@@ -307,7 +335,10 @@ namespace Kucoin.NET.Observable
             }
         }
 
-
+        /// <summary>
+        /// Add a range of items to the collection.
+        /// </summary>
+        /// <param name="items">The items to add.</param>
         public void AddRange(IEnumerable<TValue> items)
         {
             lock (lockObject)
@@ -325,6 +356,12 @@ namespace Kucoin.NET.Observable
             }
         }
 
+        /// <summary>
+        /// Try to get the value with the specified key.
+        /// </summary>
+        /// <param name="key">The key to search for.</param>
+        /// <param name="value">Receives the item that was found, or null/default.</param>
+        /// <returns>True if the item was found.</returns>
         public bool TryGetValue(TKey key, out TValue value)
         {
             if (!Contains(key))
@@ -340,6 +377,10 @@ namespace Kucoin.NET.Observable
 
         }
 
+        /// <summary>
+        /// Return the contents of this collection as an array of <see cref="T"/>.
+        /// </summary>
+        /// <returns></returns>
         public TValue[] ToArray()
         {
             lock (lockObject)
@@ -352,6 +393,11 @@ namespace Kucoin.NET.Observable
             }
         }
 
+        /// <summary>
+        /// Perform a binary search for the specified value
+        /// </summary>
+        /// <param name="value">The value to search for.</param>
+        /// <returns>The index of the value or -1.</returns>
         public int BinarySearchBySortProperty(TValue value)
         {
             return GetInsertIndex(value, true);
@@ -500,10 +546,16 @@ namespace Kucoin.NET.Observable
 
         #endregion
 
-       
+
 
         #region Sorting
 
+
+        /// <summary>
+        /// Change the way items are sorted in this collection
+        /// </summary>
+        /// <param name="valueComparer">The new value comparer</param>
+        /// <param name="direction">The new sort direction</param>
         public virtual void ChangeSort(IComparer<TValue> valueComparer, ListSortDirection direction)
         {
             lock (lockObject)
@@ -516,6 +568,11 @@ namespace Kucoin.NET.Observable
             }
         }
 
+        /// <summary>
+        /// Change the way items are sorted in this collection
+        /// </summary>
+        /// <param name="valueComparison">The new value comparison</param>
+        /// <param name="direction">The new sort direction</param>
         public virtual void ChangeSort(Comparison<TValue> valueComparison, ListSortDirection direction)
         {
             lock (lockObject)
@@ -528,6 +585,11 @@ namespace Kucoin.NET.Observable
             }
         }
 
+        /// <summary>
+        /// Change the way items are sorted in this collection
+        /// </summary>
+        /// <param name="sortPropertyName">The new sort property name</param>
+        /// <param name="direction">The new sort direction</param>
         public virtual void ChangeSort(string sortPropertyName, ListSortDirection direction)
         {
             lock (lockObject)
@@ -545,6 +607,9 @@ namespace Kucoin.NET.Observable
             }
         }
 
+        /// <summary>
+        /// Clear and reset the sorting enforcement
+        /// </summary>
         public virtual void ClearSort()
         {
             sorted = false;

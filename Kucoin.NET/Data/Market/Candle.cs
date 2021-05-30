@@ -11,30 +11,48 @@ using Kucoin.NET.Data.Interfaces;
 namespace Kucoin.NET.Data.Market
 {
     /// <summary>
-    /// Candlestick structure.
+    /// K-Line Candlestick standard implementation.
     /// </summary>
-    public class Candle : IWriteableTypedCandle
+    public class Candle : IWritableTypedCandle
     {
+        /// <summary>
+        /// Initialize a new candle stick object from a list of string values.
+        /// </summary>
+        /// <param name="values">The values.</param>
+        /// <remarks>
+        /// Format is timestamp,open,close,high,low,amount,volume.
+        /// Decimal values are represented as quoted strings.
+        /// </remarks>
         public Candle(IList<string> values)
         {
             ReadData(values);
         }
 
+        /// <summary>
+        /// Initialize a new candle stick object with the specified K-Line type from a list of string values.
+        /// </summary>
+        /// <param name="values">The values.</param>
+        /// <param name="type">The K-Line type (the length of time represented by the candle stick)</param>
+        /// <remarks>
+        /// Format is timestamp,open,close,high,low,amount,volume.
+        /// Decimal values are represented as quoted strings.
+        /// </remarks>
         public Candle(IList<string> values, KlineType type)
         {
             ReadData(values);
             Type = type;
         }
 
-        public Candle(object source)
-        {
-            ReadData(source);
-        }
-
-        public virtual void ReadData(object source)
-        {
-            var values = source as IList<string>;
-
+        /// <summary>
+        /// Read data from a list of strings.
+        /// </summary>
+        /// <param name="values">The values.</param>
+        /// <remarks>
+        /// Format is timestamp,open,close,high,low,amount,volume.
+        /// Decimal values are represented as quoted strings.
+        /// </remarks>
+        public virtual void ReadData(IList<string> values)
+        {           
             Timestamp = EpochTime.SecondsToDate(long.Parse(values[0]));
 
             OpenPrice = decimal.Parse(values[1]);
@@ -47,10 +65,19 @@ namespace Kucoin.NET.Data.Market
             Volume = decimal.Parse(values[6]);
         }
 
+        /// <summary>
+        /// Create a new, empty candle stick.
+        /// </summary>
         public Candle()
         {
         }
 
+        /// <summary>
+        /// Test whether the specified time falls within the time range of the specified <see cref="ITypedCandle"/>.
+        /// </summary>
+        /// <param name="candle">The candlestick to test.</param>
+        /// <param name="time">The time to test.</param>
+        /// <returns>True if the time falls within the candlestick.</returns>
         public static bool IsTimeInCandle(ITypedCandle candle, DateTime time)
         {
             var dv = candle.Timestamp.AddSeconds(candle.Type.Length);

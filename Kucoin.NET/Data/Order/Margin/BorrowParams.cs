@@ -9,12 +9,21 @@ using System.Text;
 
 namespace Kucoin.NET.Data.Order.Margin
 {
-
+    /// <summary>
+    /// Borrow order execution type
+    /// </summary>
+    [JsonConverter(typeof(EnumToStringConverter<BorrowType>))]
     public enum BorrowType
     {
+        /// <summary>
+        /// Fill the order completely or do not fill it at all
+        /// </summary>
         [EnumMember(Value = "FOK")]
         FillOrKill,
 
+        /// <summary>
+        /// Fill the order immediately or cancel the order
+        /// </summary>
         [EnumMember(Value = "IOC")]
         ImmediateOrCancel
     }

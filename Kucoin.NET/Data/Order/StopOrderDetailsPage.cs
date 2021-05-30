@@ -8,6 +8,9 @@ using System.Text;
 
 namespace Kucoin.NET.Data.Order
 {
+    /// <summary>
+    /// Paginated stop order information
+    /// </summary>
     public class StopOrderDetailsPage : IPaginated<StopOrderDetails>
     {
 

@@ -8,6 +8,9 @@ using System.Text;
 
 namespace Kucoin.NET.Futures.Rest
 {
+    /// <summary>
+    /// Base class for futures REST API classes
+    /// </summary>
     public abstract class FuturesBaseRestApi : KucoinBaseRestApi
     {
         public FuturesBaseRestApi(ICredentialsProvider cred) : base(cred, futures: true)

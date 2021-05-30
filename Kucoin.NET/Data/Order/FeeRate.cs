@@ -6,9 +6,11 @@ using System.Text;
 
 namespace Kucoin.NET.Data.Order
 {
+    /// <summary>
+    /// Fee rate data
+    /// </summary>
     public class FeeRate
     {
-
 
         /// <summary>
         /// Symbol
@@ -18,14 +20,14 @@ namespace Kucoin.NET.Data.Order
 
 
         /// <summary>
-        /// TakerFeeRate
+        /// Taker fee
         /// </summary>
         [JsonProperty("takerFeeRate")]
         public decimal TakerFeeRate { get; set; }
 
 
         /// <summary>
-        /// MakerFeeRate
+        /// Maker fee
         /// </summary>
         [JsonProperty("makerFeeRate")]
         public decimal MakerFeeRate { get; set; }

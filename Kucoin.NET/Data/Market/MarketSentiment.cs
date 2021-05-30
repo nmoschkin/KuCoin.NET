@@ -1,22 +1,25 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿// Unused code
 
-using System.Runtime.Serialization;
-using Newtonsoft.Json;
-using Kucoin.NET.Json;
+//using System;
+//using System.Collections.Generic;
+//using System.Text;
 
-namespace Kucoin.NET.Data.Market
-{
+//using System.Runtime.Serialization;
+//using Newtonsoft.Json;
+//using Kucoin.NET.Json;
 
-    [JsonConverter(typeof(EnumToStringConverter<MarketSentiment>))]
-    public enum MarketSentiment
-    {
-        [EnumMember(Value = "up")]
-        Bullish,
+//namespace Kucoin.NET.Data.Market
+//{
 
-        [EnumMember(Value = "down")]
-        Bearish
-    }
 
-}
+//    [JsonConverter(typeof(EnumToStringConverter<MarketSentiment>))]
+//    public enum MarketSentiment
+//    {
+//        [EnumMember(Value = "up")]
+//        Bullish,
+
+//        [EnumMember(Value = "down")]
+//        Bearish
+//    }
+
+//}

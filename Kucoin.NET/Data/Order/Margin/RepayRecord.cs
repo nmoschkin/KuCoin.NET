@@ -8,6 +8,9 @@ using System.Text;
 
 namespace Kucoin.NET.Data.Order.Margin
 {
+    /// <summary>
+    /// Paginated repayment records
+    /// </summary>
     public class RepayRecord : IPaginated<RepayItem>
     {
         [JsonProperty("pageSize")]

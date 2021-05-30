@@ -10,6 +10,9 @@ using System.Text;
 
 namespace Kucoin.NET.Futures.Data.Market
 {
+    /// <summary>
+    /// Futures symbol ticker
+    /// </summary>
     public class FuturesTicker : Ticker
     {
         /// <summary>

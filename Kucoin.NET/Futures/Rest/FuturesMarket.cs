@@ -10,6 +10,9 @@ using System.Threading.Tasks;
 
 namespace Kucoin.NET.Futures.Rest
 {
+    /// <summary>
+    /// Futures market information
+    /// </summary>
     public class FuturesMarket : FuturesBaseRestApi
     {
         public FuturesMarket() : base(cred: null)

@@ -27,14 +27,14 @@ namespace Kucoin.NET.Data.Market
         public long Granularity { get; set; }
 
         /// <summary>
-        /// Timestamp
+        /// Used by some calls and not others
         /// </summary>
         [JsonProperty("timestamp")]
         [JsonConverter(typeof(AutoTimeConverter), TimeTypes.InMilliseconds)]
         internal DateTime? InternalTimestamp { get; set; }
 
         /// <summary>
-        /// Timepoint
+        /// Used by some calls and not others
         /// </summary>
         [JsonProperty("timePoint")]
         [JsonConverter(typeof(AutoTimeConverter), TimeTypes.InMilliseconds)]

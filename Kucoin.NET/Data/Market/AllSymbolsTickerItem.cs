@@ -20,14 +20,14 @@ namespace Kucoin.NET.Data.Market
     {
 
         /// <summary>
-        /// time
+        /// The timestamp of the current observation.
         /// </summary>
         [JsonProperty("time")]
         [JsonConverter(typeof(AutoTimeConverter), TimeTypes.InMilliseconds)]
-        public DateTime Time { get; set; }
+        public DateTime Timestamp { get; set; }
 
         /// <summary>
-        /// symbol
+        /// The ticker symbol.
         /// </summary>
         [JsonProperty("symbol")]
         [KeyProperty]
@@ -40,13 +40,13 @@ namespace Kucoin.NET.Data.Market
         public string SymbolName { get; set; }
 
         /// <summary>
-        /// bestAsk
+        /// Best Bid Price
         /// </summary>
         [JsonProperty("buy")]
         public decimal? Buy { get; set; }
 
         /// <summary>
-        /// bestBid
+        /// Best Ask Price
         /// </summary>
         [JsonProperty("sell")]
         public decimal? Sell { get; set; }

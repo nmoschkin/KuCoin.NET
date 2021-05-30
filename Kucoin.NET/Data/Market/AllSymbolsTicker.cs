@@ -22,6 +22,9 @@ namespace Kucoin.NET.Data.Market
     {
         private ObservableDictionary<string, AllSymbolsTickerItem> ticker = new ObservableDictionary<string, AllSymbolsTickerItem>();
 
+        /// <summary>
+        /// A dictionary of ticker items keyed on trading symbol.
+        /// </summary>
         [JsonProperty("ticker")]
         [JsonConverter(typeof(ListToDictionaryConverter<string, AllSymbolsTickerItem>), new object[] { "Symbol" })]
         public ObservableDictionary<string, AllSymbolsTickerItem> Ticker
@@ -33,27 +36,19 @@ namespace Kucoin.NET.Data.Market
             }
         }
 
-        private long time;
+        private DateTime time;
 
+        /// <summary>
+        /// The time stamp of the current observation.
+        /// </summary>
         [JsonProperty("time")]
-        public long Time
+        [JsonConverter(typeof(AutoTimeConverter), TimeTypes.InMilliseconds)]
+        public DateTime Timestamp
         {
             get => time;
             set
             {
-                if (SetProperty(ref time, value))
-                {
-                    OnPropertyChanged(nameof(Timestamp));
-                }
-            }
-        }
-
-        [JsonIgnore]
-        public DateTime Timestamp
-        {
-            get
-            {
-                return EpochTime.MillisecondsToDate(Time);
+                SetProperty(ref time, value);
             }
         }
 

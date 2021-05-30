@@ -6,31 +6,35 @@ using System.Text;
 
 namespace Kucoin.NET.Data.Order.Margin
 {
+    /// <summary>
+    /// Margin accounts summary
+    /// </summary>
     public class MarginAccountSummary
     {
-
-
         /// <summary>
-        /// Accounts
+        /// List of margin accounts
         /// </summary>
         [JsonProperty("accounts")]
         public List<MarginAccount> Accounts { get; set; }
 
 
         /// <summary>
-        /// DebtRatio
+        /// Current debt ratio
         /// </summary>
         [JsonProperty("debtRatio")]
         public decimal DebtRatio { get; set; }
 
     }
 
+    /// <summary>
+    /// Margin account information
+    /// </summary>
     public class MarginAccount
     {
 
 
         /// <summary>
-        /// AvailableBalance
+        /// Available balance
         /// </summary>
         [JsonProperty("availableBalance")]
         public decimal AvailableBalance { get; set; }
@@ -44,28 +48,28 @@ namespace Kucoin.NET.Data.Order.Margin
 
 
         /// <summary>
-        /// HoldBalance
+        /// Held balance
         /// </summary>
         [JsonProperty("holdBalance")]
         public decimal HoldBalance { get; set; }
 
 
         /// <summary>
-        /// Liability
+        /// Current liability
         /// </summary>
         [JsonProperty("liability")]
         public decimal Liability { get; set; }
 
 
         /// <summary>
-        /// MaxBorrowSize
+        /// Maximum borrow size
         /// </summary>
         [JsonProperty("maxBorrowSize")]
         public decimal MaxBorrowSize { get; set; }
 
 
         /// <summary>
-        /// TotalBalance
+        /// Total balance
         /// </summary>
         [JsonProperty("totalBalance")]
         public decimal TotalBalance { get; set; }

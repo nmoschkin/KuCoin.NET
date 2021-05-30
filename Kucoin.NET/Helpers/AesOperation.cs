@@ -6,8 +6,18 @@ using System.Security.Cryptography;
 
 namespace Kucoin.NET.Helpers
 {
+    /// <summary>
+    /// GUID-key based symmetric string encryption and decryption
+    /// </summary>
     public static class AesOperation
     {
+        /// <summary>
+        /// Encrypt a string with the given key
+        /// </summary>
+        /// <param name="key">The key</param>
+        /// <param name="plainText">The unencrypted text.</param>
+        /// <param name="rawData">Receive the raw encrypted data, in bytes.</param>
+        /// <returns>An encrypted, base-64 encoded text string.</returns>
         public static string EncryptString(Guid key, string plainText, out byte[] rawData)
         {
             byte[] iv = new byte[16];
@@ -38,6 +48,12 @@ namespace Kucoin.NET.Helpers
             return Convert.ToBase64String(array);
         }
 
+        /// <summary>
+        /// Decrypt a string using the given key
+        /// </summary>
+        /// <param name="key">The GUID key</param>
+        /// <param name="cipherText">The encrypted, base-64 encoded text string.</param>
+        /// <returns></returns>
         public static string DecryptString(Guid key, string cipherText)
         {
             byte[] iv = new byte[16];

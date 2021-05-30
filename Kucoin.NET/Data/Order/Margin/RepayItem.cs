@@ -10,20 +10,27 @@ using System.Text;
 
 namespace Kucoin.NET.Data.Order.Margin
 {
+    /// <summary>
+    /// Repay sequence types for auto-repay
+    /// </summary>
     [JsonConverter(typeof(EnumToStringConverter<RepaySequence>))]
     public enum RepaySequence
     {
+        /// <summary>
+        /// Repay soonest to expire first
+        /// </summary>
         [EnumMember(Value = "RECENTLY_EXPIRE_FIRST")]
         RecentlyExpiredFirst,
 
+        /// <summary>
+        /// Repay highest interest rate first
+        /// </summary>
         [EnumMember(Value = "HIGHEST_RATE_FIRST")]
         HighestRateFirst
     }
 
     public class RepayItem
     {
-
-
         /// <summary>
         /// TradeId
         /// </summary>
@@ -76,21 +83,21 @@ namespace Kucoin.NET.Data.Order.Margin
 
 
         /// <summary>
-        /// RepaidSize
+        /// Size repaid
         /// </summary>
         [JsonProperty("repaidSize")]
         public decimal RepaidSize { get; set; }
 
 
         /// <summary>
-        /// Term
+        /// Term (in days)
         /// </summary>
         [JsonProperty("term")]
         public long Term { get; set; }
 
 
         /// <summary>
-        /// InternalCreatedAt
+        /// Created at
         /// </summary>
         [JsonProperty("createdAt")]
         [JsonConverter(typeof(AutoTimeConverter), TimeTypes.InMilliseconds)]

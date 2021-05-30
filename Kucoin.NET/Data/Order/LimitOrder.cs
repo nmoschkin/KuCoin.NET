@@ -68,6 +68,9 @@ namespace Kucoin.NET.Data.Order
 
     }
 
+    /// <summary>
+    /// Limit order with stop order parameters
+    /// </summary>
     public class LimitStopOrder : LimitOrder
     {
         /// <summary>

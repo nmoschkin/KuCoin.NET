@@ -83,7 +83,7 @@ namespace Kucoin.NET.Data.Order
         public string Tags { get; set; }
 
         /// <summary>
-        ///  status before unfilled or uncancelled
+        ///  status before unfilled or uncanceled
         /// </summary>
         [JsonProperty("isActive")]
         public bool? IsActive { get; set; }

@@ -7,6 +7,9 @@ using Kucoin.NET.Data.Interfaces;
 
 namespace Kucoin.NET.Data.Order
 {
+    /// <summary>
+    /// Paginated order details
+    /// </summary>
     public class OrderDetailsPage : IPaginated<OrderDetails>
     {
         [JsonProperty("pageSize")]
@@ -26,6 +29,9 @@ namespace Kucoin.NET.Data.Order
 
     }
 
+    /// <summary>
+    /// Paginated order fills
+    /// </summary>
     public class FillPage : IPaginated<Fill>
     {
         [JsonProperty("pageSize")]

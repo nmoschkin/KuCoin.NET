@@ -11,39 +11,67 @@ using Newtonsoft.Json;
 
 namespace Kucoin.NET.Data.User
 {
-
+    /// <summary>
+    /// Business core parameters
+    /// </summary>
     public class LedgerContext
     {
+        /// <summary>
+        /// Order Id
+        /// </summary>
         [JsonProperty("orderId")]
         public string OrderId { get; set; }
 
+        /// <summary>
+        /// Symbol
+        /// </summary>
         [JsonProperty("symbol")]
         public string Symbol { get; set; }
 
+        /// <summary>
+        /// Trade Id
+        /// </summary>
         [JsonProperty("tradeId")]
         public string TradeId { get; set; }
 
+        /// <summary>
+        /// Transaction Id
+        /// </summary>
         [JsonProperty("txId")]
         public string TransactionId { get; set; }
 
         public LedgerContext()
         {
-
         }
     }
 
+    /// <summary>
+    /// Transaction direction
+    /// </summary>
     [JsonConverter(typeof(EnumToStringConverter<TransactionDirection>))]
     public enum TransactionDirection
     {
+        /// <summary>
+        /// Deposit / Receive
+        /// </summary>
         [EnumMember(Value = "in")]
         In,
 
+        /// <summary>
+        /// Withdrawal / Send
+        /// </summary>
         [EnumMember(Value = "out")]
         Out
     }
 
+    /// <summary>
+    /// Account ledger item (piece of account business)
+    /// </summary>
     public class AccountLedgerItem
     {
+        /// <summary>
+        /// The item Id
+        /// </summary>
         [JsonProperty("id")]
         public string Id { get; set; }
 
@@ -72,10 +100,10 @@ namespace Kucoin.NET.Data.User
         public decimal? Balance { get; set; }
 
         /// <summary>
-        /// business type
+        /// Business type
         /// </summary>
         [JsonProperty("bizType")]
-        public string BizType { get; set; }
+        public BizType? BizType { get; set; }
 
         /// <summary>
         /// side, in or out
@@ -97,6 +125,9 @@ namespace Kucoin.NET.Data.User
         public LedgerContext Context { get; set; }
 
 
+        /// <summary>
+        /// Time stamp of the business
+        /// </summary>
         [JsonIgnore]
         public DateTime Timestamp
         {

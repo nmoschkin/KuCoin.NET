@@ -14,6 +14,9 @@ using System.Text;
 namespace Kucoin.NET.Data.Websockets.User
 {
 
+    /// <summary>
+    /// Order change event type
+    /// </summary>
     [JsonConverter(typeof(EnumToStringConverter<OrderEventType>))]
     public enum OrderEventType
     {

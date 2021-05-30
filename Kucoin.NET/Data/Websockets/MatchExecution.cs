@@ -11,6 +11,9 @@ using System.Text;
 
 namespace Kucoin.NET.Data.Websockets
 {
+    /// <summary>
+    /// Level 3 match execution
+    /// </summary>
     public class MatchExecution : IReadOnlySymbol
     {
 
@@ -73,7 +76,7 @@ namespace Kucoin.NET.Data.Websockets
 
 
         /// <summary>
-        /// InternalOrderTime
+        /// Order time
         /// </summary>
         [JsonProperty("orderTime")]
         [JsonConverter(typeof(AutoTimeConverter), TimeTypes.InNanoseconds)]

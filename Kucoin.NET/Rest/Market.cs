@@ -31,15 +31,19 @@ namespace Kucoin.NET.Rest
 
         protected ObservableDictionary<string, MarketCurrency> currencies;
 
+        /// <summary>
+        /// Get a list of all currencies that appear on the right-hand side of a trading symbol.
+        /// </summary>
+        /// <returns></returns>
         public async Task<MarketCurrency[]> GetAllQuoteCurrencies()
         {
 
-            if (currencies == null)
+            if (currencies == null || currencies.Count == 0)
             {
                 await RefreshCurrenciesAsync();
             }
 
-            if (symbols == null)
+            if (symbols == null || symbols.Count == 0)
             {
                 await RefreshSymbolsAsync();
             }
@@ -68,6 +72,9 @@ namespace Kucoin.NET.Rest
             return distinct.Values.ToArray();
         }
 
+        /// <summary>
+        /// Gets the dictionary of currencies keyed on currency.
+        /// </summary>
         public ObservableDictionary<string, MarketCurrency> Currencies
         {
             get => currencies;
@@ -96,6 +103,9 @@ namespace Kucoin.NET.Rest
             }
         }
 
+        /// <summary>
+        /// Gets the all-symbols ticker.
+        /// </summary>
         public AllSymbolsTicker Tickers
         {
             get => tickers;
@@ -175,6 +185,10 @@ namespace Kucoin.NET.Rest
             return dict;
         }
 
+        /// <summary>
+        /// Refresh trading symbols
+        /// </summary>
+        /// <returns></returns>
         public async Task RefreshSymbolsAsync()
         {
 
@@ -266,30 +280,12 @@ namespace Kucoin.NET.Rest
             return jobj.ToObject<string[]>();
         }
 
-
-        public async Task<List<Trade>> GetPartList(string symbol, int pieces)
-        {
-            var curl = pieces > 0 ? string.Format("/api/v3/market/orderbook/level2_{0}", pieces) : "/api/v3/market/orderbook/level2";
-            var param = new Dictionary<string, object>();
-
-            param.Add("symbol", symbol);
-
-            var jobj = await MakeRequest(HttpMethod.Get, curl, 5, false, param);
-            return jobj.ToObject<List<Trade>>();
-        }
-
-        public Task<List<Trade>> GetAggregatedOrder(string symbol) => GetPartList(symbol, 0);
-
-        public async Task<Trade> GetAtomicOrder(string symbol)
-        {
-            var curl = string.Format("/api/v3/market/orderbook/level3?symbol={0}", symbol);
-
-            var jobj = await MakeRequest(HttpMethod.Get, curl, 5, false);
-            return jobj.ToObject<Trade>();
-
-        }
-
-        public async Task<List<TradeHistoryUnit>> GetTradeHistories(string symbol)
+        /// <summary>
+        /// Get recent trade histories for the specified symbol.
+        /// </summary>
+        /// <param name="symbol"></param>
+        /// <returns></returns>
+        public async Task<List<TradeHistoryItem>> GetTradeHistories(string symbol)
         {
             var curl = "/api/v1/market/histories";
             var param = new Dictionary<string, object>();
@@ -297,9 +293,17 @@ namespace Kucoin.NET.Rest
             param.Add("symbol", symbol);
 
             var jobj = await MakeRequest(HttpMethod.Get, curl, 5, false, param);
-            return jobj.ToObject<List<TradeHistoryUnit>>();
+            return jobj.ToObject<List<TradeHistoryItem>>();
         }
 
+        /// <summary>
+        /// Get the K-Line for the specified ticker symbol and the specified time range.
+        /// </summary>
+        /// <param name="symbol">The symbol</param>
+        /// <param name="type">The K-Line type (the length of time represented by a single candlestick)</param>
+        /// <param name="startTime">Start time</param>
+        /// <param name="endTime">End time</param>
+        /// <returns>A list of candlesticks</returns>
         public async Task<List<Candle>> GetKline(string symbol, KlineType type, DateTime? startTime = null, DateTime? endTime = null) 
         {
             return await GetKline<Candle, Candle, List<Candle>>(symbol, type, startTime, endTime);
@@ -307,21 +311,24 @@ namespace Kucoin.NET.Rest
 
 
         /// <summary>
-        /// Get the Kline for the specified ticker symbol.
+        /// Get a customized K-Line for the specified ticker symbol and the specified time range.
         /// </summary>
-        /// <param name="symbol"></param>
-        /// <param name="type"></param>
-        /// <param name="startTime"></param>
-        /// <param name="endTime"></param>
-        /// <returns></returns>
-        public async Task<V> GetKline<T, U, V>(
+        /// <typeparam name="TBaseCandle">The base type of the candle.</typeparam>
+        /// <typeparam name="TCandle">The sub-classed (usually user-provided) type of the candle.</typeparam>
+        /// <typeparam name="TCol">The type of the collection.</typeparam>
+        /// <param name="symbol">The symbol</param>
+        /// <param name="type">The K-Line type (the length of time represented by a single candlestick)</param>
+        /// <param name="startTime">Start time</param>
+        /// <param name="endTime">End time</param>
+        /// <returns>A list of candlesticks</returns>
+        public async Task<TCol> GetKline<TBaseCandle, TCandle, TCol>(
             string symbol, 
             KlineType type, 
             DateTime? startTime = null, 
             DateTime? endTime = null
             ) 
-            where T: IWriteableCandle, U, new() 
-            where V: IList<U>, new()
+            where TBaseCandle: IWritableCandle, TCandle, new() 
+            where TCol: IList<TCandle>, new()
         {
             var curl = "/api/v1/market/candles";
 
@@ -362,14 +369,14 @@ namespace Kucoin.NET.Rest
             var jobj = await MakeRequest(HttpMethod.Get, curl, 5, false, param);
             var klineRaw = jobj.ToObject<List<List<string>>>();
 
-            var results = new V();
+            var results = new TCol();
             klineRaw.Reverse();
 
             foreach (var values in klineRaw)
             {
-                var candle = new T();
+                var candle = new TBaseCandle();
                 
-                if (candle is IWriteableTypedCandle tc)
+                if (candle is IWritableTypedCandle tc)
                 {
                     tc.Type = type;
                 }

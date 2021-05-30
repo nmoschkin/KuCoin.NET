@@ -16,7 +16,11 @@ namespace Kucoin.NET.Data.Market
     /// <summary>
     /// Represents Level 3 Market Data
     /// </summary>
-    public class AtomicOrderBook<T> : ObservableBase, IOrderBook<T>, IOrderUnitList<T> where T: IAtomicOrderUnit
+    public class AtomicOrderBook<T> : 
+        ObservableBase, 
+        IOrderBook<T>, 
+        IOrderUnitList<T> 
+        where T: IAtomicOrderUnit
     {
         private DateTime time;
         private long seq;
@@ -25,6 +29,9 @@ namespace Kucoin.NET.Data.Market
 
         private ObservableAtomicOrderUnits<T> bids = new ObservableAtomicOrderUnits<T>(true);
 
+        /// <summary>
+        /// The current sequence number of the order book.
+        /// </summary>
         [JsonProperty("sequence")]
         public long Sequence
         {
@@ -35,6 +42,9 @@ namespace Kucoin.NET.Data.Market
             }
         }
 
+        /// <summary>
+        /// The current time stamp of the order book.
+        /// </summary>
         [JsonConverter(typeof(AutoTimeConverter), TimeTypes.InNanoseconds)]
         [JsonProperty("time")]
         public DateTime Timestamp
@@ -46,7 +56,9 @@ namespace Kucoin.NET.Data.Market
             }
         }
 
-
+        /// <summary>
+        /// The keyed list of asks (sell)
+        /// </summary>
         [JsonProperty("asks")]
         public ObservableAtomicOrderUnits<T> Asks
         {
@@ -57,6 +69,9 @@ namespace Kucoin.NET.Data.Market
             }
         }
 
+        /// <summary>
+        /// The keyed list of bids (buy)
+        /// </summary>
         [JsonProperty("bids")]
         public ObservableAtomicOrderUnits<T> Bids
         {
@@ -67,6 +82,8 @@ namespace Kucoin.NET.Data.Market
             }
         }
 
+        #region Explicit Interface Implementations
+
         SortedKeyedOrderUnitBase<T> IKeyedOrderUnitList<T>.Asks => asks;
 
         IList<T> IOrderUnitList<T>.Asks => asks;
@@ -74,5 +91,8 @@ namespace Kucoin.NET.Data.Market
         SortedKeyedOrderUnitBase<T> IKeyedOrderUnitList<T>.Bids => bids;
 
         IList<T> IOrderUnitList<T>.Bids => bids;
+
+        #endregion
+
     }
 }

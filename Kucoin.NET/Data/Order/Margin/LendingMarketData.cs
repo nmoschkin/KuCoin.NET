@@ -6,6 +6,9 @@ using System.Text;
 
 namespace Kucoin.NET.Data.Order.Margin
 {
+    /// <summary>
+    /// Lending market information
+    /// </summary>
     public class LendingMarketData
     {
 

@@ -4,23 +4,14 @@ using System.Text;
 using System.Reflection;
 using Kucoin.NET.Localization;
 using Newtonsoft.Json;
+using Kucoin.NET.Json;
 
 namespace Kucoin.NET.Data.User
 {
 
-    public class AccountTypeConverter : JsonConverter<AccountType>
-    {
-        public override AccountType ReadJson(JsonReader reader, Type objectType, AccountType existingValue, bool hasExistingValue, JsonSerializer serializer)
-        {
-            return (AccountType)(string)reader.Value?.ToString().ToLower();
-        }
-
-        public override void WriteJson(JsonWriter writer, AccountType value, JsonSerializer serializer)
-        {
-            writer.WriteValue((string)value);
-        }
-    }
-
+    /// <summary>
+    /// Account types
+    /// </summary>
     [JsonConverter(typeof(AccountTypeConverter))]
     public struct AccountType
     {
@@ -33,25 +24,57 @@ namespace Kucoin.NET.Data.User
             value = type;
         }
 
+        /// <summary>
+        /// Invalid account
+        /// </summary>
         public static readonly AccountType Invalid = new AccountType(null);
 
+        /// <summary>
+        /// Main account (deposits/withdrawals)
+        /// </summary>
         public static readonly AccountType Main = new AccountType("main");
         
+        /// <summary>
+        /// Trading account (spot)
+        /// </summary>
         public static readonly AccountType Trading = new AccountType("trade");
 
+        /// <summary>
+        /// Pool-X account
+        /// </summary>
         public static readonly AccountType PoolX = new AccountType("pool");
 
+        /// <summary>
+        /// Trading account (margin)
+        /// </summary>
         public static readonly AccountType Margin = new AccountType("margin");
 
+        /// <summary>
+        /// Futures account
+        /// </summary>
         public static readonly AccountType Futures = new AccountType("futures");
 
+        /// <summary>
+        /// Contract account
+        /// </summary>
         public static readonly AccountType Contract = new AccountType("contract");
 
+        /// <summary>
+        /// Parse the account type from the given string
+        /// </summary>
+        /// <param name="s">The string to parse</param>
+        /// <returns>An account type</returns>
         public static AccountType Parse(string s)
         {
             return (AccountType)s;
         }
 
+        /// <summary>
+        /// Try to parse the account type from the given string.
+        /// </summary>
+        /// <param name="s">The string to parse</param>
+        /// <param name="obj">The returned AccountType</param>
+        /// <returns>True if successful</returns>
         public static bool TryParse(string s, out AccountType obj)
         {
             try
@@ -68,6 +91,10 @@ namespace Kucoin.NET.Data.User
             
         }
 
+        /// <summary>
+        /// Returns a descriptive string for the account type
+        /// </summary>
+        /// <returns></returns>
         public override string ToString()
         {
             return AutoLocalizer.Localize("Account.Type", value);

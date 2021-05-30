@@ -6,6 +6,9 @@ using System.Text;
 
 namespace Kucoin.NET.Data.User
 {
+    /// <summary>
+    /// Sub-account balance information
+    /// </summary>
     public class SubAccountBalances
     {
 
@@ -25,27 +28,30 @@ namespace Kucoin.NET.Data.User
 
 
         /// <summary>
-        /// MainAccounts
+        /// Main accounts
         /// </summary>
         [JsonProperty("mainAccounts")]
         public List<SubAccountBalance> MainAccounts { get; set; }
 
 
         /// <summary>
-        /// TradeAccounts
+        /// Trading accounts
         /// </summary>
         [JsonProperty("tradeAccounts")]
         public List<SubAccountBalance> TradeAccounts { get; set; }
 
 
         /// <summary>
-        /// MarginAccounts
+        /// Margin accounts
         /// </summary>
         [JsonProperty("marginAccounts")]
         public List<SubAccountBalance> MarginAccounts { get; set; }
 
     }
 
+    /// <summary>
+    /// Individual sub-user account balance information
+    /// </summary>
     public class SubAccountBalance
     {
         /// <summary>

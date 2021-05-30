@@ -9,6 +9,9 @@ using System.Text;
 
 namespace Kucoin.NET.Data.Order.Margin
 {
+    /// <summary>
+    /// Margin trade info
+    /// </summary>
     public class MarginTradeData
     {
 
@@ -32,21 +35,21 @@ namespace Kucoin.NET.Data.Order.Margin
 
 
         /// <summary>
-        /// DailyIntRate
+        /// Daily interest rate
         /// </summary>
         [JsonProperty("dailyIntRate")]
         public decimal DailyInterestRate { get; set; }
 
 
         /// <summary>
-        /// Term
+        /// Term (in days)
         /// </summary>
         [JsonProperty("term")]
         public long Term { get; set; }
 
 
         /// <summary>
-        /// Timestamp 
+        /// Time stamp
         /// </summary>
         [JsonProperty("timestamp")]
         [JsonConverter(typeof(AutoTimeConverter), TimeTypes.InNanoseconds)]

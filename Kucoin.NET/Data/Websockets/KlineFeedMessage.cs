@@ -12,7 +12,11 @@ using Kucoin.NET.Json;
 
 namespace Kucoin.NET.Data.Websockets
 {
-    public class KlineFeedMessage<T> where T: IWriteableCandle, new()
+    /// <summary>
+    /// K-Line websocket feed data packet
+    /// </summary>
+    /// <typeparam name="T">An implementation of <see cref="IWritableCandle"/>.</typeparam>
+    public class KlineFeedMessage<T> where T: IWritableCandle, new()
     {
         [JsonProperty("time")]
         [JsonConverter(typeof(AutoTimeConverter), TimeTypes.InNanoseconds)]

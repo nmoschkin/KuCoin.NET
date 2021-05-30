@@ -10,6 +10,10 @@ using System.Text;
 
 namespace Kucoin.NET.Observable
 {
+    /// <summary>
+    /// Standard implementation of a keyed, observable collection for Level 3 atomic order units
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
     public class ObservableAtomicOrderUnits<T> : SortedKeyedOrderUnitBase<T>, INotifyCollectionChanged where T: IAtomicOrderUnit
     {
         public event NotifyCollectionChangedEventHandler CollectionChanged;

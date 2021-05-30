@@ -6,31 +6,34 @@ using System.Text;
 
 namespace Kucoin.NET.Data.Order.Margin
 {
+    /// <summary>
+    /// Margin configuration information
+    /// </summary>
     public class MarginConfiguration
     {
         /// <summary>
-        /// CurrencyList
+        /// List of currencies
         /// </summary>
         [JsonProperty("currencyList")]
         public List<string> CurrencyList { get; set; }
 
 
         /// <summary>
-        /// WarningDebtRatio
+        /// Warning debt ratio
         /// </summary>
         [JsonProperty("warningDebtRatio")]
         public decimal WarningDebtRatio { get; set; }
 
 
         /// <summary>
-        /// LiqDebtRatio
+        /// Liquidation debt ratio
         /// </summary>
         [JsonProperty("liqDebtRatio")]
         public decimal LiqDebtRatio { get; set; }
 
 
         /// <summary>
-        /// MaxLeverage
+        /// Max leverage
         /// </summary>
         [JsonProperty("maxLeverage")]
         public long MaxLeverage { get; set; }

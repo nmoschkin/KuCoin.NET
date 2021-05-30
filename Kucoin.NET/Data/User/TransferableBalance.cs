@@ -6,6 +6,9 @@ using System.Text;
 
 namespace Kucoin.NET.Data.User
 {
+    /// <summary>
+    /// Transferable balance information
+    /// </summary>
     public class TransferableBalance
     {
 

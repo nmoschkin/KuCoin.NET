@@ -8,7 +8,9 @@ using System.Text;
 
 namespace Kucoin.NET.Data.User
 {
-
+    /// <summary>
+    /// Deposit address base class
+    /// </summary>
     public class AddressBase : JsonDictBase
     {
         /// <summary>
@@ -33,10 +35,13 @@ namespace Kucoin.NET.Data.User
 
     }
 
+    /// <summary>
+    /// Deposit address information
+    /// </summary>
     public class DepositAddress : AddressBase
     {
         /// <summary>
-        /// ContractAddress
+        /// Contract Address
         /// </summary>
         [JsonProperty("contractAddress")]
         public string ContractAddress { get; set; }

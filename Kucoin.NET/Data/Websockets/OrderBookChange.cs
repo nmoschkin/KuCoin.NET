@@ -10,6 +10,9 @@ using System.Text;
 
 namespace Kucoin.NET.Data.Websockets
 {
+    /// <summary>
+    /// Order book change 
+    /// </summary>
     public class OrderBookChange
     {
 

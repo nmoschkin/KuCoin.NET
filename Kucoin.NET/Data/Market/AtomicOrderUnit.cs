@@ -13,10 +13,13 @@ namespace Kucoin.NET.Data.Market
 {
 
     /// <summary>
-    /// Represents Level 3 Orders
+    /// Represents a Level 3 order
     /// </summary>
     [JsonConverter(typeof(AtomicOrderUnitConverter))]
-    public class AtomicOrderUnit : ObservableBase, IAtomicOrderUnit, ICloneable
+    public class AtomicOrderUnit : 
+        ObservableBase, 
+        IAtomicOrderUnit, 
+        ICloneable
     {
         private decimal price;
         private decimal size;
@@ -77,7 +80,7 @@ namespace Kucoin.NET.Data.Market
         }
 
         /// <summary>
-        /// The date/time of the transaction.
+        /// The time stamp of the order.
         /// </summary>
         public DateTime Timestamp
         {
@@ -130,11 +133,21 @@ namespace Kucoin.NET.Data.Market
         }
 
 
+        /// <summary>
+        /// Creates a new, empty atomic order unit.
+        /// </summary>
         public AtomicOrderUnit()
         {
 
         }
 
+        /// <summary>
+        /// Create a new atomic order unit based on raw JSON-sourced input.
+        /// </summary>
+        /// <param name="values">The JSON sourced input.</param>
+        /// <remarks>
+        /// For internal use, only.
+        /// </remarks>
         internal AtomicOrderUnit(object[] values)
         {
             OrderId = (string)values[0];

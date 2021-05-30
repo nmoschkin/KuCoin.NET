@@ -6,6 +6,9 @@ using System.Text;
 
 namespace Kucoin.NET.Data.User
 {
+    /// <summary>
+    /// Withdrawal quota information
+    /// </summary>
     public class WithdrawalQuota
     {
 

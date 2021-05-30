@@ -10,6 +10,9 @@ using System.Text;
 
 namespace Kucoin.NET.Data.Websockets.User
 {
+    /// <summary>
+    /// Balance notice event information
+    /// </summary>
     public class BalanceNotice : ICloneable
     {
         /// <summary>

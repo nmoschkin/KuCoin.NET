@@ -6,10 +6,23 @@ using System.Text;
 namespace Kucoin.NET.Helpers
 {
 
+    /// <summary>
+    /// Time interval length interpretation types
+    /// </summary>
     public enum TimeTypes
     {
+        /// <summary>
+        /// Interpret seconds
+        /// </summary>
         InSeconds,
+        /// <summary>
+        /// Interpret milliseconds
+        /// </summary>
         InMilliseconds,
+
+        /// <summary>
+        /// Interpret nanoseconds
+        /// </summary>
         InNanoseconds
     }
 
