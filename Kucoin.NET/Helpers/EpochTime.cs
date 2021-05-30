@@ -33,7 +33,7 @@ namespace Kucoin.NET.Helpers
     {
 
         /// <summary>
-        /// The Unix epoch date (1970-01-01 00:00:00 UTC).
+        /// The Unix epoch date (1970-01-01 00:00:00.00000 UTC).
         /// </summary>
         public static readonly DateTime Epoch = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc);
 
