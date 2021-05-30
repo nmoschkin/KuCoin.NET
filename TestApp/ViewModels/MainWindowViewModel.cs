@@ -675,8 +675,7 @@ namespace KuCoinApp
 
                 if ((data?.Count ?? 0) == 0 || !Candle.IsTimeInCandle(LastCandle, ticker.Timestamp))
                 {
-                    _ = RefreshData();
-                    return;
+                    RefreshData().Wait();
                 }
 
                 kl = ((KlineCandle)data.LastOrDefault()) ?? new KlineCandle() { Timestamp = n, Type = this.KlineType };
