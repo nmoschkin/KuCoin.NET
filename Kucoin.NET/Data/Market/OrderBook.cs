@@ -9,6 +9,7 @@ using Kucoin.NET.Rest;
 using Kucoin.NET.Helpers;
 using Kucoin.NET.Data.Interfaces;
 using Kucoin.NET.Json;
+using Kucoin.NET.Data.Order;
 
 namespace Kucoin.NET.Data.Market
 {
@@ -32,9 +33,9 @@ namespace Kucoin.NET.Data.Market
             }
         }
 
-        KeyedCollection<decimal, T> IKeyedOrderUnitList<T>.Asks => asks;
+        SortedKeyedOrderUnitBase<T> IKeyedOrderUnitList<T>.Asks => asks;
 
-        KeyedCollection<decimal, T> IKeyedOrderUnitList<T>.Bids => bids;
+        SortedKeyedOrderUnitBase<T> IKeyedOrderUnitList<T>.Bids => bids;
 
         [JsonProperty("asks")]
         public ObservableOrderUnits<T> Asks

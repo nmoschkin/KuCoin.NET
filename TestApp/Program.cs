@@ -14,6 +14,7 @@ using Kucoin.NET.Observable;
 using System.Windows;
 using System.Text;
 using System.Reflection;
+using Kucoin.NET.Futures.Websockets;
 
 namespace KuCoinApp
 {
@@ -151,6 +152,7 @@ namespace KuCoinApp
             var fmarket = new Kucoin.NET.Futures.Rest.FuturesMarket();
 
             var futures = await fmarket.GetOpenContractList();
+            string fsym = null;
 
             foreach (var contract in futures)
             {
@@ -159,12 +161,20 @@ namespace KuCoinApp
 
                 if (contract.Symbol.Contains("ETH") || contract.Symbol.Contains("XLM"))
                 {
+                    if (contract.Symbol.Contains("ETH") && fsym == null) fsym = contract.Symbol;
+
                     var fticker = await fmarket.GetTicker(contract.Symbol);
                     Console.WriteLine($"Current Price: {fticker.Price}");
                     Console.WriteLine($"Price Time: {fticker.Timestamp}");
                 }
 
             }
+
+
+            var fl2 = new FuturesLevel2(cred.AttachedAccount);
+
+            var orders = await fl2.GetAggregatedOrder(fsym);
+
 
             //return;
 
@@ -398,6 +408,8 @@ namespace KuCoinApp
                 try
                 {
                     ticker = await market.GetTicker((string)sym);
+                    if (ticker == null) return;
+
                     Console.WriteLine("Current Price: " + string.Format("${0:#,##0.00########}", ticker.Price));
                     fiatval = acct.Balance * ticker.Price;
                 }

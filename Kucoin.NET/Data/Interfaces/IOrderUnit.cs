@@ -1,4 +1,5 @@
 ﻿using Kucoin.NET.Data.Market;
+using Kucoin.NET.Data.Order;
 
 using System;
 using System.Collections.Generic;
@@ -46,9 +47,9 @@ namespace Kucoin.NET.Data.Interfaces
 
     public interface IKeyedOrderUnitList<T> where T: IOrderUnit
     {
-        KeyedCollection<decimal, T> Asks { get; }
+        SortedKeyedOrderUnitBase<T> Asks { get; }
 
-        KeyedCollection<decimal, T> Bids { get; }
+        SortedKeyedOrderUnitBase<T> Bids { get; }
 
     }
 

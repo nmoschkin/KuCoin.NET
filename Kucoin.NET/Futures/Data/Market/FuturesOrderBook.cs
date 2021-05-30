@@ -11,9 +11,8 @@ using System.Text;
 
 namespace Kucoin.NET.Futures.Data.Market
 {
-    public class FuturesOrderBook<T> : OrderBook<T> where T: IOrderUnit
+    public class FuturesOrderBook : OrderBook<OrderUnit>
     {
-
 
         [JsonProperty("ts")]
         [JsonConverter(typeof(AutoTimeConverter), TimeTypes.InNanoseconds)]

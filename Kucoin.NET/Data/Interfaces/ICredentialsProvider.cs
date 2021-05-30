@@ -42,5 +42,7 @@ namespace Kucoin.NET.Data.Interfaces
         /// <returns></returns>
         bool GetFutures();
 
+        ICredentialsProvider AttachedAccount { get; }
+
     }
 }

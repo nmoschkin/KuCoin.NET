@@ -1,5 +1,6 @@
 ﻿using Kucoin.NET.Data.Interfaces;
 using Kucoin.NET.Data.Market;
+using Kucoin.NET.Data.Order;
 
 using System;
 using System.Collections.Generic;
@@ -9,15 +10,9 @@ using System.Text;
 
 namespace Kucoin.NET.Observable
 {
-    public class ObservableAtomicOrderUnits<T> : KeyedCollection<decimal, T>, INotifyCollectionChanged where T: IAtomicOrderUnit
+    public class ObservableAtomicOrderUnits<T> : SortedKeyedOrderUnitBase<T>, INotifyCollectionChanged where T: IAtomicOrderUnit
     {
         public event NotifyCollectionChangedEventHandler CollectionChanged;
-
-        private object lockObj = new object();
-
-        protected override decimal GetKeyForItem(T item) => item.Price;
-
-        bool descending;
 
         public ObservableAtomicOrderUnits() : this(false)
         {
@@ -26,89 +21,6 @@ namespace Kucoin.NET.Observable
         public ObservableAtomicOrderUnits(bool descending) : base()
         {
             this.descending = descending;
-        }
-
-        int GetInsertIndex(T unit)
-        {
-            if (Count == 0) return 0;
-
-            int hi = Count - 1;
-            int lo = 0;
-            int mid;
-
-            var l = this as IList<T>;
-            var uprice = unit.Price;
-            decimal cprice;
-
-            if (!descending)
-            {
-                while (true)
-                {
-                    if (hi < lo)
-                    {
-                        return lo;
-                    }
-
-                    mid = (hi + lo) / 2;
-                    cprice = l[mid].Price;
-
-                    if (uprice > cprice)
-                    {
-                        lo = mid + 1;
-                    }
-                    else if (uprice < cprice)
-                    {
-                        hi = mid - 1;
-                    }
-                    else
-                    {
-                        return mid;
-                    }
-                }
-            }
-            else
-            {
-                while (true)
-                {
-                    if (hi < lo)
-                    {
-                        return lo;
-                    }
-
-                    mid = (hi + lo) / 2;
-                    cprice = l[mid].Price;
-
-                    if (uprice < cprice)
-                    {
-                        lo = mid + 1;
-                    }
-                    else if (uprice > cprice)
-                    {
-                        hi = mid - 1;
-                    }
-                    else
-                    {
-                        return mid;
-                    }
-
-                }
-
-            }
-
-        }
-
-        public T[] ToArray()
-        {
-
-            if (Count == 0) return new T[0];
-            T[] output = new T[Count];
-
-            lock (lockObj)
-            {
-                CopyTo(output, 0);
-            }
-
-            return output;
         }
 
         protected override void ClearItems()

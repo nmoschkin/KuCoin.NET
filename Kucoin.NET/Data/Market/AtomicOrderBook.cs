@@ -1,4 +1,5 @@
 ﻿using Kucoin.NET.Data.Interfaces;
+using Kucoin.NET.Data.Order;
 using Kucoin.NET.Helpers;
 using Kucoin.NET.Json;
 using Kucoin.NET.Observable;
@@ -66,11 +67,11 @@ namespace Kucoin.NET.Data.Market
             }
         }
 
-        KeyedCollection<decimal, T> IKeyedOrderUnitList<T>.Asks => asks;
+        SortedKeyedOrderUnitBase<T> IKeyedOrderUnitList<T>.Asks => asks;
 
         IList<T> IOrderUnitList<T>.Asks => asks;
 
-        KeyedCollection<decimal, T> IKeyedOrderUnitList<T>.Bids => bids;
+        SortedKeyedOrderUnitBase<T> IKeyedOrderUnitList<T>.Bids => bids;
 
         IList<T> IOrderUnitList<T>.Bids => bids;
     }

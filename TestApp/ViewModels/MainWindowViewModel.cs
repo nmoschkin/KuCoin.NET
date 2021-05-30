@@ -22,82 +22,95 @@ using System.Linq.Expressions;
 using FancyCandles;
 using KuCoinApp.Localization.Resources;
 using System.Windows.Threading;
+using Kucoin.NET.Futures.Websockets;
+using KuCoinApp.ViewModels;
+using Kucoin.NET.Futures.Data.Market;
 
 namespace KuCoinApp
 {
 
-    public class MainWindowViewModel : ObservableBase, IObserver<Ticker>, IObserver<KlineFeedMessage<KlineCandle>>
+    public class MainWindowViewModel : WindowViewModelBase, IObserver<Ticker>, IObserver<KlineFeedMessage<KlineCandle>>
     {
-        private Level2 level2Feed;
+        protected Level2 level2Feed;
 
-        private Accounts accountWnd;
+        protected FuturesLevel2 futuresl2;
 
-        //private Level2Depth50 level2Feed50;
+        protected Accounts accountWnd;
 
-        private TickerFeed tickerFeed;
+        //protected Level2Depth50 level2Feed50;
 
-        private KlineFeed<KlineCandle> klineFeed;
+        protected TickerFeed tickerFeed;
 
-        private IDisposable tickerSubscription;
+        protected KlineFeed<KlineCandle> klineFeed;
 
-        private IDisposable klineSubscription;
+        protected IDisposable tickerSubscription;
 
-        private Credentials credWnd;
+        protected IDisposable klineSubscription;
 
-        private CryptoCredentials cred;
+        protected Credentials credWnd;
 
-        private IntRange lastRange;
+        protected IntRange lastRange;
 
-        private bool isCredWndShowing;
+        protected bool isCredWndShowing;
 
-        private Market market;
+        protected Market market;
 
-        private User user;
+        protected User user;
 
-        private bool isLoggedIn;
+        protected bool isLoggedIn;
 
-        private ObservableCollection<Account> accounts;
+        protected ObservableCollection<Account> accounts;
 
-        private ObservableDictionary<string, TradingSymbol> symbols;
+        protected ObservableDictionary<string, TradingSymbol> symbols;
 
-        private TradingSymbol symbol;
+        protected TradingSymbol symbol;
 
-        private KlineType kt = KlineType.Min1;
+        protected KlineType kt = KlineType.Min1;
 
         KlineCandle lastCandle = new KlineCandle(new Candle() { Timestamp = DateTime.Now, Type = KlineType.Min1 });
 
-        private Ticker nowTicker = null;
-        
-        private decimal? nowPrice = null;
+        protected Ticker nowTicker = null;
 
-        private decimal? volume = null;
+        protected decimal? nowPrice = null;
 
-        private DateTime? volumeTime = null;
+        protected decimal? volume = null;
 
-        private CurrencyViewModel currency, quoteCurrency;
+        protected DateTime? volumeTime = null;
 
-        private ObservableCollection<FancyCandles.ICandle> data = new ObservableCollection<FancyCandles.ICandle>();
+        protected CurrencyViewModel currency, quoteCurrency;
 
-        private ObservableCollection<CurrencyViewModel> currencies = new ObservableCollection<CurrencyViewModel>();
+        protected ObservableCollection<FancyCandles.ICandle> data = new ObservableCollection<FancyCandles.ICandle>();
 
-        private ILevel2OrderBookProvider level2;
+        protected ObservableCollection<CurrencyViewModel> currencies = new ObservableCollection<CurrencyViewModel>();
 
-        private ObservableStaticMarketDepthUpdate marketUpdate;
+        protected ILevel2OrderBookProvider level2;
 
-        private string priceFormat = "0.00";
+        protected ILevel2OrderBookProvider<FuturesOrderBook, OrderUnit, FuturesChangeFeedItem> futureslevel2;
 
-        private string sizeFormat = "0.00";
 
-        public event EventHandler AskQuit;
+        protected ObservableStaticMarketDepthUpdate marketUpdate;
 
-        public ICommand QuitCommand { get; private set; }
+        protected string priceFormat = "0.00";
 
-        public ICommand RefreshSymbolsCommand { get; private set; }
-        public ICommand RefreshKlineCommand { get; private set; }
-        public ICommand RefreshPriceCommand { get; private set; }
-        public ICommand EditCredentialsCommand { get; private set; }
+        protected string sizeFormat = "0.00";
 
-        public ICommand ShowAccountsCommand { get; private set; }
+        public override event EventHandler AskQuit;
+
+        public ILevel2OrderBookProvider<FuturesOrderBook, OrderUnit, FuturesChangeFeedItem> FuturesLevel2
+        {
+            get => futureslevel2;
+            protected set
+            {
+                SetProperty(ref futureslevel2, value);
+            }
+        }
+
+        public ICommand RefreshSymbolsCommand { get; protected set; }
+        public ICommand RefreshKlineCommand { get; protected set; }
+        public ICommand RefreshPriceCommand { get; protected set; }
+        public ICommand EditCredentialsCommand { get; protected set; }
+
+        public ICommand ShowAccountsCommand { get; protected set; }
 
         public ObservableStaticMarketDepthUpdate MarketUpdate
         {
@@ -123,7 +136,7 @@ namespace KuCoinApp
         public bool IsCredShowing
         {
             get => isCredWndShowing;
-            private set
+            protected set
             {
                 SetProperty(ref isCredWndShowing, value);
             }
@@ -160,7 +173,7 @@ namespace KuCoinApp
         public User User
         {
             get => user;
-            private set
+            protected set
             {
                 SetProperty(ref user, value);
             }
@@ -352,7 +365,7 @@ namespace KuCoinApp
             }
         }
 
-        private void MakeFormats(string symbol)
+        protected void MakeFormats(string symbol)
         {
             var sym = market.Symbols[symbol];
             var inc = "0" + sym.QuoteIncrement.ToString().Replace("1", "0");
@@ -366,7 +379,7 @@ namespace KuCoinApp
 
      
 
-        private void UpdateSymbol(
+        protected void UpdateSymbol(
             string oldSymbol, 
             string newSymbol, 
             bool force = false, 
@@ -399,7 +412,23 @@ namespace KuCoinApp
                             {
                                 Level2.Dispose();
                             }
-                            
+
+                            //if (cred.AttachedAccount != null && (futuresl2 == null || futuresl2.Connected == false))
+                            //{
+                            //    futuresl2 = new FuturesLevel2(cred.AttachedAccount);
+                            //    await level2Feed.Connect();
+                            //}
+
+                            //var fsym = newSymbol.Replace("-", "") + "M";
+                            //await futuresl2.AddSymbol(fsym, 50).ContinueWith((t) =>
+                            //{
+                            //    App.Current?.Dispatcher?.Invoke(() =>
+                            //    {
+                            //        FuturesLevel2 = t.Result;
+                            //    });
+
+                            //});
+
                             if (level2Feed == null || level2Feed.Connected == false)
                             {
                                 level2Feed = new Level2(cred);
@@ -438,6 +467,23 @@ namespace KuCoinApp
                         });
 
                     });
+
+                    //if (cred.AttachedAccount != null && (futuresl2 == null || futuresl2.Connected == false))
+                    //{
+                    //    futuresl2 = new FuturesLevel2(cred.AttachedAccount);
+                    //    await level2Feed.Connect();
+                    //}
+
+                    //var fsym = newSymbol.Replace("-", "") + "M";
+                    //await futuresl2.AddSymbol(fsym, 50).ContinueWith((t) =>
+                    //{
+                    //    App.Current?.Dispatcher?.Invoke(() =>
+                    //    {
+                    //        FuturesLevel2 = t.Result;
+                    //    });
+
+                    //});
+
 
                     await tickerFeed.AddSymbol(newSymbol);
                     await klineFeed.AddSymbol(newSymbol, KlineType);
@@ -808,7 +854,7 @@ namespace KuCoinApp
             });
         }
 
-        private void AccountWnd_Closed(object sender, EventArgs e)
+        protected void AccountWnd_Closed(object sender, EventArgs e)
         {
             accountWnd.Closed -= AccountWnd_Closed;
             accountWnd = null;
@@ -816,8 +862,10 @@ namespace KuCoinApp
             GC.Collect(0);
         }
 
-        protected async Task Initialize()
+        protected override async Task Initialize()
         {
+            if (market == null) market = new Market();
+
             await market.RefreshSymbolsAsync().ContinueWith(async (t) =>
             {
                 await market.RefreshCurrenciesAsync();
@@ -858,21 +906,27 @@ namespace KuCoinApp
                         level2Feed = new Level2(cred);
                         level2Feed.UpdateInterval = 50;
 
+                        //if (cred.AttachedAccount != null)
+                        //{
+                        //    futuresl2 = new FuturesLevel2(cred.AttachedAccount);
+                        //    futuresl2.UpdateInterval = 50;
+                        //}
+
                         if (!cred.Sandbox)
                         {
 
                             // connection sharing / multiplexing
 
                             // you can attach a public client feed
-                            // to a private host feed, but not vice-versa.
-                            // the private feed needs credentials, 
+                            // to a protected host feed, but not vice-versa.
+                            // the protected feed needs credentials, 
                             // and the public feed does not include them.
 
                             // we connect level2Feed.
                             
                             // give its own socket because of the speed of data.
                             await level2Feed.Connect();
-
+                            await futuresl2.Connect();
 
                             // we attach tickerFeed and klineFeed 
                             // by calling MultiplexInit with the host feed.
@@ -929,7 +983,7 @@ namespace KuCoinApp
                             // Bring up the testing console.
 
                             // Uncomment to use.
-                            // _ = Program.TestMain(cred);
+                             _ = Program.TestMain(cred);
 
                             // Note, closing the testing console once it is open will close the program.
 
@@ -955,7 +1009,7 @@ namespace KuCoinApp
             catch { }
         }
 
-        private void Settings_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
+        protected void Settings_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
         {
             if (e.PropertyName == nameof(Settings.Symbols))
             {

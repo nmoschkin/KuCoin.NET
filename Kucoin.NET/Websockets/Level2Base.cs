@@ -35,7 +35,7 @@ namespace Kucoin.NET.Websockets
         /// <summary>
         /// Event that gets fired when the feed for a symbol has been calibrated and is ready to be used.
         /// </summary>
-        public virtual event EventHandler<SymbolCalibratedEventArgs<TBook, TUnit, TUpdate>> SymbolCalibrated;
+        public abstract event EventHandler<SymbolCalibratedEventArgs<TBook, TUnit, TUpdate>> SymbolCalibrated;
 
         /// <summary>
         /// Create a new Level 2 feed with the specified credentials.
@@ -52,8 +52,9 @@ namespace Kucoin.NET.Websockets
             string key,
             string secret,
             string passphrase,
-            bool isSandbox = false)
-            : base(key, secret, passphrase, isSandbox)
+            bool isSandbox = false,
+            bool futures = false)
+            : base(key, secret, passphrase, isSandbox, futures: futures)
         {
             if (!Dispatcher.Initialized)
             {
@@ -69,7 +70,7 @@ namespace Kucoin.NET.Websockets
         /// You must either create this instance on the main / UI thread or call <see cref="Dispatcher.Initialize"/> prior to 
         /// creating an instance of this class or an <see cref="InvalidOperationException"/> will be raised.
         /// </remarks>
-        public Level2Base(ICredentialsProvider credProvider) : base(credProvider)
+        public Level2Base(ICredentialsProvider credProvider, bool futures = false) : base(credProvider, futures: futures)
         {
             if (!Dispatcher.Initialized)
             {
@@ -91,6 +92,7 @@ namespace Kucoin.NET.Websockets
                 SetProperty(ref updateInterval, value);
             }
         }
+
 
         protected abstract TObservation CreateNewObserver(string symbol, int pieces = 50);
 

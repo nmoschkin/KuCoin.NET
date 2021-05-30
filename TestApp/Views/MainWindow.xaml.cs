@@ -1,5 +1,7 @@
 ﻿using Kucoin.NET.Data.Market;
 
+using KuCoinApp.ViewModels;
+
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -22,22 +24,30 @@ namespace KuCoinApp
     /// </summary>
     public partial class MainWindow : Window
     {
-        MainWindowViewModel vm;
+        WindowViewModelBase vm;
         bool init = false;
 
-        public MainWindow()
+
+        public MainWindow(WindowViewModelBase vm)
         {
             InitializeComponent();
 
-            DataContext = vm = new MainWindowViewModel();
+            DataContext = this.vm = vm;
+            this.vm.AskQuit += Vm_AskQuit;
 
-            vm.AskQuit += Vm_AskQuit;
             this.SizeChanged += MainWindow_SizeChanged;
             this.LocationChanged += MainWindow_LocationChanged;
             this.Loaded += MainWindow_Loaded;
             this.Activated += MainWindow_Activated;
+            
             App.Current.Settings.ApplyWindowSettings(this);
+
             init = true;
+        }
+
+        public MainWindow() : this(new MainWindowViewModel())
+        {
+
         }
 
         private void Vm_AskQuit(object sender, EventArgs e)
@@ -47,7 +57,8 @@ namespace KuCoinApp
 
         private void MainWindow_Activated(object sender, EventArgs e)
         {
-            vm.FocusCredWindow();
+            if (vm is MainWindowViewModel mb)
+                mb.FocusCredWindow();
         }
 
         private void MainWindow_Loaded(object sender, RoutedEventArgs e)

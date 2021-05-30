@@ -363,8 +363,8 @@
                 Margin="8"
                 HorizontalAlignment="Center"
                 VerticalAlignment="Stretch"
-                Command="{Binding RefreshSymbolsCommand}"
-                Content="{i18n:Translate ResourceKey=RefreshSymbols}"
+                Command="{Binding FuturesCommand}"
+                Content="{i18n:Translate ResourceKey=Futures}"
                 FontSize="12"
                 IsDefault="True">
                 <Button.Resources>
