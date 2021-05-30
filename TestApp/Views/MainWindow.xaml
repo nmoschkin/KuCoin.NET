@@ -261,7 +261,10 @@
                     Source="{Binding QuoteCurrency.Image}" />
 
 
-                <Grid Grid.Row="1" Grid.Column="2">
+                <Grid
+                    Grid.Row="1"
+                    Grid.Column="2"
+                    Grid.ColumnSpan="2">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition />
                     </Grid.ColumnDefinitions>
@@ -271,7 +274,7 @@
                         VerticalAlignment="Center"
                         FontFamily="Calibri"
                         FontSize="10"
-                        Text="{Binding MarketUpdate.Timestamp, StringFormat='{}{0:MMM dd, yyyy a\\t h:mm:ss tt}'}" />
+                        Text="{Binding Level2.OrderBook.Timestamp, StringFormat='{}{0:MMM dd, yyyy a\\t h:mm:ss tt}'}" />
                 </Grid>
 
 

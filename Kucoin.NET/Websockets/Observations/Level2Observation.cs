@@ -168,6 +168,7 @@ namespace Kucoin.NET.Websockets.Observations
                     SequencePieces(value.Changes.Bids, fullDepth.Bids);
 
                     fullDepth.Sequence = value.SequenceEnd;
+                    fullDepth.Timestamp = DateTime.Now;
                 }
                 catch (Exception ex)
                 {
@@ -249,7 +250,7 @@ namespace Kucoin.NET.Websockets.Observations
                     Dispatcher.InvokeOnMainThread((o) =>
                     {
                         orderBook.Sequence = fullDepth.Sequence;
-                        orderBook.Timestamp = DateTime.Now;
+                        orderBook.Timestamp = fullDepth.Timestamp;
 
                         CopyBook();
                     });
@@ -257,7 +258,7 @@ namespace Kucoin.NET.Websockets.Observations
                 else
                 {
                     orderBook.Sequence = fullDepth.Sequence;
-                    orderBook.Timestamp = DateTime.Now;
+                    orderBook.Timestamp = fullDepth.Timestamp;
 
                     CopyBook();
                 }
