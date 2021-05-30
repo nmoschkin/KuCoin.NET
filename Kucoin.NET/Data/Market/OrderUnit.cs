@@ -58,7 +58,7 @@ namespace Kucoin.NET.Data.Market
         }
 
         /// <summary>
-        /// The size in base currency of the ask or bid.
+        /// The size of the ask or bid.
         /// </summary>
         public decimal Size
         {
