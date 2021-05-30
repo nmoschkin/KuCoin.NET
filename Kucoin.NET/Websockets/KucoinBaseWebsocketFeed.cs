@@ -710,10 +710,10 @@ namespace Kucoin.NET.Websockets
             // loop forever
             while (!ctsReceive.IsCancellationRequested && socket?.State == WebSocketState.Open)
             {
-                await Task.Delay(10);
-
                 if (msgQueue.Count == 0)
                 {
+                    // nothing in the queue, give up some time-slices.
+                    await Task.Delay(10);
                     continue;
                 }
 
