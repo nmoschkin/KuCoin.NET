@@ -10,7 +10,7 @@ namespace Kucoin.NET.Data.Market
 {
 
     /// <summary>
-    /// Level 2 Ask or Bid Order Unit
+    /// Level 2 Ask or Bid
     /// </summary>
 
     [JsonConverter(typeof(OrderUnitConverter))]
