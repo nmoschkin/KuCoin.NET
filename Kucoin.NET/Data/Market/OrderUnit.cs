@@ -14,7 +14,7 @@ namespace Kucoin.NET.Data.Market
     /// </summary>
 
     [JsonConverter(typeof(OrderUnitConverter))]
-    public class OrderUnit : ObservableBase, ICloneable, IOrderUnit
+    public class OrderUnit : ObservableBase, ICloneable, ISequencedOrderUnit
     {
         private decimal price;
         private decimal size;
