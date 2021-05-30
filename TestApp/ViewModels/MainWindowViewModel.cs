@@ -983,7 +983,7 @@ namespace KuCoinApp
                             // Bring up the testing console.
 
                             // Uncomment to use.
-                             _ = Program.TestMain(cred);
+                            // _ = Program.TestMain(cred);
 
                             // Note, closing the testing console once it is open will close the program.
 
