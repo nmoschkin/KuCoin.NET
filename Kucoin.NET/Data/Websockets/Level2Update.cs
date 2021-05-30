@@ -41,7 +41,7 @@ namespace Kucoin.NET.Data.Websockets
     /// <summary>
     /// Level 2 Full Market Depth Data Update
     /// </summary>
-    public class Level2Update : ISymbol
+    public class Level2Update : ISymbol, IOrderUnitListProvider<IOrderUnit>
     {
         void ISymbol.SetSymbol(string symbol)
         {
@@ -72,5 +72,10 @@ namespace Kucoin.NET.Data.Websockets
         [JsonProperty("changes")]
         public Changes Changes { get; set; }
 
+        IOrderUnitList<IOrderUnit> IOrderUnitListProvider<IOrderUnit>.OrderList
+        {
+            get => Changes;
+            set => Changes = (Changes)value;
+        }
     }
 }

@@ -38,6 +38,11 @@ namespace Kucoin.NET.Data.Interfaces
         IList<T> Bids { get; }
     }
 
+    public interface IOrderUnitListProvider<T> where T : IOrderUnit
+    {
+        IOrderUnitList<T> OrderList { get; set; }
+    }
+
 
     public interface IKeyedOrderUnitList<T> where T: IOrderUnit
     {

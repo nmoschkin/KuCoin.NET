@@ -19,27 +19,19 @@ using System.Runtime.InteropServices;
 namespace Kucoin.NET.Websockets.Observations
 {
 
-    public class OrderBookUpdatedEventArgs<TBook, TUnit> : EventArgs
-        where TBook : IOrderBook<TUnit>
-        where TUnit : IOrderUnit
-    {
-
-        public string Symbol { get; private set; }
-
-        public TBook OrderBook { get; private set; }
-
-        public OrderBookUpdatedEventArgs(string symbol, TBook book)
-        {
-            Symbol = symbol;
-            OrderBook = book;
-        }
-
-    }
-
+    /// <summary>
+    /// Standard level 2 order book provider interface.
+    /// </summary>
     public interface ILevel2OrderBookProvider : ILevel2OrderBookProvider<OrderBook<OrderUnit>, OrderUnit, Level2Update>
     {
     }
 
+    /// <summary>
+    /// Level 2 order book provider interface.
+    /// </summary>
+    /// <typeparam name="TBook">The type of order book (must implement <see cref="IOrderBook{T}"/> of <see cref="TUnit"/>.)</typeparam>
+    /// <typeparam name="TUnit">The type of the order unit (must implement <see cref="IOrderUnit"/>.)</typeparam>
+    /// <typeparam name="TUpdate">The type of the update object pushed with <see cref="IObserver{T}.OnNext(T)"/>.</typeparam>
     public interface ILevel2OrderBookProvider<TBook, TUnit, TUpdate> :
         INotifyPropertyChanged,
         IDisposable,
@@ -47,6 +39,7 @@ namespace Kucoin.NET.Websockets.Observations
         IObserver<TUpdate>
         where TBook : IOrderBook<TUnit>
         where TUnit : IOrderUnit
+        where TUpdate : new()
     {
         event EventHandler<OrderBookUpdatedEventArgs<TBook, TUnit>> OrderBookUpdated;
 

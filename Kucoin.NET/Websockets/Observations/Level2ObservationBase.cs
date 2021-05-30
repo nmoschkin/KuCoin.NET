@@ -28,9 +28,12 @@ namespace Kucoin.NET.Websockets.Observations
     /// <remarks>
     /// Observations link <see cref="IObservable{T}"/> to <see cref="IObserver{T}"/>.
     /// </remarks>
-    public abstract class Level2ObservationBase<TBook, TUnit, TUpdate> : ObservableBase, ILevel2OrderBookProvider<TBook, TUnit, TUpdate>
+    public abstract class Level2ObservationBase<TBook, TUnit, TUpdate> : 
+        ObservableBase, 
+        ILevel2OrderBookProvider<TBook, TUnit, TUpdate>
         where TBook: IOrderBook<TUnit>, new()
         where TUnit: IOrderUnit, new()
+        where TUpdate : new()
     {
         public virtual event EventHandler<OrderBookUpdatedEventArgs<TBook, TUnit>> OrderBookUpdated;
 
@@ -96,13 +99,13 @@ namespace Kucoin.NET.Websockets.Observations
         /// <summary>
         /// Gets the parent feed.
         /// </summary>
-        public virtual KucoinBaseWebsocketFeed ConnectedFeed => !disposed ? connectedFeed : throw new ObjectDisposedException(nameof(Level2Observation<TBook, TUnit>));
+        public virtual KucoinBaseWebsocketFeed ConnectedFeed => !disposed ? connectedFeed : throw new ObjectDisposedException(nameof(Level2Observation));
 
 
         /// <summary>
         /// Gets the trading symbol that is being observed.
         /// </summary>        
-        public string Symbol => !disposed ? symbol : throw new ObjectDisposedException(nameof(Level2Observation<TBook, TUnit>));
+        public string Symbol => !disposed ? symbol : throw new ObjectDisposedException(nameof(Level2Observation));
 
 
         void ISymbol.SetSymbol(string symbol)
@@ -115,7 +118,7 @@ namespace Kucoin.NET.Websockets.Observations
         /// </summary>
         public virtual int Pieces
         {
-            get => !disposed ? pieces : throw new ObjectDisposedException(nameof(Level2Observation<TBook, TUnit>));
+            get => !disposed ? pieces : throw new ObjectDisposedException(nameof(Level2Observation));
             set
             {
                 SetProperty(ref pieces, value);

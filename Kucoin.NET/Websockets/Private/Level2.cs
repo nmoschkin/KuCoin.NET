@@ -17,25 +17,10 @@ using Kucoin.NET.Helpers;
 namespace Kucoin.NET.Websockets.Private
 {
     /// <summary>
-    /// Calibrated Level 2 Market Feed
+    /// Standard Level 2 feed implementation with observables and UI data binding support.
     /// </summary>
-    public class Level2<TBook, TUnit> : 
-        KucoinBaseWebsocketFeed
-        where TBook : IOrderBook<TUnit>, new()
-        where TUnit : IOrderUnit, new()
+    public class Level2 : Level2Base<OrderBook<OrderUnit>, OrderUnit, Level2Update, Level2Observation>
     {
-
-        internal readonly Dictionary<string, Level2Observation<TBook, TUnit>> activeFeeds = new Dictionary<string, Level2Observation<TBook, TUnit>>();
-
-        protected int updateInterval = 500;
-
-        public override bool IsPublic => false;
-
-        /// <summary>
-        /// Event that gets fired when the feed for a symbol has been calibrated and is ready to be used.
-        /// </summary>
-        public EventHandler<SymbolCalibratedEventArgs<TBook, TUnit, Level2Update>> SymbolCalibrated;
-
         /// <summary>
         /// Create a new Level 2 feed with the specified credentials.
         /// </summary>
@@ -60,6 +45,8 @@ namespace Kucoin.NET.Websockets.Private
             }
         }
 
+        public override event EventHandler<SymbolCalibratedEventArgs<OrderBook<OrderUnit>, OrderUnit, Level2Update>> SymbolCalibrated;
+
         /// <summary>
         /// Create a new Level 2 feed with the specified credentials.
         /// </summary>
@@ -76,54 +63,16 @@ namespace Kucoin.NET.Websockets.Private
             }
         }
 
-        /// <summary>
-        /// Gets or sets a length of time (in milliseconds) that indicates how often the orderbook is pushed to the UI thread.
-        /// </summary>
-        /// <remarks>
-        /// The default value is 500 milliseconds.
-        /// </remarks>
-        public int UpdateInterval
+        public override async Task<Dictionary<string, Level2Observation>> AddSymbols(IEnumerable<string> symbols, int pieces = 200)
         {
-            get => updateInterval;
-            set
-            {
-                SetProperty(ref updateInterval, value);
-            }
-        }
-
-        protected virtual Level2Observation<TBook, TUnit> CreateNewObserver(string symbol, int pieces = 50)
-        {
-            return new Level2Observation<TBook, TUnit>(this, symbol, pieces);
-        }
-
-        /// <summary>
-        /// Adds a Level 2 subscription for the specified symbol.
-        /// </summary>
-        /// <param name="symbol">The symbol to subscribe.</param>
-        /// <param name="pieces">Market depth, or 0 for full depth.</param>
-        /// <returns></returns>
-        public async Task<ILevel2OrderBookProvider<TBook, TUnit, Level2Update>> AddSymbol(string symbol, int pieces)
-        {
-            var p = await AddSymbols(new string[] { symbol }, pieces);
-            return p[symbol];
-        }
-
-        /// <summary>
-        /// Adds a Level 2 subscription for the specified symbols.
-        /// </summary>
-        /// <param name="symbols">The symbols to subscribe.</param>
-        /// <param name="pieces">Market depth, or 0 for full depth.</param>
-        /// <returns></returns>
-        public async Task<Dictionary<string, ILevel2OrderBookProvider<TBook, TUnit, Level2Update>>> AddSymbols(IEnumerable<string> symbols, int pieces = 200)
-        {
-            if (disposed) throw new ObjectDisposedException(nameof(Level2<TBook, TUnit>));
+            if (disposed) throw new ObjectDisposedException(nameof(Level2));
             if (!Connected)
             {
                 await Connect();
             }
 
             var sb = new StringBuilder();
-            var lnew = new Dictionary<string, ILevel2OrderBookProvider<TBook, TUnit, Level2Update>>();
+            var lnew = new Dictionary<string, Level2Observation>();
 
             foreach (var sym in symbols)
             {
@@ -158,24 +107,34 @@ namespace Kucoin.NET.Websockets.Private
             return lnew;
         }
 
-        /// <summary>
-        /// Remove a Level 2 subscription for the specified symbol.
-        /// </summary>
-        /// <param name="symbol">The symbol to remove.</param>
-        /// <returns></returns>
-        internal virtual async Task RemoveSymbol(string symbol)
+        public override async Task<OrderBook<OrderUnit>> GetPartList(string symbol, int pieces = 20)
         {
-            await RemoveSymbols(new string[] { symbol });
+            var curl = pieces > 0 ? string.Format("/api/v1/market/orderbook/level2_{0}", pieces) : "/api/v2/market/orderbook/level2";
+            var param = new Dictionary<string, object>();
+
+            param.Add("symbol", (string)symbol);
+
+            var jobj = await MakeRequest(HttpMethod.Get, curl, 5, false, param);
+            var result = jobj.ToObject<OrderBook<OrderUnit>>();
+
+            foreach (var ask in result.Asks)
+            {
+                if (ask is ISequencedOrderUnit seq)
+                    seq.Sequence = result.Sequence;
+            }
+
+            foreach (var bid in result.Bids)
+            {
+                if (bid is ISequencedOrderUnit seq)
+                    seq.Sequence = result.Sequence;
+            }
+
+            return result;
         }
 
-        /// <summary>
-        /// Remove a Level 2 subscription for the specified symbols.
-        /// </summary>
-        /// <param name="symbols">The symbols to remove.</param>
-        /// <returns></returns>
-        internal virtual async Task RemoveSymbols(IEnumerable<string> symbols)
+        public override async Task RemoveSymbols(IEnumerable<string> symbols)
         {
-            if (disposed) throw new ObjectDisposedException(nameof(Level2<TBook, TUnit>));
+            if (disposed) throw new ObjectDisposedException(nameof(Level2));
             if (!Connected) return;
 
             var sb = new StringBuilder();
@@ -210,75 +169,10 @@ namespace Kucoin.NET.Websockets.Private
             await Send(e);
         }
 
-
-        /// <summary>
-        /// Get the Level 2 Data Book for the specified trading symbol.
-        /// </summary>
-        /// <param name="symbol">The trading symbol.</param>
-        /// <param name="pieces">The number of pieces.</param>
-        /// <returns>The part book snapshot.</returns>
-        /// <remarks>
-        /// Settings the number of pieces to 0 returns the full market depth. 
-        /// Use 0 to calibrate a full level 2 feed.
-        /// </remarks>
-        public async Task<TBook> GetPartList(string symbol, int pieces = 20)
+        protected override Level2Observation CreateNewObserver(string symbol, int pieces = 50)
         {
-            var curl = pieces > 0 ? string.Format("/api/v1/market/orderbook/level2_{0}", pieces) : "/api/v2/market/orderbook/level2";
-            var param = new Dictionary<string, object>();
-
-            param.Add("symbol", (string)symbol);
-
-            var jobj = await MakeRequest(HttpMethod.Get, curl, 5, false, param);
-            var result = jobj.ToObject<TBook>();
-
-            foreach (var ask in result.Asks)
-            {
-                if (ask is ISequencedOrderUnit seq)
-                    seq.Sequence = result.Sequence;
-            }
-
-            foreach (var bid in result.Bids)
-            {
-                if (bid is ISequencedOrderUnit seq)
-                    seq.Sequence = result.Sequence;
-            }
-
-            return result;
-
+            return new Level2Observation(this, symbol, pieces);
         }
-
-        /// <summary>
-        /// Get the full Level 2 Data Book for the specified trading symbol.
-        /// </summary>
-        /// <param name="symbol">The trading symbol.</param>
-        /// <returns>The part book snapshot.</returns>
-        /// <remarks>
-        /// Returns the full market depth. 
-        /// Use this to calibrate a full level 2 feed.
-        /// </remarks>
-        public Task<TBook> GetAggregatedOrder(string symbol) => GetPartList(symbol, 0);
-
-        /// <summary>
-        /// Initialize the order book with a call to <see cref="GetAggregatedOrder(string)"/>.
-        /// </summary>
-        /// <param name="symbol">The symbol to initialize.</param>
-        /// <remarks>
-        /// This method is typically called after the feed has been buffered.
-        /// </remarks>
-        protected async Task InitializeOrderBook(string symbol)
-        {
-            if (!activeFeeds.ContainsKey(symbol)) return;
-
-            var af = activeFeeds[symbol];
-
-            var data = await GetAggregatedOrder(af.Symbol);
-
-            af.FullDepthOrderBook = data;
-            af.Initialized = true;
-        }
-
-        object lockObj = new object();
-        DateTime cycle = DateTime.MinValue;
 
         protected override async Task HandleMessage(FeedMessage msg)
         {
@@ -294,7 +188,7 @@ namespace Kucoin.NET.Websockets.Private
                     {
                         var symbol = msg.Topic.Substring(i + 1);
 
-                        if (activeFeeds.TryGetValue(symbol, out Level2Observation<TBook, TUnit> af))
+                        if (activeFeeds.TryGetValue(symbol, out Level2Observation af))
                         {
                             var update = msg.Data.ToObject<Level2Update>();
 
@@ -313,7 +207,7 @@ namespace Kucoin.NET.Websockets.Private
                                     }
                                     _ = Task.Run(() =>
                                     {
-                                        SymbolCalibrated?.Invoke(this, new SymbolCalibratedEventArgs<TBook, TUnit, Level2Update>(af));
+                                        SymbolCalibrated?.Invoke(this, new SymbolCalibratedEventArgs<OrderBook<OrderUnit>, OrderUnit, Level2Update>(af));
                                     });
                                 }
                             }
@@ -336,47 +230,18 @@ namespace Kucoin.NET.Websockets.Private
                 }
             }
         }
-    }
 
-    /// <summary>
-    /// Create a new KuCoin Level 2 websocket feed using the standard observable objects.
-    /// </summary>
-    public class Level2 : Level2<OrderBook<OrderUnit>, OrderUnit>
-    {
-        public Level2(ICredentialsProvider credProvider) : base(credProvider)
+        protected override async Task InitializeOrderBook(string symbol)
         {
+            if (!activeFeeds.ContainsKey(symbol)) return;
+
+            var af = activeFeeds[symbol];
+
+            var data = await GetAggregatedOrder(af.Symbol);
+
+            af.FullDepthOrderBook = data;
+            af.Initialized = true;
         }
-
-        public Level2(string key, string secret, string passphrase, bool isSandbox = false) : base(key, secret, passphrase, isSandbox)
-        {
-        }
-
-        protected override Level2Observation<OrderBook<OrderUnit>, OrderUnit> CreateNewObserver(string symbol, int pieces = 50)
-        {
-            return new Level2Observation(this, symbol, pieces);
-        }
-
-        public new async Task<Dictionary<string, ILevel2OrderBookProvider>> AddSymbols(IEnumerable<string> symbols, int pieces = 50)
-        {
-            var res = await base.AddSymbols(symbols, pieces);
-            var dict = new Dictionary<string, ILevel2OrderBookProvider>();
-
-            foreach (var kv in res)
-            {
-
-                dict.Add(kv.Key, (ILevel2OrderBookProvider)kv.Value);
-            }
-
-            return dict;
-        }
-
-        public new async Task<ILevel2OrderBookProvider> AddSymbol(string symbol, int pieces = 50)
-        {
-            return (ILevel2OrderBookProvider)await base.AddSymbol(symbol, pieces);
-        }
-
-
-
     }
 
 

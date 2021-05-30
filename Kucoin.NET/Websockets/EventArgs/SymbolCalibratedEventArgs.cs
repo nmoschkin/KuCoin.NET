@@ -13,6 +13,7 @@ namespace Kucoin.NET.Websockets
     public class SymbolCalibratedEventArgs<TBook, TUnit, TUpdate> : EventArgs 
         where TBook: IOrderBook<TUnit>
         where TUnit: IOrderUnit
+        where TUpdate: new()
     {
         /// <summary>
         /// Gets the symbol of the calibrated feed.
