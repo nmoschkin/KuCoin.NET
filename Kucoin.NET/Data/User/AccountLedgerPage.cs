@@ -2,8 +2,6 @@
 using System.Collections.Generic;
 using System.Text;
 
-using Kucoin.NET.Data.Interfaces;
-
 using Newtonsoft.Json;
 
 namespace Kucoin.NET.Data.User

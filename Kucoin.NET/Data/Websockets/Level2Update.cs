@@ -5,7 +5,6 @@ using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Text;
 
-using Kucoin.NET.Data.Interfaces;
 using Kucoin.NET.Data.Market;
 using Kucoin.NET.Helpers;
 using Kucoin.NET.Observable;

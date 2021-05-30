@@ -16,7 +16,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Input;
 using KuCoinApp.Views;
-using Kucoin.NET.Data.Interfaces;
 using Kucoin.NET.Helpers;
 using System.Linq.Expressions;
 using FancyCandles;

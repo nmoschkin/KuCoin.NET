@@ -1,4 +1,4 @@
-﻿using Kucoin.NET.Data.Interfaces;
+﻿using Kucoin.NET.Data.Helpers;
 using Kucoin.NET.Data.Market;
 using Kucoin.NET.Futures.Data.Market;
 using Kucoin.NET.Futures.Websockets.Observations;

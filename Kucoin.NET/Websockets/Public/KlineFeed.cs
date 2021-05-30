@@ -5,7 +5,6 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Threading.Tasks;
-using Kucoin.NET.Data.Interfaces;
 using Kucoin.NET.Helpers;
 
 namespace Kucoin.NET.Websockets.Public

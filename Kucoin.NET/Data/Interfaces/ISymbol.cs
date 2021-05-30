@@ -1,12 +1,11 @@
-﻿using Kucoin.NET.Data.Market;
-
+﻿
 using Newtonsoft.Json;
 
 using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace Kucoin.NET.Data.Interfaces
+namespace Kucoin.NET.Data.Market
 {
     /// <summary>
     /// Declare this interface to get a ticker symbol associated with an implementation.
@@ -31,6 +30,6 @@ namespace Kucoin.NET.Data.Interfaces
         void SetSymbol(string symbol);
     }
 
-    
+
 
 }

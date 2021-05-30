@@ -9,8 +9,8 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Kucoin.NET.Rest;
-using Kucoin.NET.Data.Interfaces;
 using KuCoinApp.Converters;
+using Kucoin.NET.Data.Helpers;
 
 namespace KuCoinApp
 {

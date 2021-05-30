@@ -1,4 +1,4 @@
-﻿using Kucoin.NET.Data.Interfaces;
+﻿using Kucoin.NET.Data.Helpers;
 using Kucoin.NET.Data.Order;
 using Kucoin.NET.Data.User;
 using Kucoin.NET.Helpers;

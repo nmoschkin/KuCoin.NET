@@ -1,12 +1,11 @@
-﻿using Kucoin.NET.Data.Market;
-using Kucoin.NET.Data.Order;
+﻿using Kucoin.NET.Data.Order;
 
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Text;
 
-namespace Kucoin.NET.Data.Interfaces
+namespace Kucoin.NET.Data.Market
 {
     /// <summary>
     /// Ask or Bid Order Unit Interface
@@ -67,7 +66,7 @@ namespace Kucoin.NET.Data.Interfaces
     /// Lists of Asks and Bids Interface
     /// </summary>
     /// <typeparam name="T"></typeparam>
-    public interface IOrderUnitList<T> where T: IOrderUnit
+    public interface IOrderUnitList<T> where T : IOrderUnit
     {
         /// <summary>
         /// Asks (sell)
@@ -94,7 +93,7 @@ namespace Kucoin.NET.Data.Interfaces
     /// Interface for a class that contains keyed collections of asks and bids.
     /// </summary>
     /// <typeparam name="T"></typeparam>
-    public interface IKeyedOrderUnitList<T> where T: IOrderUnit
+    public interface IKeyedOrderUnitList<T> where T : IOrderUnit
     {
         /// <summary>
         /// Asks (sell)
@@ -112,7 +111,7 @@ namespace Kucoin.NET.Data.Interfaces
     /// Interface for any class that implements the properties of a full order book.
     /// </summary>
     /// <typeparam name="T">A type that implements <see cref="IOrderUnit"/>.</typeparam>
-    public interface IOrderBook<T> : IKeyedOrderUnitList<T> where T: IOrderUnit
+    public interface IOrderBook<T> : IKeyedOrderUnitList<T> where T : IOrderUnit
     {
         long Sequence { get; set; }
 

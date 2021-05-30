@@ -2,8 +2,8 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
+
 using Newtonsoft.Json;
-using Kucoin.NET.Data.Interfaces;
 
 namespace Kucoin.NET.Data.Order
 {

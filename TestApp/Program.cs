@@ -15,6 +15,7 @@ using System.Windows;
 using System.Text;
 using System.Reflection;
 using Kucoin.NET.Futures.Websockets;
+using Kucoin.NET.Data.Helpers;
 
 namespace KuCoinApp
 {
@@ -101,7 +102,7 @@ namespace KuCoinApp
         }
 
         [STAThread]
-        public static async Task TestMain(Kucoin.NET.Data.Interfaces.ICredentialsProvider cred = null)
+        public static async Task TestMain(ICredentialsProvider cred = null)
         {
             //var bb = new ObservableOrderUnits();
 

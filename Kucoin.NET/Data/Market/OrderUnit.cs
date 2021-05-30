@@ -4,7 +4,6 @@ using Newtonsoft.Json;
 
 using Kucoin.NET.Observable;
 using Kucoin.NET.Json;
-using Kucoin.NET.Data.Interfaces;
 
 namespace Kucoin.NET.Data.Market
 {

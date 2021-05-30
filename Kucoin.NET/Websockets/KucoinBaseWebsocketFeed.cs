@@ -27,12 +27,12 @@ using Kucoin.NET.Data.Websockets;
 using System.Net.Http;
 using System.Net.WebSockets;
 using Kucoin.NET.Rest;
-using Kucoin.NET.Data.Interfaces;
 using Kucoin.NET.Helpers;
+using Kucoin.NET.Data.Helpers;
 
 namespace Kucoin.NET.Websockets
 {
-    
+
     /// <summary>
     /// Websocket feed abstract base class.
     /// </summary>

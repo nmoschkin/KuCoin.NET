@@ -1,6 +1,4 @@
-﻿
-using Kucoin.NET.Data.Interfaces;
-using Kucoin.NET.Data.Market;
+﻿using Kucoin.NET.Data.Market;
 using Kucoin.NET.Observable;
 
 using System;

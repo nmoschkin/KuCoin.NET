@@ -4,10 +4,10 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Kucoin.NET.Data.Market;
-using Kucoin.NET.Data.Interfaces;
 using System.Net.Http;
 using Kucoin.NET.Websockets.Observations;
 using Kucoin.NET.Helpers;
+using Kucoin.NET.Data.Helpers;
 
 namespace Kucoin.NET.Websockets.Private
 {

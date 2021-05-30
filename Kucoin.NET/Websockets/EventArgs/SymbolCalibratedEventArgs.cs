@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 using System.ComponentModel;
 using Kucoin.NET.Websockets.Observations;
-using Kucoin.NET.Data.Interfaces;
+using Kucoin.NET.Data.Market;
 
 namespace Kucoin.NET.Websockets
 {

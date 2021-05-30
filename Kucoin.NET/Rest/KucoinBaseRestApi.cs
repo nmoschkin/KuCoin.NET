@@ -11,7 +11,8 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
 using Kucoin.NET.Json;
-using Kucoin.NET.Data.Interfaces;
+using Kucoin.NET.Data.Helpers;
+using Kucoin.NET.Data;
 
 namespace Kucoin.NET.Rest
 {

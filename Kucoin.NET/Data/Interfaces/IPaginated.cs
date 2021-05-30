@@ -4,7 +4,7 @@ using System.Text;
 
 using Newtonsoft.Json;
 
-namespace Kucoin.NET.Data.Interfaces
+namespace Kucoin.NET.Data
 {
     /// <summary>
     /// Interface for all KuCoin requests that support pagination.

@@ -11,7 +11,6 @@ using Kucoin.NET.Data.Market;
 using System.IO;
 using System.Net;
 using Kucoin.NET.Helpers;
-using Kucoin.NET.Data.Interfaces;
 using System.ComponentModel;
 
 namespace Kucoin.NET.Rest

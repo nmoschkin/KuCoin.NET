@@ -6,7 +6,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
 using System.Text;
-using Kucoin.NET.Data.Interfaces;
 
 namespace Kucoin.NET.Data.Market
 {

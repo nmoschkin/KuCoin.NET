@@ -1,5 +1,4 @@
 ﻿using Kucoin.NET.Data.Websockets;
-using Kucoin.NET.Data.Interfaces;
 using Kucoin.NET.Json;
 
 using System;
@@ -9,6 +8,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
 using Kucoin.NET.Helpers;
+using Kucoin.NET.Data.Helpers;
 
 namespace Kucoin.NET.Websockets.Private
 {

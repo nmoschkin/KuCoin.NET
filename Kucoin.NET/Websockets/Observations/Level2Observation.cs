@@ -11,7 +11,6 @@ using System.Text;
 using System.ComponentModel;
 using System.Threading;
 using Kucoin.NET.Helpers;
-using Kucoin.NET.Data.Interfaces;
 using System.Linq;
 using System.Threading.Tasks;
 

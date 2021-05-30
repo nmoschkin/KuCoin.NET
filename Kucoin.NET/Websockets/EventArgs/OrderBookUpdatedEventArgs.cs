@@ -1,4 +1,4 @@
-﻿using Kucoin.NET.Data.Interfaces;
+﻿using Kucoin.NET.Data.Market;
 
 using System;
 using System.Collections.Generic;

@@ -4,7 +4,6 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-using Kucoin.NET.Data.Interfaces;
 using Kucoin.NET.Observable;
 
 using Newtonsoft.Json;

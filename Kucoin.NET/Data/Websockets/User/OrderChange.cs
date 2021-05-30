@@ -1,5 +1,4 @@
-﻿using Kucoin.NET.Data.Interfaces;
-using Kucoin.NET.Data.Market;
+﻿using Kucoin.NET.Data.Market;
 using Kucoin.NET.Data.Order;
 using Kucoin.NET.Helpers;
 using Kucoin.NET.Json;

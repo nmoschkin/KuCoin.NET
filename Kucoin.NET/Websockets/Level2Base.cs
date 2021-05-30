@@ -1,5 +1,4 @@
-﻿using Kucoin.NET.Data.Interfaces;
-using Kucoin.NET.Data.Websockets;
+﻿using Kucoin.NET.Data.Websockets;
 using Kucoin.NET.Helpers;
 using Kucoin.NET.Websockets.Observations;
 
@@ -10,6 +9,8 @@ using System.Text;
 using System.Threading.Tasks;
 using Kucoin.NET.Websockets.Private;
 using Kucoin.NET.Futures.Websockets;
+using Kucoin.NET.Data.Market;
+using Kucoin.NET.Data.Helpers;
 
 namespace Kucoin.NET.Websockets
 {

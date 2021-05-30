@@ -7,7 +7,6 @@ using Kucoin.NET.Observable;
 using Kucoin.NET.Data.Market;
 using Kucoin.NET.Rest;
 using Kucoin.NET.Helpers;
-using Kucoin.NET.Data.Interfaces;
 using Kucoin.NET.Json;
 
 namespace Kucoin.NET.Data.Websockets

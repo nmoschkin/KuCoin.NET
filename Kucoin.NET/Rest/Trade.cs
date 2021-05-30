@@ -7,8 +7,8 @@ using Kucoin.NET.Data.Order;
 using System.Threading.Tasks;
 using System.Net.Http;
 using Kucoin.NET.Data.Market;
-using Kucoin.NET.Data.Interfaces;
 using Kucoin.NET.Json;
+using Kucoin.NET.Data.Helpers;
 
 namespace Kucoin.NET.Rest
 {

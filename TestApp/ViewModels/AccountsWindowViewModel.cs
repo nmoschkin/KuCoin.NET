@@ -10,13 +10,13 @@ using System.Threading.Tasks;
 using Kucoin.NET.Data.User;
 using Kucoin.NET.Data.Market;
 using Kucoin.NET.Rest;
-using Kucoin.NET.Data.Interfaces;
 using System.Windows.Input;
 using Kucoin.NET.Websockets.Public;
 using System.Security.Authentication;
 using Kucoin.NET.Websockets;
 using Kucoin.NET.Websockets.Private;
 using Kucoin.NET.Data.Websockets.User;
+using Kucoin.NET.Data.Helpers;
 
 namespace KuCoinApp.ViewModels
 {

@@ -1,11 +1,10 @@
-﻿using Kucoin.NET.Data.Market;
-
+﻿
 using System;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using System.Text;
 
-namespace Kucoin.NET.Data.Interfaces
+namespace Kucoin.NET.Data.Market
 {
     /// <summary>
     /// K-Line Candlestick Interface
