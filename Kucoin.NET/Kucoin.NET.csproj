@@ -35,6 +35,7 @@
 
   <ItemGroup>
     <Folder Include="Futures\Data\User\" />
+    <Folder Include="Futures\Websockets\Observations\" />
     <Folder Include="Futures\Websockets\Private\" />
   </ItemGroup>
 

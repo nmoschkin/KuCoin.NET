@@ -4,7 +4,6 @@ using System.Collections.ObjectModel;
 
 using Kucoin.NET.Data.Market;
 using Kucoin.NET.Data.Websockets;
-using Kucoin.NET.Websockets.Private;
 using Kucoin.NET.Observable;
 
 using System.Text;
@@ -13,6 +12,7 @@ using System.Threading;
 using Kucoin.NET.Helpers;
 using System.Linq;
 using System.Threading.Tasks;
+using Kucoin.NET.Websockets.Public;
 
 namespace Kucoin.NET.Websockets.Observations
 {

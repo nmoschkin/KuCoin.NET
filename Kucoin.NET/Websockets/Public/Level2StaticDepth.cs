@@ -1,34 +1,26 @@
 ﻿using Kucoin.NET.Data.Websockets;
-using Kucoin.NET.Json;
 
 using System;
 using System.Collections.Generic;
-using System.Net.Http;
-using System.Text;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
 using Kucoin.NET.Helpers;
-using Kucoin.NET.Data.Helpers;
 
-namespace Kucoin.NET.Websockets.Private
+namespace Kucoin.NET.Websockets.Public
 {
 
     /// <summary>
     /// Level 2 5 best asks/bids.
     /// </summary>
     public class Level2Depth5 : SymbolTopicFeedBase<StaticMarketDepthUpdate>
-    {               
-        public override bool IsPublic => false;
+    {
+        public override bool IsPublic => true;
 
         protected override string Subject => "level2";
 
         protected override string Topic => "/spotMarket/level2Depth5";
 
         protected Dictionary<string, ObservableStaticMarketDepthUpdate> symbolObservables = new Dictionary<string, ObservableStaticMarketDepthUpdate>();
-
-        internal Level2Depth5() : base(null)
-        {
-        }
 
         /// <summary>
         /// Retrieves the observable market data for the given symbol, or null if not found.
@@ -120,10 +112,10 @@ namespace Kucoin.NET.Websockets.Private
                         sym = msg.Topic.Substring(i + 1);
 
                         if (symbolObservables.TryGetValue(sym, out ObservableStaticMarketDepthUpdate update))
-                        {                         
+                        {
                             JsonConvert.PopulateObject(msg.Data.ToString(), update);
-                            
-                            Dispatcher.InvokeOnMainThread((o) => 
+
+                            Dispatcher.InvokeOnMainThread((o) =>
                             {
                                 update.UpdateObservable();
                             });
@@ -150,39 +142,15 @@ namespace Kucoin.NET.Websockets.Private
 
         }
 
-        /// <summary>
-        /// Create a new Level 2 5-best asks/bids feed with the specified credentials.
-        /// </summary>
-        /// <param name="key">API Key</param>
-        /// <param name="secret">API Secret</param>
-        /// <param name="passphrase">API Passphrase</param>
-        /// <param name="isSandbox">Is Sandbox Mode</param>
-        /// <remarks>
-        /// You must either create this instance on the main / UI thread or call <see cref="Dispatcher.Initialize"/> prior to 
-        /// creating an instance of this class or an <see cref="InvalidOperationException"/> will be raised.
-        /// </remarks>
-        public Level2Depth5(
-          string key,
-          string secret,
-          string passphrase,
-          bool isSandbox = false)
-          : base(key, secret, passphrase, isSandbox)
-        {
-            if (!Dispatcher.Initialized)
-            {
-                throw new InvalidOperationException("You must call Kucoin.NET.Helpers.Dispatcher.Initialize() with a SynchronizationContext before instantiating this class.");
-            }
-        }
 
         /// <summary>
         /// Create a new Level 2 5-best asks/bids feed with the specified credentials.
         /// </summary>
-        /// <param name="credProvider"><see cref="ICredentialsProvider"/> implementation.</param>
         /// <remarks>
         /// You must either create this instance on the main / UI thread or call <see cref="Dispatcher.Initialize"/> prior to 
         /// creating an instance of this class or an <see cref="InvalidOperationException"/> will be raised.
         /// </remarks>
-        public Level2Depth5(ICredentialsProvider credProvider) : base(credProvider)
+        public Level2Depth5() : base(null, null, null)
         {
             if (!Dispatcher.Initialized)
             {
@@ -198,76 +166,17 @@ namespace Kucoin.NET.Websockets.Private
         /// <param name="secret">API Secret</param>
         /// <param name="passphrase">API Passphrase</param>
         /// <param name="isSandbox">Is Sandbox Mode</param>
-        /// <remarks>
-        /// This constructor will automatically attempt to connect to the remote server and subscribe to the specified symbol feeds.
-        /// You must either create this instance on the main / UI thread or call <see cref="Dispatcher.Initialize"/> prior to 
-        /// creating an instance of this class or an <see cref="InvalidOperationException"/> will be raised.
-        /// </remarks>
-        public Level2Depth5(IEnumerable<string> symbols, 
-          string key,
-          string secret,
-          string passphrase,
-          bool isSandbox = false) 
-            : base(key, secret, passphrase, isSandbox)
-        {
-            if (!Dispatcher.Initialized)
-            {
-                throw new InvalidOperationException("You must call Kucoin.NET.Helpers.Dispatcher.Initialize() with a SynchronizationContext before instantiating this class.");
-            }
-
-            Connect().ContinueWith(async (t) =>
-            {
-                await AddSymbols(symbols);
-            });
-        }
-
-        /// <summary>
-        /// Create a new Level 2 5-best asks/bids feed with the specified credentials.
-        /// </summary>
-        /// <param name="symbol">The initial symbol to subscribe to.</param>
-        /// <param name="key">API Key</param>
-        /// <param name="secret">API Secret</param>
-        /// <param name="passphrase">API Passphrase</param>
-        /// <param name="isSandbox">Is Sandbox Mode</param>
-        /// <remarks>
-        /// This constructor will automatically attempt to connect to the remote server and subscribe to the specified symbol feed.
-        /// You must either create this instance on the main / UI thread or call <see cref="Dispatcher.Initialize"/> prior to 
-        /// creating an instance of this class or an <see cref="InvalidOperationException"/> will be raised.
-        /// </remarks>
-        public Level2Depth5(string symbol,
-          string key,
-          string secret,
-          string passphrase,
-          bool isSandbox = false)
-            : base(key, secret, passphrase, isSandbox)
-
-        {
-            if (!Dispatcher.Initialized)
-            {
-                throw new InvalidOperationException("You must call Kucoin.NET.Helpers.Dispatcher.Initialize() with a SynchronizationContext before instantiating this class.");
-            }
-
-            Connect().ContinueWith(async (t) =>
-            {
-                await AddSymbol(symbol);
-            });
-        }
-
-
-        /// <summary>
-        /// Create a new Level 2 5-best asks/bids feed with the specified credentials.
-        /// </summary>
-        /// <param name="symbols">The initial symbols to subscribe to.</param>
-        /// <param name="credProvider"><see cref="ICredentialsProvider"/> implementation.</param>
         /// <remarks>
         /// This constructor will automatically attempt to connect to the remote server and subscribe to the specified symbol feeds.
         /// You must either create this instance on the main / UI thread or call <see cref="Dispatcher.Initialize"/> prior to 
         /// creating an instance of this class or an <see cref="InvalidOperationException"/> will be raised.
         /// </remarks>
         public Level2Depth5(IEnumerable<string> symbols,
-          ICredentialsProvider credProvider
-          )
-            : base(credProvider)
+          string key,
+          string secret,
+          string passphrase,
+          bool isSandbox = false)
+            : base(key, secret, passphrase, isSandbox)
         {
             if (!Dispatcher.Initialized)
             {
@@ -284,15 +193,14 @@ namespace Kucoin.NET.Websockets.Private
         /// Create a new Level 2 5-best asks/bids feed with the specified credentials.
         /// </summary>
         /// <param name="symbol">The initial symbol to subscribe to.</param>
-        /// <param name="credProvider"><see cref="ICredentialsProvider"/> implementation.</param>
         /// <remarks>
         /// This constructor will automatically attempt to connect to the remote server and subscribe to the specified symbol feed.
         /// You must either create this instance on the main / UI thread or call <see cref="Dispatcher.Initialize"/> prior to 
         /// creating an instance of this class or an <see cref="InvalidOperationException"/> will be raised.
         /// </remarks>
-        public Level2Depth5(string symbol,
-          ICredentialsProvider credProvider)
-            : base(credProvider)
+        public Level2Depth5(string symbol
+            )
+            : base(null, null, null)
 
         {
             if (!Dispatcher.Initialized)
@@ -303,6 +211,31 @@ namespace Kucoin.NET.Websockets.Private
             Connect().ContinueWith(async (t) =>
             {
                 await AddSymbol(symbol);
+            });
+        }
+
+
+        /// <summary>
+        /// Create a new Level 2 5-best asks/bids feed with the specified credentials.
+        /// </summary>
+        /// <param name="symbols">The initial symbols to subscribe to.</param>
+        /// <remarks>
+        /// This constructor will automatically attempt to connect to the remote server and subscribe to the specified symbol feeds.
+        /// You must either create this instance on the main / UI thread or call <see cref="Dispatcher.Initialize"/> prior to 
+        /// creating an instance of this class or an <see cref="InvalidOperationException"/> will be raised.
+        /// </remarks>
+        public Level2Depth5(IEnumerable<string> symbols
+          )
+            : base(null, null, null)
+        {
+            if (!Dispatcher.Initialized)
+            {
+                throw new InvalidOperationException("You must call Kucoin.NET.Helpers.Dispatcher.Initialize() with a SynchronizationContext before instantiating this class.");
+            }
+
+            Connect().ContinueWith(async (t) =>
+            {
+                await AddSymbols(symbols);
             });
         }
 
@@ -338,28 +271,7 @@ namespace Kucoin.NET.Websockets.Private
         /// You must either create this instance on the main / UI thread or call <see cref="Dispatcher.Initialize"/> prior to 
         /// creating an instance of this class or an <see cref="InvalidOperationException"/> will be raised.
         /// </remarks>
-        public Level2Depth50(
-          string key,
-          string secret,
-          string passphrase,
-          bool isSandbox = false)
-          : base(key, secret, passphrase, isSandbox)
-        {
-            if (!Dispatcher.Initialized)
-            {
-                throw new InvalidOperationException("You must call Kucoin.NET.Helpers.Dispatcher.Initialize() with a SynchronizationContext before instantiating this class.");
-            }
-        }
-
-        /// <summary>
-        /// Create a new Level 2 50-best asks/bids feed with the specified credentials.
-        /// </summary>
-        /// <param name="credProvider"><see cref="ICredentialsProvider"/> implementation.</param>
-        /// <remarks>
-        /// You must either create this instance on the main / UI thread or call <see cref="Dispatcher.Initialize"/> prior to 
-        /// creating an instance of this class or an <see cref="InvalidOperationException"/> will be raised.
-        /// </remarks>
-        public Level2Depth50(ICredentialsProvider credProvider) : base(credProvider)
+        public Level2Depth50() : base()
         {
             if (!Dispatcher.Initialized)
             {
@@ -371,21 +283,12 @@ namespace Kucoin.NET.Websockets.Private
         /// Create a new Level 2 50-best asks/bids feed with the specified credentials.
         /// </summary>
         /// <param name="symbols">The initial symbols to subscribe to.</param>
-        /// <param name="key">API Key</param>
-        /// <param name="secret">API Secret</param>
-        /// <param name="passphrase">API Passphrase</param>
-        /// <param name="isSandbox">Is Sandbox Mode</param>
         /// <remarks>
         /// This constructor will automatically attempt to connect to the remote server and subscribe to the specified symbol feeds.
         /// You must either create this instance on the main / UI thread or call <see cref="Dispatcher.Initialize"/> prior to 
         /// creating an instance of this class or an <see cref="InvalidOperationException"/> will be raised.
         /// </remarks>
-        public Level2Depth50(IEnumerable<string> symbols,
-          string key,
-          string secret,
-          string passphrase,
-          bool isSandbox = false)
-            : base(key, secret, passphrase, isSandbox)
+        public Level2Depth50(IEnumerable<string> symbols) : base()
         {
             if (!Dispatcher.Initialized)
             {
@@ -402,21 +305,12 @@ namespace Kucoin.NET.Websockets.Private
         /// Create a new Level 2 50-best asks/bids feed with the specified credentials.
         /// </summary>
         /// <param name="symbol">The initial symbol to subscribe to.</param>
-        /// <param name="key">API Key</param>
-        /// <param name="secret">API Secret</param>
-        /// <param name="passphrase">API Passphrase</param>
-        /// <param name="isSandbox">Is Sandbox Mode</param>
         /// <remarks>
         /// This constructor will automatically attempt to connect to the remote server and subscribe to the specified symbol feed.
         /// You must either create this instance on the main / UI thread or call <see cref="Dispatcher.Initialize"/> prior to 
         /// creating an instance of this class or an <see cref="InvalidOperationException"/> will be raised.
         /// </remarks>
-        public Level2Depth50(string symbol,
-          string key,
-          string secret,
-          string passphrase,
-          bool isSandbox = false)
-            : base(key, secret, passphrase, isSandbox)
+        public Level2Depth50(string symbol) : base()
 
         {
             if (!Dispatcher.Initialized)
@@ -431,57 +325,6 @@ namespace Kucoin.NET.Websockets.Private
         }
 
 
-        /// <summary>
-        /// Create a new Level 2 50-best asks/bids feed with the specified credentials.
-        /// </summary>
-        /// <param name="symbols">The initial symbols to subscribe to.</param>
-        /// <param name="credProvider"><see cref="ICredentialsProvider"/> implementation.</param>
-        /// <remarks>
-        /// This constructor will automatically attempt to connect to the remote server and subscribe to the specified symbol feeds.
-        /// You must either create this instance on the main / UI thread or call <see cref="Dispatcher.Initialize"/> prior to 
-        /// creating an instance of this class or an <see cref="InvalidOperationException"/> will be raised.
-        /// </remarks>
-        public Level2Depth50(IEnumerable<string> symbols,
-          ICredentialsProvider credProvider
-          )
-            : base(credProvider)
-        {
-            if (!Dispatcher.Initialized)
-            {
-                throw new InvalidOperationException("You must call Kucoin.NET.Helpers.Dispatcher.Initialize() with a SynchronizationContext before instantiating this class.");
-            }
-
-            Connect().ContinueWith(async (t) =>
-            {
-                await AddSymbols(symbols);
-            });
-        }
-
-        /// <summary>
-        /// Create a new Level 2 50-best asks/bids feed with the specified credentials.
-        /// </summary>
-        /// <param name="symbol">The initial symbol to subscribe to.</param>
-        /// <param name="credProvider"><see cref="ICredentialsProvider"/> implementation.</param>
-        /// <remarks>
-        /// This constructor will automatically attempt to connect to the remote server and subscribe to the specified symbol feed.
-        /// You must either create this instance on the main / UI thread or call <see cref="Dispatcher.Initialize"/> prior to 
-        /// creating an instance of this class or an <see cref="InvalidOperationException"/> will be raised.
-        /// </remarks>
-        public Level2Depth50(string symbol,
-          ICredentialsProvider credProvider)
-            : base(credProvider)
-
-        {
-            if (!Dispatcher.Initialized)
-            {
-                throw new InvalidOperationException("You must call Kucoin.NET.Helpers.Dispatcher.Initialize() with a SynchronizationContext before instantiating this class.");
-            }
-
-            Connect().ContinueWith(async (t) =>
-            {
-                await AddSymbol(symbol);
-            });
-        }
 
 
     }

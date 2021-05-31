@@ -7,9 +7,8 @@ using Kucoin.NET.Data.Market;
 using System.Net.Http;
 using Kucoin.NET.Websockets.Observations;
 using Kucoin.NET.Helpers;
-using Kucoin.NET.Data.Helpers;
 
-namespace Kucoin.NET.Websockets.Private
+namespace Kucoin.NET.Websockets.Public
 {
 
 
@@ -61,7 +60,7 @@ namespace Kucoin.NET.Websockets.Private
             var curl = pieces > 0 ? $"{AggregateEndpoint}_{pieces}" : AggregateEndpoint;
             var param = new Dictionary<string, object>();
 
-            param.Add("symbol", (string)symbol);
+            param.Add("symbol", symbol);
 
             var jobj = await MakeRequest(HttpMethod.Get, curl, 5, false, param);
             var result = jobj.ToObject<OrderBook<OrderUnit>>();

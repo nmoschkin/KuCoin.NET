@@ -4,6 +4,7 @@ using Kucoin.NET.Futures.Data.Market;
 using Kucoin.NET.Helpers;
 using Kucoin.NET.Websockets;
 using Kucoin.NET.Websockets.Observations;
+using Kucoin.NET.Websockets.Public;
 
 using System;
 using System.Collections.Generic;

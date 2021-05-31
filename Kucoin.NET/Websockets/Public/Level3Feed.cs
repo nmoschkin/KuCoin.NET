@@ -8,9 +8,9 @@ using System.Text;
 using System.Threading.Tasks;
 using Kucoin.NET.Data.Helpers;
 
-namespace Kucoin.NET.Websockets.Private
+namespace Kucoin.NET.Websockets.Public
 {
-    public class Level3Feed<T> : SymbolTopicFeedBase<Level2Update> where T: IAtomicOrderUnit
+    public class Level3Feed<T> : SymbolTopicFeedBase<Level2Update> where T : IAtomicOrderUnit
     {
         public override bool IsPublic => throw new NotImplementedException();
 
@@ -23,21 +23,7 @@ namespace Kucoin.NET.Websockets.Private
             throw new NotImplementedException();
         }
 
-
-        public Level3Feed(
-          string key,
-          string secret,
-          string passphrase,
-          bool isSandbox = false)
-          : base(key, secret, passphrase, isSandbox)
-        {
-        }
-
-        internal Level3Feed() : base(null)
-        {
-        }
-
-        public Level3Feed(ICredentialsProvider credProvider) : base(credProvider)
+        public Level3Feed() : base(null)
         {
         }
 
@@ -45,12 +31,7 @@ namespace Kucoin.NET.Websockets.Private
         /// Instantiate and connect a new Level 2 data feed.
         /// </summary>
         /// <param name="symbols">The symbols to watch.</param>
-        public Level3Feed(IEnumerable<string> symbols,
-          string key,
-          string secret,
-          string passphrase,
-          bool isSandbox = false)
-            : base(key, secret, passphrase, isSandbox)
+        public Level3Feed(IEnumerable<string> symbols) : base(null)
         {
             Connect().ContinueWith(async (t) =>
             {
@@ -62,12 +43,7 @@ namespace Kucoin.NET.Websockets.Private
         /// Instantiate and connect a new Level 2 data feed.
         /// </summary>
         /// <param name="symbol">The symbol to watch.</param>
-        public Level3Feed(string symbol,
-          string key,
-          string secret,
-          string passphrase,
-          bool isSandbox = false)
-            : base(key, secret, passphrase, isSandbox)
+        public Level3Feed(string symbol) : base(null)
 
         {
             Connect().ContinueWith(async (t) =>

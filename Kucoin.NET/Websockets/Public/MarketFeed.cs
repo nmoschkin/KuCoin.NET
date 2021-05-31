@@ -1,10 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Text;
-
-using Kucoin.NET.Data.Market;
-using Kucoin.NET.Data.Websockets;
 using System.Threading.Tasks;
+
+using Kucoin.NET.Data.Websockets;
 
 namespace Kucoin.NET.Websockets.Public
 {

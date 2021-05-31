@@ -3,8 +3,8 @@ using Kucoin.NET.Data.Market;
 using Kucoin.NET.Futures.Data.Market;
 using Kucoin.NET.Futures.Websockets.Observations;
 using Kucoin.NET.Helpers;
-using Kucoin.NET.Websockets;
 using Kucoin.NET.Websockets.Observations;
+using Kucoin.NET.Websockets.Public;
 
 using System;
 

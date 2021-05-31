@@ -4,26 +4,24 @@ using Kucoin.NET.Data.User;
 using Kucoin.NET.Observable;
 using Kucoin.NET.Rest;
 using Kucoin.NET.Websockets.Observations;
-using Kucoin.NET.Websockets.Private;
 using Kucoin.NET.Websockets.Public;
+
+using Kucoin.NET.Futures.Websockets;
+using Kucoin.NET.Futures.Data.Market;
 
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
-using System.Text;
-using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Input;
-using KuCoinApp.Views;
-using Kucoin.NET.Helpers;
-using System.Linq.Expressions;
-using FancyCandles;
-using KuCoinApp.Localization.Resources;
 using System.Windows.Threading;
-using Kucoin.NET.Futures.Websockets;
+
+using FancyCandles;
+
+using KuCoinApp.Localization.Resources;
 using KuCoinApp.ViewModels;
-using Kucoin.NET.Futures.Data.Market;
+using KuCoinApp.Views;
 
 namespace KuCoinApp
 {

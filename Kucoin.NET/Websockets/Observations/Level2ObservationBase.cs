@@ -65,34 +65,38 @@ namespace Kucoin.NET.Websockets.Observations
             orderBook = new TBook();
             cts = new CancellationTokenSource();
 
-            PushThread = Task.Factory.StartNew(async () =>
-            {
-                bool pr = false;
-
-                while (!cts.IsCancellationRequested)
+            PushThread = Task.Factory.StartNew(
+                async () =>
                 {
-                    lock (lockObj)
+                    bool pr = false;
+
+                    while (!cts.IsCancellationRequested)
                     {
-                        if (pushRequested)
+                        lock (lockObj)
                         {
-                            pushRequested = false;
-                            pr = true;
+                            if (pushRequested)
+                            {
+                                pushRequested = false;
+                                pr = true;
+                            }
                         }
+
+                        if (pr)
+                        {
+                            pr = false;
+
+                            PushLive();
+                            OrderBookUpdated?.Invoke(this, new OrderBookUpdatedEventArgs<TBook, TUnit>(this.symbol, orderBook));
+                        }
+
+                        // we always want to give up time-slices on a thread like this.
+                        // a 5 millisecond delay provides an even data flow.
+                        await Task.Delay(5);
                     }
+                }, 
+                TaskCreationOptions.LongRunning | TaskCreationOptions.DenyChildAttach
+            );
 
-                    if (pr)
-                    {
-                        pr = false;
-
-                        PushLive();
-                        OrderBookUpdated?.Invoke(this, new OrderBookUpdatedEventArgs<TBook, TUnit>(this.symbol, orderBook));
-                    }
-
-                    await Task.Delay(10);
-                }
-
-
-            }, TaskCreationOptions.LongRunning | TaskCreationOptions.DenyChildAttach);
         }
 
         /// <summary>

@@ -7,12 +7,10 @@ using System.Collections.Generic;
 using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
-using Kucoin.NET.Websockets.Private;
 using Kucoin.NET.Futures.Websockets;
 using Kucoin.NET.Data.Market;
-using Kucoin.NET.Data.Helpers;
 
-namespace Kucoin.NET.Websockets
+namespace Kucoin.NET.Websockets.Public
 {
     /// <summary>
     /// Calibrated Level 2 Market Feed base class and core logic implementation.
@@ -62,7 +60,6 @@ namespace Kucoin.NET.Websockets
         /// <summary>
         /// Create a new Level 2 feed with the specified credentials.
         /// </summary>
-        /// <param name="isSandbox">Is Sandbox Mode</param>
         /// <remarks>
         /// You must either create this instance on the main / UI thread or call <see cref="Dispatcher.Initialize"/> prior to 
         /// creating an instance of this class or an <see cref="InvalidOperationException"/> will be raised.
@@ -75,12 +72,12 @@ namespace Kucoin.NET.Websockets
             {
                 throw new InvalidOperationException("You must call Kucoin.NET.Helpers.Dispatcher.Initialize() with a SynchronizationContext before instantiating this class.");
             }
-            this.cred = null;
+            cred = null;
         }
-      
+
 
         /// <summary>
-        /// Gets or sets a length of time (in milliseconds) that indicates how often the orderbook is pushed to the UI thread.
+        /// Gets or sets a length of time (in milliseconds) that indicates how often the order book is pushed to the UI thread.
         /// </summary>
         /// <remarks>
         /// The default value is 500 milliseconds.
@@ -90,6 +87,9 @@ namespace Kucoin.NET.Websockets
             get => updateInterval;
             set
             {
+                // the minimum value is 5 milliseconds
+                if (value < 5) value = 5;
+
                 SetProperty(ref updateInterval, value);
             }
         }
@@ -98,6 +98,8 @@ namespace Kucoin.NET.Websockets
         /// Gets or sets the default number of pieces for new observations.
         /// </summary>
         /// <remarks>
+        /// The default value is 50 pieces.
+        /// 
         /// To always include the full market depth, set this value to 0.
         /// 
         /// The value of this property only affects newly created observations.  Changing this value does not change the number of pieces
@@ -248,7 +250,7 @@ namespace Kucoin.NET.Websockets
             var curl = AggregateEndpoint;
             var param = new Dictionary<string, object>();
 
-            param.Add("symbol", (string)symbol);
+            param.Add("symbol", symbol);
 
             var jobj = await MakeRequest(HttpMethod.Get, curl, 5, false, param);
             var result = jobj.ToObject<TBook>();
@@ -338,13 +340,10 @@ namespace Kucoin.NET.Websockets
                                     }
                                 }
                             }
-
                         }
                     }
                 }
             }
         }
     }
-
-
 }
