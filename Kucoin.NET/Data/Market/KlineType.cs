@@ -12,7 +12,7 @@ namespace Kucoin.NET.Data.Market
     /// <summary>
     /// A structure that represents the different supported candlestick time lengths.
     /// </summary>
-    public struct KlineType
+    public struct KlineType : IKlineType
     {
         /// <summary>
         /// The internal "kline-type" string value that the KuCoin API recognizes.
@@ -22,7 +22,11 @@ namespace Kucoin.NET.Data.Market
         /// <summary>
         /// Length of an individual candlestick, in seconds.
         /// </summary>
-        public readonly int Length;
+        private readonly int length;
+
+        public int Length => length;
+        public KlineLengthType LengthType => KlineLengthType.Seconds;
+
 
         private static readonly FieldInfo[] klineFields = typeof(KlineType).GetFields(BindingFlags.Public | BindingFlags.Static);
 
@@ -163,11 +167,11 @@ namespace Kucoin.NET.Data.Market
         /// <summary>
         /// Gets a list of all K-Line types.
         /// </summary>
-        public static IEnumerable<KlineType> AllTypes
+        public static IEnumerable<IKlineType> AllTypes
         {
             get
             {
-                var l = new List<KlineType>();
+                var l = new List<IKlineType>();
 
                 foreach (var f in klineFields)
                 {
@@ -182,7 +186,7 @@ namespace Kucoin.NET.Data.Market
         /// Return all valid K-Line types.
         /// </summary>
         /// <returns></returns>
-        public IEnumerable<KlineType> GetAllTypes() => AllTypes;
+        public IEnumerable<IKlineType> GetAllTypes() => AllTypes;
 
 
         /// <summary>
@@ -206,7 +210,7 @@ namespace Kucoin.NET.Data.Market
         public DateTime GetStartDate(int pieces, DateTime? endDate = null)
         {
             var et = endDate ?? DateTime.Now;
-            return et.AddSeconds(-1 * Length * pieces);
+            return et.AddSeconds(-1 * length * pieces);
         }
 
         public int Number
@@ -259,7 +263,7 @@ namespace Kucoin.NET.Data.Market
 
             if (value == null)
             {
-                Length = 0;
+                length = 0;
                 return;
             }
 
@@ -307,7 +311,7 @@ namespace Kucoin.NET.Data.Market
             m *= timenum;
             m *= 60;
 
-            Length = m;
+            length = m;
 
         }
 
@@ -324,7 +328,7 @@ namespace Kucoin.NET.Data.Market
             }
             else if (obj is int i)
             {
-                return i == Length;
+                return i == length;
             }
             else
             {

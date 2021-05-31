@@ -45,6 +45,7 @@ namespace KuCoinApp
             }
 
             Seed = Guid.Parse(Settings.Hvcyp);
+            
         }
 
     }

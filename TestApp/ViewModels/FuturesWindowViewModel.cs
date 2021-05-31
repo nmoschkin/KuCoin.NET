@@ -26,7 +26,7 @@ using KuCoinApp.Views;
 namespace KuCoinApp
 {
 
-    public class MainWindowViewModel : WindowViewModelBase, IObserver<Ticker>, IObserver<KlineFeedMessage<KlineCandle>>
+    public class FuturesWindowViewModel : WindowViewModelBase, IObserver<Ticker>, IObserver<KlineFeedMessage<KlineCandle>>
     {
         protected Level2 level2Feed;
 
@@ -337,7 +337,7 @@ namespace KuCoinApp
                 var tsp = ((string)symbol).Split("-");
 
                 MarketCurrency c1, c2;
-                c1 = c2 = null; 
+                c1 = c2 = null;
 
                 foreach (var c in market.Currencies)
                 {
@@ -368,19 +368,19 @@ namespace KuCoinApp
             var inc = "0" + sym.QuoteIncrement.ToString().Replace("1", "0");
 
             SizeFormat = inc;
-            
+
             inc = sym.PriceIncrement.ToString().Replace("1", "0");
 
             PriceFormat = inc;
         }
 
-     
+
 
         protected void UpdateSymbol(
-            string oldSymbol, 
-            string newSymbol, 
-            bool force = false, 
-            bool isKlineChange = false, 
+            string oldSymbol,
+            string newSymbol,
+            bool force = false,
+            bool isKlineChange = false,
             KlineType? oldKline = null)
         {
 
@@ -510,9 +510,9 @@ namespace KuCoinApp
                 if (level2Feed.Connected == false)
                 {
                     System.Windows.MessageBox.Show(
-                        AppResources.ErrorNoInternet, 
-                        "", 
-                        System.Windows.MessageBoxButton.OK, 
+                        AppResources.ErrorNoInternet,
+                        "",
+                        System.Windows.MessageBoxButton.OK,
                         System.Windows.MessageBoxImage.Error);
 
                     return;
@@ -536,7 +536,7 @@ namespace KuCoinApp
                         "",
                         System.Windows.MessageBoxButton.OK,
                         System.Windows.MessageBoxImage.Error);
-                    
+
                     return;
 
                 }
@@ -593,7 +593,7 @@ namespace KuCoinApp
                 return false;
             }
 
-            
+
         }
 
         public TradingSymbol[] RecentSymbols
@@ -648,7 +648,7 @@ namespace KuCoinApp
                 {
                     Volume = ticker.Candles.Volume;
                     VolumeTime = ticker.Timestamp;
-                   
+
                 });
             }
             else
@@ -685,10 +685,10 @@ namespace KuCoinApp
                 {
                     kl.HighPrice = p;
                 }
-                    
+
                 kl.ClosePrice = p;
 
-                if (VolumeTime != null && Candle.IsTimeInCandle(kl, (DateTime)VolumeTime)) 
+                if (VolumeTime != null && Candle.IsTimeInCandle(kl, (DateTime)VolumeTime))
                 {
                     kl.Volume = Volume ?? 0;
                 }
@@ -747,7 +747,7 @@ namespace KuCoinApp
                     return true;
                 }
                 catch
-                {                    
+                {
                 }
             }
 
@@ -767,9 +767,9 @@ namespace KuCoinApp
         {
         }
 
-        public MainWindowViewModel()
+        public FuturesWindowViewModel()
         {
-            
+
 
             App.Current.Settings.PropertyChanged += Settings_PropertyChanged;
             market = new Market();
@@ -800,7 +800,7 @@ namespace KuCoinApp
 
                 if (string.IsNullOrEmpty(rec)) return;
 
-                foreach(var sym in symbols)
+                foreach (var sym in symbols)
                 {
                     if (sym.Symbol == rec)
                     {
@@ -860,7 +860,6 @@ namespace KuCoinApp
 
         protected override async Task Initialize()
         {
-
             if (market == null) market = new Market();
 
             await market.RefreshSymbolsAsync().ContinueWith(async (t) =>
@@ -884,25 +883,14 @@ namespace KuCoinApp
                     {
                         pin = CryptoCredentials.Pin;
                     }
-                   
-                    cred = CryptoCredentials.LoadFromStorage(App.Current.Seed, pin, false);                    
+
+                    cred = CryptoCredentials.LoadFromStorage(App.Current.Seed, pin, false);
 
                     if (cred == null && PinWindow.LastCloseResult == false)
                     {
                         AskQuit?.Invoke(this, new EventArgs());
                         return;
                     }
-
-
-
-                    // Bring up the testing console.
-
-                    // Uncomment to use.
-                    //await Program.TestMain(cred);
-
-                    // Note, closing the testing console once it is open will close the program.
-
-
 
                     Symbols = market.Symbols;
 
@@ -934,7 +922,7 @@ namespace KuCoinApp
                             // and the public feed does not include them.
 
                             // we connect level2Feed.
-                            
+
                             // give its own socket because of the speed of data.
                             await level2Feed.Connect();
 
@@ -993,6 +981,13 @@ namespace KuCoinApp
                                 return;
                             }
 
+                            // Bring up the testing console.
+
+                            // Uncomment to use.
+                            // _ = Program.TestMain(cred);
+
+                            // Note, closing the testing console once it is open will close the program.
+
                             return;
                         }
                     }
@@ -1003,7 +998,7 @@ namespace KuCoinApp
 
         }
 
-        ~MainWindowViewModel()
+        ~FuturesWindowViewModel()
         {
             tickerSubscription.Dispose();
             tickerFeed.Dispose();

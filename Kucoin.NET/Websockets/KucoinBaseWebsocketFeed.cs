@@ -812,8 +812,7 @@ namespace Kucoin.NET.Websockets
         /// <summary>
         /// Send binary data to the remote server.
         /// </summary>
-        /// <param name="data"></param>
-        /// <returns></returns>
+        /// <param name="data">Raw data bytes to send.</param>
         protected async Task Send(byte[] data)
         {
             if (disposed) throw new ObjectDisposedException(nameof(KucoinBaseWebsocketFeed));
@@ -831,7 +830,7 @@ namespace Kucoin.NET.Websockets
         /// <summary>
         /// Send text to the remote server.
         /// </summary>
-        /// <param name="text"></param>
+        /// <param name="text">The text string to send.</param>
         /// <param name="encoding">The optional <see cref="Encoding"/> to use to transmit the text.
         /// If this parameter is null, UTF-8 encoding is used, by default.
         /// </param>
@@ -971,7 +970,7 @@ namespace Kucoin.NET.Websockets
 
             if (isMultiplexHost && multiplexClients != null && multiplexClients.Count > 0)
             {
-                // multiplexed children need to go, too.
+                // multiplexed clients need to go, too.
                 foreach (var child in multiplexClients)
                 {
                     child.Dispose();

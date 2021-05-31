@@ -15,6 +15,8 @@ using System.Windows;
 using System.Text;
 using System.Reflection;
 using Kucoin.NET.Futures.Websockets;
+using Kucoin.NET.Futures.Rest;
+using Kucoin.NET.Futures.Data.Market;
 
 namespace KuCoinApp
 {
@@ -174,7 +176,9 @@ namespace KuCoinApp
             var fl2 = new FuturesLevel2();
 
             var orders = await fl2.GetAggregatedOrder(fsym);
+            var fm = new FuturesMarket();
 
+            var fkandle = await fm.GetKline(fsym, FuturesKlineType.Min1);
 
             //return;
 

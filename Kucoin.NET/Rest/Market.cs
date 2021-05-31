@@ -378,7 +378,7 @@ namespace Kucoin.NET.Rest
             {
                 var candle = new TCandle();
                 
-                if (candle is IWritableTypedCandle tc)
+                if (candle is IWritableTypedCandle<KlineType> tc)
                 {
                     tc.Type = type;
                 }

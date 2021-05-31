@@ -9,10 +9,31 @@ using System.Text;
 
 namespace Kucoin.NET.Data.Market
 {
+
+    /// <summary>
+    /// K-Line Candlestick basic implementation.
+    /// </summary>
+    public abstract class CandleBase : IWritableBasicCandle
+    {
+        public DateTime Timestamp { get; set; }
+
+        public decimal OpenPrice { get; set; }
+
+        public decimal ClosePrice { get; set; }
+
+        public decimal HighPrice { get; set; }
+
+        public decimal LowPrice { get; set; }
+
+        public decimal Volume { get; set; }
+
+    }
+
+
     /// <summary>
     /// K-Line Candlestick standard implementation.
     /// </summary>
-    public class Candle : IWritableTypedCandle
+    public class Candle : CandleBase, IWritableTypedCandle<KlineType>
     {
         /// <summary>
         /// Initialize a new candle stick object from a list of string values.
@@ -77,30 +98,22 @@ namespace Kucoin.NET.Data.Market
         /// <param name="candle">The candlestick to test.</param>
         /// <param name="time">The time to test.</param>
         /// <returns>True if the time falls within the candlestick.</returns>
-        public static bool IsTimeInCandle(ITypedCandle candle, DateTime time)
+        public static bool IsTimeInCandle(ITypedCandle<KlineType> candle, DateTime time)
         {
-            var dv = candle.Timestamp.AddSeconds(candle.Type.Length);
+            DateTime dv;
+            
+            if (candle.Type.LengthType == KlineLengthType.Seconds)
+                dv = candle.Timestamp.AddSeconds(candle.Type.Length);
+            else
+                dv = candle.Timestamp.AddMinutes(candle.Type.Length);
 
             if (time > dv || time < candle.Timestamp) return false;
             else return true;
         }
 
-        public virtual DateTime Timestamp { get; set; }
-
-        public virtual decimal OpenPrice { get; set; }
-
-        public virtual decimal ClosePrice { get; set; }
-
-        public virtual decimal HighPrice { get; set; }
-
-        public virtual decimal LowPrice { get; set; }
-
         public virtual decimal Amount { get; set; }
 
-        public virtual decimal Volume { get; set; }
-
         public virtual KlineType Type { get; set; }
-
 
         public override string ToString()
         {

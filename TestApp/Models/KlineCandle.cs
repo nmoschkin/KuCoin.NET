@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace KuCoinApp
 {
-    public class KlineCandle : ObservableBase, FancyCandles.ICandle, IWritableTypedCandle, ICloneable
+    public class KlineCandle : ObservableBase, FancyCandles.ICandle, IWritableTypedCandle<KlineType>, ICloneable
     {
         private DateTime ts;
         private decimal o;

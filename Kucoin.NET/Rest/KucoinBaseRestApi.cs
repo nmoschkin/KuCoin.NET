@@ -87,7 +87,7 @@ namespace Kucoin.NET.Rest
                 cred = new MemoryEncryptedCredentialsProvider(credProvider);
             }
 
-            SetDefaultUrl(futures, cred.GetSandbox(), url);
+            SetDefaultUrl(futures, cred?.GetSandbox() ?? false, url);
         }
 
         /// <summary>

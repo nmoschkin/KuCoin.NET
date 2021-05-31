@@ -1,8 +1,10 @@
-﻿using Kucoin.NET.Helpers;
+﻿using Kucoin.NET.Futures.Data.User;
+using Kucoin.NET.Helpers;
 using Kucoin.NET.Rest;
 
 using System;
 using System.Collections.Generic;
+using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -35,7 +37,7 @@ namespace Kucoin.NET.Futures.Rest
         /// </summary>
         /// <param name="currency">The currency of the account to retrieve (or null for all currencies.)</param>
         /// <returns></returns>
-        public async Task GetAccountsOverview(string currency = null)
+        public async Task<FuturesAccount> GetAccountOverview(string currency = "XBT")
         {
             var dict = new Dictionary<string, object>();
 
@@ -45,13 +47,12 @@ namespace Kucoin.NET.Futures.Rest
 
             }
 
-            var url = "/api/v1/contracts/active";
+            var url = "/api/v1/account-overview";
 
+            var jobj = await MakeRequest(HttpMethod.Get, url, reqParams: dict);
 
-
-
+            return jobj.ToObject<FuturesAccount>();
         }
-
 
     }
 }

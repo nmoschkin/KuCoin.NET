@@ -87,7 +87,7 @@ namespace Kucoin.NET.Websockets.Public
 
                     // The candlestick does not need to be a typed candle,
                     // but if it is, we will set that value, as well.
-                    if (candle is IWritableTypedCandle wt)
+                    if (candle is IWritableTypedCandle<KlineType> wt)
                     {
                         wt.Type = sk.KlineType;
                     }
