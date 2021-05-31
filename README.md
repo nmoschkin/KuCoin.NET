@@ -3,8 +3,6 @@ KuCoin API Libraries written in .NET Standard 2.0
 
 __ATTENTION__: __THIS IS WORK IN PROGRESS__.  Some of the code could change dramatically as different problems are resolved according to best practices.
 
-These are __not__ official libraries from KuCoin.  They are new implementations.  KuCoin does not currently offer an open-source C# library for .NET, to my knowledge.
-
 This library is in active development, and it's brand new so things will undoubtedly change while I consider next steps.
 
 May 23rd, 2021: Some major refactoring/finalizing of the guts of the library (especially the websocket feed), and I'm settling on better-chosen names for classes.
