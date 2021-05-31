@@ -13,7 +13,8 @@ namespace Kucoin.NET.Websockets.Public
     /// <summary>
     /// Implements the symbol candles feed (Level 2).
     /// </summary>
-    public class KlineFeed<T> : KucoinBaseWebsocketFeed<KlineFeedMessage<T>> where T: IWritableCandle, new()
+    /// <typeparam name="TCandle">The type of the <see cref="IWritableCandle"/> interface implementation to serve.</typeparam>
+    public class KlineFeed<TCandle> : KucoinBaseWebsocketFeed<KlineFeedMessage<TCandle>> where TCandle: IWritableCandle, new()
     {
 
         private List<SymbolKline> activeTickers = new List<SymbolKline>();
@@ -52,19 +53,28 @@ namespace Kucoin.NET.Websockets.Public
                     var i = msg.Topic.IndexOf(":");
                     if (i == -1) return;
 
-                    var ticker = new KlineFeedMessage<T>();
+                    var ticker = new KlineFeedMessage<TCandle>();
                     
                     var sk = SymbolKline.Parse(msg.Topic.Substring(i + 1));
+
+                    // The JSON.NET documentation states clearly that
+                    // for tricky deserialization scenarios, the fastest
+                    // way is manual deserialization.
 
                     ticker.Timestamp = EpochTime.NanosecondsToDate(msg.Data["time"].ToObject<long>());
                     ticker.Symbol = msg.Data["symbol"].ToObject<string>();
 
-                    var values = msg.Data["candles"].ToObject<string[]>();
+                    // Here we have the candle data efficiently served as an array of strings.
+                    // In C# we want to parse this array into a strongly-typed object.
 
-                    var candle = new T();
+                    var values = msg.Data["candles"].ToObject<string[]>();
+                    var candle = new TCandle();
 
                     candle.Timestamp = EpochTime.SecondsToDate(long.Parse(values[0]));
 
+                    // We are going to assume that the data from the feed is correctly formatted.
+                    // If an error is thrown here, then there is a deeper problem.
+                    
                     candle.OpenPrice = decimal.Parse(values[1]);
                     candle.ClosePrice = decimal.Parse(values[2]);
 
@@ -74,6 +84,8 @@ namespace Kucoin.NET.Websockets.Public
                     candle.Amount = decimal.Parse(values[5]);
                     candle.Volume = decimal.Parse(values[6]);
 
+                    // The candlestick does not need to be a typed candle,
+                    // but if it is, we will set that value, as well.
                     if (candle is IWritableTypedCandle wt)
                     {
                         wt.Type = sk.KlineType;
@@ -81,6 +93,7 @@ namespace Kucoin.NET.Websockets.Public
 
                     ticker.Candles = candle;
 
+                    // push the final object.
                     await PushNext(ticker);
                 }
             }
@@ -104,7 +117,7 @@ namespace Kucoin.NET.Websockets.Public
         /// <returns></returns>
         public virtual async Task AddSymbol(string symbol, KlineType type)
         {
-            if (disposed) throw new ObjectDisposedException(nameof(KlineFeed<T>));
+            if (disposed) throw new ObjectDisposedException(nameof(KlineFeed<TCandle>));
             if (!Connected)
             {
                 await Connect();
@@ -153,7 +166,7 @@ namespace Kucoin.NET.Websockets.Public
         /// <param name="type">The <see cref="KlineType"/> of the ticker to remove.</param>
         public virtual async Task RemoveSymbol(string symbol, KlineType type)
         {
-            if (disposed) throw new ObjectDisposedException(nameof(KlineFeed<T>));
+            if (disposed) throw new ObjectDisposedException(nameof(KlineFeed<TCandle>));
             if (!Connected) return;
 
             SymbolKline sk = null;

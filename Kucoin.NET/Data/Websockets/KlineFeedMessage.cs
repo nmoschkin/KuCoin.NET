@@ -27,6 +27,12 @@ namespace Kucoin.NET.Data.Websockets
         [JsonProperty("symbol")]
         public string Symbol { get; set; }
 
+        /// <summary>
+        /// Create a new K-Line websocket feed message packet.
+        /// </summary>
+        public KlineFeedMessage()
+        {
+        }
 
     }
 }
