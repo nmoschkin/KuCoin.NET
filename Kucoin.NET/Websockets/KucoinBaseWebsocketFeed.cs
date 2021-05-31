@@ -771,7 +771,7 @@ namespace Kucoin.NET.Websockets
                 }
                 else if (isMultiplexHost)
                 {
-                    var p = multiplexClients.Where((child) => child.tunnelId == e.TunnelId).FirstOrDefault();
+                    var p = multiplexClients.Where((client) => client.tunnelId == e.TunnelId).FirstOrDefault();
 
                     if (p != null)
                     {
@@ -959,7 +959,7 @@ namespace Kucoin.NET.Websockets
         /// <param name="disposing">True if being called from the <see cref="Dispose"/> method, false if being called by the destructor.</param>
         protected virtual void Dispose(bool disposing)
         {
-            if (disposed) return; // throw new ObjectDisposedException(nameof(KucoinBaseWebsocketFeed));
+            if (disposed) return;
 
             Disconnect();
 
@@ -971,9 +971,9 @@ namespace Kucoin.NET.Websockets
             if (isMultiplexHost && multiplexClients != null && multiplexClients.Count > 0)
             {
                 // multiplexed clients need to go, too.
-                foreach (var child in multiplexClients)
+                foreach (var client in multiplexClients)
                 {
-                    child.Dispose();
+                    client.Dispose();
                 }
             }
 
