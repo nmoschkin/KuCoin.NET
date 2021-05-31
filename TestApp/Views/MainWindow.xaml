@@ -293,13 +293,13 @@
                             <GridView>
                                 <GridView.Columns>
                                     <GridViewColumn
-                                        Width="60"
+                                        Width="80"
                                         CellTemplate="{StaticResource TickerPriceTemplate}"
                                         Header="{i18n:Translate ResourceKey=Price}" />
 
 
                                     <GridViewColumn
-                                        Width="60"
+                                        Width="90"
                                         CellTemplate="{StaticResource TickerSizeTemplate}"
                                         Header="{i18n:Translate ResourceKey=Size}" />
 
@@ -316,13 +316,13 @@
                             <GridView>
                                 <GridView.Columns>
                                     <GridViewColumn
-                                        Width="60"
+                                        Width="80"
                                         CellTemplate="{StaticResource TickerPriceTemplate}"
                                         Header="{i18n:Translate ResourceKey=Price}" />
 
 
                                     <GridViewColumn
-                                        Width="60"
+                                        Width="90"
                                         CellTemplate="{StaticResource TickerSizeTemplate}"
                                         Header="{i18n:Translate ResourceKey=Size}" />
 
