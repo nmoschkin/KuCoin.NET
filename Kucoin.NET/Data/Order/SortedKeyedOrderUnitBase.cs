@@ -10,17 +10,17 @@ namespace Kucoin.NET.Data.Order
     /// <summary>
     /// The base class from which all order book lists must inherit (for lists of asks and bids.)
     /// </summary>
-    /// <typeparam name="T">The type of the order unit.</typeparam>
+    /// <typeparam name="TUnit">The type of the order unit.</typeparam>
     /// <remarks>
-    /// <see cref="T"/> must implement <see cref="IOrderUnit"/>.
+    /// <see cref="TUnit"/> must implement <see cref="IOrderUnit"/>.
     /// Classes derived from this class maintain a price-sorted, keyed list.
     /// Sorting is vital to the function of Level 2 and Level 3 websocket feeds.
     /// </remarks>
-    public abstract class SortedKeyedOrderUnitBase<T> : KeyedCollection<decimal, T> where T: IOrderUnit
+    public abstract class SortedKeyedOrderUnitBase<TUnit> : KeyedCollection<decimal, TUnit> where TUnit: IOrderUnit
     {
         protected object lockObj = new object();
 
-        protected override decimal GetKeyForItem(T item) => item.Price;
+        protected override decimal GetKeyForItem(TUnit item) => item.Price;
 
         protected bool descending;
 
@@ -33,7 +33,7 @@ namespace Kucoin.NET.Data.Order
             this.descending = descending;
         }
         
-        protected override void InsertItem(int index, T item)
+        protected override void InsertItem(int index, TUnit item)
         {
             lock (lockObj)
             {
@@ -47,7 +47,7 @@ namespace Kucoin.NET.Data.Order
         /// </summary>
         /// <param name="unit">The order unit to test.</param>
         /// <returns>The calculated insert index based on the sort direction.</returns>
-        protected int GetInsertIndex(T unit)
+        protected int GetInsertIndex(TUnit unit)
         {
             if (Count == 0) return 0;
 
@@ -55,7 +55,7 @@ namespace Kucoin.NET.Data.Order
             int lo = 0;
             int mid;
 
-            var l = this as IList<T>;
+            var l = this as IList<TUnit>;
             var uprice = unit.Price;
             decimal cprice;
 
@@ -115,7 +115,7 @@ namespace Kucoin.NET.Data.Order
             }
 
         }
-        protected override void SetItem(int index, T item)
+        protected override void SetItem(int index, TUnit item)
         {
             lock (lockObj)
             {
@@ -124,7 +124,7 @@ namespace Kucoin.NET.Data.Order
                     InsertItem(0, item);
                     return;
                 }
-                var oldItem = ((IList<T>)this)[index];
+                var oldItem = ((IList<TUnit>)this)[index];
 
                 if (Contains(item.Price))
                 {
@@ -142,14 +142,14 @@ namespace Kucoin.NET.Data.Order
         }
 
         /// <summary>
-        /// Returns the contents as an array of <see cref="T"/>.
+        /// Returns the contents as an array of <see cref="TUnit"/>.
         /// </summary>
         /// <returns></returns>
-        public T[] ToArray()
+        public TUnit[] ToArray()
         {
 
-            if (Count == 0) return new T[0];
-            T[] output = new T[Count];
+            if (Count == 0) return new TUnit[0];
+            TUnit[] output = new TUnit[Count];
 
             lock (lockObj)
             {
