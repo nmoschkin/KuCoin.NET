@@ -16,10 +16,11 @@ namespace Kucoin.NET.Observable
     /// Standard observable, keyed collection of orders (asks and bids.)
     /// </summary>
     /// <typeparam name="T"></typeparam>
-    public class ObservableOrderUnits<T> : SortedKeyedOrderUnitBase<T>, INotifyCollectionChanged where T: IOrderUnit
+    public class ObservableOrderUnits<T> : SortedKeyedOrderUnitBase<T>, INotifyPropertyChanged, INotifyCollectionChanged where T: IOrderUnit
     {
         public event NotifyCollectionChangedEventHandler CollectionChanged;
-        
+        public event PropertyChangedEventHandler PropertyChanged;
+
         public ObservableOrderUnits() : this(false)
         {
         }
@@ -87,7 +88,15 @@ namespace Kucoin.NET.Observable
         protected void OnCollectionChanged(NotifyCollectionChangedEventArgs e)
         {
             CollectionChanged?.Invoke(this, e);
-        }
 
+            switch (e.Action)
+            {
+                case NotifyCollectionChangedAction.Add:
+                case NotifyCollectionChangedAction.Remove:
+                case NotifyCollectionChangedAction.Reset:
+                    PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Count)));
+                    break;
+            }
+        }
     }
 }

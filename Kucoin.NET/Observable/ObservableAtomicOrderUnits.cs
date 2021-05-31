@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
+using System.ComponentModel;
 using System.Text;
 
 namespace Kucoin.NET.Observable
@@ -13,9 +14,11 @@ namespace Kucoin.NET.Observable
     /// Standard implementation of a keyed, observable collection for Level 3 atomic order units
     /// </summary>
     /// <typeparam name="T"></typeparam>
-    public class ObservableAtomicOrderUnits<T> : SortedKeyedOrderUnitBase<T>, INotifyCollectionChanged where T: IAtomicOrderUnit
+    public class ObservableAtomicOrderUnits<T> : SortedKeyedOrderUnitBase<T>, INotifyPropertyChanged, INotifyCollectionChanged where T: IAtomicOrderUnit
     {
         public event NotifyCollectionChangedEventHandler CollectionChanged;
+
+        public event PropertyChangedEventHandler PropertyChanged;
 
         public ObservableAtomicOrderUnits() : this(false)
         {
@@ -85,6 +88,15 @@ namespace Kucoin.NET.Observable
         protected void OnCollectionChanged(NotifyCollectionChangedEventArgs e)
         {
             CollectionChanged?.Invoke(this, e);
+
+            switch (e.Action)
+            {
+                case NotifyCollectionChangedAction.Add:
+                case NotifyCollectionChangedAction.Remove:
+                case NotifyCollectionChangedAction.Reset:
+                    PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Count)));
+                    break;
+            }
         }
 
     }
