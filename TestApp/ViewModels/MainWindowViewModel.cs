@@ -903,6 +903,8 @@ namespace KuCoinApp
                         level2Feed.UpdateInterval = 50;
                         level2Feed.DefaultPieces = 50;
 
+                        // for testing futures
+
                         //if (cred.AttachedAccount != null)
                         //{
                         //    futuresl2 = new FuturesLevel2(cred.AttachedAccount);
@@ -923,6 +925,8 @@ namespace KuCoinApp
                             
                             // give its own socket because of the speed of data.
                             await level2Feed.Connect();
+
+                            // for testing futures
                             //await futuresl2.Connect();
 
                             // we attach tickerFeed and klineFeed 
@@ -947,8 +951,8 @@ namespace KuCoinApp
                     else
                     {
                         CryptoCredentials.Pin = pin;
-                        // if we don't have a credentialed feed
-                        // we can just attach one public feed to the other.
+
+                        await level2Feed.Connect();
                         await tickerFeed.Connect(true);
                         await klineFeed.MultiplexInit(tickerFeed);
                     }

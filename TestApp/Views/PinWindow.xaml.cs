@@ -25,6 +25,9 @@ namespace KuCoinApp
     {
         Settings settings = new Settings();
 
+        /// <summary>
+        /// Last window closed result.
+        /// </summary>
         public static bool? LastCloseResult { get; private set; }
 
         public PinWindow()
@@ -56,6 +59,11 @@ namespace KuCoinApp
 
         }
 
+        /// <summary>
+        /// Opens the pin window for user pin entry.
+        /// </summary>
+        /// <param name="owner">The owner window.</param>
+        /// <returns>The 6-digit pin in string format.</returns>
         public static async Task<string> GetPin(Window owner = null)
         {
             return await Task.Run(() =>
