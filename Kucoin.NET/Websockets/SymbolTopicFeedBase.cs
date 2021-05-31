@@ -20,6 +20,8 @@ namespace Kucoin.NET.Websockets
         
         protected string topic;
 
+        public override event EventHandler<FeedDataReceivedEventArgs<T>> FeedDataReceived;
+
         /// <summary>
         /// Default constructor
         /// </summary>
@@ -107,7 +109,6 @@ namespace Kucoin.NET.Websockets
             }
 
             var topic = $"{this.topic}:{sb}";
-
 
             var e = new FeedMessage()
             {
@@ -242,6 +243,12 @@ namespace Kucoin.NET.Websockets
                 }
 
                 Parallel.Invoke(actions.ToArray());
+
+                if (FeedDataReceived != null)
+                {
+                    FeedDataReceived.Invoke(this, new FeedDataReceivedEventArgs<T>(obj));
+                }
+
             });
         }
 
@@ -266,7 +273,7 @@ namespace Kucoin.NET.Websockets
         {
             if (tunnelId != null && !isMultiplexHost)
             {
-                throw new InvalidOperationException("Cannot initialize as multiplex client when already initialized as multiplex connection host.");
+                throw new InvalidOperationException("Cannot initialize as multiplex connection host when already initialized as multiplex client.");
             }
             var child = new TFeed();
 

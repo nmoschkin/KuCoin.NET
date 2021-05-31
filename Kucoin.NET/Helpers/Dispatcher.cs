@@ -25,9 +25,12 @@ namespace Kucoin.NET.Helpers
         /// <param name="context">The synchronization context.</param>
         /// <remarks>
         /// You must create a synchronization context from the default dispatcher of your application.
+        /// This method will also return true if the dispatcher was previously successfully initialized.
         /// </remarks>
         public static bool Initialize(SynchronizationContext context)
         {
+            if (init) return true;
+
             Context = context;
             init = Context != null;
 
@@ -41,9 +44,12 @@ namespace Kucoin.NET.Helpers
         /// <returns>True if dispatcher was successfully initialized.</returns>
         /// <remars>
         /// This method must be called from the main/UI thread of your application.
+        /// This method will also return true if the dispatcher was previously successfully initialized.
         /// </remars>
         public static bool Initialize()
         {
+            if (init) return true;
+
             Context = SynchronizationContext.Current;
 
             init = Context != null;

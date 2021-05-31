@@ -115,10 +115,17 @@ namespace Kucoin.NET.Websockets.Public
                         {
                             JsonConvert.PopulateObject(msg.Data.ToString(), update);
 
-                            Dispatcher.InvokeOnMainThread((o) =>
+                            if (Dispatcher.Initialized)
+                            {
+                                Dispatcher.InvokeOnMainThread((o) =>
+                                {
+                                    update.UpdateObservable();
+                                });
+                            }
+                            else
                             {
                                 update.UpdateObservable();
-                            });
+                            }
                         }
 
                         if (observations.Count > 0)

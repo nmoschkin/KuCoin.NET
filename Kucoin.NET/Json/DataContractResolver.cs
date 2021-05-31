@@ -9,8 +9,14 @@ using Newtonsoft.Json.Serialization;
 
 namespace Kucoin.NET.Json
 {
+    /// <summary>
+    /// Global default data contract resolver for the KuCoin API.
+    /// </summary>
     public class DataContractResolver : DefaultContractResolver
     {
+        /// <summary>
+        /// Gets the singleton instance of this class.
+        /// </summary>
         public static readonly DataContractResolver Instance = new DataContractResolver();
 
         private static readonly StringToDecimalConverter decConv = new StringToDecimalConverter();

@@ -1,37 +1,34 @@
-﻿
-/*****************************************************
- * Kucoin.NET Base Websocket Feed Class 
- * 
+﻿/*****************************************************
+ * Kucoin.NET Base Websocket Feed Class
+ *
  * Basic structure and low-level communications for all
  * websocket feeds.
- * 
- * 
+ *
+ *
  * Copyright (C) 2021 Nathaniel Moschkin
  * Licensed under the Apache 2 license.
- * 
- * 
- * 
+ *
+ *
+ *
  * **/
 
+using Kucoin.NET.Data.Websockets;
+using Kucoin.NET.Helpers;
+using Kucoin.NET.Rest;
+
+using Newtonsoft.Json;
 
 using System;
-using System.Linq;
 using System.Collections.Generic;
+using System.Linq;
+using System.Net.Http;
+using System.Net.WebSockets;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using Newtonsoft.Json;
-
-using Kucoin.NET.Data.Websockets;
-
-using System.Net.Http;
-using System.Net.WebSockets;
-using Kucoin.NET.Rest;
-using Kucoin.NET.Helpers;
 
 namespace Kucoin.NET.Websockets
 {
-
     /// <summary>
     /// Websocket feed abstract base class.
     /// </summary>
@@ -70,7 +67,7 @@ namespace Kucoin.NET.Websockets
 
         protected int sendBufferSize = 51920;
 
-        #endregion
+        #endregion Protected fields
 
         #region Events
 
@@ -101,7 +98,7 @@ namespace Kucoin.NET.Websockets
         /// </remarks>
         public virtual event EventHandler<DataReceivedEventArgs> DataReceived;
 
-        #endregion
+        #endregion Events
 
         #region Static Constructor
 
@@ -113,7 +110,7 @@ namespace Kucoin.NET.Websockets
             }
         }
 
-        #endregion
+        #endregion Static Constructor
 
         #region Default Constructor
 
@@ -124,15 +121,16 @@ namespace Kucoin.NET.Websockets
         /// <param name="url">Optional alternate base URL.</param>
         /// <param name="isv1api">Is v1 API.</param>
         /// <param name="multiplexHost">Optional multiplex host to attach to as a client.</param>
+        /// <param name="futures">Use the Futures API endpoint.</param>
         public KucoinBaseWebsocketFeed(
             ICredentialsProvider credProvider,
             string url = null,
             bool isv1api = false,
-            KucoinBaseWebsocketFeed multiplexHost = null, 
-            bool futures = false) 
+            KucoinBaseWebsocketFeed multiplexHost = null,
+            bool futures = false)
             : base(
-                  credProvider, 
-                  url, 
+                  credProvider,
+                  url,
                   isv1api,
                   futures
                   )
@@ -144,10 +142,9 @@ namespace Kucoin.NET.Websockets
 
                 if (t.Result != true)
                 {
-                    throw new InvalidOperationException("Failed to initialize multiplexer from parent.");
+                    throw new InvalidOperationException("Failed to initialize multiplexer from connection host.");
                 }
             }
-
         }
 
         /// <summary>
@@ -160,21 +157,22 @@ namespace Kucoin.NET.Websockets
         /// <param name="url">Optional alternate base URL.</param>
         /// <param name="isv1api">Is v1 API.</param>
         /// <param name="multiplexHost">Optional multiplex host to attach to as a client.</param>
+        /// <param name="futures">Use the Futures API endpoint.</param>
         public KucoinBaseWebsocketFeed(
             string key,
             string secret,
             string passphrase,
             bool isSandbox = false,
             string url = null,
-            bool isv1api = false, 
+            bool isv1api = false,
             KucoinBaseWebsocketFeed multiplexHost = null,
-            bool futures = false) 
+            bool futures = false)
             : base(
-                  key, 
-                  secret, 
-                  passphrase, 
-                  isSandbox, 
-                  url, 
+                  key,
+                  secret,
+                  passphrase,
+                  isSandbox,
+                  url,
                   isv1api,
                   futures
                   )
@@ -186,12 +184,12 @@ namespace Kucoin.NET.Websockets
 
                 if (t.Result != true)
                 {
-                    throw new InvalidOperationException("Failed to initialize multiplexer from parent.");
+                    throw new InvalidOperationException("Failed to initialize multiplexer from connection host.");
                 }
             }
         }
 
-        #endregion
+        #endregion Default Constructor
 
         #region Public Properties
 
@@ -255,7 +253,7 @@ namespace Kucoin.NET.Websockets
             get => tunnelId != null;
         }
 
-        #endregion
+        #endregion Public Properties
 
         #region Public Abstract Members
 
@@ -271,12 +269,12 @@ namespace Kucoin.NET.Websockets
         /// <returns></returns>
         protected abstract Task HandleMessage(FeedMessage msg);
 
-        #endregion
+        #endregion Public Abstract Members
 
         #region Connection Handling
 
         /// <summary>
-        /// Disconnect the websocket. 
+        /// Disconnect the websocket.
         /// </summary>
         /// <remarks>
         /// This method does not dispose any <see cref="IObserver{T}"/> subscriptions.
@@ -348,7 +346,7 @@ namespace Kucoin.NET.Websockets
 
             if (socket.State == WebSocketState.Open)
             {
-                // The Pinger: 
+                // The Pinger:
 
                 keepAlive = Task.Factory.StartNew(
                     async () =>
@@ -365,12 +363,11 @@ namespace Kucoin.NET.Websockets
 
                             await Ping();
                         }
-
-                    }, 
+                    },
                     TaskCreationOptions.LongRunning | TaskCreationOptions.DenyChildAttach
                 );
 
-                // The Reader: 
+                // The Reader:
                 // -----------
 
                 // message queue
@@ -378,13 +375,13 @@ namespace Kucoin.NET.Websockets
 
                 // data receiver
                 inputReaderThread = Task.Factory.StartNew(
-                    DataReceiveThread, 
+                    DataReceiveThread,
                     TaskCreationOptions.LongRunning | TaskCreationOptions.DenyChildAttach
                     );
 
                 // observer notification pump
                 msgPumpThread = Task.Factory.StartNew(
-                    MessagePumpThread, 
+                    MessagePumpThread,
                     TaskCreationOptions.LongRunning | TaskCreationOptions.DenyChildAttach
                     );
 
@@ -415,9 +412,14 @@ namespace Kucoin.NET.Websockets
             FeedConnected?.Invoke(this, new FeedConnectedEventArgs(connectId, server, token.Data.Token));
         }
 
-        #endregion
+        #endregion Connection Handling
 
         #region Multiplexing
+
+        // The general rules for multiplexing are that you cannot
+        // multiplex futures and non-futures based objects together,
+        // and you cannot initialize a private client tunnel with
+        // a public tunnel host.
 
         /// <summary>
         /// Open a new tunnel in the feed.
@@ -463,10 +465,9 @@ namespace Kucoin.NET.Websockets
             if (isMultiplexHost)
             {
                 foreach (var child in multiplexClients)
-                {                    
+                {
                     await child.RemoveMultiplexChannels();
                 }
-
             }
 
             if (tunnelId != null)
@@ -484,8 +485,8 @@ namespace Kucoin.NET.Websockets
         /// <returns>True if successful</returns>
         /// <remarks>
         /// This method must be called after establishing a connection using the <see cref="Connect(bool, string)"/> method.
-        /// 
-        /// This method may fail if the websocket is not connected, the class instance is already a multiplex host, or 
+        ///
+        /// This method may fail if the websocket is not connected, the class instance is already a multiplex host, or
         /// the class instance is already attached as a multiplex client.
         /// </remarks>
         public virtual async Task<bool> MultiplexInit(string newTunnelId = null)
@@ -507,17 +508,23 @@ namespace Kucoin.NET.Websockets
         /// <typeparam name="TFeed">The feed type to create</typeparam>
         /// <returns>A new feed that shares a connection with the current object, or null if an error occurred.</returns>
         /// <remarks>
-        /// A connection must already be established to use this method. 
+        /// A connection must already be established to use this method.
         /// An <see cref="InvalidOperationException"/> will be raised if the class instance is already initialized as a multiplex client.
         /// An <see cref="InvalidOperationException"/> will be raised if an attempt is made to initialized a private multiplex client from a public multiplex connection host.
         /// </remarks>
-        public virtual async Task<TFeed> CreateMultiplexClient<TFeed>() where TFeed: KucoinBaseWebsocketFeed, new()
+        public virtual async Task<TFeed> CreateMultiplexClient<TFeed>() where TFeed : KucoinBaseWebsocketFeed, new()
         {
             if (tunnelId != null && !isMultiplexHost)
             {
                 throw new InvalidOperationException("Cannot initialize as multiplex connection host when already initialized as multiplex client.");
             }
+
             var client = new TFeed();
+
+            if (IsFutures != client.IsFutures)
+            {
+                throw new InvalidOperationException("Cannot mix Futures and non-Futures API objects.");
+            }
 
             if (IsPublic && !client.IsPublic)
             {
@@ -545,6 +552,10 @@ namespace Kucoin.NET.Websockets
         /// </remarks>
         public virtual async Task<bool> MultiplexInit(KucoinBaseWebsocketFeed host, string newTunnelId = null)
         {
+            if (IsFutures != host.IsFutures)
+            {
+                throw new InvalidOperationException("Cannot mix Futures and non-Futures API objects.");
+            }
 
             if (!IsPublic && host.IsPublic)
             {
@@ -578,9 +589,11 @@ namespace Kucoin.NET.Websockets
             return true;
         }
 
-        #endregion
+        #endregion Multiplexing
 
         #region Data Send and Receive
+
+        // The core engine is private and cannot (and should not) be altered by derived classes.
 
         private List<string> msgQueue;
 
@@ -590,14 +603,11 @@ namespace Kucoin.NET.Websockets
 
         private Task msgPumpThread;
 
-
         /// <summary>
         /// The data receive thread.
         /// </summary>
-        /// <returns></returns>
         private async Task DataReceiveThread()
         {
-
             byte[] inputChunk = new byte[chunkSize];
 
             StringBuilder sb = new StringBuilder();
@@ -619,7 +629,7 @@ namespace Kucoin.NET.Websockets
             {
                 var result = await socket.ReceiveAsync(arrSeg, ctsReceive.Token);
                 c = result.Count;
-                
+
                 if (c == 0)
                 {
                     // no data received.
@@ -700,17 +710,14 @@ namespace Kucoin.NET.Websockets
                         }
                     }
                 }
-
             }
         }
-
 
         /// <summary>
         /// Separate thread that runs to pump messages to the observers in
         /// the order in which they were received without delaying the data
         /// receiving thread.
         /// </summary>
-        /// <returns></returns>
         private async Task MessagePumpThread()
         {
             string[] queue;
@@ -794,7 +801,7 @@ namespace Kucoin.NET.Websockets
         /// <param name="msg">The contents of the pong message.</param>
         /// <remarks>
         /// You may override this function to do periodic work in your own application.
-        /// 
+        ///
         /// The default behavior of this method is to fire the <see cref="Pong"/> event.
         /// </remarks>
         protected virtual void OnPong(FeedMessage msg)
@@ -880,7 +887,7 @@ namespace Kucoin.NET.Websockets
             await Send(e);
         }
 
-        #endregion
+        #endregion Data Send and Receive
 
         #region Thread cancellation
 
@@ -918,7 +925,7 @@ namespace Kucoin.NET.Websockets
             ctsPing?.Cancel();
         }
 
-        #endregion
+        #endregion Thread cancellation
 
         #region IDisposable Pattern
 
@@ -954,7 +961,7 @@ namespace Kucoin.NET.Websockets
         protected virtual void Dispose(bool disposing)
         {
             if (disposed) return; // throw new ObjectDisposedException(nameof(KucoinBaseWebsocketFeed));
-            
+
             Disconnect();
 
             if (this.disposing) return;
@@ -986,13 +993,13 @@ namespace Kucoin.NET.Websockets
             }
         }
 
-        #endregion
+        #endregion IDisposable Pattern
     }
 
     /// <summary>
     /// Websocket feed abstract base class for <see cref="IObservable{T}"/> implementation.
     /// </summary>
-    /// <typeparam name="T"></typeparam>
+    /// <typeparam name="T">The type of object to serve.</typeparam>
     public abstract class KucoinBaseWebsocketFeed<T> :
         KucoinBaseWebsocketFeed,
         IObservable<T>
@@ -1016,7 +1023,7 @@ namespace Kucoin.NET.Websockets
         /// </summary>
         protected abstract string Topic { get; }
 
-        #region Default Constructor 
+        #region Default Constructor
 
         /// <summary>
         /// Default constructor
@@ -1046,7 +1053,7 @@ namespace Kucoin.NET.Websockets
         /// <param name="url">Optional alternate base URL.</param>
         /// <param name="isv1api">Is v1 API.</param>
         /// <param name="multiplexHost">Optional multiplex host to attach to as a client.</param>
-        public KucoinBaseWebsocketFeed( 
+        public KucoinBaseWebsocketFeed(
             ICredentialsProvider credProvider,
             string url = null,
             bool isv1api = false,
@@ -1054,7 +1061,7 @@ namespace Kucoin.NET.Websockets
         {
         }
 
-        #endregion
+        #endregion Default Constructor
 
         #region IObservable<T> Pattern
 
@@ -1079,7 +1086,6 @@ namespace Kucoin.NET.Websockets
 
                 return obsNew;
             }
-
         }
 
         /// <summary>
@@ -1094,14 +1100,13 @@ namespace Kucoin.NET.Websockets
         {
             observation.Observer.OnCompleted();
 
-            lock(observations)
+            lock (observations)
             {
                 if (observations.Contains(observation))
                 {
                     observations.Remove(observation);
                 }
             }
-
         }
 
         /// <summary>
@@ -1125,11 +1130,10 @@ namespace Kucoin.NET.Websockets
                 {
                     FeedDataReceived.Invoke(this, new FeedDataReceivedEventArgs<T>(obj));
                 }
-
             });
         }
 
-        #endregion
+        #endregion IObservable<T> Pattern
 
         protected override void Dispose(bool disposing)
         {

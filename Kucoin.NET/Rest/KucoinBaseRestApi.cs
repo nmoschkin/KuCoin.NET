@@ -1,4 +1,6 @@
-﻿using Kucoin.NET.Helpers;
+﻿using Kucoin.NET.Data;
+using Kucoin.NET.Helpers;
+using Kucoin.NET.Json;
 using Kucoin.NET.Observable;
 
 using Newtonsoft.Json;
@@ -10,23 +12,25 @@ using System.Net.Http;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
-using Kucoin.NET.Json;
-using Kucoin.NET.Data;
 
 namespace Kucoin.NET.Rest
 {
+    /// <summary>
+    /// The base class for all KuCoin communication, including KuCoin and KuCoin Futures, REST and websocket APIs.
+    /// </summary>
     public class KucoinBaseRestApi : ObservableBase
     {
-        static readonly JsonSerializerSettings defaultSettings;
-        
+        private static readonly JsonSerializerSettings defaultSettings;
+
         protected string url;
         protected MemoryEncryptedCredentialsProvider cred;
 
         protected bool isSandbox;
+        protected bool isFutures;
         protected bool isv1api;
 
         /// <summary>
-        /// Gets credentials for access.
+        /// Gets credentials for access.  This may be null for classes implementing public APIs.
         /// </summary>
         internal ICredentialsProvider Credentials => cred;
 
@@ -36,9 +40,16 @@ namespace Kucoin.NET.Rest
         public virtual string Url => url;
 
         /// <summary>
-        /// True if running in sandbox mode.
+        /// True if object created in sandbox mode.
         /// </summary>
-        public virtual bool IsSandbox => cred?.GetSandbox() ?? isSandbox;
+        public virtual bool IsSandbox => isSandbox;
+
+
+        /// <summary>
+        /// True if object created with KuCoin Futures API endpoints.
+        /// </summary>
+        public virtual bool IsFutures => isFutures;
+
 
         /// <summary>
         /// True if using the Version 1 API
@@ -57,38 +68,41 @@ namespace Kucoin.NET.Rest
         /// Initialize a new instance of a REST API client with a credentials provider.
         /// </summary>
         /// <param name="credProvider">An object that implements <see cref="ICredentialsProvider"/>.</param>
-        /// <param name="url">REST API url.</param>
-        /// <param name="isv1api">Is version 1 api.</param>
+        /// <param name="url">(Optional) Alternate REST API endpoint.</param>
+        /// <param name="isv1api">Is version 1 API.</param>
+        /// <param name="futures">Use KuCoin Futures API endpoints.</param>
+        /// <remarks>
+        /// If <paramref name="credProvider"/> is null, then this class will be initialized for public API use.
+        /// </remarks>
         public KucoinBaseRestApi(
             ICredentialsProvider credProvider,
-            string url = null, 
+            string url = null,
             bool isv1api = false,
-            bool futures = false) 
-            : this(
-                  null, 
-                  null, 
-                  null, 
-                  false, 
-                  url, 
-                  isv1api,
-                  futures)
+            bool futures = false)
         {
+            this.isv1api = isv1api;
+
             if (credProvider != null)
             {
                 cred = new MemoryEncryptedCredentialsProvider(credProvider);
-                isSandbox = cred.GetSandbox();
             }
+
+            SetDefaultUrl(futures, cred.GetSandbox(), url);
         }
 
         /// <summary>
-        /// https://docs.kucoin.com
+        /// Initialize a new instance of a REST API client with the specified credentials.
         /// </summary>
-        /// <param name="key">Api Token Id(Mandatory)</param>
-        /// <param name="secret">Api Secret(Mandatory)</param>
-        /// <param name="passphrase">Api Passphrase used to create API(Mandatory)</param>
+        /// <param name="key">API Key</param>
+        /// <param name="secret">API Secret</param>
+        /// <param name="passphrase">API Passphrase</param>
         /// <param name="isSandbox">Is sandbox / not real-time.</param>
-        /// <param name="url">REST API url.</param>
-        /// <param name="isv1api">Is version 1 api.</param>
+        /// <param name="url">(Optional) Alternate REST API endpoint.</param>
+        /// <param name="isv1api">Is version 1 API.</param>
+        /// <param name="futures">Use KuCoin Futures API endpoints.</param>
+        /// <remarks>
+        /// If <paramref name="key"/>, <paramref name="secret"/>, and <paramref name="passphrase"/> are null, then this class will be initialized for public API use.
+        /// </remarks>
         public KucoinBaseRestApi(
             string key,
             string secret,
@@ -99,38 +113,9 @@ namespace Kucoin.NET.Rest
             bool futures = false
             )
         {
+            this.isv1api = isv1api;
 
-            if (!string.IsNullOrEmpty(url))
-            {
-                this.url = url;
-            }
-            else
-            {
-                if (futures)
-                {
-                    if (isSandbox)
-                    {
-                        this.url = "https://api-sandbox-futures.kucoin.com";
-                    }
-                    else
-                    {
-                        this.url = "https://api-futures.kucoin.com";
-                    }
-                }
-                else
-                {
-                    if (isSandbox)
-                    {
-                        this.url = "https://openapi-sandbox.kucoin.com";
-                    }
-                    else
-                    {
-                        this.url = "https://api.kucoin.com";
-                    }
-                }
-            }
-            
-            if (key != null && secret != null)
+            if (key != null && secret != null && passphrase != null)
             {
                 cred = new MemoryEncryptedCredentialsProvider(key, secret, passphrase, null, isSandbox);
 
@@ -141,25 +126,82 @@ namespace Kucoin.NET.Rest
                 GC.Collect();
             }
 
-            this.isSandbox = isSandbox;
-            this.isv1api = isv1api;
+            SetDefaultUrl(futures, isSandbox, url);
         }
 
-        
+        /// <summary>
+        /// Sets the default URL for this instance based on the criteria.
+        /// </summary>
+        /// <param name="futures">Futures endpoint.</param>
+        /// <param name="sandbox">Sandbox endpoint.</param>
+        /// <param name="url">Optional alternate URL (overrides <paramref name="futures"/> and <paramref name="sandbox"/>)</param>
+        private void SetDefaultUrl(bool futures, bool sandbox, string url = null)
+        {
+            if (url != null)
+            {
+                this.url = url;
+            }
+            else if (futures)
+            {
+                if (sandbox)
+                {
+                    this.url = "https://api-sandbox-futures.kucoin.com";
+                }
+                else
+                {
+                    this.url = "https://api-futures.kucoin.com";
+                }
+            }
+            else
+            {
+                if (sandbox)
+                {
+                    this.url = "https://openapi-sandbox.kucoin.com";
+                }
+                else
+                {
+                    this.url = "https://api.kucoin.com";
+                }
+            }
+
+            this.isSandbox = sandbox;
+            this.isFutures = futures;
+        }
+
+        /// <summary>
+        /// Global initialization work.
+        /// </summary>
         static KucoinBaseRestApi()
         {
+            // Create the default JSON deserialization settings
+            // and set the new default contract resolver.
             defaultSettings = new JsonSerializerSettings()
             {
+                // We are changing the fundamental global behavior for deserialization 
+                // with a new default data contract resolver.
+                // This is set specifically for cases where we must deserialize decimal entities from strings.
                 ContractResolver = DataContractResolver.Instance,
+                
+                // We want to overwrite observable entities with new data
                 DefaultValueHandling = DefaultValueHandling.IgnoreAndPopulate,
+
+                // We don't care about nothing
                 NullValueHandling = NullValueHandling.Ignore
             };
 
-            JsonConvert.DefaultSettings = () => 
+            // Set the new global default behavior for the JSON library.
+            JsonConvert.DefaultSettings = () =>
             {
                 return defaultSettings;
             };
 
+            try
+            {
+                // It's always good to attempt to initialize the dispatcher 
+                // at our first opportunity.  
+                Dispatcher.Initialize();
+            }
+            catch { }
         }
 
         /// <summary>
@@ -206,10 +248,10 @@ namespace Kucoin.NET.Rest
         }
 
         /// <summary>
-        /// Gets the results of a paginated list of <see cref="R"/> by page.
+        /// Gets the results of a paginated list of <typeparamref name="TItem"/> by page.
         /// </summary>
         /// <typeparam name="TItem">A type of result to return.</typeparam>
-        /// <typeparam name="TPage">A page of the type of result to return (must implement <see cref="IPaginated{T}"/> of <see cref="R"/>.</typeparam>
+        /// <typeparam name="TPage">A page of the type of result to return (must implement <see cref="IPaginated{T}"/> of <typeparamref name="TItem"/>.)</typeparam>
         /// <param name="method">The <see cref="HttpMethod"/> of the new call.</param>
         /// <param name="uri">The relative path of the endpoint.</param>
         /// <param name="currentPage">The page to retrieve.</param>
@@ -220,15 +262,15 @@ namespace Kucoin.NET.Rest
         /// <param name="wholeResponseJson">True to return the whole response, or false to just return the 'data' portion.</param>
         /// <returns></returns>
         protected async Task<IList<TItem>> GetResultsByPage<TItem, TPage>(
-            HttpMethod method, 
-            string uri, 
-            int currentPage = 1, 
-            int pageSize = 50, 
-            int timeout = 5, 
-            bool auth = true, 
-            IDictionary<string, object> reqParams = null, 
-            bool wholeResponseJson = false) 
-            where TItem : class, new() 
+            HttpMethod method,
+            string uri,
+            int currentPage = 1,
+            int pageSize = 50,
+            int timeout = 5,
+            bool auth = true,
+            IDictionary<string, object> reqParams = null,
+            bool wholeResponseJson = false)
+            where TItem : class, new()
             where TPage : class, IPaginated<TItem>, new()
         {
             var param = new Dictionary<string, object>();
@@ -255,10 +297,10 @@ namespace Kucoin.NET.Rest
         }
 
         /// <summary>
-        /// Gets all results of a paginated list of <see cref="R"/>.
+        /// Gets all results of a paginated list of <typeparamref name="TItem"/>.
         /// </summary>
         /// <typeparam name="TItem">A type of result to return.</typeparam>
-        /// <typeparam name="TPage">A page of the type of result to return (must implement <see cref="IPaginated{T}"/> of <see cref="R"/>.</typeparam>
+        /// <typeparam name="TPage">A page of the type of result to return (must implement <see cref="IPaginated{T}"/> of <typeparamref name="TItem"/>.)</typeparam>
         /// <param name="method">The <see cref="HttpMethod"/> of the new call.</param>
         /// <param name="uri">The relative path of the endpoint.</param>
         /// <param name="timeout">Timeout value, in seconds.</param>
@@ -267,13 +309,13 @@ namespace Kucoin.NET.Rest
         /// <param name="wholeResponseJson">True to return the whole response, or false to just return the 'data' portion.</param>
         /// <returns></returns>
         protected async Task<IList<TItem>> GetAllPaginatedResults<TItem, TPage>(
-            HttpMethod method, 
-            string uri, 
+            HttpMethod method,
+            string uri,
             int timeout = 5,
-            bool auth = true, 
-            IDictionary<string, object> reqParams = null, 
-            bool wholeResponseJson = false) 
-            where TItem : class, new() 
+            bool auth = true,
+            IDictionary<string, object> reqParams = null,
+            bool wholeResponseJson = false)
+            where TItem : class, new()
             where TPage : class, IPaginated<TItem>, new()
         {
             int pageSize = 500;
@@ -327,11 +369,11 @@ namespace Kucoin.NET.Rest
         /// <param name="wholeResponseJson">True to return the whole response, or false to just return the 'data' portion.</param>
         /// <returns>A <see cref="JToken"/> object that can be deserialized to suit members in the derived class.</returns>
         protected async Task<JToken> MakeRequest(
-            HttpMethod method, 
-            string uri, 
-            int timeout = 5, 
-            bool auth = true, 
-            IDictionary<string, object> reqParams = null, 
+            HttpMethod method,
+            string uri,
+            int timeout = 5,
+            bool auth = true,
+            IDictionary<string, object> reqParams = null,
             bool wholeResponseJson = false)
         {
             string token;
@@ -378,6 +420,9 @@ namespace Kucoin.NET.Rest
             HttpRequestMessage req = new HttpRequestMessage(method, requri);
 
             req.Headers.Clear();
+
+
+            // KuCoin API Authentication Magic
 
             if (auth && cred != null)
             {
