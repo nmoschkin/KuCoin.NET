@@ -17,13 +17,22 @@ namespace Kucoin.NET.Data.Websockets
     /// <typeparam name="T">An implementation of <see cref="IWritableCandle"/>.</typeparam>
     public class KlineFeedMessage<T> where T: IWritableCandle, new()
     {
+        /// <summary>
+        /// Time stamp in local time.
+        /// </summary>
         [JsonProperty("time")]
         [JsonConverter(typeof(AutoTimeConverter), TimeTypes.InNanoseconds)]
         public DateTime Timestamp { get; set; }
 
+        /// <summary>
+        /// The candlestick data.
+        /// </summary>
         [JsonProperty("candles")]
         public T Candles { get; set; }
 
+        /// <summary>
+        /// The trading symbol that this message applies to.
+        /// </summary>
         [JsonProperty("symbol")]
         public string Symbol { get; set; }
 

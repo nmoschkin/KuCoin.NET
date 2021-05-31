@@ -68,21 +68,22 @@ namespace Kucoin.NET.Websockets.Public
                     // In C# we want to parse this array into a strongly-typed object.
 
                     var values = msg.Data["candles"].ToObject<string[]>();
-                    var candle = new TCandle();
+                    var candle = new TCandle
+                    {
+                        Timestamp = EpochTime.SecondsToDate(long.Parse(values[0])),
 
-                    candle.Timestamp = EpochTime.SecondsToDate(long.Parse(values[0]));
+                        // We are going to assume that the data from the feed is correctly formatted.
+                        // If an error is thrown here, then there is a deeper problem.
 
-                    // We are going to assume that the data from the feed is correctly formatted.
-                    // If an error is thrown here, then there is a deeper problem.
-                    
-                    candle.OpenPrice = decimal.Parse(values[1]);
-                    candle.ClosePrice = decimal.Parse(values[2]);
+                        OpenPrice = decimal.Parse(values[1]),
+                        ClosePrice = decimal.Parse(values[2]),
 
-                    candle.HighPrice = decimal.Parse(values[3]);
-                    candle.LowPrice = decimal.Parse(values[4]);
+                        HighPrice = decimal.Parse(values[3]),
+                        LowPrice = decimal.Parse(values[4]),
 
-                    candle.Amount = decimal.Parse(values[5]);
-                    candle.Volume = decimal.Parse(values[6]);
+                        Amount = decimal.Parse(values[5]),
+                        Volume = decimal.Parse(values[6])
+                    };
 
                     // The candlestick does not need to be a typed candle,
                     // but if it is, we will set that value, as well.
