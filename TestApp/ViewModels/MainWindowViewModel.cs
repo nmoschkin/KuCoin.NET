@@ -430,7 +430,7 @@ namespace KuCoinApp
 
                             if (level2Feed == null || level2Feed.Connected == false)
                             {
-                                level2Feed = new Level2(cred);
+                                level2Feed = new Level2();
                                 await level2Feed.Connect();
                             }
 
@@ -454,7 +454,7 @@ namespace KuCoinApp
                 {
                     if (level2Feed == null || level2Feed.Connected == false)
                     {
-                        level2Feed = new Level2(cred);
+                        level2Feed = new Level2();
                         await level2Feed.Connect();
                     }
 
@@ -506,7 +506,7 @@ namespace KuCoinApp
             {
                 if (finit) return;
 
-                level2Feed = new Level2(cred);
+                level2Feed = new Level2();
                 await level2Feed.Connect();
 
                 if (level2Feed.Connected == false)
@@ -733,7 +733,7 @@ namespace KuCoinApp
                         }
                         catch { }
 
-                        level2Feed = new Level2(cred);
+                        level2Feed = new Level2();
 
                         tickerFeed = new TickerFeed();
                         klineFeed = new KlineFeed<KlineCandle>();
@@ -901,7 +901,7 @@ namespace KuCoinApp
 
                     if (cred != null)
                     {
-                        level2Feed = new Level2(cred);
+                        level2Feed = new Level2();
                         level2Feed.UpdateInterval = 50;
                         level2Feed.DefaultPieces = 50;
 

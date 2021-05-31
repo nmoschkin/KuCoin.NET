@@ -172,7 +172,7 @@ namespace KuCoinApp
             }
 
 
-            var fl2 = new FuturesLevel2(cred.AttachedAccount);
+            var fl2 = new FuturesLevel2();
 
             var orders = await fl2.GetAggregatedOrder(fsym);
 
