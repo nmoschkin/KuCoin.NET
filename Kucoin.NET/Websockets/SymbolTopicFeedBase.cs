@@ -231,13 +231,17 @@ namespace Kucoin.NET.Websockets
 
             await Task.Run(() =>
             {
+                List<Action> actions = new List<Action>();
+
                 foreach (SymbolObservation<T> obs in observations)
                 {
                     if (obs.ActiveSymbols.Count == 0 || obs.ActiveSymbols.Contains(obj.Symbol))
                     {
-                        obs.Observer.OnNext(obj);
+                        actions.Add(() => obs.Observer.OnNext(obj));
                     }
                 }
+
+                Parallel.Invoke(actions.ToArray());
             });
         }
 
