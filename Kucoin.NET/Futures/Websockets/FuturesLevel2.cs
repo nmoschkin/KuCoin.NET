@@ -14,6 +14,9 @@ namespace Kucoin.NET.Futures.Websockets
     /// </summary>
     public class FuturesLevel2 : Level2Base<FuturesOrderBook, OrderUnit, FuturesLevel2Update, FuturesLevel2Observation>
     {
+        /// <summary>
+        /// Create a new futures Level 2 feed.
+        /// </summary>
         public FuturesLevel2() : base(futures: true)
         {
             if (!Dispatcher.Initialized && !Dispatcher.Initialize())
@@ -44,12 +47,11 @@ namespace Kucoin.NET.Futures.Websockets
         where TBook : IOrderBook<TUnit>, new()
         where TUnit : IOrderUnit, new()
     {
+        /// <summary>
+        /// Create a new futures Level 2 feed.
+        /// </summary>
         public Level2FuturesBase() : base(futures: true)
         {
-            if (!Dispatcher.Initialized && !Dispatcher.Initialize())
-            {
-                throw new InvalidOperationException("You must call Kucoin.NET.Helpers.Dispatcher.Initialize() with a SynchronizationContext before instantiating this class.");
-            }
         }
 
         public override string Subject => "level2";
@@ -59,8 +61,5 @@ namespace Kucoin.NET.Futures.Websockets
         public override string Topic => "/contractMarket/level2";
 
     }
-
-
-
 
 }

@@ -19,7 +19,7 @@ namespace Kucoin.NET.Websockets.Public
     {
 
         /// <summary>
-        /// Create a new Level 2 feed with the specified credentials.
+        /// Create a new Level 2 feed.
         /// </summary>
         /// <remarks>
         /// You must either create this instance on the main / UI thread or call <see cref="Dispatcher.Initialize"/> prior to 
@@ -99,20 +99,11 @@ namespace Kucoin.NET.Websockets.Public
         where TUnit : IOrderUnit, new()
     {
         /// <summary>
-        /// Create a new Level 2 feed with the specified credentials.
+        /// Create a new Level 2 feed.
         /// </summary>
-        /// <remarks>
-        /// You must either create this instance on the main / UI thread or call <see cref="Dispatcher.Initialize"/> prior to 
-        /// creating an instance of this class or an <see cref="InvalidOperationException"/> will be raised.
-        /// </remarks>
         public Level2StandardBase() : base()
         {
-            if (!Dispatcher.Initialized && !Dispatcher.Initialize())
-            {
-                throw new InvalidOperationException("You must call Kucoin.NET.Helpers.Dispatcher.Initialize() with a SynchronizationContext before instantiating this class.");
-            }
         }
-
 
         public override string AggregateEndpoint => "/api/v2/market/orderbook/level2";
 

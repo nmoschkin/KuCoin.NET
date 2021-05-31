@@ -58,21 +58,13 @@ namespace Kucoin.NET.Websockets.Public
         public virtual event EventHandler<SymbolCalibratedEventArgs<TBook, TUnit, TUpdate>> SymbolCalibrated;
 
         /// <summary>
-        /// Create a new Level 2 feed with the specified credentials.
+        /// Create a new Level 2 feed.
         /// </summary>
-        /// <remarks>
-        /// You must either create this instance on the main / UI thread or call <see cref="Dispatcher.Initialize"/> prior to 
-        /// creating an instance of this class or an <see cref="InvalidOperationException"/> will be raised.
-        /// </remarks>
+        /// <param name="futures">True if the feed is for KuCoin Futures.</param>
         public Level2Base(
             bool futures = false)
             : base(null, null, null, futures: futures)
         {
-            if (!Dispatcher.Initialized && !Dispatcher.Initialize())
-            {
-                throw new InvalidOperationException("You must call Kucoin.NET.Helpers.Dispatcher.Initialize() with a SynchronizationContext before instantiating this class.");
-            }
-            cred = null;
         }
 
 
