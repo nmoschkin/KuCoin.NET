@@ -1,6 +1,6 @@
-﻿using Kucoin.NET.Data.Helpers;
-using Kucoin.NET.Data.Market;
+﻿using Kucoin.NET.Data.Market;
 using Kucoin.NET.Data.Order.Margin;
+using Kucoin.NET.Helpers;
 
 using System;
 using System.Collections.Generic;

@@ -10,7 +10,6 @@ using System.Text;
 using System.Threading.Tasks;
 using Kucoin.NET.Rest;
 using KuCoinApp.Converters;
-using Kucoin.NET.Data.Helpers;
 
 namespace KuCoinApp
 {

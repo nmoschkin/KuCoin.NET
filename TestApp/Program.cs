@@ -15,7 +15,6 @@ using System.Windows;
 using System.Text;
 using System.Reflection;
 using Kucoin.NET.Futures.Websockets;
-using Kucoin.NET.Data.Helpers;
 
 namespace KuCoinApp
 {

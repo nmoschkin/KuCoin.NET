@@ -1,5 +1,4 @@
-﻿using Kucoin.NET.Data.Helpers;
-using Kucoin.NET.Observable;
+﻿using Kucoin.NET.Observable;
 
 using Newtonsoft.Json;
 

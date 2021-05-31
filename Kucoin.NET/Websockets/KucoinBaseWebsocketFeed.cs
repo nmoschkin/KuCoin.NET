@@ -28,7 +28,6 @@ using System.Net.Http;
 using System.Net.WebSockets;
 using Kucoin.NET.Rest;
 using Kucoin.NET.Helpers;
-using Kucoin.NET.Data.Helpers;
 
 namespace Kucoin.NET.Websockets
 {

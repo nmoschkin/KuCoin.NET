@@ -16,7 +16,7 @@ using System.Security.Authentication;
 using Kucoin.NET.Websockets;
 using Kucoin.NET.Websockets.Private;
 using Kucoin.NET.Data.Websockets.User;
-using Kucoin.NET.Data.Helpers;
+using Kucoin.NET.Helpers;
 
 namespace KuCoinApp.ViewModels
 {

@@ -1,4 +1,4 @@
-﻿using Kucoin.NET.Data.Helpers;
+﻿using Kucoin.NET.Helpers;
 
 using Newtonsoft.Json;
 

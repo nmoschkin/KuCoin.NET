@@ -303,6 +303,11 @@ namespace Kucoin.NET.Futures.Websockets.Observations
 
     }
 
+    /// <summary>
+    /// Custom futures level 2 observation for custom futures Level 2 feed implementations.
+    /// </summary>
+    /// <typeparam name="TBook">The type of your custom order book.</typeparam>
+    /// <typeparam name="TUnit">The type of your custom order pieces.</typeparam>
     public class CustomFuturesLevel2Observation<TBook, TUnit> : Level2ObservationBase<TBook, TUnit, FuturesLevel2Update>
         where TBook: IOrderBook<TUnit>, new()
         where TUnit: IOrderUnit, new()

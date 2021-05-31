@@ -1,5 +1,5 @@
-﻿using Kucoin.NET.Data.Helpers;
-using Kucoin.NET.Data.Websockets;
+﻿using Kucoin.NET.Data.Websockets;
+using Kucoin.NET.Helpers;
 
 using System;
 using System.Collections.Generic;
