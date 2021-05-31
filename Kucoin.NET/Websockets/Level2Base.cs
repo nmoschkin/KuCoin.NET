@@ -52,7 +52,7 @@ namespace Kucoin.NET.Websockets
         /// </summary>
         public abstract string AggregateEndpoint { get; }
 
-        public override bool IsPublic => false;
+        public override bool IsPublic => true;
 
         /// <summary>
         /// Event that gets fired when the feed for a symbol has been calibrated and is ready to be used.
@@ -62,43 +62,22 @@ namespace Kucoin.NET.Websockets
         /// <summary>
         /// Create a new Level 2 feed with the specified credentials.
         /// </summary>
-        /// <param name="key">API Key</param>
-        /// <param name="secret">API Secret</param>
-        /// <param name="passphrase">API Passphrase</param>
         /// <param name="isSandbox">Is Sandbox Mode</param>
         /// <remarks>
         /// You must either create this instance on the main / UI thread or call <see cref="Dispatcher.Initialize"/> prior to 
         /// creating an instance of this class or an <see cref="InvalidOperationException"/> will be raised.
         /// </remarks>
         public Level2Base(
-            string key,
-            string secret,
-            string passphrase,
-            bool isSandbox = false,
             bool futures = false)
-            : base(key, secret, passphrase, isSandbox, futures: futures)
+            : base(null, null, null, futures: futures)
         {
             if (!Dispatcher.Initialized && !Dispatcher.Initialize())
             {
                 throw new InvalidOperationException("You must call Kucoin.NET.Helpers.Dispatcher.Initialize() with a SynchronizationContext before instantiating this class.");
             }
+            this.cred = null;
         }
-
-        /// <summary>
-        /// Create a new Level 2 feed with the specified credentials.
-        /// </summary>
-        /// <param name="credProvider"><see cref="ICredentialsProvider"/> implementation.</param>
-        /// <remarks>
-        /// You must either create this instance on the main / UI thread or call <see cref="Dispatcher.Initialize"/> prior to 
-        /// creating an instance of this class or an <see cref="InvalidOperationException"/> will be raised.
-        /// </remarks>
-        public Level2Base(ICredentialsProvider credProvider, bool futures = false) : base(credProvider, futures: futures)
-        {
-            if (!Dispatcher.Initialized && !Dispatcher.Initialize())
-            {
-                throw new InvalidOperationException("You must call Kucoin.NET.Helpers.Dispatcher.Initialize() with a SynchronizationContext before instantiating this class.");
-            }
-        }
+      
 
         /// <summary>
         /// Gets or sets a length of time (in milliseconds) that indicates how often the orderbook is pushed to the UI thread.

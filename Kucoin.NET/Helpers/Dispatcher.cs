@@ -38,6 +38,7 @@ namespace Kucoin.NET.Helpers
         /// <summary>
         /// Initialize the dispatcher.
         /// </summary>
+        /// <returns>True if dispatcher was successfully initialized.</returns>
         /// <remars>
         /// This method must be called from the main/UI thread of your application.
         /// </remars>

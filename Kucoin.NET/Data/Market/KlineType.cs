@@ -10,7 +10,7 @@ using System.Text;
 namespace Kucoin.NET.Data.Market
 {
     /// <summary>
-    /// A structure that represents the different supported candle lengths.
+    /// A structure that represents the different supported candlestick time lengths.
     /// </summary>
     public struct KlineType
     {
