@@ -14,17 +14,17 @@ namespace Kucoin.NET.Futures.Data.User
 
 
         /// <summary>
-        /// Account equity = marginBalance + Unrealised PNL
+        /// Account equity = marginBalance + Unrealized PNL
         /// </summary>
         [JsonProperty("accountEquity")]
         public decimal AccountEquity { get; set; }
 
 
         /// <summary>
-        /// Unrealised profit and loss
+        /// Unrealized profit and loss
         /// </summary>
-        [JsonProperty("unrealisedPNL")]
-        public decimal UnrealisedPNL { get; set; }
+        [JsonProperty("unrealizedPNL")]
+        public decimal UnrealizedPNL { get; set; }
 
 
         /// <summary>
