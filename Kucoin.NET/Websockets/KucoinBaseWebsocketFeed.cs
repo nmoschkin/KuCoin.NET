@@ -273,7 +273,7 @@ namespace Kucoin.NET.Websockets
         }
 
         /// <summary>
-        /// Gets the current throughput of the socket in bytes per second.
+        /// Gets the current throughput of the socket in bits per second.
         /// </summary>
         public long Throughput
         {
@@ -737,7 +737,7 @@ namespace Kucoin.NET.Websockets
                 {
                     if ((DateTime.UtcNow.Ticks - tms) >= 10_000_000)
                     {
-                        Throughput = xlen;
+                        Throughput = xlen * 8;
                         tms = DateTime.UtcNow.Ticks;
                         xlen = 0;
                     }
