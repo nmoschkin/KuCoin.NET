@@ -75,7 +75,7 @@ namespace Kucoin.NET.Data.Market
         /// The time stamp of the order
         /// </summary>
         [JsonProperty("time")]
-        [JsonConverter(typeof(AutoTimeConverter), TimeTypes.InNanoseconds)]
+        [JsonConverter(typeof(AutoTimeConverter), TimeTypes.InMilliseconds)]
         public virtual DateTime Timestamp 
         {
             get => time;

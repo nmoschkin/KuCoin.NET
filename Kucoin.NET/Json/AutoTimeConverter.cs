@@ -84,6 +84,7 @@ namespace Kucoin.NET.Json
 
                 case null:
                 default:
+                    // some autodetect?
 
                     DateTime t = EpochTime.Epoch;
                     DateTime t2;
@@ -100,7 +101,7 @@ namespace Kucoin.NET.Json
 
                     if (now.Year - t2.Year < 5)
                     {
-                        return t2;
+                        return t2.ToLocalTime();
                     }
 
                     try
@@ -123,15 +124,15 @@ namespace Kucoin.NET.Json
                     }
                     catch
                     {
-                        return t;
+                        return t.ToLocalTime();
                     }
 
                     if (now.Year - t2.Year < 5)
                     {
-                        return t2;
+                        return t2.ToLocalTime();
                     }
 
-                    return t;
+                    return t.ToLocalTime();
 
             }
 

@@ -777,7 +777,8 @@ namespace KuCoinApp
 
         public MainWindowViewModel()
         {
-            
+
+            level2Feed = new Level2();
 
             App.Current.Settings.PropertyChanged += Settings_PropertyChanged;
             market = new Market();
@@ -920,6 +921,7 @@ namespace KuCoinApp
                     if (cred != null)
                     {
                         Level2Feed = new Level2();
+
                         level2Feed.MonitorThroughput = true;
                         level2Feed.UpdateInterval = 50;
                         level2Feed.DefaultPieces = 50;
