@@ -41,7 +41,7 @@ namespace Kucoin.NET.Websockets.Public
         internal readonly Dictionary<string, TObservation> activeFeeds = new Dictionary<string, TObservation>();
 
         protected object lockObj = new object();
-        protected DateTime cycle = DateTime.MinValue;
+        protected long cycle = 0;
 
         protected int defaultPieces = 50;
         protected int updateInterval = 500;
@@ -270,6 +270,7 @@ namespace Kucoin.NET.Websockets.Public
 
             if (activeFeeds.Count == 0)
             {
+                cycle = 0;
                 State = Level2State.Unsubscribed;
             }
         }
@@ -335,7 +336,7 @@ namespace Kucoin.NET.Websockets.Public
             {
                 if (msg.Subject == Subject)
                 {
-                    if (cycle == DateTime.MinValue) cycle = DateTime.Now;
+                    if (cycle == 0) cycle = DateTime.UtcNow.Ticks;
 
                     var i = msg.Topic.IndexOf(":");
 
@@ -353,14 +354,14 @@ namespace Kucoin.NET.Websockets.Public
 
                                 af.OnNext(update);
 
-                                if ((DateTime.Now - cycle).TotalMilliseconds >= updateInterval)
+                                if ((DateTime.UtcNow.Ticks - cycle) >= (updateInterval * 10_000))
                                 {
                                     await InitializeOrderBook(af.Symbol);
 
                                     lock (lockObj)
                                     {
                                         af.Calibrate();
-                                        cycle = DateTime.Now;
+                                        cycle = DateTime.UtcNow.Ticks;
                                     }
 
                                     _ = Task.Run(() =>
@@ -377,10 +378,10 @@ namespace Kucoin.NET.Websockets.Public
                                 {
                                     af.OnNext(update);
 
-                                    if ((DateTime.Now - cycle).TotalMilliseconds >= updateInterval)
+                                    if ((DateTime.UtcNow.Ticks - cycle) >= (updateInterval * 10_000))
                                     {
                                         af.RequestPush();
-                                        cycle = DateTime.Now;
+                                        cycle = DateTime.UtcNow.Ticks;
                                     }
                                 }
                             }

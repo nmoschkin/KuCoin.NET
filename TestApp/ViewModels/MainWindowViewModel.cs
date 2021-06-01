@@ -777,9 +777,6 @@ namespace KuCoinApp
 
         public MainWindowViewModel()
         {
-
-            level2Feed = new Level2();
-
             App.Current.Settings.PropertyChanged += Settings_PropertyChanged;
             market = new Market();
             lastRange = App.Current.Settings.LastCandleRange;
@@ -947,6 +944,7 @@ namespace KuCoinApp
                             // we connect level2Feed.
                             
                             // give its own socket because of the speed of data.
+                            //await level2Feed.Connect(true);
                             await level2Feed.Connect();
 
                             // for testing futures
@@ -954,6 +952,9 @@ namespace KuCoinApp
 
                             // we attach tickerFeed and klineFeed 
                             // by calling MultiplexInit with the host feed.
+                            //await tickerFeed.MultiplexInit(level2Feed);
+                            //await klineFeed.MultiplexInit(level2Feed);
+
                             await tickerFeed.Connect(true);
                             await klineFeed.MultiplexInit(tickerFeed);
 

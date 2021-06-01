@@ -24,6 +24,7 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using System.Net.Http;
 using System.Net.WebSockets;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -716,7 +717,7 @@ namespace Kucoin.NET.Websockets
             sb.EnsureCapacity(recvBufferSize);
 
             var arrSeg = new ArraySegment<byte>(inputChunk);
-            DateTime tms = DateTime.Now;
+            var tms = DateTime.UtcNow.Ticks;
 
             // loop forever or until the connection is broken or canceled.
             while (!ctsReceive.IsCancellationRequested && socket?.State == WebSocketState.Open)
@@ -728,16 +729,16 @@ namespace Kucoin.NET.Websockets
                 {
                     // no data received.
                     // let's give up some time-slices and try again.
-                    await Task.Delay(10);
+                    await Task.Delay(5);
                     continue;
                 }
 
                 if (monitorThroughput)
                 {
-                    if ((DateTime.Now - tms).TotalSeconds >= 1)
+                    if ((DateTime.UtcNow.Ticks - tms) >= 10_000_000)
                     {
                         Throughput = xlen;
-                        tms = DateTime.Now;
+                        tms = DateTime.UtcNow.Ticks;
                         xlen = 0;
                     }
                     else
@@ -836,7 +837,7 @@ namespace Kucoin.NET.Websockets
                 if (msgQueue.Count == 0)
                 {
                     // nothing in the queue, give up some time-slices.
-                    await Task.Delay(10);
+                    await Task.Delay(5);
                     continue;
                 }
 
