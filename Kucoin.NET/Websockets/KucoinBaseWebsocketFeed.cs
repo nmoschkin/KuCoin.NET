@@ -40,8 +40,6 @@ namespace Kucoin.NET.Websockets
 
         #region Protected fields
 
-        protected bool enableThroughput;
-
         protected KucoinBaseWebsocketFeed multiplexHost;
 
         protected bool isMultiplexHost = false;
@@ -64,17 +62,23 @@ namespace Kucoin.NET.Websockets
 
         protected Server server;
 
+        #region Connection Settings
+
         protected int chunkSize = 256;
 
         protected int recvBufferSize = 51920;
 
         protected int sendBufferSize = 51920;
 
+        protected bool monitorThroughput;
+
         private long throughput;
 
         private TimeSpan pingTime = TimeSpan.Zero;
 
         private DateTime lastPing = DateTime.Now;
+
+        #endregion Connection Settings
 
         #endregion Protected fields
 
@@ -282,10 +286,10 @@ namespace Kucoin.NET.Websockets
         /// </remarks>
         public virtual bool MonitorThroughput
         {
-            get => enableThroughput;
+            get => monitorThroughput;
             set
             {
-                SetProperty(ref enableThroughput, value);
+                SetProperty(ref monitorThroughput, value);
             }
         }
 
@@ -699,7 +703,7 @@ namespace Kucoin.NET.Websockets
                     continue;
                 }
 
-                if (enableThroughput)
+                if (monitorThroughput)
                 {
                     if ((DateTime.Now - tms).TotalSeconds >= 1)
                     {
