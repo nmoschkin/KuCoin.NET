@@ -37,7 +37,10 @@ namespace Kucoin.NET.Websockets
         KucoinBaseRestApi,
         IDisposable
     {
+
         #region Protected fields
+
+        protected bool enableThroughput;
 
         protected KucoinBaseWebsocketFeed multiplexHost;
 
@@ -66,6 +69,12 @@ namespace Kucoin.NET.Websockets
         protected int recvBufferSize = 51920;
 
         protected int sendBufferSize = 51920;
+
+        private long throughput;
+
+        private TimeSpan pingTime = TimeSpan.Zero;
+
+        private DateTime lastPing = DateTime.Now;
 
         #endregion Protected fields
 
@@ -253,6 +262,45 @@ namespace Kucoin.NET.Websockets
             get => tunnelId != null;
         }
 
+        /// <summary>
+        /// Gets the current throughput of the socket in bytes per second.
+        /// </summary>
+        public long Throughput
+        {
+            get => throughput;
+            private set
+            {
+                SetProperty(ref throughput, value);
+            }
+        }
+
+        /// <summary>
+        /// Enable throughput monitoring via the <see cref="Throughput"/> observable property.
+        /// </summary>
+        /// <remarks>
+        /// Monitoring throughput can have a performance impact.  It is disabled, by default.
+        /// </remarks>
+        public virtual bool MonitorThroughput
+        {
+            get => enableThroughput;
+            set
+            {
+                SetProperty(ref enableThroughput, value);
+            }
+        }
+
+        /// <summary>
+        /// Gets the <see cref="TimeSpan"/> of the last ping/pong.
+        /// </summary>
+        public TimeSpan PingTime
+        {
+            get => pingTime;
+            private set
+            {
+                SetProperty(ref pingTime, value);
+            }
+        }
+
         #endregion Public Properties
 
         #region Public Abstract Members
@@ -286,7 +334,7 @@ namespace Kucoin.NET.Websockets
             token = null;
 
             OnPropertyChanged(nameof(Connected));
-            FeedDisconnected?.Invoke(this, new EventArgs());
+            OnDisconnected();
         }
 
         /// <summary>
@@ -410,6 +458,17 @@ namespace Kucoin.NET.Websockets
         protected virtual void OnConnected()
         {
             FeedConnected?.Invoke(this, new FeedConnectedEventArgs(connectId, server, token.Data.Token));
+        }
+
+        /// <summary>
+        /// Called when the websocket connection is terminated.
+        /// </summary>
+        /// <remarks>
+        /// The default behavior of this method is to invoke the <see cref="FeedDisconnected"/> event.
+        /// </remarks>
+        protected virtual void OnDisconnected()
+        {
+            FeedDisconnected?.Invoke(this, new EventArgs());
         }
 
         #endregion Connection Handling
@@ -619,10 +678,12 @@ namespace Kucoin.NET.Websockets
             bool inEsc = false;
 
             int i, c;
+            int xlen = 0;
 
             sb.EnsureCapacity(recvBufferSize);
 
             var arrSeg = new ArraySegment<byte>(inputChunk);
+            DateTime tms = DateTime.Now;
 
             // loop forever or until the connection is broken or canceled.
             while (!ctsReceive.IsCancellationRequested && socket?.State == WebSocketState.Open)
@@ -636,6 +697,20 @@ namespace Kucoin.NET.Websockets
                     // let's give up some time-slices and try again.
                     await Task.Delay(10);
                     continue;
+                }
+
+                if (enableThroughput)
+                {
+                    if ((DateTime.Now - tms).TotalSeconds >= 1)
+                    {
+                        Throughput = xlen;
+                        tms = DateTime.Now;
+                        xlen = 0;
+                    }
+                    else
+                    {
+                        xlen += c;
+                    }
                 }
 
                 strlen += c;
@@ -802,10 +877,11 @@ namespace Kucoin.NET.Websockets
         /// <remarks>
         /// You may override this function to do periodic work in your own application.
         ///
-        /// The default behavior of this method is to fire the <see cref="Pong"/> event.
+        /// The default behavior of this method is to record the ping time, and fire the <see cref="Pong"/> event.
         /// </remarks>
         protected virtual void OnPong(FeedMessage msg)
         {
+            PingTime = DateTime.Now - lastPing;
             Pong?.Invoke(this, new EventArgs());
         }
 
@@ -883,6 +959,7 @@ namespace Kucoin.NET.Websockets
             e.Id = connectId.ToString("d");
             e.Type = "ping";
 
+            lastPing = DateTime.Now;
             await Send(e);
         }
 
