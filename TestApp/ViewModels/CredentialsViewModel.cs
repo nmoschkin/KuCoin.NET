@@ -149,11 +149,13 @@ namespace KuCoinApp
         public CredentialsViewModel()
         {
             showPassword = App.Current.Settings.ShowPassword;
+            oldCred = CryptoCredentials.LoadFromStorage(App.Current.Seed);
+            cred = oldCred.Clone();
 
             FuturesCommand = new SimpleCommand((p) =>
             {
                 App.Current.Dispatcher.Invoke(() =>
-                {
+                {                    
                     var futures = new Credentials((CryptoCredentials)cred.AttachedAccount);
                     futures.ShowDialog();
                 });
@@ -189,8 +191,9 @@ namespace KuCoinApp
 
         public CredentialsViewModel(CryptoCredentials cred) : this()
         {
-            oldCred = cred;
+            oldCred = cred ?? CryptoCredentials.LoadFromStorage(App.Current.Seed);
             Credential = cred.Clone();
+
             if (cred.Futures)
             {
                 OKText = AppResources.OK;

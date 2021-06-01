@@ -583,6 +583,11 @@ namespace KuCoinApp
 
         public bool EditCredentials()
         {
+            if (cred == null)
+            {
+                cred = CryptoCredentials.LoadFromStorage(App.Current.Seed);
+            }
+
             credWnd = new Credentials(cred);
 
             IsCredShowing = true;
@@ -611,7 +616,7 @@ namespace KuCoinApp
                 List<TradingSymbol> output = new List<TradingSymbol>();
                 var sym = App.Current.Settings.Symbols;
 
-                if (symbols == null || symbols.Count == 0) return null;
+                if (symbols == null || symbols.Count == 0 || sym == null || sym.Length == 0) return null;
 
                 foreach (var s in sym)
                 {
@@ -899,6 +904,7 @@ namespace KuCoinApp
                         return;
                     }
 
+                    Level2Feed = new Level2();
 
 
                     // Bring up the testing console.
@@ -917,7 +923,6 @@ namespace KuCoinApp
 
                     if (cred != null)
                     {
-                        Level2Feed = new Level2();
 
                         level2Feed.MonitorThroughput = true;
                         level2Feed.UpdateInterval = 50;
@@ -981,7 +986,24 @@ namespace KuCoinApp
                         await klineFeed.MultiplexInit(tickerFeed);
                     }
 
-                    if (string.IsNullOrEmpty(rec)) return;
+                    if (string.IsNullOrEmpty(rec))
+                    {
+                        if (cred == null)
+                        {
+                            _ = Task.Run(() =>
+                            {
+                                Kucoin.NET.Helpers.Dispatcher.InvokeOnMainThread(async (obj) =>
+                                {
+                                    if (EditCredentials())
+                                    {
+                                        await LoginUser();
+                                    }
+                                });
+                            });
+                        }
+
+                        return;
+                    }
 
                     foreach (var sym in symbols)
                     {

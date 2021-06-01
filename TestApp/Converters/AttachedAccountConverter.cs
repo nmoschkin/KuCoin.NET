@@ -14,7 +14,8 @@ namespace KuCoinApp.Converters
     {
         public override ICredentialsProvider ReadJson(JsonReader reader, Type objectType, ICredentialsProvider existingValue, bool hasExistingValue, JsonSerializer serializer)
         {
-            return (ICredentialsProvider)serializer.Deserialize(reader, typeof(CryptoCredentials));
+            if (reader.Value == null) return null;
+            else return (ICredentialsProvider)serializer.Deserialize(reader, typeof(CryptoCredentials));
         }
 
         public override void WriteJson(JsonWriter writer, ICredentialsProvider value, JsonSerializer serializer)
