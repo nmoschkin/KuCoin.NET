@@ -942,7 +942,7 @@ namespace KuCoinApp
                             // and the public feed does not include them.
 
                             // we connect level2Feed.
-                            
+
                             // give its own socket because of the speed of data.
                             //await level2Feed.Connect(true);
                             await level2Feed.Connect();
