@@ -12,6 +12,17 @@ using Kucoin.NET.Data.Market;
 
 namespace Kucoin.NET.Websockets.Public
 {
+
+    public enum Level2State
+    {
+        Disconnected,
+        Connected,
+        Subscribed,
+        Unsubscribed,
+        Initializing,
+        Running
+    }
+
     /// <summary>
     /// Calibrated Level 2 Market Feed base class and core logic implementation.
     /// </summary>
@@ -34,6 +45,8 @@ namespace Kucoin.NET.Websockets.Public
 
         protected int defaultPieces = 50;
         protected int updateInterval = 500;
+
+        protected Level2State state = Level2State.Disconnected;
 
         /// <summary>
         /// Get the feed subscription subject
@@ -65,6 +78,7 @@ namespace Kucoin.NET.Websockets.Public
             bool futures = false)
             : base(null, null, null, futures: futures)
         {
+            recvBufferSize = 65535;
         }
 
 
@@ -107,6 +121,28 @@ namespace Kucoin.NET.Websockets.Public
             }
         }
 
+        public Level2State State
+        {
+            get => state;
+            set
+            {
+                SetProperty(ref state, value);
+            }
+        }
+
+        protected override void OnConnected()
+        {
+            _ = Ping();
+            State = Level2State.Connected;
+            base.OnConnected();
+        }
+
+        protected override void OnDisconnected()
+        {
+            State = Level2State.Disconnected;
+            base.OnDisconnected();
+        }
+
         /// <summary>
         /// Create a new instance of a class derived from <see cref="Level2ObservationBase{TBook, TUnit, TUpdate}"/>.
         /// </summary>
@@ -145,7 +181,10 @@ namespace Kucoin.NET.Websockets.Public
             {
                 if (activeFeeds.ContainsKey(sym))
                 {
-                    lnew.Add(sym, activeFeeds[sym]);
+                    if (!lnew.ContainsKey(sym))
+                    {
+                        lnew.Add(sym, activeFeeds[sym]);
+                    }
                     continue;
                 }
 
@@ -155,7 +194,10 @@ namespace Kucoin.NET.Websockets.Public
                 var obs = CreateNewObservation(sym);
                 activeFeeds.Add(sym, obs);
 
-                lnew.Add(sym, obs);
+                if (!lnew.ContainsKey(sym))
+                {
+                    lnew.Add(sym, activeFeeds[sym]);
+                }
             }
 
             var topic = $"{Topic}:{sb}";
@@ -171,6 +213,7 @@ namespace Kucoin.NET.Websockets.Public
 
             await Send(e);
 
+            State = Level2State.Subscribed;
             return lnew;
         }
 
@@ -225,6 +268,10 @@ namespace Kucoin.NET.Websockets.Public
 
             await Send(e);
 
+            if (activeFeeds.Count == 0)
+            {
+                State = Level2State.Unsubscribed;
+            }
         }
 
 
@@ -302,6 +349,8 @@ namespace Kucoin.NET.Websockets.Public
 
                             if (!af.Calibrated)
                             {
+                                _ = Task.Run(() => State = Level2State.Initializing);
+
                                 af.OnNext(update);
 
                                 if ((DateTime.Now - cycle).TotalMilliseconds >= updateInterval)
@@ -313,10 +362,13 @@ namespace Kucoin.NET.Websockets.Public
                                         af.Calibrate();
                                         cycle = DateTime.Now;
                                     }
+
                                     _ = Task.Run(() =>
                                     {
                                         SymbolCalibrated?.Invoke(this, new SymbolCalibratedEventArgs<TBook, TUnit, TUpdate>(af));
+                                        State = Level2State.Running;
                                     });
+
                                 }
                             }
                             else
