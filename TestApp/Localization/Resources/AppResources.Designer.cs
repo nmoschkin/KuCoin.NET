@@ -196,6 +196,15 @@ namespace KuCoinApp.Localization.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Connection State.
+        /// </summary>
+        internal static string ConnectionState {
+            get {
+                return ResourceManager.GetString("ConnectionState", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Credentials.
         /// </summary>
         internal static string Credentials {
@@ -439,6 +448,15 @@ namespace KuCoinApp.Localization.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Market Depth.
+        /// </summary>
+        internal static string MarketDepth {
+            get {
+                return ResourceManager.GetString("MarketDepth", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Market Order.
         /// </summary>
         internal static string MarketOrder {
@@ -462,6 +480,15 @@ namespace KuCoinApp.Localization.Resources {
         internal static string Open {
             get {
                 return ResourceManager.GetString("Open", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Ping.
+        /// </summary>
+        internal static string Ping {
+            get {
+                return ResourceManager.GetString("Ping", resourceCulture);
             }
         }
         
@@ -646,6 +673,15 @@ namespace KuCoinApp.Localization.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Throughput.
+        /// </summary>
+        internal static string Throughput {
+            get {
+                return ResourceManager.GetString("Throughput", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Total.
         /// </summary>
         internal static string Total {
@@ -678,6 +714,15 @@ namespace KuCoinApp.Localization.Resources {
         internal static string Up {
             get {
                 return ResourceManager.GetString("Up", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to {0} Orders.
+        /// </summary>
+        internal static string XOrders {
+            get {
+                return ResourceManager.GetString("XOrders", resourceCulture);
             }
         }
     }

@@ -237,6 +237,14 @@ namespace KuCoinApp
             }
         }
 
+        public Level2 Level2Feed
+        {
+            get => level2Feed;
+            set
+            {
+                SetProperty(ref level2Feed, value);
+            }
+        }
 
         public Ticker RealTimeTicker
         {
@@ -911,7 +919,8 @@ namespace KuCoinApp
 
                     if (cred != null)
                     {
-                        level2Feed = new Level2();
+                        Level2Feed = new Level2();
+                        level2Feed.MonitorThroughput = true;
                         level2Feed.UpdateInterval = 50;
                         level2Feed.DefaultPieces = 50;
 

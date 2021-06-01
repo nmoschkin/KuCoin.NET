@@ -162,6 +162,9 @@
   <data name="ClosePrice" xml:space="preserve">
     <value>Close Price</value>
   </data>
+  <data name="ConnectionState" xml:space="preserve">
+    <value>Connection State</value>
+  </data>
   <data name="Credentials" xml:space="preserve">
     <value>Credentials</value>
   </data>
@@ -243,6 +246,9 @@
   <data name="Market" xml:space="preserve">
     <value>Market</value>
   </data>
+  <data name="MarketDepth" xml:space="preserve">
+    <value>Market Depth</value>
+  </data>
   <data name="MarketOrder" xml:space="preserve">
     <value>Market Order</value>
   </data>
@@ -251,6 +257,9 @@
   </data>
   <data name="Open" xml:space="preserve">
     <value>Open</value>
+  </data>
+  <data name="Ping" xml:space="preserve">
+    <value>Ping</value>
   </data>
   <data name="Price" xml:space="preserve">
     <value>Price</value>
@@ -312,6 +321,9 @@
   <data name="TakeProfit" xml:space="preserve">
     <value>Take Profit</value>
   </data>
+  <data name="Throughput" xml:space="preserve">
+    <value>Throughput</value>
+  </data>
   <data name="Total" xml:space="preserve">
     <value>Total</value>
   </data>
@@ -323,5 +335,8 @@
   </data>
   <data name="Up" xml:space="preserve">
     <value>Up</value>
+  </data>
+  <data name="XOrders" xml:space="preserve">
+    <value>{0} Orders</value>
   </data>
 </root>
