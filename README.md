@@ -5,8 +5,7 @@ __ATTENTION__: __THIS IS WORK IN PROGRESS__.  Some of the code could change dram
 
 This library is in active development, and it's brand new so things will undoubtedly change while I consider next steps.
 
-May 23rd, 2021: Some major refactoring/finalizing of the guts of the library (especially the websocket feed), and I'm settling on better-chosen names for classes.
-I will be moving some code between files, in the coming days.
+June 1st, 2021: Fixed major problem when running the app for the first time.  If anyone tried to run this before, and it didn't work, try again.
 
 
 ## Installation
