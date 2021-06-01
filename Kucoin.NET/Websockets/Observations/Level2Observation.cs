@@ -396,16 +396,16 @@ namespace Kucoin.NET.Websockets.Observations
                     }
                     else
                     {
-                        var np = new TUnit();
+                        var newPiece = new TUnit();
 
-                        np.Price = change.Price;
-                        np.Size = change.Size;
+                        newPiece.Price = change.Price;
+                        newPiece.Size = change.Size;
 
-                        if (np is ISequencedOrderUnit seqpiece && change is ISequencedOrderUnit seqchange)
+                        if (newPiece is ISequencedOrderUnit seqpiece && change is ISequencedOrderUnit seqchange)
                             seqpiece.Sequence = seqchange.Sequence;
 
 
-                        pieces.Add(np);
+                        pieces.Add(newPiece);
                     }
                 }
             }
@@ -464,9 +464,9 @@ namespace Kucoin.NET.Websockets.Observations
                     fullDepth.Sequence = value.SequenceEnd;
                     fullDepth.Timestamp = DateTime.Now;
                 }
-                catch (Exception ex)
+                catch 
                 {
-                    string e = ex.Message;
+
                 }
             }
         }
