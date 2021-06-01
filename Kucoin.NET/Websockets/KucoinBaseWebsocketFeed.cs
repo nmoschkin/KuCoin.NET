@@ -20,6 +20,7 @@ using Newtonsoft.Json;
 
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 using System.Net.Http;
 using System.Net.WebSockets;
@@ -39,6 +40,10 @@ namespace Kucoin.NET.Websockets
     {
 
         #region Protected fields
+
+        protected ObservableCollection<Exception> errorLog = new ObservableCollection<Exception>();
+
+        protected Exception lastError;
 
         protected KucoinBaseWebsocketFeed multiplexHost;
 
@@ -302,6 +307,30 @@ namespace Kucoin.NET.Websockets
             private set
             {
                 SetProperty(ref pingTime, value);
+            }
+        }
+
+        /// <summary>
+        /// If an exception occurs on calls to <see cref="HandleMessage(FeedMessage)"/>, they are logged here.
+        /// </summary>
+        /// <remarks>
+        /// Exceptions are generally ignored on the message pump thread because the entire connection needs to be reset if an unhandled exception is raised.
+        /// Exceptions are most likely to occur in <see cref="HandleMessage(FeedMessage)"/>.
+        /// </remarks>
+        public ObservableCollection<Exception> ErrorLog
+        {
+            get => errorLog;
+        }
+
+        /// <summary>
+        /// The last exception thrown on <see cref="HandleMessage(FeedMessage)"/>.
+        /// </summary>
+        public Exception LastError
+        {
+            get => lastError;
+            private set
+            {
+                SetProperty(ref lastError, value);
             }
         }
 
@@ -846,7 +875,18 @@ namespace Kucoin.NET.Websockets
             {
                 if (tunnelId == e.TunnelId)
                 {
-                    await HandleMessage(e);
+                    try
+                    {
+                        await HandleMessage(e);
+                    }
+                    catch(Exception ex)
+                    {
+                        lock(errorLog)
+                        {
+                            errorLog.Add(ex);
+                            LastError = ex;
+                        }
+                    }
                 }
                 else if (isMultiplexHost)
                 {
