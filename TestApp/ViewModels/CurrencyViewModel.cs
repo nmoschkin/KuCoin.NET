@@ -18,6 +18,8 @@ namespace KuCoinApp
         BitmapSource bmp = null;
         MarketCurrency curr;
 
+        static Dictionary<string, BitmapSource> imgCache = new Dictionary<string, BitmapSource>();
+
         public static IReadOnlyList<MarketCurrency> QuoteCurrencies { get; private set; }
 
         public static CurrencyViewModel GetCurrency(string currency, bool loadImage = true)
@@ -102,18 +104,6 @@ namespace KuCoinApp
             if (Currencies == null)
             {
                 throw new ArgumentNullException("Currencies must be initialized before instantiation.");
-
-                //UpdateCurrencies().ContinueWith((t) =>
-                //{
-                //    foreach (var curr in Currencies)
-                //    {
-                //        if (curr.Currency == currency)
-                //        {
-                //            Currency = curr;
-                //            return;
-                //        }
-                //    }
-                //});
             }
             else
             {
@@ -144,36 +134,42 @@ namespace KuCoinApp
             {
                 try
                 {
-                    byte[] b = (byte[])CoinResources.ResourceManager.GetObject(curr.Currency.ToLower());
-                    if (b == null)
+                    string c = curr.Currency.ToLower();
+                    
+                    lock(imgCache)
                     {
-                        return;
-                        //var currUrl = $"https://assets-currency.kucoin.com/www/coin/pc/{curr.Currency.ToUpper()}.png";
-                        //var http = new HttpClient();
-                        
-                        //try
-                        //{
-                        //    var buffer = await http.GetBufferAsync(new Uri(currUrl));
-                        //    b = new byte[buffer.Length];
+                        if (imgCache.ContainsKey(c))
+                        {
+                            App.Current?.Dispatcher?.Invoke(() =>
+                            {
+                                Image = imgCache[c];
+                            });
 
-                        //    buffer.CopyTo(b);
-                        //}
-                        //catch
-                        //{
-                        //    return;
-                        //}
+                            return;
+                        }
+
+                        byte[] b = (byte[])CoinResources.ResourceManager.GetObject(c);
+
+                        if (b == null)
+                        {
+                            return;
+                        }
+
+                        App.Current?.Dispatcher?.Invoke(() =>
+                        {
+                            var stream = new MemoryStream(b);
+                            if (stream != null)
+                            {
+                                Image = BitmapFrame.Create(stream,
+                                                    BitmapCreateOptions.None,
+                                                    BitmapCacheOption.OnLoad);
+
+                            }
+                        });
+
+                        imgCache.Add(c, bmp);
                     }
 
-                    App.Current?.Dispatcher?.Invoke(() =>
-                    {
-                        var stream = new MemoryStream(b);
-                        if (stream != null)
-                        {
-                            Image = BitmapFrame.Create(stream,
-                                                BitmapCreateOptions.None,
-                                                BitmapCacheOption.OnLoad);
-                        }
-                    });
                 }
                 catch { }
             });

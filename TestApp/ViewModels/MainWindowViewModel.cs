@@ -84,6 +84,7 @@ namespace KuCoinApp
 
         protected ILevel2OrderBookProvider<FuturesOrderBook, OrderUnit, FuturesLevel2Update> futureslevel2;
 
+        protected List<SymbolViewModel> recentSymbols = new List<SymbolViewModel>();
 
         protected ObservableStaticMarketDepthUpdate marketUpdate;
 
@@ -92,6 +93,7 @@ namespace KuCoinApp
         protected string sizeFormat = "0.00";
 
         public override event EventHandler AskQuit;
+
 
         public ILevel2OrderBookProvider<FuturesOrderBook, OrderUnit, FuturesLevel2Update> FuturesLevel2
         {
@@ -382,7 +384,73 @@ namespace KuCoinApp
             PriceFormat = inc;
         }
 
-     
+
+
+        SymbolViewModel selSym;
+
+        protected void PushSymbol(string symbol)
+        {
+            App.Current.Settings.PushSymbol(symbol);
+
+            App.Current.Dispatcher.Invoke(() =>
+            {
+                MakeRecentSymbols();
+            });
+        }
+
+        protected void MakeRecentSymbols()
+        {
+            var sym = App.Current.Settings.Symbols;
+
+            var rc = new List<SymbolViewModel>();
+
+            if (symbols == null || symbols.Count == 0 || sym == null || sym.Length == 0) return;
+
+            foreach (var s in sym)
+            {
+                foreach (var sobj in symbols)
+                {
+                    if (s == sobj.Symbol)
+                    {
+                        var snew = new SymbolViewModel(sobj);
+                        rc.Add(snew);
+                    }
+                }
+            }
+
+            RecentSymbols = rc;
+        }
+
+        public SymbolViewModel SelectedSymbol
+        {
+            get => selSym;
+            set
+            {
+                if (SetProperty(ref selSym, value))
+                {
+                    if ((symbol?.Symbol ?? null) != (selSym?.Symbol ?? null))
+                    {
+                        foreach (var sym in Symbols)
+                        {
+                            if (sym.Symbol == selSym?.Symbol)
+                            {
+                                Symbol = sym;
+                                return;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        public List<SymbolViewModel> RecentSymbols
+        {
+            get => recentSymbols;
+            set
+            {
+                SetProperty(ref recentSymbols, value);
+            }
+        }
 
         protected void UpdateSymbol(
             string oldSymbol, 
@@ -392,9 +460,17 @@ namespace KuCoinApp
             KlineType? oldKline = null)
         {
 
-            App.Current.Settings.PushSymbol(newSymbol);
-
+            PushSymbol(newSymbol);
             MakeFormats(newSymbol);
+
+            foreach (var sym in recentSymbols)
+            {
+                if (sym.Data.Symbol == newSymbol)
+                {
+                    SelectedSymbol = sym;
+                    break;
+                }
+            }
 
             if (force || (oldSymbol != (string)symbol && oldSymbol != null))
             {
@@ -607,30 +683,6 @@ namespace KuCoinApp
             }
 
             
-        }
-
-        public TradingSymbol[] RecentSymbols
-        {
-            get
-            {
-                List<TradingSymbol> output = new List<TradingSymbol>();
-                var sym = App.Current.Settings.Symbols;
-
-                if (symbols == null || symbols.Count == 0 || sym == null || sym.Length == 0) return null;
-
-                foreach (var s in sym)
-                {
-                    foreach (var sobj in symbols)
-                    {
-                        if (s == sobj.Symbol)
-                        {
-                            output.Add(sobj);
-                        }
-                    }
-                }
-
-                return output.ToArray();
-            }
         }
 
         public KlineCandle LastCandle
@@ -873,6 +925,7 @@ namespace KuCoinApp
         {
 
             if (market == null) market = new Market();
+            await CurrencyViewModel.UpdateCurrencies();
 
             await market.RefreshSymbolsAsync().ContinueWith(async (t) =>
             {

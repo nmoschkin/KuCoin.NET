@@ -169,7 +169,7 @@
             Grid.Row="1"
             Grid.RowSpan="2"
             Grid.Column="2"
-            Margin="8">
+            Margin="0,16,16,16">
 
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto" />
@@ -183,14 +183,91 @@
                 <ColumnDefinition />
             </Grid.ColumnDefinitions>
 
+
             <StackPanel
                 Grid.ColumnSpan="2"
-                Margin="8"
+                Margin="0"
                 Orientation="Vertical">
 
                 <Label Content="Recent Symbols:" />
 
-                <ComboBox ItemsSource="{Binding RecentSymbols}" SelectedItem="{Binding Symbol, Mode=TwoWay}" />
+                <Grid Margin="0" HorizontalAlignment="Stretch">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+
+                    <ComboBox
+                        x:Name="SymbolCombo"
+                        ItemsSource="{Binding RecentSymbols}"
+                        SelectedItem="{Binding SelectedSymbol, Mode=TwoWay}">
+                        <ComboBox.ToolTip>
+                            <ToolTip
+                                x:Name="SymbolTip"
+                                Background="Transparent"
+                                BorderBrush="Transparent"
+                                BorderThickness="0"
+                                Placement="Bottom"
+                                PlacementTarget="{Binding RelativeSource={RelativeSource AncestorType=ComboBox, Mode=FindAncestor}}">
+                                <Border
+                                    Margin="0"
+                                    Padding="8"
+                                    Background="{x:Static SystemColors.InfoBrush}"
+                                    BorderBrush="Black"
+                                    BorderThickness="1"
+                                    CornerRadius="8">
+                                    <StackPanel x:Name="SymbolInfo" />
+                                </Border>
+                            </ToolTip>
+                        </ComboBox.ToolTip>
+                        <ComboBox.ItemTemplate>
+                            <DataTemplate>
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+
+                                        <ColumnDefinition Width="Auto" />
+                                        <ColumnDefinition Width="Auto" />
+                                        <ColumnDefinition />
+
+                                    </Grid.ColumnDefinitions>
+
+                                    <Image
+                                        Grid.Column="0"
+                                        Width="24"
+                                        Height="24"
+                                        Margin="4,2"
+                                        Source="{Binding BaseCurrency.Image}" />
+
+                                    <Image
+                                        Grid.Column="1"
+                                        Width="24"
+                                        Height="24"
+                                        Margin="4,2"
+                                        Source="{Binding QuoteCurrency.Image}" />
+
+                                    <Label
+                                        Grid.Column="2"
+                                        HorizontalAlignment="Left"
+                                        VerticalAlignment="Center"
+                                        Content="{Binding Symbol}"
+                                        FontFamily="Calibri"
+                                        FontSize="16" />
+
+                                </Grid>
+                            </DataTemplate>
+                        </ComboBox.ItemTemplate>
+                    </ComboBox>
+
+                    <Button
+                        x:Name="SymbolInfoBtn"
+                        Grid.Column="1"
+                        Margin="4"
+                        Padding="4"
+                        HorizontalAlignment="Center"
+                        VerticalAlignment="Center"
+                        Click="SymbolInfoBtn_Click"
+                        Content="?" />
+                </Grid>
 
                 <Label Content="Active Symbol:" />
 
@@ -202,7 +279,10 @@
 
             </StackPanel>
 
-            <Grid Grid.Row="1" Grid.ColumnSpan="2">
+            <Grid
+                Grid.Row="1"
+                Grid.ColumnSpan="2"
+                Margin="0">
 
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="Auto" />

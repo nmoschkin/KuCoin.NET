@@ -135,4 +135,79 @@
   <data name="Account.Type.trade" xml:space="preserve">
     <value>Trading Account</value>
   </data>
+  <data name="Currency.Confirms" xml:space="preserve">
+    <value>Block Confirmations</value>
+  </data>
+  <data name="Currency.Currency" xml:space="preserve">
+    <value>Permanent Currency Code</value>
+  </data>
+  <data name="Currency.FullName" xml:space="preserve">
+    <value>Full Currency Name</value>
+  </data>
+  <data name="Currency.IsDebitEnabled" xml:space="preserve">
+    <value>Supports Debit</value>
+  </data>
+  <data name="Currency.IsDepositEnabled" xml:space="preserve">
+    <value>Supports Deposit</value>
+  </data>
+  <data name="Currency.IsMarginEnabled" xml:space="preserve">
+    <value>Supports Margin Trading</value>
+  </data>
+  <data name="Currency.IsWithdrawEnabled" xml:space="preserve">
+    <value>Supports Withdrawal</value>
+  </data>
+  <data name="Currency.Name" xml:space="preserve">
+    <value>Currency Name</value>
+  </data>
+  <data name="Currency.Precision" xml:space="preserve">
+    <value>Currency Precision</value>
+  </data>
+  <data name="Currency.withdrawalMinFee" xml:space="preserve">
+    <value>Minimum Withdrawal Fee</value>
+  </data>
+  <data name="Currency.WithdrawalMinSize" xml:space="preserve">
+    <value>Minimum Withdrawal Amaount</value>
+  </data>
+  <data name="TradingSymbol.BaseCurrency" xml:space="preserve">
+    <value>Base Currency</value>
+  </data>
+  <data name="TradingSymbol.BaseIncrement" xml:space="preserve">
+    <value>Base Currency Increment</value>
+  </data>
+  <data name="TradingSymbol.BaseMaxSize" xml:space="preserve">
+    <value>Base Currency Maximum Size</value>
+  </data>
+  <data name="TradingSymbol.BaseMinSize" xml:space="preserve">
+    <value>Base Currency Minimum Size</value>
+  </data>
+  <data name="TradingSymbol.EnableTrading" xml:space="preserve">
+    <value>Supports Trading</value>
+  </data>
+  <data name="TradingSymbol.FeeCurrency" xml:space="preserve">
+    <value>Fee Currency</value>
+  </data>
+  <data name="TradingSymbol.IsMarginEnabled" xml:space="preserve">
+    <value>Supports Margin Trading</value>
+  </data>
+  <data name="TradingSymbol.Name" xml:space="preserve">
+    <value>Trading Symbol Name</value>
+  </data>
+  <data name="TradingSymbol.PriceIncrement" xml:space="preserve">
+    <value>Price Increment</value>
+  </data>
+  <data name="TradingSymbol.PriceLimitRate" xml:space="preserve">
+    <value>Price Limit Rate</value>
+  </data>
+  <data name="TradingSymbol.QuoteCurrency" xml:space="preserve">
+    <value>Quote Currency</value>
+  </data>
+  <data name="TradingSymbol.QuoteIncrement" xml:space="preserve">
+    <value>Quote Currency Increment</value>
+  </data>
+  <data name="TradingSymbol.QuoteMaxSize" xml:space="preserve">
+    <value>Quote Currency Maximum Size</value>
+  </data>
+  <data name="TradingSymbol.QuoteMinSize" xml:space="preserve">
+    <value>Quote Currency Minimum Size</value>
+  </data>
 </root>
