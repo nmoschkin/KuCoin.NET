@@ -557,9 +557,9 @@ namespace Kucoin.NET.Websockets
         {
             if (isMultiplexHost)
             {
-                foreach (var child in multiplexClients)
+                foreach (var client in multiplexClients)
                 {
-                    await child.RemoveMultiplexChannels();
+                    await client.RemoveMultiplexChannels();
                 }
             }
 
@@ -859,14 +859,15 @@ namespace Kucoin.NET.Websockets
         /// Handles initial processing and routing of JSON packets.
         /// </summary>
         /// <param name="json">The JSON string that was received from the remote endpoint.</param>
+        /// <param name="e">(Optional) Feed message decoded from multiplex host.</param>
         /// <remarks>
         /// This method deserializes the JSON data and calls either the
         /// <see cref="OnPong(FeedMessage)"/> or <see cref="HandleMessage(FeedMessage)"/> methods, and the <see cref="OnJsonReceived(string)"/> method.
         /// OnJsonReceive is called after all other handling has occurred.
         /// </remarks>
-        private async Task RouteJsonPacket(string json)
+        private async Task RouteJsonPacket(string json, FeedMessage e = null)
         {
-            var e = JsonConvert.DeserializeObject<FeedMessage>(json);
+            if (e == null) e = JsonConvert.DeserializeObject<FeedMessage>(json);
 
             if (e.Type == "pong")
             {
@@ -895,7 +896,9 @@ namespace Kucoin.NET.Websockets
 
                     if (p != null)
                     {
-                        await p.RouteJsonPacket(json);
+                        // pass the deserialized object to the client 
+                        // so it doesn't need to be deserialized again.
+                        await p.RouteJsonPacket(json, e);
                     }
                 }
             }
