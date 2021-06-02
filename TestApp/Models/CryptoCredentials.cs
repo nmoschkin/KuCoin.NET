@@ -32,7 +32,7 @@ namespace KuCoinApp
 
         protected int version = DefaultVersion;
                 
-        protected CryptoCredentials() : base(null, null, null)
+        internal CryptoCredentials() : base(null, null, null)
         {
         }
 
@@ -397,7 +397,7 @@ namespace KuCoinApp
                 };
 
                 JsonConvert.PopulateObject(json, cred, jcfg);
-
+                
                 if (vers == 1 && autoUpgrade)
                 {
                     vers = DefaultVersion;
@@ -427,16 +427,16 @@ namespace KuCoinApp
 #pragma warning restore IDE0059 // Unnecessary assignment of a value
 
             }
-            catch
+            catch(Exception ex)
             {
-             
+                string s = ex.Message;
             }
 
             cred.CheckIsClear();
             Pin = pin;
 
             GC.Collect();
-
+            cred.futures = false;
             return cred;                
         }
 

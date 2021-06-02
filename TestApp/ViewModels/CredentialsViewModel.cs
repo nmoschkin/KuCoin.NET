@@ -146,16 +146,12 @@ namespace KuCoinApp
             oldCred.Passphrase = cred.Passphrase;
         }
 
-        public CredentialsViewModel()
+        private void SetupCommands()
         {
-            showPassword = App.Current.Settings.ShowPassword;
-            oldCred = CryptoCredentials.LoadFromStorage(App.Current.Seed);
-            cred = oldCred.Clone();
-
             FuturesCommand = new SimpleCommand((p) =>
             {
                 App.Current.Dispatcher.Invoke(() =>
-                {                    
+                {
                     var futures = new Credentials((CryptoCredentials)cred.AttachedAccount);
                     futures.ShowDialog();
                 });
@@ -188,8 +184,16 @@ namespace KuCoinApp
             });
 
         }
+        public CredentialsViewModel()
+        {
+            showPassword = App.Current.Settings.ShowPassword;
+            oldCred = CryptoCredentials.LoadFromStorage(App.Current.Seed);
+            cred = oldCred.Clone();
 
-        public CredentialsViewModel(CryptoCredentials cred) : this()
+            SetupCommands();
+        }
+
+        public CredentialsViewModel(CryptoCredentials cred) 
         {
             oldCred = cred ?? CryptoCredentials.LoadFromStorage(App.Current.Seed);
             Credential = cred.Clone();
@@ -199,6 +203,8 @@ namespace KuCoinApp
                 OKText = AppResources.OK;
                 WindowTitle = AppResources.FuturesCredentialsTitle;
             }
+
+            SetupCommands();
         }
 
         public CredentialsViewModel(string pin) : this()
