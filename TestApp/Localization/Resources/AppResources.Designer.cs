@@ -232,6 +232,15 @@ namespace KuCoinApp.Localization.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Display information about the selected symbol..
+        /// </summary>
+        internal static string DisplaySymbolInfo {
+            get {
+                return ResourceManager.GetString("DisplaySymbolInfo", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Down.
         /// </summary>
         internal static string Down {
@@ -673,7 +682,7 @@ namespace KuCoinApp.Localization.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Throughput.
+        ///   Looks up a localized string similar to Throughput (bits per second).
         /// </summary>
         internal static string Throughput {
             get {

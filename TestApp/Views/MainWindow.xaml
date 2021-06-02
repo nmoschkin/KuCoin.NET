@@ -267,7 +267,8 @@
                         HorizontalAlignment="Center"
                         VerticalAlignment="Center"
                         Click="SymbolInfoBtn_Click"
-                        Content="?" />
+                        Content="?"
+                        ToolTip="{i18n:Translate ResourceKey=DisplaySymbolInfo}" />
                 </Grid>
 
                 <Label Content="Active Symbol:" />

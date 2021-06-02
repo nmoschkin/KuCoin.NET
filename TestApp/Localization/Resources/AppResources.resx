@@ -174,6 +174,9 @@
   <data name="Currency" xml:space="preserve">
     <value>Currency</value>
   </data>
+  <data name="DisplaySymbolInfo" xml:space="preserve">
+    <value>Display information about the selected symbol.</value>
+  </data>
   <data name="Down" xml:space="preserve">
     <value>Down</value>
   </data>
@@ -322,7 +325,7 @@
     <value>Take Profit</value>
   </data>
   <data name="Throughput" xml:space="preserve">
-    <value>Throughput</value>
+    <value>Throughput (bits per second)</value>
   </data>
   <data name="Total" xml:space="preserve">
     <value>Total</value>
