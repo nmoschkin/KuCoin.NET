@@ -889,6 +889,9 @@ namespace Kucoin.NET.Websockets
                             LastError = ex;
                         }
                     }
+
+                    // the tunnel destination will fire this.
+                    OnJsonReceived(json);
                 }
                 else if (isMultiplexHost)
                 {
@@ -902,8 +905,6 @@ namespace Kucoin.NET.Websockets
                     }
                 }
             }
-
-            OnJsonReceived(json);
         }
 
         /// <summary>
