@@ -913,6 +913,7 @@ namespace Kucoin.NET.Websockets
         /// <param name="json">The raw JSON string.</param>
         /// <remarks>
         /// The default behavior of this method is to fire the <see cref="DataReceived"/> event.
+        /// This method is only invoked on the destination tunnel.  The multiplex host will pass through.
         /// </remarks>
         protected virtual void OnJsonReceived(string json)
         {
