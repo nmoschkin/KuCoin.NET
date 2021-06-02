@@ -419,12 +419,15 @@
 
                     <TextBlock
                         Grid.Row="3"
-                        Grid.ColumnSpan="2"
+                        Grid.Column="0"
                         VerticalAlignment="Center"
                         FontFamily="Calibri"
                         FontSize="12">
                         <Run Text="{Binding Level2.OrderBook.Timestamp, StringFormat='{}{0:MMM dd, yyyy a\\t h:mm:ss tt}'}" />
                     </TextBlock>
+
+
+
                 </Grid>
 
 

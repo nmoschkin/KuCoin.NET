@@ -978,7 +978,7 @@ namespace KuCoinApp
                     {
 
                         level2Feed.MonitorThroughput = true;
-                        level2Feed.UpdateInterval = 50;
+                        level2Feed.UpdateInterval = 100;
                         level2Feed.DefaultPieces = 50;
 
                         // for testing futures

@@ -76,6 +76,8 @@ namespace Kucoin.NET.Websockets
 
         protected int sendBufferSize = 51920;
 
+        protected int minQueueBuffer = 512;
+
         protected bool monitorThroughput;
 
         private long throughput;
@@ -454,6 +456,7 @@ namespace Kucoin.NET.Websockets
 
                 // message queue
                 msgQueue = new List<string>();
+                msgQueue.Capacity = minQueueBuffer;
 
                 // data receiver
                 inputReaderThread = Task.Factory.StartNew(
@@ -829,12 +832,15 @@ namespace Kucoin.NET.Websockets
         /// </summary>
         private async Task MessagePumpThread()
         {
-            string[] queue;
+            string[] queue = new string[minQueueBuffer];
+            int c;
 
             // loop forever
             while (!ctsReceive.IsCancellationRequested && socket?.State == WebSocketState.Open)
             {
-                if (msgQueue.Count == 0)
+                c = msgQueue.Count;
+
+                if (c == 0)
                 {
                     // nothing in the queue, give up some time-slices.
                     await Task.Delay(5);
@@ -844,14 +850,20 @@ namespace Kucoin.NET.Websockets
                 // lock on msgQueue.
                 lock (msgQueue)
                 {
-                    queue = msgQueue.ToArray();
+                    if (queue.Length < c)
+                    {
+                        Array.Resize(ref queue, c);
+                    }
+
+                    msgQueue.CopyTo(queue);
                     msgQueue.Clear();
                 }
 
-                foreach (var s in queue)
+                for (int i = 0; i < c; i++)
                 {
-                    await RouteJsonPacket(s);
+                    await RouteJsonPacket(queue[i]);
                 }
+
             }
         }
 
