@@ -199,6 +199,7 @@
 
                     <ComboBox
                         x:Name="SymbolCombo"
+                        Margin="0,4,0,4"
                         ItemsSource="{Binding RecentSymbols}"
                         SelectedItem="{Binding SelectedSymbol, Mode=TwoWay}">
                         <ComboBox.ToolTip>

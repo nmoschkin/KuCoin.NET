@@ -35,7 +35,7 @@ namespace KuCoinApp
             
             DataContext = this.vm = vm;
 
-            MakeProps("Symbol", typeof(TradingSymbol), SymbolInfo, "Symbol");
+            MakeProps("SelectedSymbol", "Data", typeof(TradingSymbol), SymbolInfo, "Symbol", "BaseCurrency.Image", "QuoteCurrency.Image");
 
             SymbolTip.PlacementTarget = SymbolCombo;
 
@@ -88,7 +88,7 @@ namespace KuCoinApp
 
         }
 
-        public Grid MakeProps(string binding, Type type, Panel ctrl, string titleProperty = null)
+        public Grid MakeProps(string binding, string sub, Type type, Panel ctrl, string titleProperty = null, string baseCurrImg = null, string quoteCurrImg = null)
         {
             var res = Kucoin.NET.Localization.AppResources.ResourceManager;
 
@@ -120,6 +120,7 @@ namespace KuCoinApp
 
             string vn;
             string txt;
+            string b;
 
             foreach (var pi in pis)
             {
@@ -128,7 +129,10 @@ namespace KuCoinApp
 
                 if (txt != null)
                 {
-                    proptxt.Add(binding + "." + pi.Name, txt);
+                    b = binding;
+                    if (sub != null) b += "." + sub;
+
+                    proptxt.Add(b + "." + pi.Name, txt);
                 }
             }
 
@@ -145,6 +149,55 @@ namespace KuCoinApp
             
             if (titleProperty != null)
             {
+                Image img;
+                int ic = 0;
+                var g2 = new Grid();
+
+                if (baseCurrImg != null)
+                {
+
+                    g2.ColumnDefinitions.Add(new ColumnDefinition()
+                    {   
+                        Width = GridLength.Auto
+                    });
+
+                    img = new Image()
+                    {
+                        HorizontalAlignment = HorizontalAlignment.Center,
+                        VerticalAlignment = VerticalAlignment.Center,
+                        Height = 24,
+                        Width = 24,
+                        Margin = new Thickness(4)
+                    };
+
+                    img.SetBinding(Image.SourceProperty, new Binding(binding + "." + baseCurrImg));
+                    img.SetValue(Grid.ColumnProperty, ic++);
+
+                    g2.Children.Add(img);
+                }
+
+                if (quoteCurrImg != null)
+                {
+                    g2.ColumnDefinitions.Add(new ColumnDefinition()
+                    {
+                        Width = GridLength.Auto
+                    });
+
+                    img = new Image()
+                    {
+                        HorizontalAlignment = HorizontalAlignment.Center,
+                        VerticalAlignment = VerticalAlignment.Center,
+                        Height = 24,
+                        Width = 24,
+                        Margin = new Thickness(4)
+                    };
+
+                    img.SetBinding(Image.SourceProperty, new Binding(binding + "." + quoteCurrImg));
+                    img.SetValue(Grid.ColumnProperty, ic++);
+
+                    g2.Children.Add(img);
+                }
+
                 tp = new Label()
                 {
                     Foreground = Brushes.Black,
@@ -155,12 +208,20 @@ namespace KuCoinApp
                     
                 };
 
-                tp.SetBinding(Label.ContentProperty, new Binding(binding + "." + titleProperty));
+                g2.ColumnDefinitions.Add(new ColumnDefinition());
+
+                b = binding;
+                if (sub != null) b += "." + sub;
+
+                tp.SetBinding(Label.ContentProperty, new Binding(b + "." + titleProperty));
+
                 tp.SetValue(Grid.RowProperty, 0);
-                tp.SetValue(Grid.ColumnProperty, 0);
+                tp.SetValue(Grid.ColumnProperty, ic);
+
+                g2.Children.Add(tp);
 
                 g.RowDefinitions.Add(new RowDefinition());
-                g.Children.Add(tp);
+                g.Children.Add(g2);
 
                 row++;
 
