@@ -442,6 +442,8 @@
                         <Run Text="{Binding Level3.OrderBook.Timestamp, StringFormat='{}{0:MMM dd, yyyy a\\t h:mm:ss tt}'}" />
                     </TextBlock>
 
+
+
                     <TextBlock
                         Grid.Row="3"
                         Grid.Column="1"

@@ -748,6 +748,7 @@ namespace Kucoin.NET.Websockets
             // loop forever or until the connection is broken or canceled.
             while (!ctsReceive.IsCancellationRequested && socket?.State == WebSocketState.Open)
             {
+
                 var result = await socket.ReceiveAsync(arrSeg, ctsReceive.Token);
                 c = result.Count;
 
@@ -840,7 +841,6 @@ namespace Kucoin.NET.Websockets
                             {
                                 msgQueue.Add(json);
                             }
-
                             continue;
                         }
                     }
