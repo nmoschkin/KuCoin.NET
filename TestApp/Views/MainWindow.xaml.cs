@@ -174,6 +174,7 @@ namespace KuCoinApp
                         Margin = new Thickness(4)
                     };
 
+                    img.SetValue(RenderOptions.BitmapScalingModeProperty, BitmapScalingMode.HighQuality);
                     img.SetBinding(Image.SourceProperty, new Binding(binding + "." + baseCurrImg));
                     img.SetValue(Grid.ColumnProperty, ic++);
 
@@ -196,6 +197,7 @@ namespace KuCoinApp
                         Margin = new Thickness(4)
                     };
 
+                    img.SetValue(RenderOptions.BitmapScalingModeProperty, BitmapScalingMode.HighQuality);
                     img.SetBinding(Image.SourceProperty, new Binding(binding + "." + quoteCurrImg));
                     img.SetValue(Grid.ColumnProperty, ic++);
 

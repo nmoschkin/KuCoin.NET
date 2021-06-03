@@ -247,6 +247,7 @@
                                         Width="24"
                                         Height="24"
                                         Margin="4,2"
+                                        RenderOptions.BitmapScalingMode="HighQuality"
                                         Source="{Binding BaseCurrency.Image}" />
 
                                     <Image
@@ -254,6 +255,7 @@
                                         Width="24"
                                         Height="24"
                                         Margin="4,2"
+                                        RenderOptions.BitmapScalingMode="HighQuality"
                                         Source="{Binding QuoteCurrency.Image}" />
 
                                     <Label
@@ -314,6 +316,7 @@
                     Margin="8"
                     HorizontalAlignment="Center"
                     VerticalAlignment="Center"
+                    RenderOptions.BitmapScalingMode="HighQuality"
                     Source="{Binding Currency.Image}" />
 
                 <Label
@@ -352,6 +355,7 @@
                     Margin="8"
                     HorizontalAlignment="Center"
                     VerticalAlignment="Center"
+                    RenderOptions.BitmapScalingMode="HighQuality"
                     Source="{Binding QuoteCurrency.Image}" />
 
 
