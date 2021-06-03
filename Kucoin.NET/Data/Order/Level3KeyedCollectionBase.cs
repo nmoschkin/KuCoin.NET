@@ -57,10 +57,13 @@ namespace Kucoin.NET.Data.Order
 
             var l = this as IList<TUnit>;
             var uprice = unit.Price;
-            decimal cprice;
-
             DateTime utime = unit.Timestamp;
+            var usize = unit.Size;
+
+            decimal cprice;
+            decimal csize;
             DateTime ctime;
+
 
             if (!descending)
             {
@@ -75,6 +78,7 @@ namespace Kucoin.NET.Data.Order
                     
                     cprice = l[mid].Price;
                     ctime = l[mid].Timestamp;
+                    csize = l[mid].Size;
 
                     if (uprice > cprice)
                     {
@@ -86,17 +90,30 @@ namespace Kucoin.NET.Data.Order
                     }
                     else
                     {
-                        if (utime < ctime)
+                        //return mid;
+
+                        if (usize < csize)
                         {
                             lo = mid + 1;
                         }
-                        else if (utime > ctime)
+                        else if (usize > csize)
                         {
                             hi = mid - 1;
                         }
                         else
                         {
-                            return mid;
+                            if (utime < ctime)
+                            {
+                                lo = mid + 1;
+                            }
+                            else if (utime > ctime)
+                            {
+                                hi = mid - 1;
+                            }
+                            else
+                            {
+                                return mid;
+                            }
                         }
                     }
                 }
@@ -114,6 +131,7 @@ namespace Kucoin.NET.Data.Order
                     
                     cprice = l[mid].Price;
                     ctime = l[mid].Timestamp;
+                    csize = l[mid].Size;
 
                     if (uprice < cprice)
                     {
@@ -125,17 +143,30 @@ namespace Kucoin.NET.Data.Order
                     }
                     else
                     {
-                        if (utime < ctime)
+                        //return mid;
+
+                        if (usize < csize)
                         {
                             lo = mid + 1;
                         }
-                        else if (utime > ctime)
+                        else if (usize > csize)
                         {
                             hi = mid - 1;
                         }
                         else
                         {
-                            return mid;
+                            if (utime < ctime)
+                            {
+                                lo = mid + 1;
+                            }
+                            else if (utime > ctime)
+                            {
+                                hi = mid - 1;
+                            }
+                            else
+                            {
+                                return mid;
+                            }
                         }
                     }
 

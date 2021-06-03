@@ -120,13 +120,17 @@ namespace Kucoin.NET.Websockets.Observations
             }
             else if (change.Subject == "change")
             {
-
                 if (pieces.Contains(change.OrderId))
                 {
-                    pieces[change.OrderId].Price = (decimal)change.Price;
-                    pieces[change.OrderId].Size = (decimal)change.Size;
-                    pieces[change.OrderId].Timestamp = (DateTime)change.Timestamp;
+                    var piece = pieces[change.OrderId];
+                
+                    pieces.Remove(piece.OrderId);
 
+                    piece.Size = (decimal)change.Size;
+                    piece.Timestamp = (DateTime)change.Timestamp;
+                    piece.Price = (decimal)change.Price;
+
+                    pieces.Add(piece);
                 }
             }
             else if (change.Subject == "match")
@@ -135,11 +139,6 @@ namespace Kucoin.NET.Websockets.Observations
                 {
                     var o = otherPieces[change.MakerOrderId];
                     o.Size -= (decimal)change.Size;
-
-                    //if (o.Size == 0)
-                    //{
-                    //    otherPieces.Remove(o.OrderId);
-                    //}
                 }
             }
         }
@@ -254,7 +253,6 @@ namespace Kucoin.NET.Websockets.Observations
                     dest[i] = src[i];
                 }
             }
-
         }
 
         /// <summary>

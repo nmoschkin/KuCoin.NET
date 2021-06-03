@@ -71,7 +71,7 @@ namespace Kucoin.NET.Observable
 
                 if (Contains(item.OrderId))
                 {
-                    if (this[item.OrderId].Equals(item)) return;
+                    if (oldItem?.Equals(item) ?? false) return;
 
                     Remove(item.OrderId);
                     InsertItem(index, item);
