@@ -529,9 +529,10 @@ namespace KuCoinApp
 
 
 
-                            if (Level2 != null)
+
+                            if (Level3 != null)
                             {
-                                Level2.Dispose();
+                                Level3.Dispose();
                             }
 
                             if (level3Feed == null || level3Feed.Connected == false)
@@ -1018,7 +1019,7 @@ namespace KuCoinApp
                         return;
                     }
 
-                    Level2Feed = new Level2();
+                    //Level2Feed = new Level2();
                     Level3Feed = new Level3(cred);
 
                     // Bring up the testing console.
@@ -1038,9 +1039,9 @@ namespace KuCoinApp
                     if (cred != null)
                     {
 
-                        level2Feed.MonitorThroughput = true;
-                        level2Feed.UpdateInterval = 100;
-                        level2Feed.DefaultPieces = 50;
+                        //level2Feed.MonitorThroughput = true;
+                        //level2Feed.UpdateInterval = 100;
+                        //level2Feed.DefaultPieces = 50;
 
                         level3Feed.MonitorThroughput = true;
                         level3Feed.UpdateInterval = 100;
@@ -1068,7 +1069,7 @@ namespace KuCoinApp
 
                             // give its own socket because of the speed of data.
                             //await level2Feed.Connect(true);
-                            await level2Feed.Connect();
+                            //await level2Feed.Connect();
                             await level3Feed.Connect();
 
                             // for testing futures
