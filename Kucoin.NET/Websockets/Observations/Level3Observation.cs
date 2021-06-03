@@ -142,6 +142,7 @@ namespace Kucoin.NET.Websockets.Observations
             Initialized = false;
             Calibrated = false;
         }
+        bool bf = false;
 
         /// <summary>
         /// Calibrate the order book from cached data.
@@ -151,11 +152,12 @@ namespace Kucoin.NET.Websockets.Observations
         {
             calibrated = true;
 
+            bf = true;
             foreach (var q in orderBuffer)
             {
                 if (q.Sequence > fullDepth.Sequence) OnNext(q);
             }
-
+            bf = false;
             orderBuffer.Clear();
 
             OnPropertyChanged(nameof(Calibrated));
@@ -168,7 +170,7 @@ namespace Kucoin.NET.Websockets.Observations
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public override void OnNext(Level3Update value)
         {
-            if (disposed || fullDepth == null) return;
+            if (disposed) return;
 
             lock (lockObj)
             {
@@ -177,6 +179,20 @@ namespace Kucoin.NET.Websockets.Observations
                     if (!calibrated)
                     {
                         orderBuffer.Add(value);
+                        return;
+                    }
+                    else if (value.Sequence <= fullDepth.Sequence)
+                    {
+                        return;
+                    }
+                    else if (fullDepth == null)
+                    {
+                        return;
+                    }
+
+                    if (!bf && value.Sequence - fullDepth.Sequence > 1)
+                    {
+                        Reset();
                         return;
                     }
 
@@ -205,7 +221,7 @@ namespace Kucoin.NET.Websockets.Observations
                     }
 
                     fullDepth.Sequence = value.Sequence;
-                    fullDepth.Timestamp = DateTime.Now;
+                    fullDepth.Timestamp = value.Timestamp ?? DateTime.Now;
                 }
                 catch
                 {

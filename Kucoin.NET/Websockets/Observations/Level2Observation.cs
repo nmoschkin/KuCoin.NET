@@ -128,6 +128,8 @@ namespace Kucoin.NET.Websockets.Observations
             Calibrated = false;
         }
 
+        bool bf = false;
+
         /// <summary>
         /// Calibrate the order book from cached data.
         /// </summary>
@@ -135,10 +137,12 @@ namespace Kucoin.NET.Websockets.Observations
         {
             calibrated = true;
 
+            bf = true;
             foreach (var q in orderBuffer)
             {
                 if (q.SequenceStart > fullDepth.Sequence) OnNext(q);
             }
+            bf = false;
 
             orderBuffer.Clear();
 
@@ -151,7 +155,7 @@ namespace Kucoin.NET.Websockets.Observations
         /// <param name="value"></param>
         public override void OnNext(Level2Update value)
         {
-            if (disposed || fullDepth == null) return;
+            if (disposed) return;
 
             lock (lockObj)
             {
@@ -160,6 +164,14 @@ namespace Kucoin.NET.Websockets.Observations
                     if (!calibrated)
                     {
                         orderBuffer.Add(value);
+                        return;
+                    }
+                    else if (value.SequenceEnd <= fullDepth.Sequence)
+                    {
+                        return;
+                    }
+                    else if (fullDepth == null)
+                    {
                         return;
                     }
 
@@ -423,18 +435,20 @@ namespace Kucoin.NET.Websockets.Observations
             Calibrated = false;
         }
 
+        bool bf = false;
+
         /// <summary>
         /// Calibrate the order book from cached data.
         /// </summary>
         public override void Calibrate()
         {
             calibrated = true;
-
+            bf = true;
             foreach (var q in orderBuffer)
             {
                 if (q.SequenceStart > fullDepth.Sequence) OnNext(q);
             }
-
+            bf = false;
             orderBuffer.Clear();
 
             OnPropertyChanged(nameof(Calibrated));
@@ -446,7 +460,7 @@ namespace Kucoin.NET.Websockets.Observations
         /// <param name="value"></param>
         public override void OnNext(Level2Update value)
         {
-            if (disposed || fullDepth == null) return;
+            if (disposed) return;
 
             lock (lockObj)
             {
@@ -455,6 +469,14 @@ namespace Kucoin.NET.Websockets.Observations
                     if (!calibrated)
                     {
                         orderBuffer.Add(value);
+                        return;
+                    }
+                    else if (fullDepth == null)
+                    {
+                        return;
+                    }
+                    else if (value.SequenceEnd <= fullDepth.Sequence)
+                    {
                         return;
                     }
 
