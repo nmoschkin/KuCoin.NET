@@ -154,8 +154,6 @@ namespace Kucoin.NET.Data.Order
                     InsertItem(0, item);
                     return;
                 }
-                
-                var oldItem = ((IList<TUnit>)this)[index];
 
                 if (Contains(item.OrderId))
                 {
