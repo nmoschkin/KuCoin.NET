@@ -1046,6 +1046,7 @@ namespace KuCoinApp
                         level3Feed.MonitorThroughput = true;
                         level3Feed.UpdateInterval = 50;
                         level3Feed.DefaultPieces = 50;
+                        level3Feed.ReceiveThreadPriority = System.Threading.ThreadPriority.Highest;
 
                         // for testing futures
 

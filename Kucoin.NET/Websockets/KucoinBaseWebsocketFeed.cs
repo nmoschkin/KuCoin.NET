@@ -70,6 +70,10 @@ namespace Kucoin.NET.Websockets
 
         #region Connection Settings
 
+        protected ThreadPriority recvPriority = ThreadPriority.Normal;
+
+        protected bool recheckPriority;
+
         protected int chunkSize = 256;
 
         protected int recvBufferSize = 51920;
@@ -334,6 +338,23 @@ namespace Kucoin.NET.Websockets
             private set
             {
                 SetProperty(ref lastError, value);
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the thread priority for the long-running data receive and message pump threads.
+        /// </summary>
+        /// <remarks>
+        /// Setting the thread priority is not allowed while the socket is connected.
+        /// The default value for this property is <see cref="ThreadPriority.Normal"/>.
+        /// </remarks>
+        public ThreadPriority ReceiveThreadPriority
+        {
+            get => recvPriority;
+            set
+            {
+                if (Connected) throw new InvalidOperationException("Cannot set thread priority while connected.");
+                SetProperty(ref recvPriority, value);
             }
         }
 
@@ -704,6 +725,8 @@ namespace Kucoin.NET.Websockets
         /// </summary>
         private async Task DataReceiveThread()
         {
+            Thread.CurrentThread.Priority = recvPriority;
+
             byte[] inputChunk = new byte[chunkSize];
 
             StringBuilder sb = new StringBuilder();
@@ -834,6 +857,8 @@ namespace Kucoin.NET.Websockets
         {
             string[] queue = new string[minQueueBuffer];
             int c;
+
+            Thread.CurrentThread.Priority = recvPriority;
 
             // loop forever
             while (!ctsReceive.IsCancellationRequested && socket?.State == WebSocketState.Open)
