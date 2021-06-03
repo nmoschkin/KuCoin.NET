@@ -38,7 +38,7 @@ Private feeds in the namespace __Kucoin.NET.Websockets.Private__:
 
   - __Level2__ - Pushes the full-depth Level 2 market feed (calibrated).
   - __Level2Depth5/Level2Depth50__ - Pushes the 5/50 best ask/bid static market depth feeds.
-  - __Level3__ - Level 3 Full Match Engine __(IN PROGRESS)__
+  - __Level3__ - Level 3 Full Match Engine __(Just Implemented / Alpha)__
 
 _In order to use the Level2 / Level3 feeds, you will need to initialize the __Kucoin.NET.Helpers.Dispatcher__ static class with a __SynchronizationContext__ from the __Dispatcher__ provided by your application (usually the App class, itself.)  Feed observations will not execute correctly without a __SynchronizationContext__, because they need to inform the UI thread. I'm currently researching alternatives to initializing a dispatcher, so these requirements may change, in the future._
 
