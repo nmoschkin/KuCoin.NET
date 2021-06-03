@@ -29,6 +29,7 @@ namespace KuCoinApp
     public class MainWindowViewModel : WindowViewModelBase, IObserver<Ticker>, IObserver<KlineFeedMessage<KlineCandle>>
     {
         protected Level2 level2Feed;
+        protected Level3 level3Feed;
 
         protected FuturesLevel2 futuresl2;
 
@@ -81,6 +82,8 @@ namespace KuCoinApp
         protected ObservableCollection<CurrencyViewModel> currencies = new ObservableCollection<CurrencyViewModel>();
 
         protected ILevel2OrderBookProvider level2;
+
+        protected ILevel3OrderBookProvider level3;
 
         protected ILevel2OrderBookProvider<FuturesOrderBook, OrderUnit, FuturesLevel2Update> futureslevel2;
 
@@ -138,6 +141,15 @@ namespace KuCoinApp
             protected set
             {
                 SetProperty(ref isCredWndShowing, value);
+            }
+        }
+
+        public ILevel3OrderBookProvider Level3
+        {
+            get => level3;
+            set
+            {
+                SetProperty(ref level3, value);
             }
         }
 
@@ -236,6 +248,16 @@ namespace KuCoinApp
                     Volume = null;
                     VolumeTime = null;
                 }
+            }
+        }
+
+
+        public Level3 Level3Feed
+        {
+            get => level3Feed;
+            set
+            {
+                SetProperty(ref level3Feed, value);
             }
         }
 
@@ -505,25 +527,49 @@ namespace KuCoinApp
 
                             //});
 
+
+
                             if (Level2 != null)
                             {
                                 Level2.Dispose();
                             }
 
-                            if (level2Feed == null || level2Feed.Connected == false)
+                            if (level3Feed == null || level3Feed.Connected == false)
                             {
-                                level2Feed = new Level2();
+                                level3Feed = new Level3(cred);
                                 await level2Feed.Connect();
                             }
 
-                            await level2Feed.AddSymbol(newSymbol).ContinueWith((t) =>
+                            await level3Feed.AddSymbol(newSymbol).ContinueWith((t) =>
                             {
                                 App.Current?.Dispatcher?.Invoke(() =>
                                 {
-                                    Level2 = t.Result;
+                                    Level3 = (ILevel3OrderBookProvider)t.Result;
                                 });
 
                             });
+
+
+
+                            //if (Level2 != null)
+                            //{
+                            //    Level2.Dispose();
+                            //}
+
+                            //if (level2Feed == null || level2Feed.Connected == false)
+                            //{
+                            //    level2Feed = new Level2();
+                            //    await level2Feed.Connect();
+                            //}
+
+                            //await level2Feed.AddSymbol(newSymbol).ContinueWith((t) =>
+                            //{
+                            //    App.Current?.Dispatcher?.Invoke(() =>
+                            //    {
+                            //        Level2 = t.Result;
+                            //    });
+
+                            //});
 
                         });
                     });
@@ -534,17 +580,32 @@ namespace KuCoinApp
             {
                 RefreshData().ContinueWith(async (t2) =>
                 {
-                    if (level2Feed == null || level2Feed.Connected == false)
+                    //if (level2Feed == null || level2Feed.Connected == false)
+                    //{
+                    //    level2Feed = new Level2();
+                    //    await level2Feed.Connect();
+                    //}
+
+                    //level2Feed?.AddSymbol(newSymbol).ContinueWith((t) =>
+                    //{
+                    //    App.Current?.Dispatcher?.Invoke(() =>
+                    //    {
+                    //        Level2 = t.Result;
+                    //    });
+
+                    //});
+
+                    if (level3Feed == null || level3Feed.Connected == false)
                     {
-                        level2Feed = new Level2();
-                        await level2Feed.Connect();
+                        level3Feed = new Level3(cred);
+                        await level3Feed.Connect();
                     }
 
-                    level2Feed?.AddSymbol(newSymbol).ContinueWith((t) =>
+                    level3Feed?.AddSymbol(newSymbol).ContinueWith((t) =>
                     {
                         App.Current?.Dispatcher?.Invoke(() =>
                         {
-                            Level2 = t.Result;
+                            Level3 = t.Result;
                         });
 
                     });
@@ -584,50 +645,50 @@ namespace KuCoinApp
                 Kucoin.NET.Helpers.Dispatcher.Initialize(new DispatcherSynchronizationContext(App.Current.Dispatcher));
             }
 
-            if (cred != null && (level2Feed == null || level2Feed.Connected == false))
-            {
-                if (finit) return;
+            //if (cred != null && (level2Feed == null || level2Feed.Connected == false))
+            //{
+            //    if (finit) return;
 
-                level2Feed = new Level2();
-                await level2Feed.Connect();
+            //    level2Feed = new Level2();
+            //    await level2Feed.Connect();
 
-                if (level2Feed.Connected == false)
-                {
-                    System.Windows.MessageBox.Show(
-                        AppResources.ErrorNoInternet, 
-                        "", 
-                        System.Windows.MessageBoxButton.OK, 
-                        System.Windows.MessageBoxImage.Error);
+            //    if (level2Feed.Connected == false)
+            //    {
+            //        System.Windows.MessageBox.Show(
+            //            AppResources.ErrorNoInternet, 
+            //            "", 
+            //            System.Windows.MessageBoxButton.OK, 
+            //            System.Windows.MessageBoxImage.Error);
 
-                    return;
-                }
-                finit = true;
-            }
+            //        return;
+            //    }
+            //    finit = true;
+            //}
 
-            if (tickerFeed == null || tickerFeed.Connected == false)
-            {
-                if (finit) return;
+            //if (tickerFeed == null || tickerFeed.Connected == false)
+            //{
+            //    if (finit) return;
 
-                tickerFeed = new TickerFeed();
-                klineFeed = new KlineFeed<KlineCandle>();
+            //    tickerFeed = new TickerFeed();
+            //    klineFeed = new KlineFeed<KlineCandle>();
 
-                await tickerFeed.Connect(true);
+            //    await tickerFeed.Connect(true);
 
-                if (tickerFeed.Connected == false)
-                {
-                    System.Windows.MessageBox.Show(
-                        AppResources.ErrorNoInternet,
-                        "",
-                        System.Windows.MessageBoxButton.OK,
-                        System.Windows.MessageBoxImage.Error);
+            //    if (tickerFeed.Connected == false)
+            //    {
+            //        System.Windows.MessageBox.Show(
+            //            AppResources.ErrorNoInternet,
+            //            "",
+            //            System.Windows.MessageBoxButton.OK,
+            //            System.Windows.MessageBoxImage.Error);
                     
-                    return;
+            //        return;
 
-                }
+            //    }
 
-                await klineFeed.MultiplexInit(tickerFeed);
-                finit = true;
-            }
+            //    await klineFeed.MultiplexInit(tickerFeed);
+            //    finit = true;
+            //}
 
             if (finit)
             {
@@ -958,7 +1019,7 @@ namespace KuCoinApp
                     }
 
                     Level2Feed = new Level2();
-
+                    Level3Feed = new Level3(cred);
 
                     // Bring up the testing console.
 
@@ -980,6 +1041,10 @@ namespace KuCoinApp
                         level2Feed.MonitorThroughput = true;
                         level2Feed.UpdateInterval = 100;
                         level2Feed.DefaultPieces = 50;
+
+                        level3Feed.MonitorThroughput = true;
+                        level3Feed.UpdateInterval = 100;
+                        level3Feed.DefaultPieces = 50;
 
                         // for testing futures
 
@@ -1004,6 +1069,7 @@ namespace KuCoinApp
                             // give its own socket because of the speed of data.
                             //await level2Feed.Connect(true);
                             await level2Feed.Connect();
+                            await level3Feed.Connect();
 
                             // for testing futures
                             //await futuresl2.Connect();

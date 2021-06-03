@@ -17,16 +17,15 @@ namespace Kucoin.NET.Data.Market
     /// </summary>
     public class AtomicOrderBook<T> : 
         ObservableBase, 
-        IOrderBook<T>, 
-        IOrderUnitList<T> 
+        IAtomicOrderBook<T>
         where T: IAtomicOrderUnit
     {
         private DateTime time;
         private long seq;
 
-        private ObservableAtomicOrderUnits<T> asks = new ObservableAtomicOrderUnits<T>();
+        private ObservableLevel3OrderUnits<T> asks = new ObservableLevel3OrderUnits<T>(false);
 
-        private ObservableAtomicOrderUnits<T> bids = new ObservableAtomicOrderUnits<T>(true);
+        private ObservableLevel3OrderUnits<T> bids = new ObservableLevel3OrderUnits<T>(true);
 
         /// <summary>
         /// The current sequence number of the order book.
@@ -59,7 +58,7 @@ namespace Kucoin.NET.Data.Market
         /// The keyed list of asks (sell)
         /// </summary>
         [JsonProperty("asks")]
-        public ObservableAtomicOrderUnits<T> Asks
+        public ObservableLevel3OrderUnits<T> Asks
         {
             get => asks;
             set
@@ -72,7 +71,7 @@ namespace Kucoin.NET.Data.Market
         /// The keyed list of bids (buy)
         /// </summary>
         [JsonProperty("bids")]
-        public ObservableAtomicOrderUnits<T> Bids
+        public ObservableLevel3OrderUnits<T> Bids
         {
             get => bids;
             set
@@ -81,17 +80,9 @@ namespace Kucoin.NET.Data.Market
             }
         }
 
-        #region Explicit Interface Implementations
+        Level3KeyedCollectionBase<T> IAtomicOrderBook<T>.Asks => asks;
+        Level3KeyedCollectionBase<T> IAtomicOrderBook<T>.Bids => bids;
 
-        SortedKeyedOrderUnitBase<T> IKeyedOrderUnitList<T>.Asks => asks;
-
-        IList<T> IOrderUnitList<T>.Asks => asks;
-
-        SortedKeyedOrderUnitBase<T> IKeyedOrderUnitList<T>.Bids => bids;
-
-        IList<T> IOrderUnitList<T>.Bids => bids;
-
-        #endregion
 
     }
 }

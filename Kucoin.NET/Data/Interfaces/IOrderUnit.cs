@@ -118,4 +118,22 @@ namespace Kucoin.NET.Data.Market
         DateTime Timestamp { get; set; }
     }
 
+    public interface IAtomicOrderBook<T> where T: IAtomicOrderUnit
+    {
+        long Sequence { get; set; }
+
+        DateTime Timestamp { get; set; }
+
+        Level3KeyedCollectionBase<T> Asks { get; }
+
+        Level3KeyedCollectionBase<T> Bids { get; }
+
+    }
+
+    public interface ILevel3Update
+    {
+
+        string Subject { get; set; }
+    }
+
 }

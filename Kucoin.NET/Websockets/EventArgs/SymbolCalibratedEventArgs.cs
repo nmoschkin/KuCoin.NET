@@ -39,4 +39,38 @@ namespace Kucoin.NET.Websockets
         }
 
     }
+
+    /// <summary>
+    /// Provides data for a SymbolCalibrated event.
+    /// </summary>
+    public class Level3SymbolCalibratedEventArgs<TBook, TUnit, TUpdate> : EventArgs
+        where TBook : IAtomicOrderBook<TUnit>
+        where TUnit : IAtomicOrderUnit
+        where TUpdate : new()
+    {
+        /// <summary>
+        /// Gets the symbol of the calibrated feed.
+        /// </summary>
+        public string Symbol { get; private set; }
+
+        /// <summary>
+        /// Gets the market depth of the calibrated feed.
+        /// </summary>
+        public int MarketDepth { get; private set; }
+
+
+        public ILevel3OrderBookProvider<TBook, TUnit, TUpdate> Provider { get; private set; }
+
+        public Level3SymbolCalibratedEventArgs(ILevel3OrderBookProvider<TBook, TUnit, TUpdate> provider)
+
+        {
+            Provider = provider;
+
+            MarketDepth = provider.FullDepthOrderBook.Asks.Count;
+            Symbol = provider.Symbol;
+
+        }
+
+    }
+
 }

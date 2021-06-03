@@ -493,6 +493,15 @@ namespace KuCoinApp.Localization.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Order Id.
+        /// </summary>
+        internal static string OrderId {
+            get {
+                return ResourceManager.GetString("OrderId", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Ping.
         /// </summary>
         internal static string Ping {
@@ -687,6 +696,15 @@ namespace KuCoinApp.Localization.Resources {
         internal static string Throughput {
             get {
                 return ResourceManager.GetString("Throughput", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Time Stamp.
+        /// </summary>
+        internal static string Timestamp {
+            get {
+                return ResourceManager.GetString("Timestamp", resourceCulture);
             }
         }
         

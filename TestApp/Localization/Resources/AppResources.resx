@@ -261,6 +261,9 @@
   <data name="Open" xml:space="preserve">
     <value>Open</value>
   </data>
+  <data name="OrderId" xml:space="preserve">
+    <value>Order Id</value>
+  </data>
   <data name="Ping" xml:space="preserve">
     <value>Ping</value>
   </data>
@@ -326,6 +329,9 @@
   </data>
   <data name="Throughput" xml:space="preserve">
     <value>Throughput (bits per second)</value>
+  </data>
+  <data name="Timestamp" xml:space="preserve">
+    <value>Time Stamp</value>
   </data>
   <data name="Total" xml:space="preserve">
     <value>Total</value>

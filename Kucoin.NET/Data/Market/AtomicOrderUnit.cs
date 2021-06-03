@@ -101,7 +101,7 @@ namespace Kucoin.NET.Data.Market
 
         private void CalcHash()
         {
-            hc = (price.ToString() + size.ToString() + orderId.ToString() + time.ToString()).GetHashCode();
+            hc = (price.ToString() + size.ToString() + (orderId ?? "") + time.ToString()).GetHashCode();
         }
         public override int GetHashCode() => hc;
                 

@@ -1,4 +1,5 @@
-﻿using Kucoin.NET.Data.Websockets;
+﻿using Kucoin.NET.Data.Market;
+using Kucoin.NET.Data.Websockets;
 using Kucoin.NET.Helpers;
 using Kucoin.NET.Websockets.Observations;
 
@@ -7,35 +8,18 @@ using System.Collections.Generic;
 using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
-using Kucoin.NET.Futures.Websockets;
-using Kucoin.NET.Data.Market;
 
 namespace Kucoin.NET.Websockets.Public
 {
-
-    public enum FeedState
-    {
-        Disconnected,
-        Connected,
-        Subscribed,
-        Unsubscribed,
-        Initializing,
-        Running
-    }
-
     /// <summary>
-    /// Calibrated Level 2 Market Feed base class and core logic implementation.
+    /// Calibrated Level 3 Full Match Engine Feed base class and core logic implementation.
     /// </summary>
-    /// <remarks>
-    /// Generally, you should not use this base class to construct your own Level 2 handlers.
-    /// Use either <see cref="Level2StandardBase{TBook, TUnit}"/> or <see cref="Level2FuturesBase{TBook, TUnit}"/>, instead.
-    /// </remarks>
-    public abstract class Level2Base<TBook, TUnit, TUpdate, TObservation> :
+    public abstract class Level3Base<TBook, TUnit, TUpdate, TObservation> :
         KucoinBaseWebsocketFeed
-        where TBook : IOrderBook<TUnit>, new()
-        where TUnit : IOrderUnit, new()
-        where TUpdate : new()
-        where TObservation : Level2ObservationBase<TBook, TUnit, TUpdate>
+        where TBook : IAtomicOrderBook<TUnit>, new()
+        where TUnit : IAtomicOrderUnit, new()
+        where TUpdate : ILevel3Update, new()
+        where TObservation : Level3ObservationBase<TBook, TUnit, TUpdate>
     {
 
         internal readonly Dictionary<string, TObservation> activeFeeds = new Dictionary<string, TObservation>();
@@ -63,30 +47,21 @@ namespace Kucoin.NET.Websockets.Public
         /// </summary>
         public abstract string AggregateEndpoint { get; }
 
-        public override bool IsPublic => true;
+        public override bool IsPublic => false;
 
         /// <summary>
         /// Event that gets fired when the feed for a symbol has been calibrated and is ready to be used.
         /// </summary>
-        public virtual event EventHandler<SymbolCalibratedEventArgs<TBook, TUnit, TUpdate>> SymbolCalibrated;
+        public virtual event EventHandler<Level3SymbolCalibratedEventArgs<TBook, TUnit, TUpdate>> SymbolCalibrated;
 
-        /// <summary>
-        /// Create a new Level 2 feed.
-        /// </summary>
-        /// <param name="futures">True if the feed is for KuCoin Futures.</param>
-        public Level2Base(
-            bool futures = false)
-            : base(null, null, null, futures: futures)
+        public Level3Base(ICredentialsProvider credProvider) : base(credProvider)
         {
             recvBufferSize = 65535;
         }
 
-        public Level2Base(ICredentialsProvider credProvider) : base(credProvider)
+        public Level3Base(string key, string secret, string passphrase, bool isSandbox = false, bool futures = false) : base(key, secret, passphrase, isSandbox: isSandbox, futures: futures)
         {
-        }
-
-        public Level2Base(string key, string secret, string passphrase, bool isSandbox=false,bool futures=false) : base(key,secret,passphrase, isSandbox: isSandbox, futures: futures)
-        {
+            recvBufferSize = 65535;
         }
 
         /// <summary>
@@ -175,7 +150,7 @@ namespace Kucoin.NET.Websockets.Public
         /// <returns></returns>
         public virtual async Task<Dictionary<string, TObservation>> AddSymbols(IEnumerable<string> symbols)
         {
-            if (disposed) throw new ObjectDisposedException(nameof(Level2Base<TBook, TUnit, TUpdate, TObservation>));
+            if (disposed) throw new ObjectDisposedException(nameof(Level3Base<TBook, TUnit, TUpdate, TObservation>));
             if (!Connected)
             {
                 await Connect();
@@ -241,7 +216,7 @@ namespace Kucoin.NET.Websockets.Public
         /// <returns></returns>
         internal virtual async Task RemoveSymbols(IEnumerable<string> symbols)
         {
-            if (disposed) throw new ObjectDisposedException(nameof(Level2Base<TBook, TUnit, TUpdate, TObservation>));
+            if (disposed) throw new ObjectDisposedException(nameof(Level3Base<TBook, TUnit, TUpdate, TObservation>));
             if (!Connected) return;
 
             var sb = new StringBuilder();
@@ -272,7 +247,7 @@ namespace Kucoin.NET.Websockets.Public
                 Response = true,
                 PrivateChannel = false
             };
-
+            
             await Send(e);
 
             if (activeFeeds.Count == 0)
@@ -299,20 +274,20 @@ namespace Kucoin.NET.Websockets.Public
 
             param.Add("symbol", symbol);
 
-            var jobj = await MakeRequest(HttpMethod.Get, curl, 5, false, param);
+            var jobj = await MakeRequest(HttpMethod.Get, curl, 5, !IsPublic, param);
             var result = jobj.ToObject<TBook>();
 
-            foreach (var ask in result.Asks)
-            {
-                if (ask is ISequencedOrderUnit seq)
-                    seq.Sequence = result.Sequence;
-            }
+            //foreach (var ask in result.Asks)
+            //{
+            //    if (ask is ISequencedOrderUnit seq)
+            //        seq.Sequence = result.Sequence;
+            //}
 
-            foreach (var bid in result.Bids)
-            {
-                if (bid is ISequencedOrderUnit seq)
-                    seq.Sequence = result.Sequence;
-            }
+            //foreach (var bid in result.Bids)
+            //{
+            //    if (bid is ISequencedOrderUnit seq)
+            //        seq.Sequence = result.Sequence;
+            //}
 
             return result;
         }
@@ -336,60 +311,57 @@ namespace Kucoin.NET.Websockets.Public
             af.Initialized = true;
         }
 
-
         protected override async Task HandleMessage(FeedMessage msg)
         {
             if (msg.Type == "message")
             {
-                if (msg.Subject == Subject)
+                if (cycle == 0) cycle = DateTime.UtcNow.Ticks;
+
+                var i = msg.Topic.IndexOf(":");
+
+                if (i != -1)
                 {
-                    if (cycle == 0) cycle = DateTime.UtcNow.Ticks;
+                    var symbol = msg.Topic.Substring(i + 1);
 
-                    var i = msg.Topic.IndexOf(":");
-
-                    if (i != -1)
+                    if (activeFeeds.TryGetValue(symbol, out TObservation af))
                     {
-                        var symbol = msg.Topic.Substring(i + 1);
+                        var update = msg.Data.ToObject<TUpdate>();
+                        update.Subject = msg.Subject;
 
-                        if (activeFeeds.TryGetValue(symbol, out TObservation af))
+                        if (!af.Calibrated)
                         {
-                            var update = msg.Data.ToObject<TUpdate>();
+                            _ = Task.Run(() => State = FeedState.Initializing);
 
-                            if (!af.Calibrated)
+                            af.OnNext(update);
+
+                            if ((DateTime.UtcNow.Ticks - cycle) >= (updateInterval * 10_000))
                             {
-                                _ = Task.Run(() => State = FeedState.Initializing);
+                                await InitializeOrderBook(af.Symbol);
 
+                                lock (lockObj)
+                                {
+                                    af.Calibrate();
+                                    cycle = DateTime.UtcNow.Ticks;
+                                }
+
+                                _ = Task.Run(() =>
+                                {
+                                    SymbolCalibrated?.Invoke(this, new Level3SymbolCalibratedEventArgs<TBook, TUnit, TUpdate>(af));
+                                    State = FeedState.Running;
+                                });
+
+                            }
+                        }
+                        else
+                        {
+                            lock (lockObj)
+                            {
                                 af.OnNext(update);
 
                                 if ((DateTime.UtcNow.Ticks - cycle) >= (updateInterval * 10_000))
                                 {
-                                    await InitializeOrderBook(af.Symbol);
-
-                                    lock (lockObj)
-                                    {
-                                        af.Calibrate();
-                                        cycle = DateTime.UtcNow.Ticks;
-                                    }
-
-                                    _ = Task.Run(() =>
-                                    {
-                                        SymbolCalibrated?.Invoke(this, new SymbolCalibratedEventArgs<TBook, TUnit, TUpdate>(af));
-                                        State = FeedState.Running;
-                                    });
-
-                                }
-                            }
-                            else
-                            {
-                                lock (lockObj)
-                                {
-                                    af.OnNext(update);
-
-                                    if ((DateTime.UtcNow.Ticks - cycle) >= (updateInterval * 10_000))
-                                    {
-                                        af.RequestPush();
-                                        cycle = DateTime.UtcNow.Ticks;
-                                    }
+                                    af.RequestPush();
+                                    cycle = DateTime.UtcNow.Ticks;
                                 }
                             }
                         }

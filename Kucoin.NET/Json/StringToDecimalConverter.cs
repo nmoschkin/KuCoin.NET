@@ -23,6 +23,18 @@ namespace Kucoin.NET.Json
             }
             else if (reader.Value is string s)
             {
+                if (string.IsNullOrEmpty(s))
+                {
+                    if (objectType == typeof(decimal))
+                    {
+                        return 0;
+                    }
+                    else if (objectType == typeof(decimal?))
+                    {
+                        return null;
+                    }
+                }
+
                 return decimal.Parse(s);
             }
             else if (reader.Value is decimal de)

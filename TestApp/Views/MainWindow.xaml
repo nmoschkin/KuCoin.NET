@@ -61,6 +61,7 @@
         <Grid.ColumnDefinitions>
             <ColumnDefinition />
             <ColumnDefinition />
+            <ColumnDefinition Width="Auto" />
             <ColumnDefinition />
         </Grid.ColumnDefinitions>
 
@@ -112,7 +113,7 @@
             Grid.RowSpan="2"
             Grid.Column="0"
             Grid.ColumnSpan="2"
-            Margin="16"
+            Margin="16,16,8,16"
             BorderBrush="#30307f"
             BorderThickness="2">
 
@@ -165,11 +166,20 @@
             </fc:CandleChart>
         </Border>
 
-        <Grid
+        <GridSplitter
             Grid.Row="1"
             Grid.RowSpan="2"
             Grid.Column="2"
-            Margin="0,16,16,16">
+            Width="4"
+            Margin="8,0,8,0"
+            HorizontalAlignment="Center"
+            VerticalAlignment="Stretch" />
+
+        <Grid
+            Grid.Row="1"
+            Grid.RowSpan="2"
+            Grid.Column="3"
+            Margin="8,16,16,16">
 
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto" />
@@ -379,7 +389,7 @@
                         VerticalAlignment="Center"
                         FontFamily="Calibri"
                         FontSize="12">
-                        <Run Text="{Binding Level2Feed.State}" />
+                        <Run Text="{Binding Level3Feed.State}" />
                     </TextBlock>
 
                     <TextBlock
@@ -397,7 +407,7 @@
                         VerticalAlignment="Center"
                         FontFamily="Calibri"
                         FontSize="12">
-                        <Run Text="{Binding Level2Feed.Throughput, Mode=OneWay, Converter={StaticResource spConv}}" />
+                        <Run Text="{Binding Level3Feed.Throughput, Mode=OneWay, Converter={StaticResource spConv}}" />
                     </TextBlock>
 
                     <TextBlock
@@ -415,7 +425,7 @@
                         VerticalAlignment="Center"
                         FontFamily="Calibri"
                         FontSize="12">
-                        <Run Text="{Binding Level2Feed.PingTime.TotalMilliseconds, Mode=OneWay}" />
+                        <Run Text="{Binding Level3Feed.PingTime.TotalMilliseconds, Mode=OneWay}" />
                         <Run Text=" ms" />
                     </TextBlock>
 
@@ -425,9 +435,8 @@
                         VerticalAlignment="Center"
                         FontFamily="Calibri"
                         FontSize="12">
-                        <Run Text="{Binding Level2.OrderBook.Timestamp, StringFormat='{}{0:MMM dd, yyyy a\\t h:mm:ss tt}'}" />
+                        <Run Text="{Binding Level3.OrderBook.Timestamp, StringFormat='{}{0:MMM dd, yyyy a\\t h:mm:ss tt}'}" />
                     </TextBlock>
-
 
 
                 </Grid>
@@ -447,7 +456,7 @@
                     <ListView
                         x:Name="Asks"
                         Grid.Column="0"
-                        ItemsSource="{Binding Level2.OrderBook.Asks}">
+                        ItemsSource="{Binding Level3.OrderBook.Asks}">
                         <ListView.View>
                             <GridView>
                                 <GridView.Columns>
@@ -461,6 +470,10 @@
                                         Width="90"
                                         CellTemplate="{StaticResource TickerSizeTemplate}"
                                         Header="{i18n:Translate ResourceKey=Size}" />
+
+                                    <GridViewColumn DisplayMemberBinding="{Binding Timestamp, StringFormat='{}{0:G}'}" Header="{i18n:Translate ResourceKey=Timestamp}" />
+
+                                    <GridViewColumn DisplayMemberBinding="{Binding OrderId}" Header="{i18n:Translate ResourceKey=OrderId}" />
 
                                 </GridView.Columns>
                             </GridView>
@@ -479,14 +492,14 @@
                             Grid.Column="1"
                             Margin="0,0,4,0"
                             HorizontalAlignment="Right">
-                            <Run Text="{Binding Level2.FullDepthOrderBook.Asks.Count, Mode=OneWay, StringFormat='{}{0:#,##0}'}" />
+                            <Run Text="{Binding Level3.FullDepthOrderBook.Asks.Count, Mode=OneWay, StringFormat='{}{0:#,##0}'}" />
                         </TextBlock>
                     </Grid>
 
                     <ListView
                         x:Name="Bids"
                         Grid.Column="1"
-                        ItemsSource="{Binding Level2.OrderBook.Bids}">
+                        ItemsSource="{Binding Level3.OrderBook.Bids}">
                         <ListView.View>
                             <GridView>
                                 <GridView.Columns>
@@ -500,6 +513,10 @@
                                         Width="90"
                                         CellTemplate="{StaticResource TickerSizeTemplate}"
                                         Header="{i18n:Translate ResourceKey=Size}" />
+
+                                    <GridViewColumn DisplayMemberBinding="{Binding Timestamp, StringFormat='{}{0:G}'}" Header="{i18n:Translate ResourceKey=Timestamp}" />
+
+                                    <GridViewColumn DisplayMemberBinding="{Binding OrderId}" Header="{i18n:Translate ResourceKey=OrderId}" />
 
                                 </GridView.Columns>
                             </GridView>
@@ -519,7 +536,7 @@
                             <Run Text="{i18n:Translate ResourceKey=MarketDepth, AddColon=True}" />
                         </TextBlock>
                         <TextBlock Grid.Column="1" HorizontalAlignment="Right">
-                            <Run Text="{Binding Level2.FullDepthOrderBook.Bids.Count, Mode=OneWay, StringFormat='{}{0:#,##0}'}" />
+                            <Run Text="{Binding Level3.FullDepthOrderBook.Bids.Count, Mode=OneWay, StringFormat='{}{0:#,##0}'}" />
                         </TextBlock>
                     </Grid>
 

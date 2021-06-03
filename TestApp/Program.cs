@@ -151,34 +151,38 @@ namespace KuCoinApp
                 AllocConsole();
             }
 
-            var fmarket = new Kucoin.NET.Futures.Rest.FuturesMarket();
+            var l3 = new Level3(cred);
 
-            var futures = await fmarket.GetOpenContractList();
-            string fsym = null;
+            var l3results = await l3.GetAtomicOrderBook("ETH-USDT");
 
-            foreach (var contract in futures)
-            {
-                Console.WriteLine(contract.Symbol);
-                Console.WriteLine(contract.RootSymbol);
+            //var fmarket = new Kucoin.NET.Futures.Rest.FuturesMarket();
 
-                if (contract.Symbol.Contains("ETH") || contract.Symbol.Contains("XLM"))
-                {
-                    if (contract.Symbol.Contains("ETH") && fsym == null) fsym = contract.Symbol;
+            //var futures = await fmarket.GetOpenContractList();
+            //string fsym = null;
 
-                    var fticker = await fmarket.GetTicker(contract.Symbol);
-                    Console.WriteLine($"Current Price: {fticker.Price}");
-                    Console.WriteLine($"Price Time: {fticker.Timestamp}");
-                }
+            //foreach (var contract in futures)
+            //{
+            //    Console.WriteLine(contract.Symbol);
+            //    Console.WriteLine(contract.RootSymbol);
 
-            }
+            //    if (contract.Symbol.Contains("ETH") || contract.Symbol.Contains("XLM"))
+            //    {
+            //        if (contract.Symbol.Contains("ETH") && fsym == null) fsym = contract.Symbol;
+
+            //        var fticker = await fmarket.GetTicker(contract.Symbol);
+            //        Console.WriteLine($"Current Price: {fticker.Price}");
+            //        Console.WriteLine($"Price Time: {fticker.Timestamp}");
+            //    }
+
+            //}
 
 
-            var fl2 = new FuturesLevel2();
+            //var fl2 = new FuturesLevel2();
 
-            var orders = await fl2.GetAggregatedOrder(fsym);
-            var fm = new FuturesMarket();
+            //var orders = await fl2.GetAggregatedOrder(fsym);
+            //var fm = new FuturesMarket();
 
-            var fkandle = await fm.GetKline(fsym, FuturesKlineType.Min1);
+            //var fkandle = await fm.GetKline(fsym, FuturesKlineType.Min1);
 
             //return;
 
