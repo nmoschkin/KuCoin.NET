@@ -1091,7 +1091,7 @@ namespace KuCoinApp
                         }
                         else
                         {
-                            await level2Feed.Connect();
+                            await level2Feed?.Connect();
 
                             await tickerFeed.Connect(true);
                             await klineFeed.MultiplexInit(tickerFeed);
@@ -1101,7 +1101,7 @@ namespace KuCoinApp
                     {
                         CryptoCredentials.Pin = pin;
 
-                        await level2Feed.Connect();
+                        await level2Feed?.Connect();
                         await tickerFeed.Connect(true);
                         await klineFeed.MultiplexInit(tickerFeed);
                     }
