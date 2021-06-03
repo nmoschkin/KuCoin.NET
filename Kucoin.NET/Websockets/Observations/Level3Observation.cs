@@ -6,6 +6,7 @@ using Kucoin.NET.Websockets.Public;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Runtime.CompilerServices;
 using System.Text;
 
 namespace Kucoin.NET.Websockets.Observations
@@ -74,29 +75,11 @@ namespace Kucoin.NET.Websockets.Observations
         }
 
         /// <summary>
-        /// Remove the piece from the order book.
-        /// </summary>
-        /// <param name="pieces"></param>
-        /// <param name="price"></param>
-        protected void RemovePiece(IList<IOrderUnit> pieces, decimal price)
-        {
-            int i, c = pieces.Count;
-
-            for (i = 0; i < c; i++)
-            {
-                if (pieces[i].Price == price)
-                {
-                    pieces.RemoveAt(i);
-                    return;
-                }
-            }
-        }
-
-        /// <summary>
         /// Sequence the changes into the order book.
         /// </summary>
         /// <param name="changes">The changes to sequence.</param>
         /// <param name="pieces">The collection to change (either an ask or a bid collection)</param>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         protected void SequencePieces(Level3Update change, KeyedCollection<string, TUnit> pieces, KeyedCollection<string, TUnit> otherPieces)
         {
 
@@ -163,6 +146,7 @@ namespace Kucoin.NET.Websockets.Observations
         /// <summary>
         /// Calibrate the order book from cached data.
         /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public override void Calibrate()
         {
             calibrated = true;
@@ -181,6 +165,7 @@ namespace Kucoin.NET.Websockets.Observations
         /// <see cref="IObserver{T}"/> implementation for <see cref="Level3Update"/> data.
         /// </summary>
         /// <param name="value"></param>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public override void OnNext(Level3Update value)
         {
             if (disposed || fullDepth == null) return;
@@ -235,6 +220,7 @@ namespace Kucoin.NET.Websockets.Observations
         /// <param name="src">Source data.</param>
         /// <param name="dest">Destination collection.</param>
         /// <param name="pieces">The number of pieces to copy.</param>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         protected void CopyTo(IList<TUnit> src, IList<TUnit> dest, int pieces)
         {
             int i, c = pieces < src.Count ? pieces : src.Count;
@@ -263,6 +249,7 @@ namespace Kucoin.NET.Websockets.Observations
         /// <summary>
         /// Push the preflight book to the live feed.
         /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         protected override void PushLive()
         {
             lock (lockObj)
@@ -290,9 +277,13 @@ namespace Kucoin.NET.Websockets.Observations
 
                     CopyBook();
                 }
+
             }
+
+            GC.Collect(0);
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         protected void CopyBook()
         {
             CopyTo(fullDepth.Asks, orderBook.Asks, pieces);

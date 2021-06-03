@@ -277,17 +277,22 @@ namespace Kucoin.NET.Websockets.Public
             var jobj = await MakeRequest(HttpMethod.Get, curl, 5, !IsPublic, param);
             var result = jobj.ToObject<TBook>();
 
-            //foreach (var ask in result.Asks)
-            //{
-            //    if (ask is ISequencedOrderUnit seq)
-            //        seq.Sequence = result.Sequence;
-            //}
 
-            //foreach (var bid in result.Bids)
-            //{
-            //    if (bid is ISequencedOrderUnit seq)
-            //        seq.Sequence = result.Sequence;
-            //}
+            if (typeof(ISequencedOrderUnit).IsAssignableFrom(typeof(TUnit)))
+            {
+                foreach (var ask in result.Asks)
+                {
+                    ((ISequencedOrderUnit)ask).Sequence = result.Sequence;
+                }
+
+                foreach (var bid in result.Bids)
+                {
+                    ((ISequencedOrderUnit)bid).Sequence = result.Sequence;
+                }
+            }
+
+            jobj = null;
+            GC.Collect(2);
 
             return result;
         }
