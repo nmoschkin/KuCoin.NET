@@ -288,6 +288,9 @@
   <data name="Reset" xml:space="preserve">
     <value>Reset</value>
   </data>
+  <data name="Resets" xml:space="preserve">
+    <value>Resets</value>
+  </data>
   <data name="SandboxMode" xml:space="preserve">
     <value>Sandbox Mode</value>
   </data>

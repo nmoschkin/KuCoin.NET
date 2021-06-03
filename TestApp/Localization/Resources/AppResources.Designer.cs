@@ -574,6 +574,15 @@ namespace KuCoinApp.Localization.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Resets.
+        /// </summary>
+        internal static string Resets {
+            get {
+                return ResourceManager.GetString("Resets", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Sandbox Mode.
         /// </summary>
         internal static string SandboxMode {

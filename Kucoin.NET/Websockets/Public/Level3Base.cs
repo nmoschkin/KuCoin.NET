@@ -30,6 +30,8 @@ namespace Kucoin.NET.Websockets.Public
         protected int defaultPieces = 50;
         protected int updateInterval = 500;
 
+        protected int resets;
+
         protected FeedState state = FeedState.Disconnected;
 
         /// <summary>
@@ -79,6 +81,19 @@ namespace Kucoin.NET.Websockets.Public
                 if (value < 5) value = 5;
 
                 SetProperty(ref updateInterval, value);
+            }
+        }
+
+
+        /// <summary>
+        /// Gets the number of resets since the last subscription.
+        /// </summary>
+        public int Resets
+        {
+            get => resets;
+            internal set
+            {
+                SetProperty(ref resets, value);
             }
         }
 
@@ -253,6 +268,7 @@ namespace Kucoin.NET.Websockets.Public
             if (activeFeeds.Count == 0)
             {
                 cycle = 0;
+                resets = 0;
                 State = FeedState.Unsubscribed;
             }
         }
@@ -314,6 +330,7 @@ namespace Kucoin.NET.Websockets.Public
 
             af.FullDepthOrderBook = data;
             af.Initialized = true;
+            Resets++;
         }
 
         protected override async Task HandleMessage(FeedMessage msg)
