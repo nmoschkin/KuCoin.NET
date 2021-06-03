@@ -32,8 +32,12 @@ namespace KuCoinApp
 
         public PinWindow()
         {
+
             
             InitializeComponent();
+            var stream = new MemoryStream(CoinResources.kucoin);
+            Icon = BitmapFrame.Create(stream);
+
             this.Loaded += PinWindow_Loaded;
             Pinner.ShowHideClick += Pinner_ShowHideClick;
             Pinner.UsePasswordChar = !settings.ShowPassword;

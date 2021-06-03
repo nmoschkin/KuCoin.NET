@@ -766,6 +766,9 @@
   <data name="krb" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>Resources\krb.png;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
+  <data name="kucoin" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>kucoin.ico;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
   <data name="labs" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>Resources\labs.png;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>

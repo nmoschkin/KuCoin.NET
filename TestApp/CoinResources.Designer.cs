@@ -2243,6 +2243,16 @@ namespace KuCoinApp {
         /// <summary>
         ///   Looks up a localized resource of type System.Byte[].
         /// </summary>
+        internal static byte[] kucoin {
+            get {
+                object obj = ResourceManager.GetObject("kucoin", resourceCulture);
+                return ((byte[])(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Byte[].
+        /// </summary>
         internal static byte[] labs {
             get {
                 object obj = ResourceManager.GetObject("labs", resourceCulture);

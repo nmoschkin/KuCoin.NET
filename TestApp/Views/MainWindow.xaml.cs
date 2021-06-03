@@ -5,6 +5,7 @@ using KuCoinApp.ViewModels;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text;
@@ -32,7 +33,10 @@ namespace KuCoinApp
         public MainWindow(WindowViewModelBase vm)
         {
             InitializeComponent();
-            
+
+            var stream = new MemoryStream(CoinResources.kucoin);
+            Icon = BitmapFrame.Create(stream);
+
             DataContext = this.vm = vm;
 
             MakeProps("SelectedSymbol", "Data", typeof(TradingSymbol), SymbolInfo, "Symbol", "BaseCurrency.Image", "QuoteCurrency.Image");

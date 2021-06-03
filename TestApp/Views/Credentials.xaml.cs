@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -25,6 +26,9 @@ namespace KuCoinApp
         public Credentials()
         {
             InitializeComponent();
+            var stream = new MemoryStream(CoinResources.kucoin);
+            Icon = BitmapFrame.Create(stream);
+
             this.Loaded += Credentials_Loaded;
         }
 

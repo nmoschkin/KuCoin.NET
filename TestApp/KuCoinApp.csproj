@@ -6,10 +6,16 @@
 	  <UseWPF>true</UseWPF>
 	  <UseWinForms>true</UseWinForms>
 	  <Platforms>AnyCPU;x64</Platforms>
+	  <ApplicationIcon></ApplicationIcon>
   </PropertyGroup>
 
   <ItemGroup>
     <Compile Remove="ViewModels\LowRefresh.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Remove="kucoin.ico" />
+    <None Remove="kucoin.xcf" />
   </ItemGroup>
 
   <ItemGroup>
