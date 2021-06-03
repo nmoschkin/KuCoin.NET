@@ -139,6 +139,11 @@ namespace Kucoin.NET.Websockets.Observations
                 {
                     var o = otherPieces[change.MakerOrderId];
                     o.Size -= (decimal)change.Size;
+
+                    if (o.Size == 0)
+                    {
+                        otherPieces.Remove(change.MakerOrderId);
+                    }
                 }
             }
         }
