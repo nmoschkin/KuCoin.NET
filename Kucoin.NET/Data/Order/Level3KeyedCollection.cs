@@ -16,7 +16,7 @@ namespace Kucoin.NET.Data.Order
     /// Classes derived from this class maintain a price-sorted, keyed list.
     /// Sorting is vital to the function of Level 2 and Level 3 websocket feeds.
     /// </remarks>
-    public abstract class Level3KeyedCollectionBase<TUnit> : KeyedCollection<string, TUnit> where TUnit : IAtomicOrderUnit
+    public class Level3KeyedCollection<TUnit> : KeyedCollection<string, TUnit> where TUnit : IAtomicOrderUnit
     {
         protected object lockObj = new object();
 
@@ -24,11 +24,11 @@ namespace Kucoin.NET.Data.Order
 
         protected bool descending;
 
-        public Level3KeyedCollectionBase() : this(false)
+        public Level3KeyedCollection() : this(false)
         {
         }
 
-        public Level3KeyedCollectionBase(bool descending) : base()
+        public Level3KeyedCollection(bool descending) : base()
         {
             this.descending = descending;
         }

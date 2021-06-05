@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Diagnostics;
 using System.Text;
 
 namespace Kucoin.NET.Data.Market
@@ -92,42 +93,53 @@ namespace Kucoin.NET.Data.Market
     /// <summary>
     /// Interface for a class that contains keyed collections of asks and bids.
     /// </summary>
-    /// <typeparam name="T"></typeparam>
-    public interface IKeyedOrderUnitList<T> where T : IOrderUnit
+    /// <typeparam name="TUnit"></typeparam>
+    public interface IKeyedOrderUnitList<TCol, TKey, TUnit> 
+        : IOrderUnitList<TUnit>
+        where TCol : KeyedCollection<TKey, TUnit>
+        where TUnit : IOrderUnit
     {
         /// <summary>
         /// Asks (sell)
         /// </summary>
-        SortedKeyedOrderUnitBase<T> Asks { get; }
+        new TCol Asks { get; }
 
         /// <summary>
         /// Bids (buy)
         /// </summary>
-        SortedKeyedOrderUnitBase<T> Bids { get; }
+        new TCol Bids { get; }
 
     }
 
     /// <summary>
     /// Interface for any class that implements the properties of a full order book.
     /// </summary>
-    /// <typeparam name="T">A type that implements <see cref="IOrderUnit"/>.</typeparam>
-    public interface IOrderBook<T> : IKeyedOrderUnitList<T> where T : IOrderUnit
+    /// <typeparam name="TUnit">A type that implements <see cref="IOrderUnit"/>.</typeparam>
+    public interface IOrderBook<TUnit> : IOrderUnitList<TUnit> 
+        where TUnit : IOrderUnit
     {
         long Sequence { get; set; }
 
         DateTime Timestamp { get; set; }
+
     }
 
-    public interface IAtomicOrderBook<T> where T: IAtomicOrderUnit
+    public interface IAtomicOrderBook<TUnit> : IOrderBook<TUnit> 
+        where TUnit: IAtomicOrderUnit
     {
-        long Sequence { get; set; }
+    }
 
-        DateTime Timestamp { get; set; }
+    public interface IKeyedOrderBook<TCol, TUnit> : IOrderBook<TUnit>, IKeyedOrderUnitList<TCol, decimal, TUnit>
+        where TCol : Level2KeyedCollection<TUnit>
+        where TUnit : IOrderUnit
+    {
+    }
 
-        Level3KeyedCollectionBase<T> Asks { get; }
 
-        Level3KeyedCollectionBase<T> Bids { get; }
-
+    public interface IKeyedAtomicOrderBook<TCol, TUnit> : IAtomicOrderBook<TUnit>, IKeyedOrderUnitList<TCol, string, TUnit>
+        where TCol : Level3KeyedCollection<TUnit>
+        where TUnit : IAtomicOrderUnit
+    {
     }
 
     public interface ILevel3Update

@@ -8,15 +8,16 @@ using System.Text;
 namespace Kucoin.NET.Data.Order
 {
     /// <summary>
-    /// The base class from which all order book lists must inherit (for lists of asks and bids.)
+    /// Sorted Order Book (of asks or bids.)
     /// </summary>
     /// <typeparam name="TUnit">The type of the order unit.</typeparam>
     /// <remarks>
     /// <see cref="TUnit"/> must implement <see cref="IOrderUnit"/>.
     /// Classes derived from this class maintain a price-sorted, keyed list.
     /// Sorting is vital to the function of Level 2 and Level 3 websocket feeds.
+    /// Index for insert is ignored.  The insert index is calculated by the sort order using binary search.
     /// </remarks>
-    public abstract class SortedKeyedOrderUnitBase<TUnit> : KeyedCollection<decimal, TUnit> where TUnit: IOrderUnit
+    public class Level2KeyedCollection<TUnit> : KeyedCollection<decimal, TUnit> where TUnit: IOrderUnit
     {
         protected object lockObj = new object();
 
@@ -24,11 +25,11 @@ namespace Kucoin.NET.Data.Order
 
         protected bool descending;
 
-        public SortedKeyedOrderUnitBase() : this(false)
+        public Level2KeyedCollection() : this(false)
         {
         }
 
-        public SortedKeyedOrderUnitBase(bool descending) : base()
+        public Level2KeyedCollection(bool descending) : base()
         {
             this.descending = descending;
         }
@@ -59,6 +60,8 @@ namespace Kucoin.NET.Data.Order
             var uprice = unit.Price;
             decimal cprice;
 
+            // the code is quicker if we don't check the ascending/descending variable every time.
+            // so we implement the loop twice.  
             if (!descending)
             {
                 while (true)
@@ -128,11 +131,14 @@ namespace Kucoin.NET.Data.Order
 
                 if (Contains(item.Price))
                 {
-                    var orgitem = this[item.Price];
-                    orgitem.Size = item.Size;
+                    //var orgitem = this[item.Price];
+                    //orgitem.Size = item.Size;
 
-                    if (item is ISequencedOrderUnit seq && orgitem is ISequencedOrderUnit orgseq)
-                        orgseq.Sequence = seq.Sequence;
+                    //if (item is ISequencedOrderUnit seq && orgitem is ISequencedOrderUnit orgseq)
+                    //    orgseq.Sequence = seq.Sequence;
+
+                    RemoveItem(index);
+                    InsertItem(index, item);
 
                     return;
                 }

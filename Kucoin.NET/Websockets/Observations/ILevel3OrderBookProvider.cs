@@ -11,7 +11,7 @@ namespace Kucoin.NET.Websockets.Observations
     /// <summary>
     /// Standard level 2 order book provider interface.
     /// </summary>
-    public interface ILevel3OrderBookProvider : ILevel3OrderBookProvider<AtomicOrderBook<AtomicOrderUnit>, AtomicOrderUnit, Level3Update>
+    public interface ILevel3OrderBookProvider : ILevel3OrderBookProvider<ObservableAtomicOrderBook<ObservableAtomicOrderUnit>, ObservableAtomicOrderUnit, Level3Update>
     {
     }
 
@@ -45,7 +45,7 @@ namespace Kucoin.NET.Websockets.Observations
         /// <summary>
         /// The raw preflight (full depth) order book.
         /// </summary>
-        TBook FullDepthOrderBook { get; }
+        KeyedAtomicOrderBook<AtomicOrderUnit> FullDepthOrderBook { get; }
 
 
         /// <summary>

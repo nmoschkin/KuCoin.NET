@@ -14,7 +14,7 @@ namespace Kucoin.NET.Websockets.Public
     /// <summary>
     ///  Level 3 Match Engine Feed
     /// </summary>
-    public class Level3 : Level3Base<AtomicOrderBook<AtomicOrderUnit>, AtomicOrderUnit, Level3Update, Level3Observation>
+    public class Level3 : Level3Base<ObservableAtomicOrderBook<ObservableAtomicOrderUnit>, ObservableAtomicOrderUnit, Level3Update, Level3Observation>
     {
         
         public Level3(ICredentialsProvider credProvider) : base(credProvider)
@@ -121,12 +121,12 @@ namespace Kucoin.NET.Websockets.Public
         //    return result;
         //}
 
-        public async Task<AtomicOrderBook<AtomicOrderUnit>> GetAtomicOrderBook(string symbol)
+        public async Task<KeyedAtomicOrderBook<AtomicOrderUnit>> GetAtomicOrderBook(string symbol)
         {
             var curl = $"/api/v3/market/orderbook/level3?symbol={symbol}";
 
             var jobj = await MakeRequest(HttpMethod.Get, curl, 5, true);
-            return jobj.ToObject<AtomicOrderBook<AtomicOrderUnit>>();
+            return jobj.ToObject<KeyedAtomicOrderBook<AtomicOrderUnit>>();
         }
 
 

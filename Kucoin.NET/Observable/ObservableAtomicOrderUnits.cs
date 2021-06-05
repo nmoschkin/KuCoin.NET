@@ -14,7 +14,7 @@ namespace Kucoin.NET.Observable
     /// Standard implementation of a keyed, observable collection for Level 3 atomic order units
     /// </summary>
     /// <typeparam name="T"></typeparam>
-    public class ObservableAtomicOrderUnits<T> : SortedKeyedOrderUnitBase<T>, INotifyPropertyChanged, INotifyCollectionChanged where T: IAtomicOrderUnit
+    public class ObservableAtomicOrderUnits<T> : Level2KeyedCollection<T>, INotifyPropertyChanged, INotifyCollectionChanged where T: IAtomicOrderUnit
     {
         public event NotifyCollectionChangedEventHandler CollectionChanged;
 

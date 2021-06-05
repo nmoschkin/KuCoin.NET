@@ -15,7 +15,7 @@ namespace Kucoin.NET.Websockets.Public
     /// <summary>
     /// Standard Spot Market Level 2 feed implementation with observable and UI data binding support.
     /// </summary>
-    public class Level2 : Level2Base<OrderBook<OrderUnit>, OrderUnit, Level2Update, Level2Observation>
+    public class Level2 : Level2Base<ObservableOrderBook<ObservableOrderUnit>, ObservableOrderUnit, Level2Update, Level2Observation>
     {
 
         /// <summary>
@@ -39,7 +39,7 @@ namespace Kucoin.NET.Websockets.Public
 
         public override string Topic => "/market/level2";
 
-        public override async Task<OrderBook<OrderUnit>> GetAggregatedOrder(string symbol)
+        public override async Task<KeyedOrderBook<OrderUnit>> GetAggregatedOrder(string symbol)
         {
             return await GetPartList(symbol, 0);
         }
@@ -55,7 +55,7 @@ namespace Kucoin.NET.Websockets.Public
         /// Settings the number of pieces to 0 returns the full market depth. 
         /// Use 0 to calibrate a full level 2 feed.
         /// </remarks>
-        public async Task<OrderBook<OrderUnit>> GetPartList(string symbol, int pieces)
+        public async Task<KeyedOrderBook<OrderUnit>> GetPartList(string symbol, int pieces)
         {
             var curl = pieces > 0 ? $"{AggregateEndpoint}_{pieces}" : AggregateEndpoint;
             var param = new Dictionary<string, object>();
@@ -63,7 +63,7 @@ namespace Kucoin.NET.Websockets.Public
             param.Add("symbol", symbol);
 
             var jobj = await MakeRequest(HttpMethod.Get, curl, 5, false, param);
-            var result = jobj.ToObject<OrderBook<OrderUnit>>();
+            var result = jobj.ToObject<KeyedOrderBook<OrderUnit>>();
 
             foreach (var ask in result.Asks)
             {

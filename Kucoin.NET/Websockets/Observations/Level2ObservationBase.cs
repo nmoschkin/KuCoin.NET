@@ -36,7 +36,7 @@ namespace Kucoin.NET.Websockets.Observations
     {
         public virtual event EventHandler<OrderBookUpdatedEventArgs<TBook, TUnit>> OrderBookUpdated;
 
-        protected TBook fullDepth;
+        protected KeyedOrderBook<OrderUnit> fullDepth;
         protected TBook orderBook;
         protected string symbol;
         protected int pieces;
@@ -131,7 +131,7 @@ namespace Kucoin.NET.Websockets.Observations
         /// <summary>
         /// Gets the full-depth order book.
         /// </summary>
-        public TBook FullDepthOrderBook
+        public KeyedOrderBook<OrderUnit> FullDepthOrderBook
         {
             get => fullDepth;
             internal set

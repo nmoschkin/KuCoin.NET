@@ -292,7 +292,7 @@ namespace Kucoin.NET.Websockets.Public
         /// Returns the full market depth. 
         /// Use this to calibrate a full level 2 feed.
         /// </remarks>
-        public virtual async Task<TBook> GetAggregatedOrder(string symbol)
+        public virtual async Task<KeyedOrderBook<OrderUnit>> GetAggregatedOrder(string symbol)
         {
             var curl = AggregateEndpoint;
             var param = new Dictionary<string, object>();
@@ -300,7 +300,7 @@ namespace Kucoin.NET.Websockets.Public
             param.Add("symbol", symbol);
 
             var jobj = await MakeRequest(HttpMethod.Get, curl, 5, false, param);
-            var result = jobj.ToObject<TBook>();
+            var result = jobj.ToObject<KeyedOrderBook<OrderUnit>>();
 
             foreach (var ask in result.Asks)
             {

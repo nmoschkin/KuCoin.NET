@@ -1,90 +1,91 @@
-﻿using Kucoin.NET.Helpers;
-using Kucoin.NET.Json;
-using Kucoin.NET.Observable;
+﻿using System;
 
 using Newtonsoft.Json;
 
-using System;
-using System.Collections.Generic;
-using System.Text;
+using Kucoin.NET.Observable;
+using Kucoin.NET.Json;
+using System.ComponentModel;
+using System.Runtime.CompilerServices;
+using Newtonsoft.Json.Schema;
+using Kucoin.NET.Helpers;
 
 namespace Kucoin.NET.Data.Market
 {
 
     /// <summary>
-    /// Represents a Level 3 order
+    /// Level 2 Ask or Bid
     /// </summary>
+
     [JsonConverter(typeof(AtomicOrderUnitConverter))]
-    public class AtomicOrderUnit : 
-        ObservableBase, 
-        IAtomicOrderUnit, 
-        ICloneable
+    public class AtomicOrderUnit : ICloneable, IAtomicOrderUnit
     {
-        private decimal price;
-        private decimal size;
-        private DateTime time;
-        private string orderId;
+        protected decimal price;
+        protected decimal size;
+        protected DateTime time;
+        protected string orderId;
 
-        int hc = 0;
 
-        internal decimal SortFactor => price;
+
 
         /// <summary>
         /// Price * Size
         /// </summary>
-        public decimal Total => price * size;
+        public virtual decimal Total => price * size;
 
-        /// <summary>
-        /// The Order Id of this order.
-        /// </summary>
-        public string OrderId
+
+        public virtual string OrderId
         {
             get => orderId;
             set
             {
-                SetProperty(ref orderId, value);
+                if (orderId != value)
+                {
+                    orderId = value;
+                }
             }
         }
+
 
         /// <summary>
         /// The price in quote currency of the ask or bid.
         /// </summary>
-        public decimal Price
+        public virtual decimal Price
         {
             get => price;
             set
             {
-                if (SetProperty(ref price, value))
+                if (price != value)
                 {
-                    CalcHash();
-                    OnPropertyChanged(nameof(SortFactor));
+                    price = value;
                 }
             }
         }
 
         /// <summary>
-        /// The size in base currency of the ask or bid.
+        /// The size of the ask or bid.
         /// </summary>
-        public decimal Size
+        public virtual decimal Size
         {
             get => size;
             set
             {
-                if (SetProperty(ref size, value))
+                if (size != value)
                 {
-                    CalcHash();
-                    OnPropertyChanged(nameof(SortFactor));
+                    size = value;
                 }
             }
         }
 
-        /// <summary>
-        /// The time stamp of the order.
-        /// </summary>
-        public DateTime Timestamp
+        public virtual DateTime Timestamp
         {
             get => time;
-            set => time = value;
+            set
+            {
+                if (time != value)
+                {
+                    time = value;
+                }
+            }
         }
 
         public override bool Equals(object obj)
@@ -99,61 +100,129 @@ namespace Kucoin.NET.Data.Market
             }
         }
 
-        private void CalcHash()
+        public override int GetHashCode() => (price.ToString() + size.ToString() + time.ToString() + (orderId ?? "")).GetHashCode();
+
+        internal AtomicOrderUnit(object[] data)
         {
-            hc = (price.ToString() + size.ToString() + (orderId ?? "") + time.ToString()).GetHashCode();
+            orderId = (string)data[0];
+            price = decimal.Parse((string)data[1]);
+            size = decimal.Parse((string)data[2]);
+            time = EpochTime.NanosecondsToDate((long)data[3]);
         }
-        public override int GetHashCode() => hc;
-                
-        object ICloneable.Clone()
+
+        public AtomicOrderUnit()
         {
-            return this.Clone();
+        }
+
+        public object Clone()
+        {
+            return MemberwiseClone();
         }
 
         /// <summary>
-        /// Create a copy of this object.
+        /// Create a new order unit from this object.
         /// </summary>
         /// <returns></returns>
-        public AtomicOrderUnit Clone()
+        public virtual T Clone<T>() where T : IAtomicOrderUnit, new()
         {
-            return new AtomicOrderUnit()
+            var ret = new T()
             {
-                price = price,
-                size = size,
-                time = time,
-                orderId = orderId
+                Price = price,
+                Size = size,
+                OrderId = orderId,
+                Timestamp = time
             };
+
+            return ret;
         }
 
         public override string ToString()
         {
-            return $"{orderId} : {time} : {Price} ({Size})";
-
-        }
-
-
-        /// <summary>
-        /// Creates a new, empty atomic order unit.
-        /// </summary>
-        public AtomicOrderUnit()
-        {
-
-        }
-
-        /// <summary>
-        /// Create a new atomic order unit based on raw JSON-sourced input.
-        /// </summary>
-        /// <param name="values">The JSON sourced input.</param>
-        /// <remarks>
-        /// For internal use, only.
-        /// </remarks>
-        internal AtomicOrderUnit(object[] values)
-        {
-            OrderId = (string)values[0];
-            Price = decimal.Parse((string)values[1]);
-            Size = decimal.Parse((string)values[2]);
-            Timestamp = EpochTime.NanosecondsToDate((long)values[3]);
+            return $"{OrderId} - {Timestamp}: {Price} ({Size})";
         }
 
     }
+
+
+    /// <summary>
+    /// Level 2 Ask or Bid
+    /// </summary>
+
+    [JsonConverter(typeof(AtomicOrderUnitConverter))]
+    public class ObservableAtomicOrderUnit : AtomicOrderUnit, INotifyPropertyChanged
+    {
+
+        public event PropertyChangedEventHandler PropertyChanged;
+
+
+        public override decimal Size
+        {
+            get => size;
+            set
+            {
+                if (size != value)
+                {
+                    size = value;
+                    OnPropertyChanged();
+                    OnPropertyChanged(nameof(Total));
+                }
+            }
+        }
+
+        public override decimal Price
+        {
+            get => price;
+            set
+            {
+                if (price != value)
+                {
+                    price = value;
+                    OnPropertyChanged();
+                    OnPropertyChanged(nameof(Total));
+                }
+            }
+        }
+
+        public override string OrderId
+        {
+            get => orderId;
+            set
+            {
+                if (orderId != value)
+                {
+                    orderId = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
+
+        public override DateTime Timestamp
+        {
+            get => time;
+            set
+            {
+                if (time != value)
+                {
+                    time = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
+
+        internal ObservableAtomicOrderUnit(string[] data) : base(data)
+        {
+        }
+
+        public ObservableAtomicOrderUnit() : base()
+        {
+        }
+
+        protected void OnPropertyChanged([CallerMemberName] string propertyName = null)
+        {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+        }
+
+
+    }
+
 }

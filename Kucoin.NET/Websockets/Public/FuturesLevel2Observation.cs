@@ -83,7 +83,7 @@ namespace Kucoin.NET.Futures.Websockets.Observations
         /// </summary>
         /// <param name="change">The change to sequence.</param>
         /// <param name="pieces">The collection to change (either an ask or a bid collection)</param>
-        protected void SequencePieces(FuturesLevel2Update change, SortedKeyedOrderUnitBase<OrderUnit> pieces)
+        protected void SequencePieces(FuturesLevel2Update change, Level2KeyedCollection<OrderUnit> pieces)
         {
             decimal cp = change.Change.Price;
 
@@ -380,7 +380,7 @@ namespace Kucoin.NET.Futures.Websockets.Observations
         /// </summary>
         /// <param name="change">The change to sequence.</param>
         /// <param name="pieces">The collection to change (either an ask or a bid collection)</param>
-        protected void SequencePieces(FuturesLevel2Update change, SortedKeyedOrderUnitBase<TUnit> pieces)
+        protected void SequencePieces(FuturesLevel2Update change, Level2KeyedCollection<OrderUnit> pieces)
         {
             decimal cp = change.Change.Price;
 
@@ -401,7 +401,7 @@ namespace Kucoin.NET.Futures.Websockets.Observations
                 }
                 else
                 {
-                    var ou = new TUnit();
+                    var ou = new OrderUnit();
 
                     ou.Price = change.Change.Price;
                     ou.Size = change.Change.Size;
@@ -487,7 +487,7 @@ namespace Kucoin.NET.Futures.Websockets.Observations
         /// <param name="src">Source data.</param>
         /// <param name="dest">Destination collection.</param>
         /// <param name="pieces">The number of pieces to copy.</param>
-        protected void CopyTo(IList<TUnit> src, IList<TUnit> dest, int pieces)
+        protected void CopyTo(IList<OrderUnit> src, IList<TUnit> dest, int pieces)
         {
             int i, c = pieces < src.Count ? pieces : src.Count;
             int x = dest.Count;
@@ -499,7 +499,17 @@ namespace Kucoin.NET.Futures.Websockets.Observations
 
                 foreach (var piece in src)
                 {
-                    dest.Add(piece);
+
+                    var u = new TUnit()
+                    {
+                        Price = piece.Price,
+                        Size = piece.Size
+                    };
+
+                    if (u is ISequencedOrderUnit seq)
+                        seq.Sequence = piece.Sequence;
+
+                    dest.Add(u);
                     if (++x == c) break;
                 }
             }
@@ -507,7 +517,10 @@ namespace Kucoin.NET.Futures.Websockets.Observations
             {
                 for (i = 0; i < c; i++)
                 {
-                    dest[i] = src[i];
+                    dest[i].Price = src[i].Price;
+                    dest[i].Size = src[i].Size;
+                    if (dest[i] is ISequencedOrderUnit seq)
+                        seq.Price = src[i].Price;
                 }
             }
 

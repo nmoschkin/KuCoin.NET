@@ -4,6 +4,9 @@ using Newtonsoft.Json;
 
 using Kucoin.NET.Observable;
 using Kucoin.NET.Json;
+using System.ComponentModel;
+using System.Runtime.CompilerServices;
+using Newtonsoft.Json.Schema;
 
 namespace Kucoin.NET.Data.Market
 {
@@ -13,45 +16,43 @@ namespace Kucoin.NET.Data.Market
     /// </summary>
 
     [JsonConverter(typeof(OrderUnitConverter))]
-    public class OrderUnit : ObservableBase, ICloneable, ISequencedOrderUnit
+    public class OrderUnit : ICloneable, ISequencedOrderUnit
     {
-        private decimal price;
-        private decimal size;
-        private long seq;
-
-        int hc = 0;
-
-        internal decimal SortFactor => price;
+        protected decimal price;
+        protected decimal size;
+        protected long seq;
 
         /// <summary>
         /// Price * Size
         /// </summary>
-        public decimal Total => price * size;
+        public virtual decimal Total => price * size;
 
         /// <summary>
         /// The sequence number of this current price.
         /// </summary>
-        public long Sequence
+        public virtual long Sequence
         {
             get => seq;
             set
             {
-                if (SetProperty(ref seq, value)) CalcHash();
+                if (seq != value)
+                {
+                    seq = value;
+                }
             }
         }
 
         /// <summary>
         /// The price in quote currency of the ask or bid.
         /// </summary>
-        public decimal Price
+        public virtual decimal Price
         {
             get => price;
             set
             {
-                if (SetProperty(ref price, value))
+                if (price != value)
                 {
-                    CalcHash();
-                    OnPropertyChanged(nameof(SortFactor));
+                    price = value;
                 }
             }
         }
@@ -59,15 +60,14 @@ namespace Kucoin.NET.Data.Market
         /// <summary>
         /// The size of the ask or bid.
         /// </summary>
-        public decimal Size
+        public virtual decimal Size
         {
             get => size;
             set
             {
-                if (SetProperty(ref size, value))
+                if (size != value)
                 {
-                    CalcHash();
-                    OnPropertyChanged(nameof(SortFactor));
+                    size = value;
                 }
             }
         }
@@ -84,11 +84,39 @@ namespace Kucoin.NET.Data.Market
             }
         }
 
-        private void CalcHash()
+        public override int GetHashCode() => (price.ToString() + size.ToString() + seq.ToString()).GetHashCode();
+
+        public object Clone()
         {
-            hc = (price.ToString() + size.ToString() + seq.ToString()).GetHashCode();
+            return MemberwiseClone();
         }
-        public override int GetHashCode() => hc;
+
+        /// <summary>
+        /// Create a new order unit from this object.
+        /// </summary>
+        /// <returns></returns>
+        public virtual T Clone<T>() where T: IOrderUnit, new()
+        {
+            var ret = new T()
+            {
+                Price = price,
+                Size = size
+            };
+
+            if (ret is ISequencedOrderUnit seq)
+            {
+                seq.Sequence = this.seq;
+            }
+
+            return ret;
+        }
+
+        public override string ToString()
+        {
+            return $"{Price} ({Size})" + ((Sequence != 0) ? $": {Sequence}" : "");
+
+        }
+
 
         internal OrderUnit(string[] data)
         {
@@ -101,30 +129,73 @@ namespace Kucoin.NET.Data.Market
         {
         }
 
-        object ICloneable.Clone()
-        {
-            return this.Clone();
-        }
+    }
 
-        /// <summary>
-        /// Create a copy of this object.
-        /// </summary>
-        /// <returns></returns>
-        public OrderUnit Clone()
+
+    /// <summary>
+    /// Level 2 Ask or Bid
+    /// </summary>
+
+    [JsonConverter(typeof(OrderUnitConverter))]
+    public class ObservableOrderUnit : OrderUnit, INotifyPropertyChanged
+    {
+
+        public event PropertyChangedEventHandler PropertyChanged;
+
+        public override decimal Size
         {
-            return new OrderUnit()
+            get => size;
+            set
             {
-                price = price,
-                size = size,
-                seq = seq
-            };
+                if (size != value)
+                {
+                    size = value;
+                    OnPropertyChanged();
+                    OnPropertyChanged(nameof(Total));
+                }
+            }
         }
 
-        public override string ToString()
+        public override decimal Price
         {
-            return $"{Price} ({Size})" + ((Sequence != 0) ? $": {Sequence}" : "");
-
+            get => price;
+            set
+            {
+                if (price != value)
+                {
+                    price = value;
+                    OnPropertyChanged();
+                    OnPropertyChanged(nameof(Total));
+                }
+            }
         }
+
+        public override long Sequence
+        {
+            get => seq;
+            set
+            {
+                if (seq != value)
+                {
+                    seq = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
+
+        public ObservableOrderUnit() : base()
+        {
+        }
+
+        internal ObservableOrderUnit(string[] data) : base(data)
+        {
+        }
+
+        protected void OnPropertyChanged([CallerMemberName]string propertyName = null)
+        {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+        }
+        
 
     }
 

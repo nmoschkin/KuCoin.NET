@@ -14,13 +14,14 @@ using System.Linq;
 using System.Threading.Tasks;
 using Kucoin.NET.Websockets.Public;
 using System.Runtime.CompilerServices;
+using Kucoin.NET.Data.Order;
 
 namespace Kucoin.NET.Websockets.Observations
 {
     /// <summary>
     /// Standard Spot Market Level 2 observation and order book provider.
     /// </summary>
-    public class Level2Observation : Level2ObservationBase<OrderBook<OrderUnit>, OrderUnit, Level2Update>, ILevel2OrderBookProvider
+    public class Level2Observation : Level2ObservationBase<ObservableOrderBook<ObservableOrderUnit>, ObservableOrderUnit, Level2Update>, ILevel2OrderBookProvider
     {
 
         protected bool calibrated;
@@ -195,7 +196,7 @@ namespace Kucoin.NET.Websockets.Observations
         /// <param name="src">Source data.</param>
         /// <param name="dest">Destination collection.</param>
         /// <param name="pieces">The number of pieces to copy.</param>
-        protected void CopyTo(IList<OrderUnit> src, IList<OrderUnit> dest, int pieces)
+        protected void CopyTo(IList<OrderUnit> src, IList<ObservableOrderUnit> dest, int pieces)
         {
             int i, c = pieces < src.Count ? pieces : src.Count;
             int x = dest.Count;
@@ -207,7 +208,10 @@ namespace Kucoin.NET.Websockets.Observations
 
                 foreach (var piece in src)
                 {
-                    dest.Add(piece);
+
+                    var u = piece.Clone<ObservableOrderUnit>();
+                    
+                    dest.Add(u);
                     if (++x == c) break;
                 }
             }
@@ -215,7 +219,11 @@ namespace Kucoin.NET.Websockets.Observations
             {
                 for (i = 0; i < c; i++)
                 {
-                    dest[i] = src[i];
+                    dest[i].Price = src[i].Price;
+                    dest[i].Size = src[i].Size;
+
+                    if (dest[i] is ISequencedOrderUnit seq)
+                        seq.Sequence = src[i].Sequence;
                 }
             }
 
@@ -230,7 +238,7 @@ namespace Kucoin.NET.Websockets.Observations
             {
                 if (orderBook == null)
                 {
-                    var ob = new OrderBook<OrderUnit>();
+                    var ob = new ObservableOrderBook<ObservableOrderUnit>();
                     OrderBook = ob;
                 }
 
@@ -388,7 +396,7 @@ namespace Kucoin.NET.Websockets.Observations
         /// <param name="changes">The changes to sequence.</param>
         /// <param name="pieces">The collection to change (either an ask or a bid collection)</param>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        protected void SequencePieces(IList<OrderUnit> changes, KeyedCollection<decimal, TUnit> pieces)
+        protected void SequencePieces(IList<OrderUnit> changes, Level2KeyedCollection<OrderUnit> pieces)
         {
             foreach (var change in changes)
             {
@@ -405,19 +413,16 @@ namespace Kucoin.NET.Websockets.Observations
                         var piece = pieces[cp];
 
                         piece.Size = change.Size;
-                        if (piece is ISequencedOrderUnit seqpiece && change is ISequencedOrderUnit seqchange)
-                            seqpiece.Sequence = seqchange.Sequence;
+                        piece.Sequence = change.Sequence;
                     }
                     else
                     {
-                        var newPiece = new TUnit();
-
-                        newPiece.Price = change.Price;
-                        newPiece.Size = change.Size;
-
-                        if (newPiece is ISequencedOrderUnit seqpiece && change is ISequencedOrderUnit seqchange)
-                            seqpiece.Sequence = seqchange.Sequence;
-
+                        var newPiece = new OrderUnit
+                        {
+                            Price = change.Price,
+                            Size = change.Size,
+                            Sequence = change.Sequence
+                        };
 
                         pieces.Add(newPiece);
                     }
@@ -504,7 +509,7 @@ namespace Kucoin.NET.Websockets.Observations
         /// <param name="dest">Destination collection.</param>
         /// <param name="pieces">The number of pieces to copy.</param>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        protected void CopyTo(IList<TUnit> src, IList<TUnit> dest, int pieces)
+        protected void CopyTo(IList<OrderUnit> src, IList<TUnit> dest, int pieces)
         {
             int i, c = pieces < src.Count ? pieces : src.Count;
             int x = dest.Count;
@@ -516,7 +521,17 @@ namespace Kucoin.NET.Websockets.Observations
 
                 foreach (var piece in src)
                 {
-                    dest.Add(piece);
+
+                    var u = new TUnit()
+                    {
+                        Price = piece.Price,
+                        Size = piece.Size
+                    };
+
+                    if (u is ISequencedOrderUnit seq)
+                        seq.Sequence = piece.Sequence;
+
+                    dest.Add(u);
                     if (++x == c) break;
                 }
             }
@@ -524,7 +539,11 @@ namespace Kucoin.NET.Websockets.Observations
             {
                 for (i = 0; i < c; i++)
                 {
-                    dest[i] = src[i];
+                    dest[i].Price = src[i].Price;
+                    dest[i].Size = src[i].Size;
+
+                    if (dest[i] is ISequencedOrderUnit seq)
+                        seq.Sequence = src[i].Sequence;
                 }
             }
 
