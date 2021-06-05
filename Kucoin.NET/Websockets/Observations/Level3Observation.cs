@@ -9,6 +9,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Runtime.CompilerServices;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace Kucoin.NET.Websockets.Observations
 {
@@ -297,6 +298,7 @@ namespace Kucoin.NET.Websockets.Observations
                         orderBook.Timestamp = fullDepth.Timestamp;
 
                         CopyBook();
+                        OnPropertyChanged(nameof(FullDepthOrderBook));
                     });
                 }
                 else
@@ -305,6 +307,7 @@ namespace Kucoin.NET.Websockets.Observations
                     orderBook.Timestamp = fullDepth.Timestamp;
 
                     CopyBook();
+                    OnPropertyChanged(nameof(FullDepthOrderBook));
                 }
 
             }

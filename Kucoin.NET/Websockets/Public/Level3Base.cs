@@ -363,6 +363,8 @@ namespace Kucoin.NET.Websockets.Public
                                 lock (lockObj)
                                 {
                                     af.Calibrate();
+                                    af.RequestPush();
+
                                     cycle = DateTime.UtcNow.Ticks;
                                 }
 
