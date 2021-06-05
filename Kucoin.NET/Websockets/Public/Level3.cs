@@ -91,46 +91,6 @@ namespace Kucoin.NET.Websockets.Public
             return new Level3Observation(this, symbol, defaultPieces);
         }
 
-        //public override async Task<AtomicOrderBook<AtomicOrderUnit>> GetAggregatedOrder(string symbol)
-        //{
-        //    var result = await base.GetAggregatedOrder(symbol);
-
-        //    var list = (IList<AtomicOrderUnit>)result.Asks;
-
-        //    int c = list.Count, i;
-
-        //    for (i = c - 1; i >= 0; i--)
-        //    {
-        //        if (list[i].Price == 0 || list[i].Size == 0)
-        //        {
-        //            result.Asks.RemoveAt(i);
-        //        }
-        //    }
-
-        //    list = (IList<AtomicOrderUnit>)result.Bids;
-        //    c = list.Count;
-
-        //    for (i = c - 1; i >= 0; i--)
-        //    {
-        //        if (list[i].Price == 0 || list[i].Size == 0)
-        //        {
-        //            result.Bids.RemoveAt(i);
-        //        }
-        //    }
-
-        //    return result;
-        //}
-
-        public async Task<KeyedAtomicOrderBook<AtomicOrderUnit>> GetAtomicOrderBook(string symbol)
-        {
-            var curl = $"/api/v3/market/orderbook/level3?symbol={symbol}";
-
-            var jobj = await MakeRequest(HttpMethod.Get, curl, 5, true);
-            return jobj.ToObject<KeyedAtomicOrderBook<AtomicOrderUnit>>();
-        }
-
-
-
     }
 
 }

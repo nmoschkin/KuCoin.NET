@@ -1038,6 +1038,9 @@ namespace KuCoinApp
 
                     if (cred != null)
                     {
+                        var fmarket = new Kucoin.NET.Futures.Rest.FuturesMarket();
+
+                        var futures = await fmarket.GetOpenContractList();
 
                         //level2Feed.MonitorThroughput = true;
                         //level2Feed.UpdateInterval = 100;

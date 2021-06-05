@@ -6,6 +6,9 @@ using System.Text;
 
 namespace Kucoin.NET.Futures.Data.Market
 {
+    /// <summary>
+    /// Contains data about an open futures contract
+    /// </summary>
     public class FuturesContract
     {
 
@@ -90,7 +93,7 @@ namespace Kucoin.NET.Futures.Data.Market
         /// Maintenance margin requirement
         /// </summary>
         [JsonProperty("maintainMargin")]
-        public decimal MaintainMargin { get; set; }
+        public decimal MaintenanceMargin { get; set; }
 
 
         /// <summary>
@@ -118,7 +121,7 @@ namespace Kucoin.NET.Futures.Data.Market
         /// Maximum order quantity
         /// </summary>
         [JsonProperty("maxOrderQty")]
-        public decimal MaxOrderQty { get; set; }
+        public decimal MaxOrderQuantity { get; set; }
 
 
         /// <summary>
@@ -266,6 +269,8 @@ namespace Kucoin.NET.Futures.Data.Market
         /// </summary>
         [JsonProperty("priceChg")]
         public decimal PriceChange { get; set; }
+
+        public override string ToString() => $"{Symbol} : {BaseCurrency}-{QuoteCurrency}";
 
     }
 

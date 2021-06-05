@@ -153,7 +153,7 @@ namespace KuCoinApp
 
             var l3 = new Level3(cred);
 
-            var l3results = await l3.GetAtomicOrderBook("ETH-USDT");
+            var l3results = await l3.GetAggregatedOrder("ETH-USDT");
 
             //var fmarket = new Kucoin.NET.Futures.Rest.FuturesMarket();
 
