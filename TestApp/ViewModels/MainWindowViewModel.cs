@@ -22,6 +22,7 @@ using FancyCandles;
 using KuCoinApp.Localization.Resources;
 using KuCoinApp.ViewModels;
 using KuCoinApp.Views;
+using Windows.ApplicationModel.Activation;
 
 namespace KuCoinApp
 {
@@ -34,6 +35,8 @@ namespace KuCoinApp
         protected FuturesLevel2 futuresl2;
 
         protected Accounts accountWnd;
+
+        protected FuturesWindow fwindow;
 
         //protected Level2Depth50 level2Feed50;
 
@@ -113,6 +116,7 @@ namespace KuCoinApp
         public ICommand EditCredentialsCommand { get; protected set; }
 
         public ICommand ShowAccountsCommand { get; protected set; }
+        public ICommand ShowFuturesCommand { get; protected set; }
 
         public ObservableStaticMarketDepthUpdate MarketUpdate
         {
@@ -969,6 +973,20 @@ namespace KuCoinApp
                 AskQuit?.Invoke(this, new EventArgs());
             });
 
+            ShowFuturesCommand = new SimpleCommand((obj) =>
+            {
+                if (fwindow != null && fwindow.IsActive)
+                {
+                    fwindow.Focus();
+                }
+                else
+                {
+                    fwindow = new FuturesWindow();
+                    fwindow.Show();
+                }
+
+            });
+
             Task.Run(async () =>
             {
                 await Initialize();
@@ -1038,9 +1056,6 @@ namespace KuCoinApp
 
                     if (cred != null)
                     {
-                        var fmarket = new Kucoin.NET.Futures.Rest.FuturesMarket();
-
-                        var futures = await fmarket.GetOpenContractList();
 
                         //level2Feed.MonitorThroughput = true;
                         //level2Feed.UpdateInterval = 100;

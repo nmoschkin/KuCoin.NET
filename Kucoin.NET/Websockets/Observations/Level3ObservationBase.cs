@@ -110,10 +110,13 @@ namespace Kucoin.NET.Websockets.Observations
         /// </summary>        
         public string Symbol => !disposed ? symbol : throw new ObjectDisposedException(nameof(Level2Observation));
 
-
-        void ISymbol.SetSymbol(string symbol)
+        string ISymbol.Symbol
         {
-            base.SetProperty(ref this.symbol, symbol);
+            get => symbol;
+            set
+            {
+                SetProperty(ref symbol, value);
+            }
         }
 
         /// <summary>

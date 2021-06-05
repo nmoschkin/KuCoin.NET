@@ -42,11 +42,6 @@ namespace Kucoin.NET.Data.Websockets
     /// </summary>
     public class Level2Update : ISymbol, IOrderUnitListProvider<IOrderUnit>
     {
-        void ISymbol.SetSymbol(string symbol)
-        {
-            Symbol = symbol;
-        }
-
         /// <summary>
         /// Update sequence start
         /// </summary>

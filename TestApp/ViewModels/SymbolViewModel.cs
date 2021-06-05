@@ -12,13 +12,13 @@ namespace KuCoinApp.ViewModels
     public class SymbolViewModel : ObservableBase
     {
 
-        private TradingSymbol data;
+        private ISymbolicated data;
 
         private CurrencyViewModel basevm;
 
         private CurrencyViewModel quotevm;
 
-        public SymbolViewModel(TradingSymbol sym)
+        public SymbolViewModel(ISymbolicated sym)
         {
             data = sym;
 
@@ -26,7 +26,7 @@ namespace KuCoinApp.ViewModels
             quotevm = CurrencyViewModel.GetCurrency(sym.QuoteCurrency, true);
         }
 
-        public TradingSymbol Data => data;
+        public ISymbolicated Data => data;
 
         public string Symbol => data?.Symbol;
 

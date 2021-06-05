@@ -22,58 +22,55 @@ namespace Kucoin.NET.Data.Market
         /// Trading symbol
         /// </summary>
         [JsonIgnore]
-        public string Symbol
+        public virtual string Symbol
         {
             get;
             internal set;
         }
 
-        void ISymbol.SetSymbol(string symbol)
-        {
-            Symbol = symbol;
-        }
+        string ISymbol.Symbol { get => Symbol; set => Symbol = value; }
 
         /// <summary>
         /// Sequence Number
         /// </summary>
         [JsonProperty("sequence")]
-        public long Sequence { get; set; }
+        public virtual long Sequence { get; set; }
 
         /// <summary>
         /// Best Ask  (selling)
         /// </summary>
         [JsonProperty("bestAsk")]
-        public decimal BestAsk { get; set; }
+        public virtual decimal BestAsk { get; set; }
 
         /// <summary>
         /// Filled Size
         /// </summary>
         [JsonProperty("size")]
-        public decimal Size { get; set; }
+        public virtual decimal Size { get; set; }
 
         /// <summary>
         /// Filled Size
         /// </summary>
         [JsonProperty("price")]
-        public decimal Price { get; set; }
+        public virtual decimal Price { get; set; }
 
         /// <summary>
         /// Best Bid Size (buying)
         /// </summary>
         [JsonProperty("bestBidSize")]
-        public decimal BestBidSize { get; set; }
+        public virtual decimal BestBidSize { get; set; }
 
         /// <summary>
         /// Best Bid (buying)
         /// </summary>
         [JsonProperty("bestBid")]
-        public decimal BestBid { get; set; }
+        public virtual decimal BestBid { get; set; }
 
         /// <summary>
         /// Best Ask Size (selling)
         /// </summary>
         [JsonProperty("bestAskSize")]
-        public decimal BestAskSize { get; set; }
+        public virtual decimal BestAskSize { get; set; }
 
         /// <summary>
         /// Time Stamp

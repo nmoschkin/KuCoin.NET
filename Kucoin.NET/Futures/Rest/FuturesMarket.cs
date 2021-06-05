@@ -1,6 +1,7 @@
 ﻿using Kucoin.NET.Data.Market;
 using Kucoin.NET.Futures.Data.Market;
 using Kucoin.NET.Helpers;
+using Kucoin.NET.Observable;
 
 using System;
 using System.Collections.Generic;
@@ -14,9 +15,15 @@ namespace Kucoin.NET.Futures.Rest
     /// </summary>
     public class FuturesMarket : FuturesBaseRestApi
     {
+
+        private ObservableDictionary<string, FuturesContract> contractList;
+
+
         public FuturesMarket() : base(cred: null)
         {
         }
+
+        public ObservableDictionary<string, FuturesContract> ContractList => contractList;
 
         /// <summary>
         /// Get all open futures contracts.
@@ -28,6 +35,29 @@ namespace Kucoin.NET.Futures.Rest
             var jobj = await MakeRequest(HttpMethod.Get, url);
 
             return jobj.ToObject<FuturesContract[]>();
+        }
+
+        /// <summary>
+        /// Get all open futures contracts.
+        /// </summary>
+        /// <returns></returns>
+        public async Task RefreshOpenContractList()
+        {
+            var f = await GetOpenContractList();
+
+
+            if (contractList == null)
+            {
+                contractList = new ObservableDictionary<string, FuturesContract>();
+            }
+            else
+            {
+                contractList.Clear();
+            }
+            foreach (var fc in f)
+            {
+                contractList.Add(fc);
+            }
         }
 
         /// <summary>
@@ -137,7 +167,7 @@ namespace Kucoin.NET.Futures.Rest
             var klineRaw = jobj.ToObject<List<List<string>>>();
 
             var results = new TCol();
-            klineRaw.Reverse();
+            //klineRaw.Reverse();
 
             foreach (var values in klineRaw)
             {
@@ -146,6 +176,10 @@ namespace Kucoin.NET.Futures.Rest
                 if (candle is IWritableTypedBasicCandle<FuturesKlineType> tc)
                 {
                     tc.Type = type;
+                }
+                else if (candle is IWritableTypedCandle<FuturesKlineType> tce)
+                {
+                    tce.Type = type;
                 }
 
                 candle.Timestamp = EpochTime.MillisecondsToDate(long.Parse(values[0]));

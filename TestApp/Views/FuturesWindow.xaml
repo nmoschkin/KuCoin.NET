@@ -1,17 +1,18 @@
 ﻿<Window
-    x:Class="KuCoinApp.Views.MainWindow"
+    x:Class="KuCoinApp.Views.FuturesWindow"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:conv="clr-namespace:KuCoinApp.Converters"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:fc="clr-namespace:FancyCandles;assembly=FancyCandles"
+    xmlns:fm="clr-namespace:Kucoin.NET.Futures.Data.Market;assembly=Kucoin.NET"
     xmlns:i18n="clr-namespace:KuCoinApp.Localization"
     xmlns:km="clr-namespace:Kucoin.NET.Data.Market;assembly=Kucoin.NET"
     xmlns:local="clr-namespace:KuCoinApp"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    Title="KuCoin.NET Tool"
+    Title="FuturesWindow"
     Width="1200"
-    Height="750"
+    Height="800"
     mc:Ignorable="d">
 
     <Window.Resources>
@@ -101,7 +102,7 @@
                 Margin="8"
                 HorizontalAlignment="Center"
                 VerticalAlignment="Center"
-                Content="{i18n:Translate ResourceKey=MainTitle}"
+                Content="{i18n:Translate ResourceKey=FuturesTitle}"
                 FontSize="20"
                 FontWeight="Bold"
                 Foreground="{StaticResource KuCoinForegroundWhite}" />
@@ -289,7 +290,7 @@
 
                 <Label Content="Kline Types:" />
 
-                <ComboBox ItemsSource="{x:Static km:KlineType.AllTypes}" SelectedItem="{Binding KlineType, Mode=TwoWay}" />
+                <ComboBox ItemsSource="{x:Static fm:FuturesKlineType.AllTypes}" SelectedItem="{Binding KlineType, Mode=TwoWay}" />
 
             </StackPanel>
 
@@ -393,7 +394,7 @@
                         VerticalAlignment="Center"
                         FontFamily="Calibri"
                         FontSize="12">
-                        <Run Text="{Binding Level3Feed.State}" />
+                        <Run Text="{Binding FuturesLevel2Feed.State}" />
                     </TextBlock>
 
                     <TextBlock
@@ -411,7 +412,7 @@
                         VerticalAlignment="Center"
                         FontFamily="Calibri"
                         FontSize="12">
-                        <Run Text="{Binding Level3Feed.Throughput, Mode=OneWay, Converter={StaticResource spConv}}" />
+                        <Run Text="{Binding FuturesLevel2Feed.Throughput, Mode=OneWay, Converter={StaticResource spConv}}" />
                     </TextBlock>
 
                     <TextBlock
@@ -429,7 +430,7 @@
                         VerticalAlignment="Center"
                         FontFamily="Calibri"
                         FontSize="12">
-                        <Run Text="{Binding Level3Feed.PingTime.TotalMilliseconds, Mode=OneWay}" />
+                        <Run Text="{Binding FuturesLevel2Feed.PingTime.TotalMilliseconds, Mode=OneWay}" />
                         <Run Text=" ms" />
                     </TextBlock>
 
@@ -439,22 +440,8 @@
                         VerticalAlignment="Center"
                         FontFamily="Calibri"
                         FontSize="12">
-                        <Run Text="{Binding Level3.OrderBook.Timestamp, StringFormat='{}{0:MMM dd, yyyy a\\t h:mm:ss tt}'}" />
+                        <Run Text="{Binding FuturesLevel2.OrderBook.Timestamp, StringFormat='{}{0:MMM dd, yyyy a\\t h:mm:ss tt}'}" />
                     </TextBlock>
-
-
-
-                    <TextBlock
-                        Grid.Row="3"
-                        Grid.Column="1"
-                        HorizontalAlignment="Right"
-                        VerticalAlignment="Center"
-                        FontFamily="Calibri"
-                        FontSize="12">
-                        <Run Text="{i18n:Translate ResourceKey=Resets, AddColon=True}" />
-                        <Run Text="{Binding Level3Feed.Resets, Mode=OneWay}" />
-                    </TextBlock>
-
 
                 </Grid>
 
@@ -473,7 +460,7 @@
                     <ListView
                         x:Name="Asks"
                         Grid.Column="0"
-                        ItemsSource="{Binding Level3.OrderBook.Asks}">
+                        ItemsSource="{Binding FuturesLevel2.OrderBook.Asks}">
                         <ListView.View>
                             <GridView>
                                 <GridView.Columns>
@@ -509,14 +496,14 @@
                             Grid.Column="1"
                             Margin="0,0,4,0"
                             HorizontalAlignment="Right">
-                            <Run Text="{Binding Level3.FullDepthOrderBook.Asks.Count, Mode=OneWay, StringFormat='{}{0:#,##0}'}" />
+                            <Run Text="{Binding FuturesLevel2.FullDepthOrderBook.Asks.Count, Mode=OneWay, StringFormat='{}{0:#,##0}'}" />
                         </TextBlock>
                     </Grid>
 
                     <ListView
                         x:Name="Bids"
                         Grid.Column="1"
-                        ItemsSource="{Binding Level3.OrderBook.Bids}">
+                        ItemsSource="{Binding FuturesLevel2.OrderBook.Bids}">
                         <ListView.View>
                             <GridView>
                                 <GridView.Columns>
@@ -553,7 +540,7 @@
                             <Run Text="{i18n:Translate ResourceKey=MarketDepth, AddColon=True}" />
                         </TextBlock>
                         <TextBlock Grid.Column="1" HorizontalAlignment="Right">
-                            <Run Text="{Binding Level3.FullDepthOrderBook.Bids.Count, Mode=OneWay, StringFormat='{}{0:#,##0}'}" />
+                            <Run Text="{Binding FuturesLevel2.FullDepthOrderBook.Bids.Count, Mode=OneWay, StringFormat='{}{0:#,##0}'}" />
                         </TextBlock>
                     </Grid>
 
@@ -583,26 +570,6 @@
                 </Button.Resources>
             </Button>
 
-            <Button
-                x:Name="RefreshSymbolsBtn"
-                Grid.Row="2"
-                Grid.Column="1"
-                Width="100"
-                Height="32"
-                Margin="8"
-                HorizontalAlignment="Center"
-                VerticalAlignment="Stretch"
-                Command="{Binding ShowFuturesCommand}"
-                Content="{i18n:Translate ResourceKey=Futures}"
-                FontSize="12"
-                IsDefault="True">
-                <Button.Resources>
-                    <Style TargetType="Border">
-                        <Setter Property="CornerRadius" Value="6" />
-                    </Style>
-
-                </Button.Resources>
-            </Button>
 
             <Button
                 x:Name="EditCredentialsBtn"
@@ -649,6 +616,4 @@
 
 
     </Grid>
-
-
 </Window>

@@ -1,4 +1,7 @@
-﻿using Newtonsoft.Json;
+﻿using Kucoin.NET.Data.Market;
+using Kucoin.NET.Observable;
+
+using Newtonsoft.Json;
 
 using System;
 using System.Collections.Generic;
@@ -9,7 +12,7 @@ namespace Kucoin.NET.Futures.Data.Market
     /// <summary>
     /// Contains data about an open futures contract
     /// </summary>
-    public class FuturesContract
+    public class FuturesContract : ISymbolicated
     {
 
         /// <summary>
@@ -184,6 +187,7 @@ namespace Kucoin.NET.Futures.Data.Market
         /// Ticker symbol of the contract
         /// </summary>
         [JsonProperty("symbol")]
+        [KeyProperty]
         public string Symbol { get; set; }
 
 
@@ -271,6 +275,11 @@ namespace Kucoin.NET.Futures.Data.Market
         public decimal PriceChange { get; set; }
 
         public override string ToString() => $"{Symbol} : {BaseCurrency}-{QuoteCurrency}";
+
+
+        public static explicit operator string(FuturesContract val) => val?.Symbol;
+
+
 
     }
 

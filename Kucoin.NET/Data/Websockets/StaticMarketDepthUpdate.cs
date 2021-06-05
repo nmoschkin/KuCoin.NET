@@ -59,11 +59,6 @@ namespace Kucoin.NET.Data.Websockets
         /// </summary>
         public virtual Level2Depth Depth => Asks?.Length == 50 ? Level2Depth.Depth50 : Level2Depth.Depth5;
 
-        void ISymbol.SetSymbol(string symbol)
-        {
-            Symbol = symbol;
-        }
-
         /// <summary>
         /// Time Stamp
         /// </summary>

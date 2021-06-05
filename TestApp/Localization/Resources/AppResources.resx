@@ -198,6 +198,9 @@
   <data name="FuturesCredentialsTitle" xml:space="preserve">
     <value>Edit Futures API Credentials</value>
   </data>
+  <data name="FuturesTitle" xml:space="preserve">
+    <value>KuCoin App - Futures</value>
+  </data>
   <data name="Holds" xml:space="preserve">
     <value>Holds</value>
   </data>

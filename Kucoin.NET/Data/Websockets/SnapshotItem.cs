@@ -23,11 +23,6 @@ namespace Kucoin.NET.Data.Websockets
         [JsonProperty("symbol")]
         public string Symbol { get; set; }
 
-        void ISymbol.SetSymbol(string symbol)
-        {
-            Symbol = symbol;
-        }
-
         [JsonProperty("buy")]
         public decimal? Buy { get; set; }
 

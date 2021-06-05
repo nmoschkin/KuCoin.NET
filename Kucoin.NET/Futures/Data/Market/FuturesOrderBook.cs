@@ -13,7 +13,7 @@ namespace Kucoin.NET.Futures.Data.Market
     /// <summary>
     /// Standard Futures Level 2 order book implementation
     /// </summary>
-    public class FuturesOrderBook : KeyedOrderBook<OrderUnit>
+    public class FuturesOrderBook : ObservableOrderBook<OrderUnit>
     {
 
         [JsonProperty("ts")]

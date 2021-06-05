@@ -198,7 +198,6 @@ namespace KuCoinApp
                 OnPropertyChanged();
             }
         }
-
         public int SymbolLimit
         {
             get
@@ -215,7 +214,7 @@ namespace KuCoinApp
             }
         }
 
-        public string[] Symbols 
+        public string[] Symbols
         {
             get
             {
@@ -232,12 +231,12 @@ namespace KuCoinApp
         {
             string[] syms = Symbols;
 
-            
+
             if (syms == null)
             {
                 syms = new string[] { symbol };
                 Symbols = syms;
-                
+
                 return;
             }
             else
@@ -264,6 +263,79 @@ namespace KuCoinApp
             get
             {
                 var s = Symbols;
+                if (s != null && s.Length > 0)
+                    return s[s.Length - 1];
+                else
+                    return null;
+            }
+        }
+
+
+        public int FuturesSymbolLimit
+        {
+            get
+            {
+                return GetProperty<int>(15);
+            }
+            set
+            {
+                if (value < 1) value = 1;
+                else if (value > 255) value = 255;
+
+                SetProperty(value);
+                OnPropertyChanged();
+            }
+        }
+
+        public string[] FuturesSymbols 
+        {
+            get
+            {
+                return GetProperty<string[]>();
+            }
+            set
+            {
+                SetProperty(value);
+                OnPropertyChanged();
+            }
+        }
+
+        public void PushFuturesSymbol(string symbol)
+        {
+            string[] syms = FuturesSymbols;
+
+            
+            if (syms == null)
+            {
+                syms = new string[] { symbol };
+                FuturesSymbols = syms;
+                
+                return;
+            }
+            else
+            {
+                int sl = FuturesSymbolLimit;
+                var snew = new List<string>(syms);
+
+                snew.Remove(symbol);
+
+                while (snew.Count >= sl)
+                {
+                    snew.RemoveAt(0);
+                }
+                snew.Add(symbol);
+
+                FuturesSymbols = snew.ToArray();
+            }
+
+            OnPropertyChanged(nameof(FuturesSymbols));
+        }
+
+        public string MostRecentFuturesSymbol
+        {
+            get
+            {
+                var s = FuturesSymbols;
                 if (s != null && s.Length > 0)
                     return s[s.Length - 1];
                 else

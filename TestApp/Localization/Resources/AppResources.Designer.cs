@@ -304,6 +304,15 @@ namespace KuCoinApp.Localization.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to KuCoin App - Futures.
+        /// </summary>
+        internal static string FuturesTitle {
+            get {
+                return ResourceManager.GetString("FuturesTitle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Holds.
         /// </summary>
         internal static string Holds {

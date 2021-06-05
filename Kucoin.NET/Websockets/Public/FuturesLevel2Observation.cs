@@ -235,6 +235,7 @@ namespace Kucoin.NET.Futures.Websockets.Observations
                         orderBook.Timestamp = DateTime.Now;
 
                         CopyBook();
+                        OnPropertyChanged(nameof(FullDepthOrderBook));
                     });
                 }
                 else
@@ -243,6 +244,7 @@ namespace Kucoin.NET.Futures.Websockets.Observations
                     orderBook.Timestamp = DateTime.Now;
 
                     CopyBook();
+                    OnPropertyChanged(nameof(FullDepthOrderBook));
                 }
             }
         }
@@ -547,6 +549,7 @@ namespace Kucoin.NET.Futures.Websockets.Observations
                         orderBook.Timestamp = DateTime.Now;
 
                         CopyBook();
+                        OnPropertyChanged(nameof(FullDepthOrderBook));
                     });
                 }
                 else
@@ -555,6 +558,7 @@ namespace Kucoin.NET.Futures.Websockets.Observations
                     orderBook.Timestamp = DateTime.Now;
 
                     CopyBook();
+                    OnPropertyChanged(nameof(FullDepthOrderBook));
                 }
             }
         }

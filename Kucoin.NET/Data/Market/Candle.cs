@@ -98,7 +98,7 @@ namespace Kucoin.NET.Data.Market
         /// <param name="candle">The candlestick to test.</param>
         /// <param name="time">The time to test.</param>
         /// <returns>True if the time falls within the candlestick.</returns>
-        public static bool IsTimeInCandle(ITypedCandle<KlineType> candle, DateTime time)
+        public static bool IsTimeInCandle<T>(ITypedCandle<T> candle, DateTime time) where T: IKlineType
         {
             DateTime dv;
             

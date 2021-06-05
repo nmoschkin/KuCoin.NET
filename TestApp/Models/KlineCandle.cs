@@ -1,4 +1,5 @@
 ﻿using Kucoin.NET.Data.Market;
+using Kucoin.NET.Futures.Data.Market;
 using Kucoin.NET.Observable;
 
 using System;
@@ -128,4 +129,125 @@ namespace KuCoinApp
         }
 
     }
+
+
+    public class FuturesKlineCandle : ObservableBase, FancyCandles.ICandle, IWritableTypedCandle<FuturesKlineType>, ICloneable
+    {
+        private DateTime ts;
+        private decimal o;
+        private decimal h;
+        private decimal l;
+        private decimal c;
+        private decimal v;
+        private decimal a;
+        private FuturesKlineType kt;
+
+        public DateTime Timestamp
+        {
+            get => ts;
+            set
+            {
+                SetProperty(ref ts, value);
+            }
+        }
+
+        public decimal OpenPrice
+        {
+            get => o;
+            set
+            {
+                SetProperty(ref o, value);
+            }
+        }
+
+        public decimal ClosePrice
+        {
+            get => c;
+            set
+            {
+                SetProperty(ref c, value);
+            }
+        }
+
+        public decimal HighPrice
+        {
+            get => h;
+            set
+            {
+                SetProperty(ref h, value);
+            }
+        }
+
+        public decimal LowPrice
+        {
+            get => l;
+            set
+            {
+                SetProperty(ref l, value);
+            }
+        }
+
+        public decimal Volume
+        {
+            get => v;
+            set
+            {
+                SetProperty(ref v, value);
+            }
+        }
+
+
+        public decimal Amount
+        {
+            get => a;
+            set
+            {
+                SetProperty(ref a, value);
+            }
+        }
+
+        public FuturesKlineType Type
+        {
+            get => kt;
+            set
+            {
+                SetProperty(ref kt, value);
+            }
+        }
+
+        DateTime FancyCandles.ICandle.t => Timestamp;
+        double FancyCandles.ICandle.O => (double)OpenPrice;
+        double FancyCandles.ICandle.H => (double)HighPrice;
+        double FancyCandles.ICandle.L => (double)LowPrice;
+        double FancyCandles.ICandle.C => (double)ClosePrice;
+        double FancyCandles.ICandle.V => (double)Volume;
+
+        public FuturesKlineCandle()
+        {
+        }
+
+        object ICloneable.Clone()
+        {
+            return MemberwiseClone();
+        }
+
+        public FuturesKlineCandle Clone()
+        {
+            return (FuturesKlineCandle)MemberwiseClone();
+        }
+
+
+        public FuturesKlineCandle(FuturesCandle kline)
+        {
+            Timestamp = kline.Timestamp;
+            OpenPrice = kline.OpenPrice;
+            HighPrice = kline.HighPrice;
+            LowPrice = kline.LowPrice;
+            ClosePrice = kline.ClosePrice;
+            Volume = kline.Volume;
+            Type = kline.Type;
+        }
+
+    }
+
 }

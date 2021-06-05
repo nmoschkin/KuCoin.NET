@@ -22,15 +22,15 @@ using System.Windows.Shapes;
 namespace KuCoinApp.Views
 {
     /// <summary>
-    /// Interaction logic for MainWindow.xaml
+    /// Interaction logic for FuturesWindow.xaml
     /// </summary>
-    public partial class MainWindow : Window
+    public partial class FuturesWindow : Window
     {
         WindowViewModelBase vm;
         bool init = false;
 
 
-        public MainWindow(WindowViewModelBase vm)
+        public FuturesWindow(WindowViewModelBase vm)
         {
             InitializeComponent();
 
@@ -45,17 +45,17 @@ namespace KuCoinApp.Views
 
             this.vm.AskQuit += Vm_AskQuit;
 
-            this.SizeChanged += MainWindow_SizeChanged;
-            this.LocationChanged += MainWindow_LocationChanged;
-            this.Loaded += MainWindow_Loaded;
-            this.Activated += MainWindow_Activated;
-            
+            this.SizeChanged += FuturesWindow_SizeChanged;
+            this.LocationChanged += FuturesWindow_LocationChanged;
+            this.Loaded += FuturesWindow_Loaded;
+            this.Activated += FuturesWindow_Activated;
+
             App.Current.Settings.ApplyWindowSettings(this);
 
             init = true;
         }
 
-        public MainWindow() : this(new MainWindowViewModel())
+        public FuturesWindow() : this(new FuturesWindowViewModel())
         {
 
         }
@@ -65,23 +65,23 @@ namespace KuCoinApp.Views
             App.Current.Shutdown();
         }
 
-        private void MainWindow_Activated(object sender, EventArgs e)
+        private void FuturesWindow_Activated(object sender, EventArgs e)
         {
-            if (vm is MainWindowViewModel mb)
+            if (vm is FuturesWindowViewModel mb)
                 mb.FocusCredWindow();
         }
 
-        private void MainWindow_Loaded(object sender, RoutedEventArgs e)
+        private void FuturesWindow_Loaded(object sender, RoutedEventArgs e)
         {
         }
 
-        private void MainWindow_LocationChanged(object sender, EventArgs e)
+        private void FuturesWindow_LocationChanged(object sender, EventArgs e)
         {
             if (!init) return;
             App.Current.Settings.SaveWindowSettings(this);
         }
 
-        private void MainWindow_SizeChanged(object sender, SizeChangedEventArgs e)
+        private void FuturesWindow_SizeChanged(object sender, SizeChangedEventArgs e)
         {
             if (!init) return;
             App.Current.Settings.SaveWindowSettings(this);
@@ -150,7 +150,7 @@ namespace KuCoinApp.Views
             Label tp = null;
 
             g.ColumnDefinitions.Add(new ColumnDefinition());
-            
+
             if (titleProperty != null)
             {
                 Image img;
@@ -161,7 +161,7 @@ namespace KuCoinApp.Views
                 {
 
                     g2.ColumnDefinitions.Add(new ColumnDefinition()
-                    {   
+                    {
                         Width = GridLength.Auto
                     });
 
@@ -211,7 +211,7 @@ namespace KuCoinApp.Views
                     FontSize = 16,
                     Margin = new Thickness(4),
                     FontWeight = FontWeights.Bold
-                    
+
                 };
 
                 g2.ColumnDefinitions.Add(new ColumnDefinition());
@@ -233,7 +233,7 @@ namespace KuCoinApp.Views
 
             }
 
-            
+
             foreach (var kv in proptxt)
             {
                 g.RowDefinitions.Add(new RowDefinition());

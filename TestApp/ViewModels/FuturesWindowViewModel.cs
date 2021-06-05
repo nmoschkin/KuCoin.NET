@@ -22,24 +22,20 @@ using FancyCandles;
 using KuCoinApp.Localization.Resources;
 using KuCoinApp.ViewModels;
 using KuCoinApp.Views;
+using Kucoin.NET.Futures.Rest;
+using Microsoft.AppCenter.Ingestion.Models;
 
 namespace KuCoinApp
 {
 
-    public class FuturesWindowViewModel : WindowViewModelBase, IObserver<Ticker>, IObserver<KlineFeedMessage<KlineCandle>>
-    {
-        protected Level2 level2Feed;
-
+    public class FuturesWindowViewModel : WindowViewModelBase, IObserver<FuturesTicker>
+    {        
         protected FuturesLevel2 futuresl2;
 
         protected Accounts accountWnd;
 
-        //protected Level2Depth50 level2Feed50;
-
-        protected TickerFeed tickerFeed;
-
-        protected KlineFeed<KlineCandle> klineFeed;
-
+        protected FuturesTickerFeed tickerFeed;
+                
         protected IDisposable tickerSubscription;
 
         protected IDisposable klineSubscription;
@@ -52,19 +48,21 @@ namespace KuCoinApp
 
         protected Market market;
 
+        protected FuturesMarket fmarket;
+
         protected User user;
 
         protected bool isLoggedIn;
 
         protected ObservableCollection<Account> accounts;
 
-        protected ObservableDictionary<string, TradingSymbol> symbols;
+        protected ObservableDictionary<string, FuturesContract> symbols;
 
-        protected TradingSymbol symbol;
+        protected FuturesContract symbol;
 
-        protected KlineType kt = KlineType.Min1;
+        protected FuturesKlineType kt = FuturesKlineType.Min1;
 
-        KlineCandle lastCandle = new KlineCandle(new Candle() { Timestamp = DateTime.Now, Type = KlineType.Min1 });
+        FuturesKlineCandle lastCandle = new FuturesKlineCandle(new FuturesCandle() { Timestamp = DateTime.Now, Type = FuturesKlineType.Min1 });
 
         protected Ticker nowTicker = null;
 
@@ -80,9 +78,9 @@ namespace KuCoinApp
 
         protected ObservableCollection<CurrencyViewModel> currencies = new ObservableCollection<CurrencyViewModel>();
 
-        protected ILevel2OrderBookProvider level2;
-
         protected ILevel2OrderBookProvider<FuturesOrderBook, OrderUnit, FuturesLevel2Update> futureslevel2;
+        
+        protected List<SymbolViewModel> recentSymbols = new List<SymbolViewModel>();
 
 
         protected ObservableStaticMarketDepthUpdate marketUpdate;
@@ -139,12 +137,12 @@ namespace KuCoinApp
             }
         }
 
-        public ILevel2OrderBookProvider Level2
+        public FuturesLevel2 FuturesLevel2Feed
         {
-            get => level2;
+            get => futuresl2;
             set
             {
-                SetProperty(ref level2, value);
+                SetProperty(ref futuresl2, value);
             }
         }
 
@@ -220,7 +218,7 @@ namespace KuCoinApp
             }
         }
 
-        public KlineType KlineType
+        public FuturesKlineType KlineType
         {
             get => kt;
             set
@@ -274,7 +272,7 @@ namespace KuCoinApp
             }
         }
 
-        public ObservableDictionary<string, TradingSymbol> Symbols
+        public ObservableDictionary<string, FuturesContract> Symbols
         {
             get => symbols;
             set
@@ -292,7 +290,7 @@ namespace KuCoinApp
             }
         }
 
-        public TradingSymbol Symbol
+        public FuturesContract Symbol
         {
             get => symbol;
             set
@@ -303,7 +301,7 @@ namespace KuCoinApp
                 {
                     UpdateSymbol((string)ot, (string)value);
 
-                    var tp = symbol.TradingPair;
+                    var tp = new string[] { symbol.BaseCurrency, symbol.QuoteCurrency };
 
                     foreach (var curr in currencies)
                     {
@@ -364,7 +362,20 @@ namespace KuCoinApp
 
         protected void MakeFormats(string symbol)
         {
-            var sym = market.Symbols[symbol];
+            var fsym = fmarket.ContractList[symbol];
+
+            var lsym = $"{fsym.BaseCurrency}-{fsym.QuoteCurrency}";
+            TradingSymbol sym;
+
+            if (market.Symbols.Contains(lsym))
+            {
+                sym = market.Symbols[lsym];
+            }
+            else
+            {
+                return;
+            }
+
             var inc = "0" + sym.QuoteIncrement.ToString().Replace("1", "0");
 
             SizeFormat = inc;
@@ -381,67 +392,56 @@ namespace KuCoinApp
             string newSymbol,
             bool force = false,
             bool isKlineChange = false,
-            KlineType? oldKline = null)
+            FuturesKlineType? oldKline = null)
         {
 
-            App.Current.Settings.PushSymbol(newSymbol);
-
+            PushSymbol(newSymbol);
             MakeFormats(newSymbol);
+
+            foreach (var sym in recentSymbols)
+            {
+                if (sym.Data.Symbol == newSymbol)
+                {
+                    SelectedSymbol = sym;
+                    break;
+                }
+            }
+
 
             if (force || (oldSymbol != (string)symbol && oldSymbol != null))
             {
                 tickerFeed.RemoveSymbol(oldSymbol).ContinueWith((t) =>
                 {
-                    klineFeed.RemoveSymbol(oldSymbol, oldKline ?? KlineType).ContinueWith((t) =>
+                    RefreshData().ContinueWith(async (t) =>
                     {
-                        RefreshData().ContinueWith(async (t) =>
+
+                        await tickerFeed.AddSymbol(newSymbol);
+
+                        Volume = null;
+                        VolumeTime = null;
+
+                        if (isKlineChange) return;
+
+                        if (cred != null && (futuresl2 == null || futuresl2.Connected == false))
                         {
+                            FuturesLevel2Feed = new FuturesLevel2();
+                            await futuresl2.Connect();
+                        }
 
-                            await tickerFeed.AddSymbol(newSymbol);
-                            await klineFeed.AddSymbol(newSymbol, KlineType);
+                        if (FuturesLevel2 != null)
+                        {
+                            FuturesLevel2.Dispose();
+                        }
 
-                            Volume = null;
-                            VolumeTime = null;
-
-                            if (isKlineChange) return;
-
-                            //if (cred.AttachedAccount != null && (futuresl2 == null || futuresl2.Connected == false))
-                            //{
-                            //    futuresl2 = new FuturesLevel2(cred.AttachedAccount);
-                            //    await level2Feed.Connect();
-                            //}
-
-                            //var fsym = newSymbol.Replace("-", "") + "M";
-                            //await futuresl2.AddSymbol(fsym).ContinueWith((t) =>
-                            //{
-                            //    App.Current?.Dispatcher?.Invoke(() =>
-                            //    {
-                            //        FuturesLevel2 = t.Result;
-                            //    });
-
-                            //});
-
-                            if (Level2 != null)
+                        await futuresl2.AddSymbol(newSymbol).ContinueWith((t) =>
+                        {
+                            App.Current?.Dispatcher?.Invoke(() =>
                             {
-                                Level2.Dispose();
-                            }
-
-                            if (level2Feed == null || level2Feed.Connected == false)
-                            {
-                                level2Feed = new Level2();
-                                await level2Feed.Connect();
-                            }
-
-                            await level2Feed.AddSymbol(newSymbol).ContinueWith((t) =>
-                            {
-                                App.Current?.Dispatcher?.Invoke(() =>
-                                {
-                                    Level2 = t.Result;
-                                });
-
+                                FuturesLevel2 = t.Result;
                             });
 
                         });
+
                     });
                 });
 
@@ -450,45 +450,25 @@ namespace KuCoinApp
             {
                 RefreshData().ContinueWith(async (t2) =>
                 {
-                    if (level2Feed == null || level2Feed.Connected == false)
+                    if (cred != null && (futuresl2 == null || futuresl2.Connected == false))
                     {
-                        level2Feed = new Level2();
-                        await level2Feed.Connect();
+                        FuturesLevel2Feed = new FuturesLevel2();
+                        await futuresl2.Connect();
                     }
 
-                    level2Feed?.AddSymbol(newSymbol).ContinueWith((t) =>
+                    await futuresl2.AddSymbol(newSymbol).ContinueWith((t) =>
                     {
                         App.Current?.Dispatcher?.Invoke(() =>
                         {
-                            Level2 = t.Result;
+                            FuturesLevel2 = t.Result;
                         });
 
                     });
 
-                    //if (cred.AttachedAccount != null && (futuresl2 == null || futuresl2.Connected == false))
-                    //{
-                    //    futuresl2 = new FuturesLevel2(cred.AttachedAccount);
-                    //    await level2Feed.Connect();
-                    //}
-
-                    //var fsym = newSymbol.Replace("-", "") + "M";
-                    //await futuresl2.AddSymbol(fsym).ContinueWith((t) =>
-                    //{
-                    //    App.Current?.Dispatcher?.Invoke(() =>
-                    //    {
-                    //        FuturesLevel2 = t.Result;
-                    //    });
-
-                    //});
-
-
                     await tickerFeed.AddSymbol(newSymbol);
-                    await klineFeed.AddSymbol(newSymbol, KlineType);
 
                 });
             }
-
-
         }
 
         bool finit = false;
@@ -500,14 +480,14 @@ namespace KuCoinApp
                 Kucoin.NET.Helpers.Dispatcher.Initialize(new DispatcherSynchronizationContext(App.Current.Dispatcher));
             }
 
-            if (cred != null && (level2Feed == null || level2Feed.Connected == false))
+            if (cred != null && (futuresl2 == null || futuresl2.Connected == false))
             {
                 if (finit) return;
 
-                level2Feed = new Level2();
-                await level2Feed.Connect();
+                FuturesLevel2Feed = new FuturesLevel2();
+                await futuresl2.Connect();
 
-                if (level2Feed.Connected == false)
+                if (futuresl2.Connected == false)
                 {
                     System.Windows.MessageBox.Show(
                         AppResources.ErrorNoInternet,
@@ -524,8 +504,7 @@ namespace KuCoinApp
             {
                 if (finit) return;
 
-                tickerFeed = new TickerFeed();
-                klineFeed = new KlineFeed<KlineCandle>();
+                tickerFeed = new FuturesTickerFeed();
 
                 await tickerFeed.Connect(true);
 
@@ -541,7 +520,6 @@ namespace KuCoinApp
 
                 }
 
-                await klineFeed.MultiplexInit(tickerFeed);
                 finit = true;
             }
 
@@ -551,7 +529,7 @@ namespace KuCoinApp
             }
             else
             {
-                var kc = await market.GetKline<KlineCandle, FancyCandles.ICandle, ObservableCollection<FancyCandles.ICandle>>((string)symbol, KlineType, startTime: KlineType.GetStartDate(200));
+                var kc = await fmarket.GetKline<FuturesKlineCandle, FancyCandles.ICandle, ObservableCollection<FancyCandles.ICandle>>((string)symbol, KlineType, startTime: KlineType.GetStartDate(200));
 
                 Volume = null;
                 VolumeTime = null;
@@ -560,7 +538,7 @@ namespace KuCoinApp
 
                 App.Current?.Dispatcher?.Invoke(() =>
                 {
-                    LastCandle = (KlineCandle)kc?.LastOrDefault();
+                    LastCandle = (FuturesKlineCandle)kc?.LastOrDefault();
                 });
             }
         }
@@ -596,38 +574,81 @@ namespace KuCoinApp
 
         }
 
-        public TradingSymbol[] RecentSymbols
+
+        SymbolViewModel selSym;
+
+        protected void PushSymbol(string symbol)
         {
-            get
+            App.Current.Settings.PushFuturesSymbol(symbol);
+
+            App.Current.Dispatcher.Invoke(() =>
             {
-                List<TradingSymbol> output = new List<TradingSymbol>();
-                var sym = App.Current.Settings.Symbols;
+                MakeRecentSymbols();
+            });
+        }
 
-                if (symbols == null || symbols.Count == 0) return null;
+        protected void MakeRecentSymbols()
+        {
+            var sym = App.Current.Settings.FuturesSymbols;
 
-                foreach (var s in sym)
+            var rc = new List<SymbolViewModel>();
+
+            if (symbols == null || symbols.Count == 0 || sym == null || sym.Length == 0) return;
+
+            foreach (var s in sym)
+            {
+                foreach (var sobj in symbols)
                 {
-                    foreach (var sobj in symbols)
+                    if (s == sobj.Symbol)
                     {
-                        if (s == sobj.Symbol)
+                        var snew = new SymbolViewModel(sobj);
+                        rc.Add(snew);
+                    }
+                }
+            }
+
+            RecentSymbols = rc;
+        }
+
+        public SymbolViewModel SelectedSymbol
+        {
+            get => selSym;
+            set
+            {
+                if (SetProperty(ref selSym, value))
+                {
+                    if ((symbol?.Symbol ?? null) != (selSym?.Symbol ?? null))
+                    {
+                        foreach (var sym in Symbols)
                         {
-                            output.Add(sobj);
+                            if (sym.Symbol == selSym?.Symbol)
+                            {
+                                Symbol = sym;
+                                return;
+                            }
                         }
                     }
                 }
-
-                return output.ToArray();
             }
         }
 
-        public KlineCandle LastCandle
+        public List<SymbolViewModel> RecentSymbols
+        {
+            get => recentSymbols;
+            set
+            {
+                SetProperty(ref recentSymbols, value);
+            }
+        }
+
+        public FuturesKlineCandle LastCandle
         {
             get => lastCandle;
             set
             {
                 if (SetProperty(ref lastCandle, value))
                 {
-                    if (data.Count == 0 || !Candle.IsTimeInCandle((ITypedCandle<KlineType>)data.LastOrDefault(), lastCandle.Timestamp))
+                    if (data.Count == 0 || !Candle.IsTimeInCandle((ITypedCandle<FuturesKlineType>)data.LastOrDefault(), lastCandle.Timestamp))
                     {
                         data.Add(lastCandle);
                     }
@@ -640,25 +661,7 @@ namespace KuCoinApp
             }
         }
 
-        void IObserver<KlineFeedMessage<KlineCandle>>.OnNext(KlineFeedMessage<KlineCandle> ticker)
-        {
-            if (ticker.Symbol == (string)symbol && KlineType == ticker.Candles.Type)
-            {
-                App.Current?.Dispatcher.Invoke(() =>
-                {
-                    Volume = ticker.Candles.Volume;
-                    VolumeTime = ticker.Timestamp;
-
-                });
-            }
-            else
-            {
-                return;
-            }
-
-        }
-
-        void IObserver<Ticker>.OnNext(Ticker ticker)
+        void IObserver<FuturesTicker>.OnNext(FuturesTicker ticker)
         {
             if ((string)ticker.Symbol != (string)symbol) return;
             Task.Run(() =>
@@ -668,14 +671,14 @@ namespace KuCoinApp
 
                 n = n.AddSeconds(-1 * n.Second);
 
-                KlineCandle kl = null;
+                FuturesKlineCandle kl = null;
 
                 if ((data?.Count ?? 0) == 0 || !Candle.IsTimeInCandle(LastCandle, ticker.Timestamp))
                 {
                     RefreshData().Wait();
                 }
 
-                kl = ((KlineCandle)data.LastOrDefault()) ?? new KlineCandle() { Timestamp = n, Type = this.KlineType };
+                kl = ((FuturesKlineCandle)data.LastOrDefault()) ?? new FuturesKlineCandle() { Timestamp = n, Type = this.KlineType };
 
                 if (p < kl.LowPrice)
                 {
@@ -722,22 +725,19 @@ namespace KuCoinApp
                         catch { }
                         try
                         {
-                            klineFeed?.Dispose();
+                            futuresl2?.Dispose();
                         }
                         catch { }
                         try
                         {
-                            level2Feed?.Dispose();
+                            futuresl2?.Dispose();
                         }
                         catch { }
 
-                        level2Feed = new Level2();
+                        FuturesLevel2Feed = new FuturesLevel2();
 
-                        tickerFeed = new TickerFeed();
-                        klineFeed = new KlineFeed<KlineCandle>();
-
+                        tickerFeed = new FuturesTickerFeed();
                         tickerFeed.Subscribe(this);
-                        klineFeed.Subscribe(this);
 
                         symbol = null;
 
@@ -782,12 +782,10 @@ namespace KuCoinApp
 
             // another way to initialize the dispatcher is
             // to create a new feed on the main thread, like this.
-            tickerFeed = new TickerFeed();
-            klineFeed = new KlineFeed<KlineCandle>();
+            tickerFeed = new FuturesTickerFeed();
 
             // The IObservable<T> / IObserver<T> pattern:
             tickerSubscription = tickerFeed.Subscribe(this);
-            klineSubscription = klineFeed.Subscribe(this);
 
             RefreshSymbolsCommand = new SimpleCommand(async (obj) =>
             {
@@ -861,6 +859,7 @@ namespace KuCoinApp
         protected override async Task Initialize()
         {
             if (market == null) market = new Market();
+            if (fmarket == null) fmarket = new FuturesMarket();
 
             await market.RefreshSymbolsAsync().ContinueWith(async (t) =>
             {
@@ -885,6 +884,7 @@ namespace KuCoinApp
                     }
 
                     cred = CryptoCredentials.LoadFromStorage(App.Current.Seed, pin, false);
+                    cred = (CryptoCredentials)cred?.AttachedAccount;
 
                     if (cred == null && PinWindow.LastCloseResult == false)
                     {
@@ -892,16 +892,18 @@ namespace KuCoinApp
                         return;
                     }
 
-                    Symbols = market.Symbols;
+                    await fmarket.RefreshOpenContractList();
+                    Symbols = fmarket.ContractList;
 
-                    var rec = App.Current.Settings.MostRecentSymbol;
+                    var rec = App.Current.Settings.MostRecentFuturesSymbol;
                     OnPropertyChanged(nameof(RecentSymbols));
 
                     if (cred != null)
                     {
-                        level2Feed = new Level2();
-                        level2Feed.UpdateInterval = 50;
-                        level2Feed.DefaultPieces = 50;
+                        FuturesLevel2Feed = new FuturesLevel2();
+                        futuresl2.MonitorThroughput = true;
+                        futuresl2.UpdateInterval = 50;
+                        futuresl2.DefaultPieces = 50;
 
                         // for testing futures
 
@@ -924,7 +926,7 @@ namespace KuCoinApp
                             // we connect level2Feed.
 
                             // give its own socket because of the speed of data.
-                            await level2Feed.Connect();
+                            await futuresl2.Connect();
 
                             // for testing futures
                             //await futuresl2.Connect();
@@ -932,7 +934,6 @@ namespace KuCoinApp
                             // we attach tickerFeed and klineFeed 
                             // by calling MultiplexInit with the host feed.
                             await tickerFeed.Connect(true);
-                            await klineFeed.MultiplexInit(tickerFeed);
 
                             // Now we have the multiplex host (tickerfeed)
                             // and the multiplexed client (klineFeed)
@@ -942,19 +943,16 @@ namespace KuCoinApp
                         }
                         else
                         {
-                            await level2Feed.Connect();
-
+                            await futuresl2.Connect();
                             await tickerFeed.Connect(true);
-                            await klineFeed.MultiplexInit(tickerFeed);
                         }
                     }
                     else
                     {
                         CryptoCredentials.Pin = pin;
 
-                        await level2Feed.Connect();
+                        await futuresl2.Connect();
                         await tickerFeed.Connect(true);
-                        await klineFeed.MultiplexInit(tickerFeed);
                     }
 
                     if (string.IsNullOrEmpty(rec)) return;
