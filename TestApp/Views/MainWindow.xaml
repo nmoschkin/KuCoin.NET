@@ -9,7 +9,7 @@
     xmlns:km="clr-namespace:Kucoin.NET.Data.Market;assembly=Kucoin.NET"
     xmlns:local="clr-namespace:KuCoinApp"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    Title="KuCoin.NET Tool"
+    Title="{i18n:Translate ResourceKey=MainTitle}"
     Width="1200"
     Height="750"
     mc:Ignorable="d">

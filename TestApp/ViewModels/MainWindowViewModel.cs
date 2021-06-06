@@ -978,6 +978,7 @@ namespace KuCoinApp
                 if (App.Current.Futures != null)
                 {
                     App.Current.Futures.Show();
+                    App.Current.Futures.Focus();
                 }
                 else
                 {
@@ -1062,7 +1063,7 @@ namespace KuCoinApp
                         //level2Feed.DefaultPieces = 50;
 
                         level3Feed.MonitorThroughput = true;
-                        level3Feed.UpdateInterval = 50;
+                        level3Feed.UpdateInterval = 100;
                         level3Feed.DefaultPieces = 50;
                         level3Feed.ReceiveThreadPriority = System.Threading.ThreadPriority.Normal;
 

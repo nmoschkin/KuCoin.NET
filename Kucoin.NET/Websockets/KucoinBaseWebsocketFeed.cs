@@ -476,26 +476,7 @@ namespace Kucoin.NET.Websockets
 
                 keepAlive.IsBackground = true;
                 keepAlive.Start();
-
-                //keepAlive = Task.Factory.StartNew(
-                //    async () =>
-                //    {
-                //        int pi = server.PingInterval;
-
-                //        while (!ctsPing.IsCancellationRequested && socket?.State == WebSocketState.Open)
-                //        {
-                //            for (int i = 0; i < pi; i += 1000)
-                //            {
-                //                await Task.Delay(1000);
-                //                if (ctsPing.IsCancellationRequested) return;
-                //            }
-
-                //            await Ping();
-                //        }
-                //    },
-                //    TaskCreationOptions.LongRunning | TaskCreationOptions.DenyChildAttach
-                //);
-
+               
                 // The Reader:
                 // -----------
 
@@ -518,18 +499,6 @@ namespace Kucoin.NET.Websockets
 
                 msgPumpThread.Start();
                 inputReaderThread.Start();
-
-                //// data receiver
-                //inputReaderThread = Task.Factory.StartNew(
-                //    DataReceiveThread,
-                //    TaskCreationOptions.LongRunning | TaskCreationOptions.DenyChildAttach
-                //    );
-
-                //// observer notification pump
-                //msgPumpThread = Task.Factory.StartNew(
-                //    MessagePumpThread,
-                //    TaskCreationOptions.LongRunning | TaskCreationOptions.DenyChildAttach
-                //    );
 
                 if (initAsMultiplexHost)
                 {

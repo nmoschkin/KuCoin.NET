@@ -106,6 +106,7 @@ namespace KuCoinApp
         public ICommand RefreshPriceCommand { get; protected set; }
         public ICommand EditCredentialsCommand { get; protected set; }
 
+        public ICommand ShowSpotCommand { get; protected set; }
         public ICommand ShowAccountsCommand { get; protected set; }
 
         public ObservableStaticMarketDepthUpdate MarketUpdate
@@ -565,6 +566,7 @@ namespace KuCoinApp
 
             if (b == true)
             {
+                cred.Parent.SaveToStorage();
                 return true;
             }
             else
@@ -838,6 +840,21 @@ namespace KuCoinApp
                 }
             });
 
+            ShowSpotCommand = new SimpleCommand((obj) =>
+            {
+                if (App.Current.Spot != null)
+                {
+                    App.Current.Spot.Show();
+                    App.Current.Spot.Focus();
+                }
+                else
+                {
+                    App.Current.Spot = new MainWindow();
+                    App.Current.Spot.Show();
+                }
+
+            });
+
             QuitCommand = new SimpleCommand((obj) =>
             {
                 AskQuit?.Invoke(this, new EventArgs());
@@ -907,7 +924,7 @@ namespace KuCoinApp
                     {
                         FuturesLevel2Feed = new FuturesLevel2();
                         futuresl2.MonitorThroughput = true;
-                        futuresl2.UpdateInterval = 50;
+                        futuresl2.UpdateInterval = 250;
                         futuresl2.DefaultPieces = 50;
 
                         // for testing futures

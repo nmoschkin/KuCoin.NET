@@ -10,6 +10,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Kucoin.NET.Rest;
 using KuCoinApp.Converters;
+using System.Runtime.CompilerServices;
 
 namespace KuCoinApp
 {
@@ -31,10 +32,28 @@ namespace KuCoinApp
         protected bool isPassphraseRequired = true;
 
         protected int version = DefaultVersion;
-                
+
+        protected CryptoCredentials parent;
+
         internal CryptoCredentials() : base(null, null, null)
         {
         }
+
+        internal CryptoCredentials(CryptoCredentials parent) : base(null, null, null)
+        {
+            this.parent = parent;
+        }
+
+        [JsonIgnore]
+        public CryptoCredentials Parent
+        {
+            get => parent;
+            internal set
+            {
+                SetProperty(ref parent, value);
+            }
+        }
+
 
         /// <summary>
         /// Gets or sets the working Pin.
@@ -268,7 +287,7 @@ namespace KuCoinApp
             {
                 if (attachedAccount == null && !futures)
                 {
-                    var c = new CryptoCredentials();
+                    var c = new CryptoCredentials(this);
 
                     c.Sandbox = sandbox;
                     c.Futures = true;
@@ -280,7 +299,7 @@ namespace KuCoinApp
             }
             set
             {
-                if (futures) value = null;
+                if (futures && value != null) throw new InvalidOperationException("Futures account cannot have attached account.");
                 SetProperty(ref attachedAccount, value);
             }
         }
@@ -437,6 +456,12 @@ namespace KuCoinApp
 
             GC.Collect();
             cred.futures = false;
+
+            if (cred.attachedAccount != null && cred.attachedAccount is CryptoCredentials cr)
+            {
+                cr.Parent = cred;
+            }
+            
             return cred;                
         }
 
