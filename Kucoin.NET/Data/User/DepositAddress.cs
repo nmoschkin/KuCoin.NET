@@ -11,7 +11,7 @@ namespace Kucoin.NET.Data.User
     /// <summary>
     /// Deposit address base class
     /// </summary>
-    public class AddressBase : JsonDictBase
+    public class AccountAddress : JsonDictBase
     {
         /// <summary>
         /// Address
@@ -27,6 +27,11 @@ namespace Kucoin.NET.Data.User
         public string Memo { get; set; }
 
 
+    }
+
+    public abstract class SpotAddressBase : AccountAddress
+    {
+
         /// <summary>
         /// Chain
         /// </summary>
@@ -38,7 +43,7 @@ namespace Kucoin.NET.Data.User
     /// <summary>
     /// Deposit address information
     /// </summary>
-    public class DepositAddress : AddressBase
+    public class DepositAddress : SpotAddressBase
     {
         /// <summary>
         /// Contract Address
@@ -49,7 +54,7 @@ namespace Kucoin.NET.Data.User
     }
 
 
-    public class WithdrawalAddress : AddressBase
+    public class WithdrawalAddress : SpotAddressBase
     {
         [JsonProperty("isInner")]
         public bool IsInner { get; set; }

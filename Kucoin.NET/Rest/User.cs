@@ -400,7 +400,7 @@ namespace Kucoin.NET.Rest
 
         }
 
-        public async Task<string> ApplyWithdrawal(string currency, decimal amount, AddressBase address)
+        public async Task<string> ApplyWithdrawal(string currency, decimal amount, AccountAddress address)
         {
             var dict = address.ToDict();
 

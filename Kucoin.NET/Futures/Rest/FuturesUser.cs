@@ -1,4 +1,5 @@
-﻿using Kucoin.NET.Futures.Data.User;
+﻿using Kucoin.NET.Data.User;
+using Kucoin.NET.Futures.Data.User;
 using Kucoin.NET.Helpers;
 using Kucoin.NET.Rest;
 
@@ -35,9 +36,9 @@ namespace Kucoin.NET.Futures.Rest
         /// <summary>
         /// Get accounts overview
         /// </summary>
-        /// <param name="currency">The currency of the account to retrieve (or null for all currencies.)</param>
+        /// <param name="currency">The currency of the account to retrieve (default is XBT.)</param>
         /// <returns></returns>
-        public async Task<FuturesAccount> GetAccountOverview(string currency = "XBT")
+        public async Task<FuturesAccount> GetAccountOverview(FuturesCurrency? currency = FuturesCurrency.XBT)
         {
             var dict = new Dictionary<string, object>();
 
@@ -52,6 +53,25 @@ namespace Kucoin.NET.Futures.Rest
             var jobj = await MakeRequest(HttpMethod.Get, url, reqParams: dict);
 
             return jobj.ToObject<FuturesAccount>();
+        }
+
+
+        public async Task<AccountAddress> GetDepositAddress(FuturesCurrency? currency = FuturesCurrency.XBT)
+        {
+            var dict = new Dictionary<string, object>();
+
+            if (currency != null)
+            {
+                dict.Add("currency", currency);
+
+            }
+
+            var url = "/api/v1/deposit-address";
+
+            var jobj = await MakeRequest(HttpMethod.Get, url, reqParams: dict);
+
+            return jobj.ToObject<AccountAddress>();
+
         }
 
     }

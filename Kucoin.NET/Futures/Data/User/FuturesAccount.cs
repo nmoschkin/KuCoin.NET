@@ -1,11 +1,26 @@
-﻿using Newtonsoft.Json;
+﻿using Kucoin.NET.Json;
+
+using Newtonsoft.Json;
 
 using System;
 using System.Collections.Generic;
+using System.Runtime.Serialization;
 using System.Text;
 
 namespace Kucoin.NET.Futures.Data.User
 {
+
+    [JsonConverter(typeof(EnumToStringConverter<FuturesCurrency>))]
+    public enum FuturesCurrency
+    {
+        [EnumMember(Value = "XBD")]
+        XBT,
+
+        [EnumMember(Value = "USDT")]
+        USDT
+    }
+
+
     /// <summary>
     /// Futures Account Info
     /// </summary>
@@ -66,7 +81,7 @@ namespace Kucoin.NET.Futures.Data.User
         /// Currency code
         /// </summary>
         [JsonProperty("currency")]
-        public string Currency { get; set; }
+        public FuturesCurrency Currency { get; set; }
 
     }
 

@@ -24,6 +24,7 @@ using KuCoinApp.ViewModels;
 using KuCoinApp.Views;
 using Kucoin.NET.Futures.Rest;
 using Microsoft.AppCenter.Ingestion.Models;
+using Kucoin.NET.Futures.Data.User;
 
 namespace KuCoinApp
 {
@@ -891,6 +892,10 @@ namespace KuCoinApp
                         AskQuit?.Invoke(this, new EventArgs());
                         return;
                     }
+
+                    var fuser = new FuturesUser(cred);
+                    var over = await fuser.GetAccountOverview(FuturesCurrency.USDT);
+
 
                     await fmarket.RefreshOpenContractList();
                     Symbols = fmarket.ContractList;
