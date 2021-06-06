@@ -45,14 +45,24 @@ namespace KuCoinApp.Views
 
             this.vm.AskQuit += Vm_AskQuit;
 
+            App.Current.Spot = this;
+
             this.SizeChanged += MainWindow_SizeChanged;
             this.LocationChanged += MainWindow_LocationChanged;
             this.Loaded += MainWindow_Loaded;
             this.Activated += MainWindow_Activated;
+            this.Closed += MainWindow_Closed;
             
             App.Current.Settings.ApplyWindowSettings(this);
 
             init = true;
+        }
+
+        private void MainWindow_Closed(object sender, EventArgs e)
+        {
+            App.Current.Spot = null;
+            vm?.Dispose();
+            vm = null;
         }
 
         public MainWindow() : this(new MainWindowViewModel())

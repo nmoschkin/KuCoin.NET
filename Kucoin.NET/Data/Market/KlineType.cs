@@ -175,7 +175,7 @@ namespace Kucoin.NET.Data.Market
 
                 foreach (var f in klineFields)
                 {
-                    if (f.GetValue(null) is KlineType ktt) l.Add(ktt);
+                    if (f.GetValue(null) is KlineType ktt && !string.IsNullOrEmpty(ktt.value)) l.Add(ktt);
                 }
 
                 return l.ToArray();
@@ -369,6 +369,18 @@ namespace Kucoin.NET.Data.Market
             {
                 return ToString();
             }
+        }
+
+        public string ToString(string format)
+        {
+            if (format == "g") return ToString();
+            if (format == "G") return ToString(true);
+            else return ToString();
+        }
+
+        public string ToString(string format, IFormatProvider formatProvider)
+        {
+            return ToString(format);
         }
 
         public static bool operator ==(KlineType val1, KlineType val2)

@@ -34,6 +34,8 @@ namespace KuCoinApp.Views
         {
             InitializeComponent();
 
+            App.Current.Futures = this;
+
             var stream = new MemoryStream(CoinResources.kucoin);
             Icon = BitmapFrame.Create(stream);
 
@@ -49,10 +51,19 @@ namespace KuCoinApp.Views
             this.LocationChanged += FuturesWindow_LocationChanged;
             this.Loaded += FuturesWindow_Loaded;
             this.Activated += FuturesWindow_Activated;
+            this.Closed += FuturesWindow_Closed;
 
             App.Current.Settings.ApplyWindowSettings(this);
 
             init = true;
+        }
+
+        private void FuturesWindow_Closed(object sender, EventArgs e)
+        {
+            App.Current.Futures = null;
+
+            vm?.Dispose();
+            vm = null;
         }
 
         public FuturesWindow() : this(new FuturesWindowViewModel())

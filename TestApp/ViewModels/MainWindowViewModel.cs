@@ -975,14 +975,14 @@ namespace KuCoinApp
 
             ShowFuturesCommand = new SimpleCommand((obj) =>
             {
-                if (fwindow != null && fwindow.IsActive)
+                if (App.Current.Futures != null)
                 {
-                    fwindow.Focus();
+                    App.Current.Futures.Show();
                 }
                 else
                 {
-                    fwindow = new FuturesWindow();
-                    fwindow.Show();
+                    App.Current.Futures = new FuturesWindow();
+                    App.Current.Futures.Show();
                 }
 
             });
@@ -1176,8 +1176,11 @@ namespace KuCoinApp
 
         }
 
-        ~MainWindowViewModel()
+        public override void Dispose()
         {
+            level3Feed?.Dispose();
+            level2Feed?.Dispose();
+
             tickerSubscription.Dispose();
             tickerFeed.Dispose();
 
@@ -1186,6 +1189,11 @@ namespace KuCoinApp
                 App.Current.Settings.PropertyChanged -= Settings_PropertyChanged;
             }
             catch { }
+        }
+
+        ~MainWindowViewModel()
+        {
+            Dispose();
         }
 
         protected void Settings_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)

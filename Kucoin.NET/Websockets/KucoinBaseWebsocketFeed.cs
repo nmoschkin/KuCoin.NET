@@ -24,7 +24,6 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using System.Net.Http;
 using System.Net.WebSockets;
-using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -453,24 +452,49 @@ namespace Kucoin.NET.Websockets
             {
                 // The Pinger:
 
-                keepAlive = Task.Factory.StartNew(
+                keepAlive = new Thread(
                     async () =>
                     {
-                        int pi = server.PingInterval;
-
-                        while (!ctsPing.IsCancellationRequested && socket?.State == WebSocketState.Open)
+                        try
                         {
-                            for (int i = 0; i < pi; i += 1000)
-                            {
-                                await Task.Delay(1000);
-                                if (ctsPing.IsCancellationRequested) return;
-                            }
+                            int pi = server.PingInterval;
 
-                            await Ping();
+                            while (!ctsPing.IsCancellationRequested && socket?.State == WebSocketState.Open)
+                            {
+                                for (int i = 0; i < pi; i += 1000)
+                                {
+                                    await Task.Delay(1000);
+                                    if (ctsPing.IsCancellationRequested) return;
+                                }
+
+                                await Ping();
+                            }
                         }
-                    },
-                    TaskCreationOptions.LongRunning | TaskCreationOptions.DenyChildAttach
+                        catch { }
+                    }
                 );
+
+                keepAlive.IsBackground = true;
+                keepAlive.Start();
+
+                //keepAlive = Task.Factory.StartNew(
+                //    async () =>
+                //    {
+                //        int pi = server.PingInterval;
+
+                //        while (!ctsPing.IsCancellationRequested && socket?.State == WebSocketState.Open)
+                //        {
+                //            for (int i = 0; i < pi; i += 1000)
+                //            {
+                //                await Task.Delay(1000);
+                //                if (ctsPing.IsCancellationRequested) return;
+                //            }
+
+                //            await Ping();
+                //        }
+                //    },
+                //    TaskCreationOptions.LongRunning | TaskCreationOptions.DenyChildAttach
+                //);
 
                 // The Reader:
                 // -----------
@@ -480,16 +504,32 @@ namespace Kucoin.NET.Websockets
                 msgQueue.Capacity = minQueueBuffer;
 
                 // data receiver
-                inputReaderThread = Task.Factory.StartNew(
-                    DataReceiveThread,
-                    TaskCreationOptions.LongRunning | TaskCreationOptions.DenyChildAttach
+                inputReaderThread = new Thread(
+                    async () => { try { await DataReceiveThread(); } catch { } }
                     );
 
                 // observer notification pump
-                msgPumpThread = Task.Factory.StartNew(
-                    MessagePumpThread,
-                    TaskCreationOptions.LongRunning | TaskCreationOptions.DenyChildAttach
+                msgPumpThread = new Thread(
+                    async () => { try { await MessagePumpThread(); } catch { } }
                     );
+
+                inputReaderThread.IsBackground = true;
+                msgPumpThread.IsBackground = true;
+
+                msgPumpThread.Start();
+                inputReaderThread.Start();
+
+                //// data receiver
+                //inputReaderThread = Task.Factory.StartNew(
+                //    DataReceiveThread,
+                //    TaskCreationOptions.LongRunning | TaskCreationOptions.DenyChildAttach
+                //    );
+
+                //// observer notification pump
+                //msgPumpThread = Task.Factory.StartNew(
+                //    MessagePumpThread,
+                //    TaskCreationOptions.LongRunning | TaskCreationOptions.DenyChildAttach
+                //    );
 
                 if (initAsMultiplexHost)
                 {
@@ -714,11 +754,11 @@ namespace Kucoin.NET.Websockets
 
         private List<string> msgQueue;
 
-        private Task keepAlive;
+        private Thread keepAlive;
 
-        private Task inputReaderThread;
+        private Thread inputReaderThread;
 
-        private Task msgPumpThread;
+        private Thread msgPumpThread;
 
         /// <summary>
         /// The data receive thread.
@@ -1304,10 +1344,27 @@ namespace Kucoin.NET.Websockets
         {
             socket?.Dispose();
 
-            foreach (var observer in observations)
+            try
             {
-                observer.Dispose();
+                if (Monitor.TryEnter(observations))
+                {
+                    var c = observations.Count;
+
+                    for (int i = 0; i < c; i++)
+                    {
+                        try
+                        {
+                            if (i >= observations.Count) break;
+                            observations[i]?.Dispose();
+                        }
+                        catch { }
+
+                    }
+
+                    Monitor.Exit(observations);
+                }
             }
+            catch { }
 
             base.Dispose(disposing);
         }

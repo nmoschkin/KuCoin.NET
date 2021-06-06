@@ -69,7 +69,7 @@ namespace Kucoin.NET.Futures.Data.Market
 
                 foreach (var f in klineFields)
                 {
-                    if (f.GetValue(null) is FuturesKlineType ktt) l.Add(ktt);
+                    if (f.GetValue(null) is FuturesKlineType ktt && ktt.length != 0) l.Add(ktt);
                 }
 
                 return l.ToArray();
@@ -86,10 +86,16 @@ namespace Kucoin.NET.Futures.Data.Market
         {
             return length.ToString();
         }
-
-        public string ToString(string numberFormat)
+        public string ToString(string format)
         {
-            return length.ToString(numberFormat);
+            if (format == "g") return ToString();
+            if (format == "G") return ToString(true);
+            else return ToString();
+        }
+
+        public string ToString(string format, IFormatProvider formatProvider)
+        {
+            return ToString(format);
         }
 
         public string Unit

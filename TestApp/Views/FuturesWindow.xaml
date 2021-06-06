@@ -290,7 +290,16 @@
 
                 <Label Content="Kline Types:" />
 
-                <ComboBox ItemsSource="{x:Static fm:FuturesKlineType.AllTypes}" SelectedItem="{Binding KlineType, Mode=TwoWay}" />
+
+                <ComboBox ItemsSource="{x:Static fm:FuturesKlineType.AllTypes}" SelectedItem="{Binding KlineType, Mode=TwoWay}">
+                    <ComboBox.ItemTemplate>
+                        <DataTemplate>
+                            <Grid>
+                                <Label Content="{Binding}" ContentStringFormat="G" />
+                            </Grid>
+                        </DataTemplate>
+                    </ComboBox.ItemTemplate>
+                </ComboBox>
 
             </StackPanel>
 

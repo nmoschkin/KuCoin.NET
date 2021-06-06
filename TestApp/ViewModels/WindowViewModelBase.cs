@@ -9,7 +9,7 @@ using System.Windows.Input;
 
 namespace KuCoinApp.ViewModels
 {
-    public abstract class WindowViewModelBase : ObservableBase
+    public abstract class WindowViewModelBase : ObservableBase, IDisposable
     {
 
         protected CryptoCredentials cred;
@@ -29,6 +29,7 @@ namespace KuCoinApp.ViewModels
             //Initialize();
         }
 
+        public abstract void Dispose();
 
 
     }

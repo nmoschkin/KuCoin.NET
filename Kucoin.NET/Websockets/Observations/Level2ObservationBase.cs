@@ -41,7 +41,7 @@ namespace Kucoin.NET.Websockets.Observations
         protected string symbol;
         protected int pieces;
         protected KucoinBaseWebsocketFeed connectedFeed;
-        protected Task PushThread;
+        protected Thread PushThread;
         protected CancellationTokenSource cts;
         protected object lockObj = new object();
         protected bool pushRequested = false;
@@ -65,7 +65,7 @@ namespace Kucoin.NET.Websockets.Observations
             orderBook = new TBook();
             cts = new CancellationTokenSource();
 
-            PushThread = Task.Factory.StartNew(
+            PushThread = new Thread(
                 async () =>
                 {
                     bool pr = false;
@@ -93,9 +93,11 @@ namespace Kucoin.NET.Websockets.Observations
                         // a 5 millisecond delay provides an even data flow.
                         await Task.Delay(5);
                     }
-                }, 
-                TaskCreationOptions.LongRunning | TaskCreationOptions.DenyChildAttach
+                }
             );
+
+            PushThread.IsBackground = true;
+            PushThread.Start();
 
         }
 
@@ -226,7 +228,7 @@ namespace Kucoin.NET.Websockets.Observations
             disposed = true;
 
             cts?.Cancel();
-            PushThread.Dispose();
+            PushThread.Abort();
             PushThread = null;
         }
 

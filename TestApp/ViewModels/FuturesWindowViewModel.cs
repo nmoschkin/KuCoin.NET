@@ -1001,8 +1001,10 @@ namespace KuCoinApp
 
         }
 
-        ~FuturesWindowViewModel()
+        public override void Dispose()
         {
+            futuresl2?.Dispose();
+
             tickerSubscription.Dispose();
             tickerFeed.Dispose();
 
@@ -1011,6 +1013,11 @@ namespace KuCoinApp
                 App.Current.Settings.PropertyChanged -= Settings_PropertyChanged;
             }
             catch { }
+        }
+
+        ~FuturesWindowViewModel()
+        {
+            Dispose();
         }
 
         protected void Settings_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)

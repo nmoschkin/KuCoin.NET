@@ -14,7 +14,7 @@ namespace Kucoin.NET.Data.Market
     /// <summary>
     /// Interface for all K-Line types.
     /// </summary>
-    public interface IKlineType
+    public interface IKlineType : IFormattable
     {
         KlineLengthType LengthType { get; }
 
@@ -56,6 +56,8 @@ namespace Kucoin.NET.Data.Market
         /// </remarks>
         DateTime GetStartDate(int pieces, DateTime? endDate = null);
 
+
+        string ToString(string format);
 
 
 

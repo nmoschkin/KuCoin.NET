@@ -14,6 +14,7 @@ using Kucoin.NET.Helpers;
 using Microsoft.AppCenter;
 using Microsoft.AppCenter.Analytics;
 using Microsoft.AppCenter.Crashes;
+using KuCoinApp.Views;
 
 namespace KuCoinApp
 {
@@ -26,6 +27,10 @@ namespace KuCoinApp
         {
             get => (App)Application.Current;
         }
+
+        public MainWindow Spot { get; set; }
+
+        public FuturesWindow Futures { get; set; }
 
         internal Guid Seed { get; private set; }
 
