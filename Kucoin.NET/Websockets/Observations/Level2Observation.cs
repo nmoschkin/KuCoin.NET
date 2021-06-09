@@ -593,7 +593,11 @@ namespace Kucoin.NET.Websockets.Observations
             disposed = true;
 
             cts?.Cancel();
-            PushThread.Abort();
+            try
+            {
+                PushThread.Abort();
+            }
+            catch { }
             PushThread = null;
 
             if (disposing)

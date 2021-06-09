@@ -14,11 +14,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Remove="Futures\Websockets\Observations\**" />
     <Compile Remove="Futures\Websockets\Private\**" />
-    <EmbeddedResource Remove="Futures\Websockets\Observations\**" />
     <EmbeddedResource Remove="Futures\Websockets\Private\**" />
-    <None Remove="Futures\Websockets\Observations\**" />
     <None Remove="Futures\Websockets\Private\**" />
   </ItemGroup>
 
