@@ -899,7 +899,7 @@ namespace Kucoin.NET.Websockets
                 else
                 {
                     // nothing in the queue, give up some time-slices.
-                    Task.Delay(5).Wait();
+                    await Task.Delay(5);
                 }
             }
         }
