@@ -872,32 +872,35 @@ namespace Kucoin.NET.Websockets
             // loop forever
             while (!ctsReceive.IsCancellationRequested && socket?.State == WebSocketState.Open)
             {
-                c = msgQueue.Count;
-
-                if (c == 0)
-                {
-                    // nothing in the queue, give up some time-slices.
-                    await Task.Delay(5);
-                    continue;
-                }
-
                 // lock on msgQueue.
                 lock (msgQueue)
                 {
-                    if (queue.Length < c)
+                    c = msgQueue.Count;
+
+                    if (c != 0)
                     {
-                        Array.Resize(ref queue, c);
+                        if (queue.Length < c)
+                        {
+                            Array.Resize(ref queue, c);
+                        }
+
+                        msgQueue.CopyTo(queue);
+                        msgQueue.Clear();
                     }
-
-                    msgQueue.CopyTo(queue);
-                    msgQueue.Clear();
                 }
 
-                for (int i = 0; i < c; i++)
+                if (c != 0)
                 {
-                    await RouteJsonPacket(queue[i]);
+                    for (int i = 0; i < c; i++)
+                    {
+                        await RouteJsonPacket(queue[i]);
+                    }
                 }
-
+                else
+                {
+                    // nothing in the queue, give up some time-slices.
+                    Task.Delay(5).Wait();
+                }
             }
         }
 

@@ -11,7 +11,7 @@ using KuCoinApp.Localization.Resources;
 namespace KuCoinApp.Localization
 {
     // You exclude the 'Extension' suffix when using in XAML
-    [ContentProperty("Text")]
+    [ContentProperty("ResourceKey")]
     public class TranslateExtension : MarkupExtension
     {
         CultureInfo ci = null;
