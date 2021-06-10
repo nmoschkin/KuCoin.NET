@@ -5,7 +5,7 @@ __ATTENTION__: __THIS IS WORK IN PROGRESS__.  Some of the code could change dram
 
 This library is in active development, and it's brand new so things will undoubtedly change while I consider next steps.
 
-June 1st, 2021: Fixed major problem when running the app for the first time.  If anyone tried to run this before, and it didn't work, try again.
+June 10th, 2021: Major performance improvements and critical socket feed synchronization tweaks.
 
 
 ## Installation
