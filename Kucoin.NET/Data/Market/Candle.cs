@@ -93,7 +93,7 @@ namespace Kucoin.NET.Data.Market
         }
 
         /// <summary>
-        /// Test whether the specified time falls within the time range of the specified <see cref="ITypedCandle"/>.
+        /// Test whether the specified time falls within the time range of the specified <see cref="ITypedCandle{T}"/>.
         /// </summary>
         /// <param name="candle">The candlestick to test.</param>
         /// <param name="time">The time to test.</param>

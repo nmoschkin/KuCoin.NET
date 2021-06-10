@@ -243,13 +243,15 @@ namespace Kucoin.NET.Websockets
                     }
                 }
 
-                Parallel.Invoke(actions.ToArray());
-
                 if (FeedDataReceived != null)
                 {
-                    FeedDataReceived.Invoke(this, new FeedDataReceivedEventArgs<T>(obj));
+                    actions.Add(() =>
+                    {
+                        FeedDataReceived.Invoke(this, new FeedDataReceivedEventArgs<T>(obj));
+                    });
                 }
 
+                Parallel.Invoke(actions.ToArray());
             });
         }
 

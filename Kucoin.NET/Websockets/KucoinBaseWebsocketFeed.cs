@@ -889,14 +889,12 @@ namespace Kucoin.NET.Websockets
                     }
                 }
 
-                if (c != 0)
+                for (int i = 0; i < c; i++)
                 {
-                    for (int i = 0; i < c; i++)
-                    {
-                        await RouteJsonPacket(queue[i]);
-                    }
+                    await RouteJsonPacket(queue[i]);
                 }
-                else
+
+                if (c == 0)
                 {
                     // nothing in the queue, give up some time-slices.
                     await Task.Delay(5);
@@ -1301,12 +1299,13 @@ namespace Kucoin.NET.Websockets
                     actions.Add(() => obs.Observer.OnNext(obj));
                 }
 
-                Parallel.Invoke(actions.ToArray());
-
                 if (FeedDataReceived != null)
                 {
-                    FeedDataReceived.Invoke(this, new FeedDataReceivedEventArgs<T>(obj));
+                    actions.Add(() => FeedDataReceived.Invoke(this, new FeedDataReceivedEventArgs<T>(obj)));
                 }
+
+                Parallel.Invoke(actions.ToArray());
+
             });
         }
 

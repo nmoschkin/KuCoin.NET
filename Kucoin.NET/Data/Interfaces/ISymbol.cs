@@ -24,7 +24,7 @@ namespace Kucoin.NET.Data.Market
     public interface ISymbol : IReadOnlySymbol
     {
         /// <summary>
-        /// Sets the ticker symbol associated with this object.
+        /// Gets or sets the ticker symbol associated with this object.
         /// </summary>
         /// <param name="symbol"></param>
         new string Symbol { get; set; }
