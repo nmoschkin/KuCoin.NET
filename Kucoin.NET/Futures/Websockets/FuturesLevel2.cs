@@ -12,7 +12,7 @@ namespace Kucoin.NET.Futures.Websockets
     /// <summary>
     /// Standard Futures Market Level 2 feed implementation with observable and UI data binding support.
     /// </summary>
-    public class FuturesLevel2 : Level2Base<FuturesOrderBook, OrderUnit, FuturesLevel2Update, FuturesLevel2Observation>
+    public class FuturesLevel2 : Level2Base<FuturesOrderBook, ObservableOrderUnit, FuturesLevel2Update, FuturesLevel2Observation>
     {
         /// <summary>
         /// Create a new futures Level 2 feed.

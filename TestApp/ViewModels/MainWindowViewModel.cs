@@ -88,7 +88,7 @@ namespace KuCoinApp
 
         protected ILevel3OrderBookProvider level3;
 
-        protected ILevel2OrderBookProvider<FuturesOrderBook, OrderUnit, FuturesLevel2Update> futureslevel2;
+        protected ILevel2OrderBookProvider<FuturesOrderBook, ObservableOrderUnit, FuturesLevel2Update> futureslevel2;
 
         protected List<SymbolViewModel> recentSymbols = new List<SymbolViewModel>();
 
@@ -101,7 +101,7 @@ namespace KuCoinApp
         public override event EventHandler AskQuit;
 
 
-        public ILevel2OrderBookProvider<FuturesOrderBook, OrderUnit, FuturesLevel2Update> FuturesLevel2
+        public ILevel2OrderBookProvider<FuturesOrderBook, ObservableOrderUnit, FuturesLevel2Update> FuturesLevel2
         {
             get => futureslevel2;
             protected set

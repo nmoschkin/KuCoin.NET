@@ -120,7 +120,15 @@ namespace Kucoin.NET.Data.Market
 
         internal OrderUnit(string[] data)
         {
-            price = decimal.Parse(data[0]);
+            if (data[0].Contains("E"))
+            {
+                price = (decimal)double.Parse(data[0]);
+            }
+            else
+            {
+                price = decimal.Parse(data[0]);
+            }
+
             size = decimal.Parse(data[1]);
             if (data.Length > 2) seq = long.Parse(data[2]);
         }

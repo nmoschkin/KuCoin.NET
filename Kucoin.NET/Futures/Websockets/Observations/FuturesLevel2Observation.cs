@@ -15,7 +15,7 @@ namespace Kucoin.NET.Futures.Websockets.Observations
     /// <summary>
     /// KuCoin Futures Level 2 Observation standard implementation.
     /// </summary>
-    public class FuturesLevel2Observation : Level2ObservationBase<FuturesOrderBook, OrderUnit, FuturesLevel2Update>
+    public class FuturesLevel2Observation : Level2ObservationBase<FuturesOrderBook, ObservableOrderUnit, FuturesLevel2Update>
     {
         protected bool calibrated;
         protected bool initialized;
@@ -188,7 +188,7 @@ namespace Kucoin.NET.Futures.Websockets.Observations
         /// <param name="src">Source data.</param>
         /// <param name="dest">Destination collection.</param>
         /// <param name="pieces">The number of pieces to copy.</param>
-        protected void CopyTo(IList<OrderUnit> src, IList<OrderUnit> dest, int pieces)
+        protected void CopyTo(IList<OrderUnit> src, IList<ObservableOrderUnit> dest, int pieces)
         {
             int i, c = pieces < src.Count ? pieces : src.Count;
             int x = dest.Count;
@@ -200,7 +200,7 @@ namespace Kucoin.NET.Futures.Websockets.Observations
 
                 foreach (var piece in src)
                 {
-                    dest.Add(piece);
+                    dest.Add(piece.Clone<ObservableOrderUnit>());
                     if (++x == c) break;
                 }
             }
@@ -208,7 +208,9 @@ namespace Kucoin.NET.Futures.Websockets.Observations
             {
                 for (i = 0; i < c; i++)
                 {
-                    dest[i] = src[i];
+                    dest[i].Price = src[i].Price;
+                    dest[i].Size = src[i].Size;
+                    dest[i].Sequence = src[i].Sequence;
                 }
             }
 
@@ -264,14 +266,18 @@ namespace Kucoin.NET.Futures.Websockets.Observations
             disposed = true;
 
             cts?.Cancel();
-            PushThread.Abort();
+            try
+            {
+                PushThread.Abort();
+            }
+            catch { }
             PushThread = null;
 
             if (disposing)
             {
                 if (connectedFeed != null)
                 {
-                    ((Level2Base<FuturesOrderBook, OrderUnit, FuturesLevel2Update, FuturesLevel2Observation>)connectedFeed).RemoveSymbol(symbol).Wait();
+                    ((Level2Base<FuturesOrderBook, ObservableOrderUnit, FuturesLevel2Update, FuturesLevel2Observation>)connectedFeed).RemoveSymbol(symbol).Wait();
                 }
             }
 

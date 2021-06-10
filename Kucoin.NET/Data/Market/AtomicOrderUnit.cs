@@ -209,7 +209,7 @@ namespace Kucoin.NET.Data.Market
             }
         }
 
-        internal ObservableAtomicOrderUnit(string[] data) : base(data)
+        internal ObservableAtomicOrderUnit(object[] data) : base(data)
         {
         }
 
