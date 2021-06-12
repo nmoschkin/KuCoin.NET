@@ -314,12 +314,14 @@ namespace Kucoin.NET.Helpers
 
         protected virtual string EncryptIt(string source)
         {
+            if (source == null) return null;
             var work = zip_right(source);
             return AesOperation.EncryptString(MakeZipper(this.seed), work, out _);
         }
 
         protected virtual string DecryptIt(string source)
         {
+            if (source == null) return null;
             var work = AesOperation.DecryptString(MakeZipper(this.seed), source);
             return zip_left(work);
         }
