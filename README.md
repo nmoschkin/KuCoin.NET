@@ -1,4 +1,4 @@
-# Kucoin.NET
+# Kucoin.NET (Pre-Alpha)
 KuCoin API Libraries written in .NET Standard 2.0
 
 __ATTENTION__: __READ INSTALLATION INSTRUCTIONS VERY CAREFULLY__
