@@ -47,6 +47,15 @@ namespace Kucoin.NET.Websockets.Observations
         /// </summary>
         KeyedAtomicOrderBook<AtomicOrderUnit> FullDepthOrderBook { get; }
 
+        /// <summary>
+        /// Gets the K-Line type to apply to volume refresh cycles.
+        /// </summary>
+        KlineType VolumeTime { get; set; }
+
+        /// <summary>
+        /// Gets the volume of the current K-line as calculated by matches.
+        /// </summary>
+        decimal Level3Volume { get; }
 
         /// <summary>
         /// Reset and reinitialize the feed to trigger recalibration.

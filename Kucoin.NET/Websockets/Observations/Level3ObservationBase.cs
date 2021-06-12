@@ -46,6 +46,10 @@ namespace Kucoin.NET.Websockets.Observations
         protected object lockObj = new object();
         protected bool pushRequested = false;
 
+        protected KlineType klineType = KlineType.Min1;
+        protected decimal l3vol;
+        protected DateTime ckline;
+
         /// <summary>
         /// Level 2 observation base class.
         /// </summary>
@@ -70,6 +74,9 @@ namespace Kucoin.NET.Websockets.Observations
                 {
                     bool pr = false;
 
+                    ckline = klineType.GetCurrentKlineStartTime();
+                    DateTime test = ckline.AddSeconds(klineType.Length);
+
                     while (!cts.IsCancellationRequested)
                     {
                         lock (lockObj)
@@ -92,6 +99,16 @@ namespace Kucoin.NET.Websockets.Observations
                         // we always want to give up time-slices on a thread like this.
                         // a 5 millisecond delay provides an even data flow.
                         await Task.Delay(5);
+
+
+                        if (DateTime.UtcNow >= test)
+                        {
+                            ckline = klineType.GetCurrentKlineStartTime();
+                            test = ckline.AddSeconds(klineType.Length);
+
+                            Level3Volume = 0.0M;
+                        }
+
                     }
                 }
             );
@@ -154,6 +171,27 @@ namespace Kucoin.NET.Websockets.Observations
             internal set
             {
                 SetProperty(ref orderBook, value);
+            }
+        }
+
+        public KlineType VolumeTime
+        {
+            get => klineType;
+            set
+            {
+                SetProperty(ref klineType, value);
+            }
+        }
+
+        public decimal Level3Volume
+        {
+            get => l3vol;
+            set
+            {
+                lock (lockObj)
+                {
+                    SetProperty(ref l3vol, value);
+                }
             }
         }
 

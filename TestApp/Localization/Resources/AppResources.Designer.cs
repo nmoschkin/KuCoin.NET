@@ -349,6 +349,15 @@ namespace KuCoinApp.Localization.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Level 3 Volume.
+        /// </summary>
+        internal static string Level3Volume {
+            get {
+                return ResourceManager.GetString("Level3Volume", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Leverage.
         /// </summary>
         internal static string Leverage {

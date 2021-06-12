@@ -12,7 +12,7 @@ namespace Kucoin.NET.Data.Order
     /// </summary>
     /// <typeparam name="TUnit">The type of the order unit.</typeparam>
     /// <remarks>
-    /// <see cref="TUnit"/> must implement <see cref="IOrderUnit"/>.
+    /// <see cref="TUnit"/> must implement <see cref="IAtomicOrderUnit"/>.
     /// Classes derived from this class maintain a price-sorted, keyed list.
     /// Sorting is vital to the function of Level 2 and Level 3 websocket feeds.
     /// </remarks>
@@ -206,10 +206,11 @@ namespace Kucoin.NET.Data.Order
         {
 
             if (Count == 0) return new TUnit[0];
-            TUnit[] output = new TUnit[Count];
+            TUnit[] output; 
 
             lock (lockObj)
             {
+                output = new TUnit[Count];
                 CopyTo(output, 0);
             }
 

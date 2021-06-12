@@ -513,7 +513,10 @@ namespace KuCoinApp
                             Volume = null;
                             VolumeTime = null;
 
-                            if (isKlineChange) return;
+                            if (isKlineChange)
+                            {
+                                level3.VolumeTime = KlineType;
+                            }
 
                             //if (cred.AttachedAccount != null && (futuresl2 == null || futuresl2.Connected == false))
                             //{
@@ -542,7 +545,7 @@ namespace KuCoinApp
                             if (level3Feed == null || level3Feed.Connected == false)
                             {
                                 level3Feed = new Level3(cred);
-                                await level2Feed.Connect();
+                                await level3Feed.Connect();
                             }
 
                             await level3Feed.AddSymbol(newSymbol).ContinueWith((t) =>
@@ -550,6 +553,7 @@ namespace KuCoinApp
                                 App.Current?.Dispatcher?.Invoke(() =>
                                 {
                                     Level3 = (ILevel3OrderBookProvider)t.Result;
+                                    level3.VolumeTime = KlineType;
                                 });
 
                             });
@@ -611,6 +615,7 @@ namespace KuCoinApp
                         App.Current?.Dispatcher?.Invoke(() =>
                         {
                             Level3 = t.Result;
+                            level3.VolumeTime = KlineType;
                         });
 
                     });
@@ -777,9 +782,16 @@ namespace KuCoinApp
             {
                 App.Current?.Dispatcher.Invoke(() =>
                 {
-                    Volume = ticker.Candles.Volume;
+                    if (level3?.Level3Volume > ticker.Candles.Volume)
+                    {
+                        Volume = level3.Level3Volume;
+                    }
+                    else
+                    {
+                        Volume = ticker.Candles.Volume;
+                    }
                     VolumeTime = ticker.Timestamp;
-                   
+
                 });
             }
             else

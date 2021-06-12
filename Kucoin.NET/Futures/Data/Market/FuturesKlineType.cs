@@ -116,6 +116,42 @@ namespace Kucoin.NET.Futures.Data.Market
             }
         }
 
+
+        public DateTime GetCurrentKlineStartTime()
+        {
+            var dt = DateTime.UtcNow;
+            dt = dt.AddSeconds(-dt.Second);
+
+            if (Unit == "Min")
+            {
+                dt = dt.AddMinutes(-(dt.Minute % Number));
+            }
+            else if (Unit == "Hour")
+            {
+                dt = dt.AddMinutes(-dt.Minute);
+                dt = dt.AddHours(-(dt.Hour % Number));
+            }
+            else if (Unit == "Day")
+            {
+
+                dt = dt.AddMinutes(-dt.Minute);
+                dt = dt.AddHours(-dt.Hour);
+                dt = dt.AddDays(-(dt.Day % Number));
+            }
+            else if (Unit == "Week")
+            {
+                dt = dt.AddMinutes(-dt.Minute);
+                dt = dt.AddHours(-dt.Hour);
+                dt = dt.AddDays(-((int)dt.DayOfWeek % (Number * 7)));
+            }
+            else
+            {
+                throw new NotImplementedException();
+            }
+
+            return dt;
+        }
+
         public string ToString(bool formatted)
         {
             if (!formatted)

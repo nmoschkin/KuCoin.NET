@@ -56,6 +56,12 @@ namespace Kucoin.NET.Data.Market
         /// </remarks>
         DateTime GetStartDate(int pieces, DateTime? endDate = null);
 
+        
+        /// <summary>
+        /// Gets the current kline start time calculated by the kline type.
+        /// </summary>
+        /// <returns></returns>
+        DateTime GetCurrentKlineStartTime();
 
         string ToString(string format);
 

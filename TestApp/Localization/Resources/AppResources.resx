@@ -213,6 +213,9 @@
   <data name="Lend" xml:space="preserve">
     <value>Lend</value>
   </data>
+  <data name="Level3Volume" xml:space="preserve">
+    <value>Level 3 Volume</value>
+  </data>
   <data name="Leverage" xml:space="preserve">
     <value>Leverage</value>
   </data>
