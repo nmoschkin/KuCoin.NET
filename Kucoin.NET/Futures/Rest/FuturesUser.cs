@@ -85,10 +85,120 @@ namespace Kucoin.NET.Futures.Rest
          * 
          */
 
-        //public async Task<IList<Transaction[]>> GetTransactions(string currency = "XBT", bool forward=true,)
-        //{
+        public async Task<TransactionHistory> GetTransactions(
+            string currency = null, 
+            bool forward = true, 
+            int? offset = null,
+            TransactionType? type = null, 
+            DateTime? startTime = null, 
+            DateTime? endTime = null, 
+            int maxCount = 50)
+        {
+            var param = new Dictionary<string, object>();
 
-        //}
+            param.Add("forward", forward);
+            param.Add("maxCount", maxCount);
 
+            long st, et;
+            DateTime d;
+
+            if (currency != null)
+            {
+                param.Add("currency", currency);
+            }
+
+            if (type != null)
+            {
+                param.Add("type", type);
+            }
+
+            if (offset != null)
+            {
+                param.Add("offset", offset);
+            }
+
+            if (startTime == null)
+            {
+                st = 0;
+            }
+            else
+            {
+                d = (DateTime)startTime;
+                st = EpochTime.DateToMilliseconds(d);
+                param.Add("startAt", st);
+            }
+
+            if (endTime == null)
+            {
+                et = 0;
+            }
+            else
+            {
+                d = (DateTime)endTime;
+                et = EpochTime.DateToMilliseconds(d);
+                param.Add("endAt", et);
+            }
+
+            if (startTime != null && endTime != null && et < st) throw new ArgumentException("End time must be greater than start time");
+
+            var url = "/api/v1/transaction-history";
+
+            var jobj = await MakeRequest(HttpMethod.Get, url, reqParams: param);
+
+            return jobj.ToObject<TransactionHistory>();
+
+        }
+
+
+        public async Task<IList<Deposit>> GetDepositsList(
+            string currency = null,
+            DepositStatus? status = null,
+            DateTime? startTime = null,
+            DateTime? endTime = null)
+        {
+            var param = new Dictionary<string, object>();
+
+            long st, et;
+            DateTime d;
+
+            if (currency != null)
+            {
+                param.Add("currency", currency);
+            }
+
+            if (status != null)
+            {
+                param.Add("status", status);
+            }
+
+            if (startTime == null)
+            {
+                st = 0;
+            }
+            else
+            {
+                d = (DateTime)startTime;
+                st = EpochTime.DateToMilliseconds(d);
+                param.Add("startAt", st);
+            }
+
+            if (endTime == null)
+            {
+                et = 0;
+            }
+            else
+            {
+                d = (DateTime)endTime;
+                et = EpochTime.DateToMilliseconds(d);
+                param.Add("endAt", et);
+            }
+
+            if (startTime != null && endTime != null && et < st) throw new ArgumentException("End time must be greater than start time");
+
+            var url = "/api/v1/deposit-list";
+
+            return await GetAllPaginatedResults<Deposit, DepositList>(HttpMethod.Get, url, reqParams: param);
+
+        }
     }
 }

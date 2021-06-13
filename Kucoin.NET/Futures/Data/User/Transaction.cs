@@ -60,6 +60,16 @@ namespace Kucoin.NET.Futures.Data.User
         Pending
     }
 
+    public class TransactionHistory
+    {
+
+        [JsonProperty("hasMore")]
+        public bool HasMore { get; set; }
+
+        [JsonProperty("dataList")]
+        public List<Transaction> DataList { get; set; }
+    }
+
     /// <summary>
     /// Represents a single transaction in the futures account.
     /// </summary>

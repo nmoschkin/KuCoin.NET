@@ -32,7 +32,15 @@ namespace Kucoin.NET.Data.User
         /// Processing
         /// </summary>
         [EnumMember(Value = "PROCESSING")]
-        Processing = 2
+        Processing = 2,
+
+        /// <summary>
+        /// Wallet Processing
+        /// </summary>
+        [EnumMember(Value = "WALLET_PROCESSING")]
+        WalletProcessing = 3
+
+
     }
 
     /// <summary>
