@@ -9,6 +9,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Kucoin.NET.Futures.Websockets;
 using Kucoin.NET.Data.Market;
+using System.Net;
 
 namespace Kucoin.NET.Websockets.Public
 {
@@ -94,6 +95,7 @@ namespace Kucoin.NET.Websockets.Public
         /// </summary>
         /// <remarks>
         /// The default value is 500 milliseconds.
+        /// Set to 0 to disable automatic updates.
         /// </remarks>
         public virtual int UpdateInterval
         {
@@ -336,7 +338,6 @@ namespace Kucoin.NET.Websockets.Public
             af.Initialized = true;
         }
 
-
         protected override async Task HandleMessage(FeedMessage msg)
         {
             if (msg.Type == "message")
@@ -361,7 +362,7 @@ namespace Kucoin.NET.Websockets.Public
 
                                 af.OnNext(update);
 
-                                if ((DateTime.UtcNow.Ticks - cycle) >= (updateInterval * 10_000))
+                                if ((DateTime.UtcNow.Ticks - cycle) >= ((updateInterval == 0 ? 50 : updateInterval) * 10_000))
                                 {
                                     await InitializeOrderBook(af.Symbol);
 
@@ -386,6 +387,8 @@ namespace Kucoin.NET.Websockets.Public
                                 lock (lockObj)
                                 {
                                     af.OnNext(update);
+
+                                    if (updateInterval == 0) return;
 
                                     if ((DateTime.UtcNow.Ticks - cycle) >= (updateInterval * 10_000))
                                     {

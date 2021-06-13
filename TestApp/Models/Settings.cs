@@ -45,6 +45,11 @@ namespace KuCoinApp
             Height = window.Height;
             State = window.WindowState;
             Location = window.WindowStartupLocation;
+
+            if (Left < 0 || Top < 0)
+            {
+                Left = Top = 0;
+            }
         }
 
         public void Apply(Window window)

@@ -1,4 +1,5 @@
 ﻿using Kucoin.NET.Data.Market;
+using Kucoin.NET.Data.Order;
 using Kucoin.NET.Data.Websockets;
 using Kucoin.NET.Helpers;
 using Kucoin.NET.Websockets.Observations;
@@ -14,12 +15,14 @@ namespace Kucoin.NET.Websockets.Public
     /// <summary>
     /// Calibrated Level 3 Full Match Engine Feed base class and core logic implementation.
     /// </summary>
-    public abstract class Level3Base<TBook, TUnit, TUpdate, TObservation> :
+    public abstract class Level3Base<TBookOut, TUnitOut, TBookIn, TUnitIn, TUpdate, TObservation> :
         KucoinBaseWebsocketFeed
-        where TBook : IAtomicOrderBook<TUnit>, new()
-        where TUnit : IAtomicOrderUnit, new()
+        where TBookOut : IAtomicOrderBook<TUnitOut>, new()
+        where TUnitOut : IAtomicOrderUnit, new()
         where TUpdate : ILevel3Update, new()
-        where TObservation : Level3ObservationBase<TBook, TUnit, TUpdate>
+        where TUnitIn : IAtomicOrderUnit, new()
+        where TBookIn : Level3KeyedCollection<TUnitIn>
+        where TObservation : Level3ObservationBase<TBookOut, TUnitOut, TUpdate>
     {
 
         internal readonly Dictionary<string, TObservation> activeFeeds = new Dictionary<string, TObservation>();
@@ -54,7 +57,7 @@ namespace Kucoin.NET.Websockets.Public
         /// <summary>
         /// Event that gets fired when the feed for a symbol has been calibrated and is ready to be used.
         /// </summary>
-        public virtual event EventHandler<Level3SymbolCalibratedEventArgs<TBook, TUnit, TUpdate>> SymbolCalibrated;
+        public virtual event EventHandler<Level3SymbolCalibratedEventArgs<TBookOut, TUnitOut, TUpdate>> SymbolCalibrated;
 
         public Level3Base(ICredentialsProvider credProvider) : base(credProvider)
         {
@@ -71,6 +74,7 @@ namespace Kucoin.NET.Websockets.Public
         /// </summary>
         /// <remarks>
         /// The default value is 500 milliseconds.
+        /// If this value is set to 0, automatic updates are disabled.
         /// </remarks>
         public virtual int UpdateInterval
         {
@@ -165,7 +169,7 @@ namespace Kucoin.NET.Websockets.Public
         /// <returns></returns>
         public virtual async Task<Dictionary<string, TObservation>> AddSymbols(IEnumerable<string> symbols)
         {
-            if (disposed) throw new ObjectDisposedException(nameof(Level3Base<TBook, TUnit, TUpdate, TObservation>));
+            if (disposed) throw new ObjectDisposedException(nameof(Level3Base<TBookOut, TUnitOut, TBookIn, TUnitIn, TUpdate, TObservation>));
             if (!Connected)
             {
                 await Connect();
@@ -231,7 +235,7 @@ namespace Kucoin.NET.Websockets.Public
         /// <returns></returns>
         internal virtual async Task RemoveSymbols(IEnumerable<string> symbols)
         {
-            if (disposed) throw new ObjectDisposedException(nameof(Level3Base<TBook, TUnit, TUpdate, TObservation>));
+            if (disposed) throw new ObjectDisposedException(nameof(Level3Base<TBookOut, TUnitOut, TBookIn, TUnitIn, TUpdate, TObservation>));
             if (!Connected) return;
 
             var sb = new StringBuilder();
@@ -294,7 +298,7 @@ namespace Kucoin.NET.Websockets.Public
             var result = jobj.ToObject<KeyedAtomicOrderBook<AtomicOrderUnit>>();
 
 
-            if (typeof(ISequencedOrderUnit).IsAssignableFrom(typeof(TUnit)))
+            if (typeof(ISequencedOrderUnit).IsAssignableFrom(typeof(TUnitOut)))
             {
                 foreach (var ask in result.Asks)
                 {
@@ -356,7 +360,7 @@ namespace Kucoin.NET.Websockets.Public
 
                             af.OnNext(update);
 
-                            if ((DateTime.UtcNow.Ticks - cycle) >= (updateInterval * 10_000))
+                            if ((DateTime.UtcNow.Ticks - cycle) >= ((updateInterval == 0 ? 60 : updateInterval) * 10_000))
                             {
                                 await InitializeOrderBook(af.Symbol);
 
@@ -370,7 +374,7 @@ namespace Kucoin.NET.Websockets.Public
 
                                 _ = Task.Run(() =>
                                 {
-                                    SymbolCalibrated?.Invoke(this, new Level3SymbolCalibratedEventArgs<TBook, TUnit, TUpdate>(af));
+                                    SymbolCalibrated?.Invoke(this, new Level3SymbolCalibratedEventArgs<TBookOut, TUnitOut, TUpdate>(af));
                                     State = FeedState.Running;
                                 });
 
@@ -381,6 +385,8 @@ namespace Kucoin.NET.Websockets.Public
                             lock (lockObj)
                             {
                                 af.OnNext(update);
+
+                                if (updateInterval == 0) return;
 
                                 if ((DateTime.UtcNow.Ticks - cycle) >= (updateInterval * 10_000))
                                 {

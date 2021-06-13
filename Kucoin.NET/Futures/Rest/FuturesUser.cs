@@ -73,6 +73,22 @@ namespace Kucoin.NET.Futures.Rest
             return jobj.ToObject<AccountAddress>();
 
         }
+        /* 
+         * 
+         *  startAt	long	[Optional] Start time (milisecond)
+            endAt	long	[Optional] End time (milisecond)
+            type	String	[Optional] Type RealisedPNL-Realised profit and loss, Deposit-Deposit, Withdrawal-withdraw, Transferin-Transfer in, TransferOut-Transfer out
+            offset	long	[Optional] Start offset
+            maxCount	long	[Optional] Displayed size per page. The default size is 50
+            currency	String	[Optional] Currency of transaction history XBT or USDT
+            forward	boolean	[optional] This parameter functions to judge whether the lookup is forward or not. True means “yes” and False means “no”. This parameter is set as true by default
+         * 
+         */
+
+        //public async Task<IList<Transaction[]>> GetTransactions(string currency = "XBT", bool forward=true,)
+        //{
+
+        //}
 
     }
 }

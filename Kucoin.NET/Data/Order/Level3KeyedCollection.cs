@@ -8,13 +8,14 @@ using System.Text;
 namespace Kucoin.NET.Data.Order
 {
     /// <summary>
-    /// The base class from which all order book lists must inherit (for lists of asks and bids.)
+    /// Keyed, sorted Level 3 atomic order book.
     /// </summary>
     /// <typeparam name="TUnit">The type of the order unit.</typeparam>
     /// <remarks>
     /// <see cref="TUnit"/> must implement <see cref="IAtomicOrderUnit"/>.
     /// Classes derived from this class maintain a price-sorted, keyed list.
     /// Sorting is vital to the function of Level 2 and Level 3 websocket feeds.
+    /// Index for insert is ignored.  The insert index is calculated by the sort order using binary search.
     /// </remarks>
     public class Level3KeyedCollection<TUnit> : KeyedCollection<string, TUnit> where TUnit : IAtomicOrderUnit
     {

@@ -88,12 +88,14 @@ namespace KuCoinApp.Views
         private void MainWindow_LocationChanged(object sender, EventArgs e)
         {
             if (!init) return;
+            if (WindowState != WindowState.Normal) return;
             App.Current.Settings.SaveWindowSettings(this);
         }
 
         private void MainWindow_SizeChanged(object sender, SizeChangedEventArgs e)
         {
             if (!init) return;
+            if (WindowState != WindowState.Normal) return;
             App.Current.Settings.SaveWindowSettings(this);
         }
 

@@ -57,6 +57,10 @@ namespace Kucoin.NET.Websockets.Observations
         /// True if the object is disposed and no longer usable.
         /// </summary>
         bool Disposed { get; }
+
+
+        void RequestPush();
+
     }
 
 }

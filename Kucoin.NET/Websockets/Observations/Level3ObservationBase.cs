@@ -50,6 +50,8 @@ namespace Kucoin.NET.Websockets.Observations
         protected decimal l3vol;
         protected DateTime ckline;
 
+        protected bool autoPush = true;
+
         /// <summary>
         /// Level 2 observation base class.
         /// </summary>
@@ -79,21 +81,24 @@ namespace Kucoin.NET.Websockets.Observations
 
                     while (!cts.IsCancellationRequested)
                     {
-                        lock (lockObj)
+                        if (autoPush)
                         {
-                            if (pushRequested)
+                            lock (lockObj)
                             {
-                                pushRequested = false;
-                                pr = true;
+                                if (pushRequested)
+                                {
+                                    pushRequested = false;
+                                    pr = true;
+                                }
                             }
-                        }
 
-                        if (pr)
-                        {
-                            pr = false;
+                            if (pr)
+                            {
+                                pr = false;
 
-                            PushLive();
-                            OrderBookUpdated?.Invoke(this, new Level3OrderBookUpdatedEventArgs<TBook, TUnit>(this.symbol, orderBook));
+                                OnPushLive(true);
+                                OrderBookUpdated?.Invoke(this, new Level3OrderBookUpdatedEventArgs<TBook, TUnit>(this.symbol, orderBook));
+                            }
                         }
 
                         // we always want to give up time-slices on a thread like this.
@@ -195,6 +200,15 @@ namespace Kucoin.NET.Websockets.Observations
             }
         }
 
+        public bool AutoPushEnabled
+        {
+            get => autoPush;
+            set
+            {
+                SetProperty(ref autoPush, value);
+            }
+        }
+
         /// <summary>
         /// Gets a value indicating that this order book is initialized with the full-depth (preflight) order book.
         /// </summary>
@@ -213,7 +227,16 @@ namespace Kucoin.NET.Websockets.Observations
         /// <summary>
         /// Push the full-depth order book to the live feed.
         /// </summary>
-        protected abstract void PushLive();
+        public virtual void PushLive()
+        {
+            OnPushLive(false);
+            OrderBookUpdated?.Invoke(this, new Level3OrderBookUpdatedEventArgs<TBook, TUnit>(this.symbol, orderBook));
+        }
+
+        /// <summary>
+        /// Push the preflight book to the live feed.
+        /// </summary>
+        protected abstract void OnPushLive(bool auto);
 
         /// <summary>
         /// Reset and recalibrate the order book.

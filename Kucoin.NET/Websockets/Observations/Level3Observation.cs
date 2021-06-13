@@ -287,8 +287,10 @@ namespace Kucoin.NET.Websockets.Observations
         /// Push the preflight book to the live feed.
         /// </summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        protected override void PushLive()
+        protected override void OnPushLive(bool auto)
         {
+            if (!auto && autoPush) return;
+
             lock (lockObj)
             {
                 if (orderBook == null)
@@ -320,6 +322,7 @@ namespace Kucoin.NET.Websockets.Observations
             }
 
             GC.Collect(0);
+
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

@@ -8,7 +8,7 @@ using System.Text;
 namespace Kucoin.NET.Data.Order
 {
     /// <summary>
-    /// Sorted Order Book (of asks or bids.)
+    /// Keyed, sorted Level 2 order book.
     /// </summary>
     /// <typeparam name="TUnit">The type of the order unit.</typeparam>
     /// <remarks>
