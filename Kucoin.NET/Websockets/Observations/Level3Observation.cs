@@ -38,6 +38,8 @@ namespace Kucoin.NET.Websockets.Observations
 
         protected List<Level3Update> orderBuffer = new List<Level3Update>();
 
+        public override event OnNextHandler<Level3Update> NextObject;
+
         public CustomLevel3Observation(KucoinBaseWebsocketFeed parent, string symbol, int pieces = 50) : base(parent, symbol, pieces)
         {
         }
@@ -238,6 +240,8 @@ namespace Kucoin.NET.Websockets.Observations
 
                 }
             }
+
+            NextObject?.Invoke(value);
         }
 
         /// <summary>

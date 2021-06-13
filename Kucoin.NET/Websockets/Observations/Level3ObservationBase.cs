@@ -19,7 +19,7 @@ namespace Kucoin.NET.Websockets.Observations
 {
 
     /// <summary>
-    /// Level 2 Observation base class.
+    /// Level 3 Observation base class.
     /// </summary>
     /// <typeparam name="TBook">The type of the order book to maintain.</typeparam>
     /// <typeparam name="TUnit">The type of order units contained in the order book.</typeparam>
@@ -35,6 +35,7 @@ namespace Kucoin.NET.Websockets.Observations
         where TUpdate : new()
     {
         public virtual event EventHandler<Level3OrderBookUpdatedEventArgs<TBook, TUnit>> OrderBookUpdated;
+        public virtual event OnNextHandler<TUpdate> NextObject;
 
         protected KeyedAtomicOrderBook<AtomicOrderUnit> fullDepth;
         protected TBook orderBook;

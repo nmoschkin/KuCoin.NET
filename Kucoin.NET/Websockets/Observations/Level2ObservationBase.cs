@@ -17,6 +17,7 @@ using System.Runtime.InteropServices;
 
 namespace Kucoin.NET.Websockets.Observations
 {
+    public delegate void OnNextHandler<T>(T data);
 
     /// <summary>
     /// Level 2 Observation base class.
@@ -35,6 +36,7 @@ namespace Kucoin.NET.Websockets.Observations
         where TUpdate : new()
     {
         public virtual event EventHandler<OrderBookUpdatedEventArgs<TBook, TUnit>> OrderBookUpdated;
+        public virtual event OnNextHandler<TUpdate> NextObject;
 
         protected KeyedOrderBook<OrderUnit> fullDepth;
         protected TBook orderBook;

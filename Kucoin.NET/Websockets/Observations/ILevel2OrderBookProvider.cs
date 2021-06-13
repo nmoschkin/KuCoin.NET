@@ -30,7 +30,16 @@ namespace Kucoin.NET.Websockets.Observations
         where TUnit : IOrderUnit
         where TUpdate : new()
     {
+
+        /// <summary>
+        /// Event that is fired when the Observable order book is updated
+        /// </summary>
         event EventHandler<OrderBookUpdatedEventArgs<TBook, TUnit>> OrderBookUpdated;
+
+        /// <summary>
+        /// Event that is fired for every new object received
+        /// </summary>
+        event OnNextHandler<TUpdate> NextObject;
 
         /// <summary>
         /// The sorted and sliced order book (user-facing data).
