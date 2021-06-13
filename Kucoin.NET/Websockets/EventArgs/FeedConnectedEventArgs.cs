@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Net.WebSockets;
 using System.Text;
 
 namespace Kucoin.NET.Websockets
@@ -32,6 +33,17 @@ namespace Kucoin.NET.Websockets
             ConnectionId = connectId;
             Server = server;
             Token = token;
+        }
+    }
+
+
+    public class FeedDisconnectedEventArgs : EventArgs
+    {
+        public WebSocketCloseStatus CloseStatus { get; private set; }
+
+        public FeedDisconnectedEventArgs(WebSocketCloseStatus status)
+        {
+            CloseStatus = status;
         }
     }
 

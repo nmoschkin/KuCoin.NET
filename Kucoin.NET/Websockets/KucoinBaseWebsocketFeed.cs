@@ -112,7 +112,7 @@ namespace Kucoin.NET.Websockets
         /// This event is raised when the object is manually disposed or disposed via the 'using' statement,
         /// but not when the destructor is called by the garbage collector.
         /// </remarks>
-        public virtual event EventHandler FeedDisconnected;
+        public virtual event EventHandler<FeedDisconnectedEventArgs> FeedDisconnected;
 
         /// <summary>
         /// Event that is raised for every single JSON entity that is received.
@@ -390,7 +390,6 @@ namespace Kucoin.NET.Websockets
             token = null;
 
             OnPropertyChanged(nameof(Connected));
-            OnDisconnected();
         }
 
         /// <summary>
@@ -447,7 +446,7 @@ namespace Kucoin.NET.Websockets
             socket.Options.SetBuffer(recvBufferSize, sendBufferSize);
 
             await socket.ConnectAsync(new Uri(uri), ctsReceive.Token);
-
+            
             if (socket.State == WebSocketState.Open)
             {
                 // The Pinger:
@@ -535,7 +534,7 @@ namespace Kucoin.NET.Websockets
         /// </remarks>
         protected virtual void OnDisconnected()
         {
-            FeedDisconnected?.Invoke(this, new EventArgs());
+            FeedDisconnected?.Invoke(this, new FeedDisconnectedEventArgs(socket?.CloseStatus ?? WebSocketCloseStatus.ProtocolError));
         }
 
         #endregion Connection Handling
@@ -900,6 +899,8 @@ namespace Kucoin.NET.Websockets
                     await Task.Delay(5);
                 }
             }
+
+            OnDisconnected();
         }
 
         /// <summary>
@@ -1162,7 +1163,6 @@ namespace Kucoin.NET.Websockets
             if (disposing)
             {
                 OnPropertyChanged(nameof(Connected));
-                FeedDisconnected?.Invoke(this, new EventArgs());
             }
         }
 

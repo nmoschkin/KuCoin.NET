@@ -23,6 +23,8 @@ using KuCoinApp.Localization.Resources;
 using KuCoinApp.ViewModels;
 using KuCoinApp.Views;
 using Windows.ApplicationModel.Activation;
+using Kucoin.NET.Websockets;
+using System.Net.WebSockets;
 
 namespace KuCoinApp
 {
@@ -1052,6 +1054,7 @@ namespace KuCoinApp
 
                     //Level2Feed = new Level2();
                     Level3Feed = new Level3(cred);
+                    level3Feed.FeedDisconnected += Level3Feed_FeedDisconnected;
 
                     // Bring up the testing console.
 
@@ -1186,6 +1189,16 @@ namespace KuCoinApp
                 });
             });
 
+
+        }
+
+        private async void Level3Feed_FeedDisconnected(object sender, FeedDisconnectedEventArgs e)
+        {
+            if (Level3Feed.Disposed == false)
+            {
+                await Level3Feed.Connect();
+                UpdateSymbol((string)symbol, (string)symbol, true);
+            }
 
         }
 
