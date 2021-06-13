@@ -279,7 +279,7 @@ namespace Kucoin.NET.Rest
             }
             else
             {
-                d = (DateTime)startTime;
+                d = (DateTime)endTime;
                 et = EpochTime.DateToSeconds(d);
                 param.Add("endAt", et);
             }
@@ -323,7 +323,7 @@ namespace Kucoin.NET.Rest
             }
             else
             {
-                d = (DateTime)startTime;
+                d = (DateTime)endTime;
                 et = EpochTime.DateToSeconds(d);
                 param.Add("endAt", et);
             }
@@ -372,7 +372,7 @@ namespace Kucoin.NET.Rest
             }
             else
             {
-                d = (DateTime)startTime;
+                d = (DateTime)endTime;
                 et = EpochTime.DateToSeconds(d);
                 param.Add("endAt", et);
             }
