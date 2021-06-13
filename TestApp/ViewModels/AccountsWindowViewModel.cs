@@ -346,6 +346,8 @@ namespace KuCoinApp.ViewModels
 
                     foreach (var acct in mainAccounts)
                     {
+                        if (acct.Currency == null) continue;
+
                         if (acct.Currency.Currency.Currency == value.Currency)
                         {
                             lock(lockObj)
