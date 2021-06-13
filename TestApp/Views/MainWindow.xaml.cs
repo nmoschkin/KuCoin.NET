@@ -83,6 +83,8 @@ namespace KuCoinApp.Views
 
         private void MainWindow_Loaded(object sender, RoutedEventArgs e)
         {
+
+            
         }
 
         private void MainWindow_LocationChanged(object sender, EventArgs e)

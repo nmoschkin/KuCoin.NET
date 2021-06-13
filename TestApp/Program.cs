@@ -17,6 +17,9 @@ using System.Reflection;
 using Kucoin.NET.Futures.Websockets;
 using Kucoin.NET.Futures.Rest;
 using Kucoin.NET.Futures.Data.Market;
+using System.Data;
+using Kucoin.NET.Futures.Data.User;
+using System.Collections.Generic;
 
 namespace KuCoinApp
 {
@@ -193,6 +196,15 @@ namespace KuCoinApp
                 return;
             }
 
+
+            var fuser = new FuturesUser(cred.AttachedAccount);
+
+
+            DateTime beginDay = new DateTime(DateTime.UtcNow.Year, DateTime.UtcNow.Month, DateTime.UtcNow.Day);
+            var dep = await fuser.GetDepositsList(startTime: beginDay);
+            var tans = await fuser.GetTransactions(startTime: beginDay);
+
+            var list = new List<Transaction>(tans.DataList);
             //var ltest1 = new DataSet<string>()
             //{
             //    "Horse",

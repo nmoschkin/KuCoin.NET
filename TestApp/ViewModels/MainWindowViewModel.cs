@@ -1059,7 +1059,7 @@ namespace KuCoinApp
                     // Bring up the testing console.
 
                     // Uncomment to use.
-                    //await Program.TestMain(cred);
+                    // await Program.TestMain(cred);
 
                     // Note, closing the testing console once it is open will close the program.
 
@@ -1196,6 +1196,7 @@ namespace KuCoinApp
         {
             if (Level3Feed.Disposed == false)
             {
+                
                 await Level3Feed.Connect();
                 UpdateSymbol((string)symbol, (string)symbol, true);
             }
