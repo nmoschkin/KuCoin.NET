@@ -52,8 +52,6 @@ All of the feeds support multiplexing.  You may create a single feed object, and
   
   * Note: You cannot multiplex a private feed onto a public feed.
 
-Granular observations are possible with feeds that support more than one symbol subscribed simultaneously.  These are based on the __GranularFeedBase__ abstract class.  
-
 All of the feeds implement the __IObservable<T>__ pattern.  The ViewModels in the example app implement the __IObserver<T>__ pattern where applicable.
 
 ## Running the sample app
