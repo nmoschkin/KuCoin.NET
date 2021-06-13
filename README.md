@@ -9,6 +9,8 @@ __THIS IS PRE-ALPHA__ : I am literally changing entire blocks of code, every day
 
 This library is in active development, and it's brand new so things will undoubtedly change while I consider next steps.
 
+Basically, __don't download this library__ if you need to use it, right away.  __It's not finished.__  If you want to try it out and test it and open issues, then, I welcome that.
+
 June 10th, 2021: Major performance improvements and critical socket feed synchronization tweaks.
 
 
