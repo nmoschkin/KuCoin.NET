@@ -3,13 +3,13 @@ using Kucoin.NET.Websockets.Public;
 
 using System;
 using System.Collections.Generic;
+using System.Net.NetworkInformation;
 using System.Threading.Tasks;
 
 namespace KuCoinConsole
 {
     public static class Program
     {
-
         static ILevel3OrderBookProvider observer;
 
         static void Main(string[] args)
