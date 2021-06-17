@@ -1059,7 +1059,7 @@ namespace KuCoinApp
                     // Bring up the testing console.
 
                     // Uncomment to use.
-                    // await Program.TestMain(cred);
+                    await Program.TestMain(cred);
 
                     // Note, closing the testing console once it is open will close the program.
 

@@ -201,8 +201,8 @@ namespace KuCoinApp
 
 
             DateTime beginDay = new DateTime(DateTime.UtcNow.Year, DateTime.UtcNow.Month, DateTime.UtcNow.Day);
-            var dep = await fuser.GetDepositsList(startTime: beginDay);
-            var tans = await fuser.GetTransactions(startTime: beginDay);
+//            var dep = await fuser.GetDepositsList(startTime: beginDay.AddDays(-60), endTime: beginDay);
+            var tans = await fuser.GetTransactions(startTime: beginDay.AddDays(-45), endTime: beginDay);
 
             var list = new List<Transaction>(tans.DataList);
             //var ltest1 = new DataSet<string>()
