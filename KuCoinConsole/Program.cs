@@ -15,6 +15,7 @@ namespace KuCoinConsole
         static void Main(string[] args)
         {
 
+            // You must configure your pin and credentials via the WPF app, first!
             Console.WriteLine("Type your pin and press enter: ");
 
             var pin = Console.ReadLine();
