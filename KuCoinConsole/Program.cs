@@ -35,6 +35,9 @@ namespace KuCoinConsole
             l3.Connect().ContinueWith(async (t) =>
             {
                 Console.WriteLine("Subscribing to ETH-USDT...");
+                Console.WriteLine("");
+                Console.WriteLine("");
+
                 observer = await l3.AddSymbol("ETH-USDT");
 
                 observer.NextObject += Observer_NextObject;
@@ -48,9 +51,21 @@ namespace KuCoinConsole
 
         }
 
+        static decimal oba = 0M, obb = 0M, ba = 0M, bb = 0M;
+
         private static void Observer_NextObject(Kucoin.NET.Data.Websockets.Level3Update data)
         {
-            Console.WriteLine(data.Price);
+            ba = observer.FullDepthOrderBook.Asks[0].Price;
+            bb = observer.FullDepthOrderBook.Bids[0].Price;
+
+            if (ba != oba || bb != obb)
+            {
+                Console.Write($"Best Ask: {ba:#,###.00} : Best Bid: {bb:#,###.00}                          \r");
+            }
+
+            oba = ba;
+            obb = bb;
+
         }
 
         public static string Hvcyp
