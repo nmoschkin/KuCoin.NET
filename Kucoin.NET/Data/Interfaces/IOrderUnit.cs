@@ -142,7 +142,7 @@ namespace Kucoin.NET.Data.Market
     {
     }
 
-    public interface ILevel3Update
+    public interface ILevel3Update : ISymbol
     {
 
         string Subject { get; set; }

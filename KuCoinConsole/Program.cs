@@ -10,7 +10,7 @@ namespace KuCoinConsole
 {
     public static class Program
     {
-        static ILevel3OrderBookProvider observer;
+        static Dictionary<string, Level3Observation> observers = new Dictionary<string, Level3Observation>();
 
         static void Main(string[] args)
         {
@@ -38,9 +38,13 @@ namespace KuCoinConsole
                 Console.WriteLine("");
                 Console.WriteLine("");
 
-                observer = await l3.AddSymbol("ETH-USDT");
+                observers.Add("ADA-USDT", await l3.AddSymbol("ADA-USDT"));
+                observers.Add("BTC-USDT", await l3.AddSymbol("BTC-USDT"));
 
-                observer.NextObject += Observer_NextObject;
+                foreach (var obs in observers)
+                {
+                    obs.Value.NextObject += Observer_NextObject;
+                }
 
             }).Wait();
 
@@ -55,12 +59,12 @@ namespace KuCoinConsole
 
         private static void Observer_NextObject(Kucoin.NET.Data.Websockets.Level3Update data)
         {
-            ba = observer.FullDepthOrderBook.Asks[0].Price;
-            bb = observer.FullDepthOrderBook.Bids[0].Price;
+            ba = observers[data.Symbol].FullDepthOrderBook.Asks[0].Price;
+            bb = observers[data.Symbol].FullDepthOrderBook.Bids[0].Price;
 
             if (ba != oba || bb != obb)
             {
-                Console.Write($"Best Ask: {ba:#,###.00} : Best Bid: {bb:#,###.00}                          \r");
+                Console.Write($"Best Ask: {ba:#,###.00} : Best Bid: {bb:#,###.00} {data.Symbol}                        \r");
             }
 
             oba = ba;

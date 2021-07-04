@@ -5,26 +5,26 @@ using System.Collections.Generic;
 using System.Text;
 using Newtonsoft.Json;
 using Kucoin.NET.Json;
+using Kucoin.NET.Data.Order;
 using Kucoin.NET.Helpers;
 
-namespace Kucoin.NET.Data.Order
+namespace Kucoin.NET.Futures.Data.Order
 {
     /// <summary>
     /// Order list query parameters object.
     /// </summary>
-    public class OrderListParams : JsonDictBase
+    public class FuturesOrderListParams : JsonDictBase
     {
 
-        public OrderListParams()
+        public FuturesOrderListParams()
         {
         }
 
-        public OrderListParams(
-            OrderStatus? status = null,
+        public FuturesOrderListParams(
+            FuturesOrderStatus? status = null,
             string symbol = null,
             Side? side = null,
             OrderType? type = null,
-            TradeType? tradeType = null,
             DateTime? startAt = null,
             DateTime? endAt = null
         )
@@ -33,7 +33,6 @@ namespace Kucoin.NET.Data.Order
             Symbol = symbol;
             Side = side;
             Type = type;
-            TradeType = tradeType;
             StartAt = startAt;
             EndAt = endAt;
         }
@@ -42,7 +41,7 @@ namespace Kucoin.NET.Data.Order
         /// 
         /// </summary>
         [JsonProperty("status")]
-        public OrderStatus? Status { get; set; }
+        public FuturesOrderStatus? Status { get; set; }
 
         [JsonProperty("symbol")]
         public string Symbol { get; set; }
@@ -61,14 +60,6 @@ namespace Kucoin.NET.Data.Order
         /// <summary>
         /// 
         /// </summary>
-        [JsonProperty("tradeType")]
-        public TradeType? TradeType { get; set; }
-        
-        // TO DO: Fix this up
-        
-        /// <summary>
-        /// 
-        /// </summary>
         [JsonProperty("startAt")]
         [JsonConverter(typeof(AutoTimeConverter), TimeTypes.InMilliseconds)]
         public DateTime? StartAt { get; set; }
@@ -80,5 +71,34 @@ namespace Kucoin.NET.Data.Order
         [JsonConverter(typeof(AutoTimeConverter), TimeTypes.InMilliseconds)]
         public DateTime? EndAt { get; set; }
 
+    }
+
+    public class FuturesStopOrderListParams : FuturesOrderListParams
+    {
+
+
+        public FuturesStopOrderListParams()
+        {
+        }
+
+        public FuturesStopOrderListParams(
+            FuturesOrderStatus? status = null,
+            string symbol = null,
+            Side? side = null,
+            FuturesOrderType? type = null,
+            DateTime? startAt = null,
+            DateTime? endAt = null
+        )
+        {
+            Status = status;
+            Symbol = symbol;
+            Side = side;
+            Type = type;
+            StartAt = startAt;
+            EndAt = endAt;
+        }
+
+        [JsonProperty("type")]
+        public new FuturesOrderType? Type { get; set; }
     }
 }

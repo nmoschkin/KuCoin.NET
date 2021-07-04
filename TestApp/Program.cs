@@ -154,9 +154,9 @@ namespace KuCoinApp
                 AllocConsole();
             }
 
-            var l3 = new Level3(cred);
+            //var l3 = new Level3(cred);
 
-            var l3results = await l3.GetAggregatedOrder("ETH-USDT");
+            //var l3results = await l3.GetAggregatedOrder("ETH-USDT");
 
             //var fmarket = new Kucoin.NET.Futures.Rest.FuturesMarket();
 
@@ -196,15 +196,19 @@ namespace KuCoinApp
                 return;
             }
 
+            var forder = new FuturesTrade(cred.AttachedAccount);
 
-            var fuser = new FuturesUser(cred.AttachedAccount);
+            var orders = await forder.ListRecentDoneOrders();
 
 
-            DateTime beginDay = new DateTime(DateTime.UtcNow.Year, DateTime.UtcNow.Month, DateTime.UtcNow.Day);
-//            var dep = await fuser.GetDepositsList(startTime: beginDay.AddDays(-60), endTime: beginDay);
-            var tans = await fuser.GetTransactions(startTime: beginDay.AddDays(-45), endTime: beginDay);
+//            var fuser = new FuturesUser(cred.AttachedAccount);
 
-            var list = new List<Transaction>(tans.DataList);
+
+//            DateTime beginDay = new DateTime(DateTime.UtcNow.Year, DateTime.UtcNow.Month, DateTime.UtcNow.Day);
+////            var dep = await fuser.GetDepositsList(startTime: beginDay.AddDays(-60), endTime: beginDay);
+//            var tans = await fuser.GetTransactions(startTime: beginDay.AddDays(-45), endTime: beginDay);
+
+//            var list = new List<Transaction>(tans.DataList);
             //var ltest1 = new DataSet<string>()
             //{
             //    "Horse",
