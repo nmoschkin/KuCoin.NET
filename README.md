@@ -7,7 +7,7 @@ This library is in active development, and it's brand new so things will undoubt
 
 July 4th, 2021: Majority of basic core implementation for spot and futures is done.  
 
-If there are any more dramatic changes to the code, they will be with the Level 2 or Level 3 feeds.  
+If there are any more dramatic changes to the code, then they might be with the Level 2 or Level 3 feeds, however I don't believe the primary classes will change that much, at this point.
 
 ## Installation
 
