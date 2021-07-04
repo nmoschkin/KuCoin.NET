@@ -1,18 +1,13 @@
-# Kucoin.NET (Pre-Alpha)
+# Kucoin.NET (Alpha)
 KuCoin API Libraries written in .NET Standard 2.0
 
 __ATTENTION__: __READ INSTALLATION INSTRUCTIONS VERY CAREFULLY__
 
-__ATTENTION__: __THIS IS WORK IN PROGRESS__.  Some of the code could change dramatically as different problems are resolved according to best practices.
-
-__THIS IS PRE-ALPHA__ : I am literally changing entire blocks of code, every day.  The closer I get to a release, the more I will let everyone know.
-
 This library is in active development, and it's brand new so things will undoubtedly change while I consider next steps.
 
-Basically, __don't download this library__ if you need to use it, right away.  __It's not finished.__  If you want to try it out and test it and open issues, then, I welcome that.
+July 4th, 2021: Majority of basic core implementation for spot and futures is done.  
 
-June 10th, 2021: Major performance improvements and critical socket feed synchronization tweaks.
-
+If there are any more dramatic changes to the code, they will be with the Level 2 or Level 3 feeds.  
 
 ## Installation
 
