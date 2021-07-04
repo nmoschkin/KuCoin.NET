@@ -15,8 +15,11 @@
 
   <ItemGroup>
     <Compile Remove="Futures\Websockets\Private\**" />
+    <Compile Remove="Websockets\OrderBooks\**" />
     <EmbeddedResource Remove="Futures\Websockets\Private\**" />
+    <EmbeddedResource Remove="Websockets\OrderBooks\**" />
     <None Remove="Futures\Websockets\Private\**" />
+    <None Remove="Websockets\OrderBooks\**" />
   </ItemGroup>
 
   <ItemGroup>

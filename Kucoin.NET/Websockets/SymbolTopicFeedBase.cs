@@ -128,7 +128,7 @@ namespace Kucoin.NET.Websockets
         /// </summary>
         /// <param name="symbol"></param>
         /// <returns></returns>
-        public virtual async Task RemoveSymbol(string symbol)
+        public async Task RemoveSymbol(string symbol)
         {
             await RemoveSymbols(new string[] { symbol });
         }
@@ -174,7 +174,7 @@ namespace Kucoin.NET.Websockets
         /// <returns></returns>
         public virtual async Task RemoveAllSymbols()
         {
-            await RemoveSymbols(activeSymbols);
+            await RemoveSymbols(new List<string>(activeSymbols));
         }
 
         #region IObservable<T> Pattern
@@ -207,7 +207,7 @@ namespace Kucoin.NET.Websockets
         /// <param name="symbols">The list of symbols that the observer will observe.</param>
         /// <param name="observer">A class object that implements the <see cref="IObserver{T}"/> interface.</param>
         /// <returns>An <see cref="IDisposable"/> implementation that can be used to cancel the subscription.</returns>
-        public IDisposable Subscribe(IObserver<T> observer, IEnumerable<string> symbols)
+        public virtual IDisposable Subscribe(IObserver<T> observer, IEnumerable<string> symbols)
         {
             lock (observations)
             {
