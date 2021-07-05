@@ -15,7 +15,7 @@ namespace Kucoin.NET.Websockets.Public
     /// <summary>
     ///  Level 3 Match Engine Feed
     /// </summary>
-    public class Level3 : Level3Base<ObservableAtomicOrderBook<ObservableAtomicOrderUnit>, ObservableAtomicOrderUnit, Level3KeyedCollection<AtomicOrderUnit>, AtomicOrderUnit, Level3Update, Level3Observation>
+    public class Level3 : Level3Base<ObservableAtomicOrderBook<ObservableAtomicOrderUnit>, ObservableAtomicOrderUnit, KeyedAtomicOrderBook<AtomicOrderStruct>, AtomicOrderStruct, Level3Update, Level3Observation>
     {
         
         public Level3(ICredentialsProvider credProvider) : base(credProvider)

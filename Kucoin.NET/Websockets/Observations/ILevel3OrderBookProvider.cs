@@ -11,23 +11,25 @@ namespace Kucoin.NET.Websockets.Observations
     /// <summary>
     /// Standard level 2 order book provider interface.
     /// </summary>
-    public interface ILevel3OrderBookProvider : ILevel3OrderBookProvider<ObservableAtomicOrderBook<ObservableAtomicOrderUnit>, ObservableAtomicOrderUnit, Level3Update>
+    public interface ILevel3OrderBookProvider : ILevel3OrderBookProvider<ObservableAtomicOrderBook<ObservableAtomicOrderUnit>, ObservableAtomicOrderUnit, KeyedAtomicOrderBook<AtomicOrderStruct>, AtomicOrderStruct, Level3Update>
     {
     }
 
     /// <summary>
     /// Level 2 order book provider interface.
     /// </summary>
-    /// <typeparam name="TBook">The type of order book (must implement <see cref="IOrderBook{T}"/> of <see cref="TUnit"/>.)</typeparam>
-    /// <typeparam name="TUnit">The type of the order unit (must implement <see cref="IOrderUnit"/>.)</typeparam>
+    /// <typeparam name="TBookOut">The type of order book (must implement <see cref="IOrderBook{T}"/> of <see cref="TUnitOut"/>.)</typeparam>
+    /// <typeparam name="TUnitOut">The type of the order unit (must implement <see cref="IOrderUnit"/>.)</typeparam>
     /// <typeparam name="TUpdate">The type of the update object pushed with <see cref="IObserver{T}.OnNext(T)"/>.</typeparam>
-    public interface ILevel3OrderBookProvider<TBook, TUnit, TUpdate> :
+    public interface ILevel3OrderBookProvider<TBookOut, TUnitOut, TBookIn, TUnitIn, TUpdate> :
         INotifyPropertyChanged,
         IDisposable,
         ISymbol,
         IObserver<TUpdate>
-        where TBook : IAtomicOrderBook<TUnit>
-        where TUnit : IAtomicOrderUnit
+        where TBookOut : IAtomicOrderBook<TUnitOut>
+        where TUnitOut : IAtomicOrderUnit
+        where TBookIn : KeyedAtomicOrderBook<TUnitIn>
+        where TUnitIn : IAtomicOrderUnit
         where TUpdate : new()
     {
         
@@ -35,7 +37,7 @@ namespace Kucoin.NET.Websockets.Observations
         /// <summary>
         /// Event that is fired when the Observable order book is updated
         /// </summary>
-        event EventHandler<Level3OrderBookUpdatedEventArgs<TBook, TUnit>> OrderBookUpdated;
+        event EventHandler<Level3OrderBookUpdatedEventArgs<TBookOut, TUnitOut>> OrderBookUpdated;
 
         /// <summary>
         /// Event that is fired for every new object received
@@ -45,7 +47,7 @@ namespace Kucoin.NET.Websockets.Observations
         /// <summary>
         /// The sorted and sliced order book (user-facing data).
         /// </summary>
-        TBook OrderBook { get; }
+        TBookOut OrderBook { get; }
 
         /// <summary>
         /// The number of pieces to push to the order book from the preflight book.
@@ -55,7 +57,7 @@ namespace Kucoin.NET.Websockets.Observations
         /// <summary>
         /// The raw preflight (full depth) order book.
         /// </summary>
-        KeyedAtomicOrderBook<AtomicOrderUnit> FullDepthOrderBook { get; }
+        TBookIn FullDepthOrderBook { get; }
 
         /// <summary>
         /// Gets the K-Line type to apply to volume refresh cycles.

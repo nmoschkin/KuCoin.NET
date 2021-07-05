@@ -21,8 +21,8 @@ namespace Kucoin.NET.Websockets.Public
         where TUnitOut : IAtomicOrderUnit, new()
         where TUpdate : ILevel3Update, new()
         where TUnitIn : IAtomicOrderUnit, new()
-        where TBookIn : Level3KeyedCollection<TUnitIn>
-        where TObservation : Level3ObservationBase<TBookOut, TUnitOut, TUpdate>
+        where TBookIn : KeyedAtomicOrderBook<TUnitIn>, new()
+        where TObservation : Level3ObservationBase<TBookOut, TUnitOut, TBookIn, TUnitIn, TUpdate>
     {
 
         internal readonly Dictionary<string, TObservation> activeFeeds = new Dictionary<string, TObservation>();
@@ -57,7 +57,7 @@ namespace Kucoin.NET.Websockets.Public
         /// <summary>
         /// Event that gets fired when the feed for a symbol has been calibrated and is ready to be used.
         /// </summary>
-        public virtual event EventHandler<Level3SymbolCalibratedEventArgs<TBookOut, TUnitOut, TUpdate>> SymbolCalibrated;
+        public virtual event EventHandler<Level3SymbolCalibratedEventArgs<TBookOut, TUnitOut, TBookIn, TUnitIn, TUpdate>> SymbolCalibrated;
 
         public Level3Base(ICredentialsProvider credProvider) : base(credProvider)
         {
@@ -287,7 +287,7 @@ namespace Kucoin.NET.Websockets.Public
         /// Returns the full market depth. 
         /// Use this to calibrate a full level 2 feed.
         /// </remarks>
-        public virtual async Task<KeyedAtomicOrderBook<AtomicOrderUnit>> GetAggregatedOrder(string symbol)
+        public virtual async Task<TBookIn> GetAggregatedOrder(string symbol)
         {
             var curl = AggregateEndpoint;
             var param = new Dictionary<string, object>();
@@ -295,7 +295,7 @@ namespace Kucoin.NET.Websockets.Public
             param.Add("symbol", symbol);
 
             var jobj = await MakeRequest(HttpMethod.Get, curl, 5, !IsPublic, param);
-            var result = jobj.ToObject<KeyedAtomicOrderBook<AtomicOrderUnit>>();
+            var result = jobj.ToObject<TBookIn>();
 
 
             if (typeof(ISequencedOrderUnit).IsAssignableFrom(typeof(TUnitOut)))
@@ -374,7 +374,7 @@ namespace Kucoin.NET.Websockets.Public
 
                                 _ = Task.Run(() =>
                                 {
-                                    SymbolCalibrated?.Invoke(this, new Level3SymbolCalibratedEventArgs<TBookOut, TUnitOut, TUpdate>(af));
+                                    SymbolCalibrated?.Invoke(this, new Level3SymbolCalibratedEventArgs<TBookOut, TUnitOut, TBookIn, TUnitIn, TUpdate>(af));
                                     State = FeedState.Running;
                                 });
 

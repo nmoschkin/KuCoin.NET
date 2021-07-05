@@ -225,4 +225,59 @@ namespace Kucoin.NET.Data.Market
 
     }
 
+    [JsonConverter(typeof(AtomicOrderUnitConverter))]
+    public struct AtomicOrderStruct : IAtomicOrderUnit
+    {
+        internal string orderId;
+        internal DateTime timestamp;
+        internal decimal price;
+        internal decimal size;
+
+        [JsonProperty("orderId")]
+        public string OrderId
+        {
+            get => orderId;
+            set => orderId = value;
+        }
+
+        [JsonProperty("time")]
+        public DateTime Timestamp
+        {
+            get => timestamp;
+            set => timestamp = value;
+        }
+
+        [JsonProperty("price")]
+        public decimal Price
+        {
+            get => price;
+            set => price = value;
+        }
+
+        [JsonProperty("size")]
+        public decimal Size
+        {
+            get => size;
+            set => size = value;
+        }
+
+        internal AtomicOrderStruct(object[] data)
+        {
+            orderId = (string)data[0];
+            price = decimal.Parse((string)data[1]);
+            size = decimal.Parse((string)data[2]);
+            timestamp = EpochTime.NanosecondsToDate((long)data[3]);
+        }
+
+        public AtomicOrderStruct Clone()
+        {
+            return (AtomicOrderStruct)MemberwiseClone();
+        }
+
+        object ICloneable.Clone()
+        {
+            return MemberwiseClone();
+        }
+    }
+
 }

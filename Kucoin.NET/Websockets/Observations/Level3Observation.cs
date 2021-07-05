@@ -26,11 +26,11 @@ namespace Kucoin.NET.Websockets.Observations
     /// <summary>
     /// Custom level 2 observation for custom Level 2 feed implementations.
     /// </summary>
-    /// <typeparam name="TBook">The type of your custom order book.</typeparam>
-    /// <typeparam name="TUnit">The type of your custom order pieces.</typeparam>
-    public class CustomLevel3Observation<TBook, TUnit> : Level3ObservationBase<TBook, TUnit, Level3Update>
-        where TBook : IAtomicOrderBook<TUnit>, new()
-        where TUnit : IAtomicOrderUnit, new()
+    /// <typeparam name="TBookOut">The type of your custom order book.</typeparam>
+    /// <typeparam name="TUnitOut">The type of your custom order pieces.</typeparam>
+    public class CustomLevel3Observation<TBookOut, TUnitOut> : Level3ObservationBase<TBookOut, TUnitOut, KeyedAtomicOrderBook<AtomicOrderStruct>, AtomicOrderStruct, Level3Update>
+        where TBookOut : IAtomicOrderBook<TUnitOut>, new()
+        where TUnitOut : IAtomicOrderUnit, new()
     {
 
         protected bool calibrated;
@@ -84,7 +84,7 @@ namespace Kucoin.NET.Websockets.Observations
         /// <param name="changes">The changes to sequence.</param>
         /// <param name="pieces">The collection to change (either an ask or a bid collection)</param>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        protected void SequencePieces(Level3Update change, Level3KeyedCollection<AtomicOrderUnit> pieces, Level3KeyedCollection<AtomicOrderUnit> otherPieces)
+        protected void SequencePieces(Level3Update change, Level3KeyedCollection<AtomicOrderStruct> pieces, Level3KeyedCollection<AtomicOrderStruct> otherPieces)
         {
 
             if (change.Subject == "done")
@@ -96,7 +96,7 @@ namespace Kucoin.NET.Websockets.Observations
             {
                 if (change.Price == null || change.Price == 0 || change.Size == null || change.Size == 0) return;
 
-                var u = new AtomicOrderUnit
+                var u = new AtomicOrderStruct
                 {
                     Price = (decimal)change.Price,
                     Size = (decimal)change.Size,
@@ -251,7 +251,7 @@ namespace Kucoin.NET.Websockets.Observations
         /// <param name="dest">Destination collection.</param>
         /// <param name="pieces">The number of pieces to copy.</param>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        protected void CopyTo(IList<AtomicOrderUnit> src, IList<TUnit> dest, int pieces)
+        protected void CopyTo(IList<AtomicOrderStruct> src, IList<TUnitOut> dest, int pieces)
         {
             int i, c = pieces < src.Count ? pieces : src.Count;
             int x = dest.Count;
@@ -263,7 +263,7 @@ namespace Kucoin.NET.Websockets.Observations
 
                 foreach (var piece in src)
                 {
-                    var u = new TUnit()
+                    var u = new TUnitOut()
                     {
                         Price = piece.Price,
                         Size = piece.Size,
@@ -299,7 +299,7 @@ namespace Kucoin.NET.Websockets.Observations
             {
                 if (orderBook == null)
                 {
-                    var ob = new TBook();
+                    var ob = new TBookOut();
                     OrderBook = ob;
                 }
 
