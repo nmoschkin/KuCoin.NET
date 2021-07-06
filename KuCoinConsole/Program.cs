@@ -72,20 +72,16 @@ namespace KuCoinConsole
             // If you want to run the WPF app, and set up your credentials from there, 
             // you can uncomment this code and use the same pin you use in the WPF app.
 
-            /*************
-
             // You must configure your pin and credentials via the WPF app, first!
-            Console.WriteLine("Type your pin and press enter: ");
+            //Console.WriteLine("Type your pin and press enter: ");
 
-            var pin = Console.ReadLine();
-            cred = CryptoCredentials.LoadFromStorage(Seed, pin);
+            //var pin = Console.ReadLine();
+            //cred = CryptoCredentials.LoadFromStorage(Seed, pin);
 
-            if (cred == null)
-            {
-                Console.WriteLine("Invalid credentials!");
-            }
-
-            *************/
+            //if (cred == null)
+            //{
+            //    Console.WriteLine("Invalid credentials!");
+            //}
 
 
             // Use simple credentials:

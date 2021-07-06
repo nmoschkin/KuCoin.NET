@@ -25,7 +25,7 @@ namespace Kucoin.NET.Data.Websockets
     /// <summary>
     /// Level 3 Match Engine Update
     /// </summary>
-    public class Level3Update : ILevel3Update
+    public struct Level3Update : ILevel3Update
     {
         /// <summary>
         /// Sequence
