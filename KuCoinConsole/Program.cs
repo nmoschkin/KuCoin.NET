@@ -73,7 +73,7 @@ namespace KuCoinConsole
             // you can uncomment this code and use the same pin you use in the WPF app.
             // You must configure your pin and credentials via the WPF app, first!
 
-            /**/            
+            /**/
 
             //Console.WriteLine("Type your pin and press enter: ");
 
@@ -204,7 +204,7 @@ namespace KuCoinConsole
 
             lock (lockObj)
             {
-                decimal ba, bb;
+                decimal ba, bb, vol;
 
                 readOut.Clear();
                 readOut.AppendLine($"Feed Time Stamp: {timestamp:G}                 ");
@@ -216,12 +216,13 @@ namespace KuCoinConsole
 
                     ba = obs.Value.FullDepthOrderBook.Asks[0].Price;
                     bb = obs.Value.FullDepthOrderBook.Bids[0].Price;
+                    vol = obs.Value.Level3Volume;
 
                     var curr = "";
 
                     curr = market.Currencies[market.Symbols[obs.Value.Symbol].BaseCurrency].FullName;
 
-                    var text = $"{MinChars(obs.Value.Symbol, 12)} - Best Ask: {MinChars(ba.ToString("#,##0.00######"), 16)} : Best Bid: {MinChars(bb.ToString("#,##0.00######"), 16)}  {curr}                       ";
+                    var text = $"{MinChars(obs.Value.Symbol, 12)} - Best Ask: {MinChars(ba.ToString("#,##0.00######"), 12)} Best Bid: {MinChars(bb.ToString("#,##0.00######"), 12)} - 1m Vol: {MinChars(vol.ToString("#,##0.0#"), 14)} {curr}            ";
 
                     readOut.AppendLine(text);
                 }
