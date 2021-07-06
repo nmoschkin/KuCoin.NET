@@ -6,9 +6,46 @@ using System.Collections.Generic;
 using System.Net.NetworkInformation;
 using System.Text;
 using System.Threading.Tasks;
+using Kucoin.NET.Helpers;
 
 namespace KuCoinConsole
 {
+
+    /// <summary>
+    /// A simple credentials provider for you to test the program.
+    /// </summary>
+    public class SimpleCredentials : ICredentialsProvider
+    {
+        public static SimpleCredentials Instance { get; private set; }
+
+
+        static SimpleCredentials()
+        {
+            // create instance 
+            Instance = new SimpleCredentials();
+        }
+
+
+        private SimpleCredentials()
+        {
+            // only need 1 instance of this object.
+        }
+
+        public ICredentialsProvider AttachedAccount => throw new NotImplementedException();
+
+        public bool GetFutures() => false;
+
+        public bool GetSandbox() => false;
+
+        public string GetKey() => "yourkey";
+
+        public string GetSecret() => "yoursecret";
+
+        public string GetPassphrase() => "yourpassphrase";
+
+    }
+
+
     public static class Program
     {
         static Dictionary<string, Level3Observation> observers = new Dictionary<string, Level3Observation>();
@@ -29,36 +66,61 @@ namespace KuCoinConsole
             market.RefreshSymbolsAsync().Wait();
             market.RefreshCurrenciesAsync().Wait();
 
+            ICredentialsProvider cred;
+
+
+            // If you want to run the WPF app, and set up your credentials from there, 
+            // you can uncomment this code and use the same pin you use in the WPF app.
+
+            /*************
+
             // You must configure your pin and credentials via the WPF app, first!
             Console.WriteLine("Type your pin and press enter: ");
 
             var pin = Console.ReadLine();
-            var cred = CryptoCredentials.LoadFromStorage(Seed, pin);
+            cred = CryptoCredentials.LoadFromStorage(Seed, pin);
 
             if (cred == null)
             {
                 Console.WriteLine("Invalid credentials!");
             }
 
+            *************/
+
+
+            // Use simple credentials:
+            // Comment this out if you uncomment the code above.
+            cred = SimpleCredentials.Instance;
+
+
+
+            // Create the new websocket client.
             l3conn = new Level3(cred);
 
-            // We want to monitor how fast.
+            // We want to monitor how much data is coming through the feed.
             l3conn.MonitorThroughput = true;
             
-            // Disable Observable book updating for console app.
+            // Disable Observable/UI book updating for console app.
             l3conn.UpdateInterval = 0;
 
-            // clear the pin off the screen
+            // clear the console (if you use a pin, this will get it off the screen)
             Console.Clear();
 
             Console.WriteLine("Connecting...");
 
+            // default update delay in milliseconds.
+            // do not set this number too low.
+            int delay = 100;
+
             l3conn.Connect().ContinueWith(async (t) =>
             {
+
+                // 10 of the most popular trading symbols
                 var syms = new List<string>(new string[] { "ETH-USDT", "XLM-USDT", "BTC-USDT", "ADA-USDT", "DOGE-USDT", "DOT-USDT", "UNI-USDT", "LTC-USDT", "LINK-USDT", "MATIC-USDT" });
 
                 syms.Sort((a, b) =>
                 {
+                    // sort symbols alphabetically
                     return string.Compare(a, b);
                 });
 
@@ -72,7 +134,7 @@ namespace KuCoinConsole
 
                         while (obs.Calibrated == false)
                         {
-                            await Task.Delay(10);
+                            await Task.Delay(delay);
                         }
 
                         observers.Add(sym, obs);
@@ -87,14 +149,12 @@ namespace KuCoinConsole
 
             }).Wait();
 
-
-            // milliseconds
-            int delay = 100;
-
             while (l3conn?.Connected ?? false)
             {
                 if (!ready)
                 {
+                    // wait til all the feeds are calibrated before displaying anything
+
                     while (!ready)
                     {
                         Task.Delay(delay).Wait();
@@ -104,7 +164,11 @@ namespace KuCoinConsole
                 // loop forever to keep the program alive.
                 Task.Delay(delay).Wait();
 
+                // remember the cursor position on the screen
                 int lpos = Console.CursorTop;
+                
+                // let's find the most current update date/time from all feeds
+
                 DateTime ts = DateTime.MinValue;
 
                 foreach (var obs in observers)
@@ -115,15 +179,24 @@ namespace KuCoinConsole
                     }
                 }
 
+                // create the text.
                 WriteOut(ts);
+
+                // write the text to the console.
                 Console.Write(readOut.ToString());
 
+
+                // restore the cursor position.
                 Console.CursorTop = lpos;
                 Console.CursorLeft = 0;
             }
 
         }
 
+        /// <summary>
+        /// Write the current status of the feed to a <see cref="StringBuilder"/> object.
+        /// </summary>
+        /// <param name="timestamp">The current feed timestamp, or null for local now.</param>
         private static void WriteOut(DateTime? timestamp = null)
         {
             if (timestamp == null) timestamp = DateTime.Now;
@@ -159,6 +232,12 @@ namespace KuCoinConsole
             }
         }
 
+        /// <summary>
+        /// Print a padded string.
+        /// </summary>
+        /// <param name="text">The string to print.</param>
+        /// <param name="minChars">The minimum string length.</param>
+        /// <returns>A padding string.</returns>
         public static string MinChars(string text, int minChars)
         {
             var o = text;
