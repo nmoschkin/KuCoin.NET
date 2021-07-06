@@ -133,7 +133,7 @@ namespace KuCoinConsole
                 decimal ba, bb;
 
                 readOut.Clear();
-                readOut.AppendLine($"{timestamp:G}                 ");
+                readOut.AppendLine($"Feed Time Stamp: {timestamp:G}                 ");
                 readOut.AppendLine($"                                   ");
 
                 foreach (var obs in observers)
