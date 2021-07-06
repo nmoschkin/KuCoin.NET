@@ -279,15 +279,15 @@ namespace Kucoin.NET.Websockets.Public
 
 
         /// <summary>
-        /// Get the full Level 2 Data Book for the specified trading symbol.
+        /// Get the full Level 3 Atomic Order Book for the specified trading symbol.
         /// </summary>
         /// <param name="symbol">The trading symbol.</param>
         /// <returns>The part book snapshot.</returns>
         /// <remarks>
         /// Returns the full market depth. 
-        /// Use this to calibrate a full level 2 feed.
+        /// Use this to calibrate a full level 3 feed.
         /// </remarks>
-        public virtual async Task<TBookIn> GetAggregatedOrder(string symbol)
+        public virtual async Task<TBookIn> GetAtomicOrderBook(string symbol)
         {
             var curl = AggregateEndpoint;
             var param = new Dictionary<string, object>();
@@ -318,7 +318,7 @@ namespace Kucoin.NET.Websockets.Public
         }
 
         /// <summary>
-        /// Initialize the order book with a call to <see cref="GetAggregatedOrder(string)"/>.
+        /// Initialize the order book with a call to <see cref="GetAtomicOrderBook(string)"/>.
         /// </summary>
         /// <param name="symbol">The symbol to initialize.</param>
         /// <remarks>
@@ -330,7 +330,7 @@ namespace Kucoin.NET.Websockets.Public
 
             var af = activeFeeds[symbol];
 
-            var data = await GetAggregatedOrder(af.Symbol);
+            var data = await GetAtomicOrderBook(af.Symbol);
 
             af.FullDepthOrderBook = data;
             af.Initialized = true;
