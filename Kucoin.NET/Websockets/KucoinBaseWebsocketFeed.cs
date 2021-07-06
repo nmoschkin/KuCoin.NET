@@ -728,6 +728,8 @@ namespace Kucoin.NET.Websockets
 
         private Thread msgPumpThread;
 
+        public int QueueLength => msgQueue?.Count ?? 0;
+
         /// <summary>
         /// The data receive thread.
         /// </summary>
