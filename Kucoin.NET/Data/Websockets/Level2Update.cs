@@ -17,7 +17,7 @@ namespace Kucoin.NET.Data.Websockets
     /// <summary>
     /// Level 2 New Sequence Changes
     /// </summary>
-    public class Changes : IOrderUnitList<IOrderUnit>
+    public struct Changes : IOrderUnitList<IOrderUnit>
     {
         IList<IOrderUnit> IOrderUnitList<IOrderUnit>.Asks => (IList<IOrderUnit>)Asks;
 
@@ -40,7 +40,7 @@ namespace Kucoin.NET.Data.Websockets
     /// <summary>
     /// Level 2 Full Market Depth Data Update
     /// </summary>
-    public class Level2Update : ISymbol, IOrderUnitListProvider<IOrderUnit>
+    public struct Level2Update : ISymbol, IOrderUnitListProvider<IOrderUnit>
     {
         /// <summary>
         /// Update sequence start

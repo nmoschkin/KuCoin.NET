@@ -14,7 +14,7 @@ namespace Kucoin.NET.Futures.Data.Market
     /// <summary>
     /// Represents a change packet pushed from the Futures Level 2 feed.
     /// </summary>
-    public class FuturesLevel2Update
+    public struct FuturesLevel2Update
     {
         /// <summary>
         /// Sequence number which is used to judge the continuity of pushed messages
@@ -41,7 +41,7 @@ namespace Kucoin.NET.Futures.Data.Market
     /// <summary>
     /// Represents a change piece of data on the Futures Level 2 feed.
     /// </summary>
-    public class FuturesChange : IFuturesOrderUpdate
+    public struct FuturesChange : IFuturesOrderUpdate
     {
         /// <summary>
         /// The change price in quote currency
@@ -57,10 +57,6 @@ namespace Kucoin.NET.Futures.Data.Market
         /// The side of the change (buy or sell)
         /// </summary>
         public Side Side { get; set; }
-
-        public FuturesChange()
-        {
-        }
 
         /// <summary>
         /// Initialize the class directly from the feed data.

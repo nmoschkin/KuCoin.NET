@@ -758,8 +758,9 @@ namespace Kucoin.NET.Websockets
             // loop forever or until the connection is broken or canceled.
             while (!ctsReceive.IsCancellationRequested && socket?.State == WebSocketState.Open)
             {
-
                 var result = await socket.ReceiveAsync(arrSeg, ctsReceive.Token);
+                if (ctsReceive?.IsCancellationRequested ?? true) return;
+
                 c = result.Count;
 
                 if (c == 0)
@@ -1138,13 +1139,13 @@ namespace Kucoin.NET.Websockets
         {
             if (disposed) return;
 
-            Disconnect();
-
             if (this.disposing) return;
             this.disposing = true;
 
-            CancelAllThreads();
+            Disconnect();
 
+            CancelAllThreads();
+            
             if (isMultiplexHost && multiplexClients != null && multiplexClients.Count > 0)
             {
                 // multiplexed clients need to go, too.

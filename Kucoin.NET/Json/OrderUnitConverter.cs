@@ -10,43 +10,21 @@ namespace Kucoin.NET.Json
 {
     public class OrderUnitConverter : JsonConverter
     {
-        //public override OrderUnit ReadJson(JsonReader reader, Type objectType, OrderUnit existingValue, bool hasExistingValue, JsonSerializer serializer)
-        //{
-        //    if (reader.TokenType == JsonToken.StartArray)
-        //    {
-        //        return new OrderUnit((string[])serializer.Deserialize(reader, typeof(string[])));
-        //    }
-        //    else
-        //    {
-        //        throw new NotImplementedException();
-        //    }
-        //}
-
-        //public override void WriteJson(JsonWriter writer, OrderUnit value, JsonSerializer serializer)
-        //{
-        //    string[] str;
-
-        //    if (value.Sequence != 0)
-        //    {
-        //        str = new string[] { value.Price.ToString(), value.Size.ToString(), value.Sequence.ToString() };
-        //    }
-        //    else
-        //    {
-        //        str = new string[] { value.Price.ToString(), value.Size.ToString() };
-        //    }
-
-        //    writer.WriteValue(str);
-        //}
         public override bool CanConvert(Type objectType)
         {
-            return typeof(OrderUnit).IsAssignableFrom(objectType);
+            return typeof(OrderUnit).IsAssignableFrom(objectType) || typeof(OrderUnitStruct).IsAssignableFrom(objectType);
         }
 
         public override object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer)
         {
             if (reader.TokenType == JsonToken.StartArray)
             {
-                if (objectType == typeof(OrderUnit))
+
+                if (objectType == typeof(OrderUnitStruct))
+                {
+                    return new OrderUnitStruct((string[])serializer.Deserialize(reader, typeof(string[])));
+                }
+                else if (objectType == typeof(OrderUnit))
                 {
                     return new OrderUnit((string[])serializer.Deserialize(reader, typeof(string[])));
                 }
@@ -69,12 +47,11 @@ namespace Kucoin.NET.Json
         {
             string[] str;
 
-            if (value is OrderUnit o)
+            if (value is IOrderUnit o)
             {
-
-                if (o.Sequence != 0)
+                if (o is ISequencedOrderUnit so)
                 {
-                    str = new string[] { o.Price.ToString(), o.Size.ToString(), o.Sequence.ToString() };
+                    str = new string[] { so.Price.ToString(), so.Size.ToString(), so.Sequence.ToString() };
                 }
                 else
                 {

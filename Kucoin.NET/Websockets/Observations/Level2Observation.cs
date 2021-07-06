@@ -34,7 +34,7 @@ namespace Kucoin.NET.Websockets.Observations
     /// </summary>
     /// <typeparam name="TBook">The type of your custom order book.</typeparam>
     /// <typeparam name="TUnit">The type of your custom order pieces.</typeparam>
-    public class CustomLevel2Observation<TBook, TUnit> : Level2ObservationBase<TBook, TUnit, Level2Update>
+    public class CustomLevel2Observation<TBook, TUnit> : Level2ObservationBase<TBook, TUnit, KeyedOrderBook<OrderUnitStruct>, OrderUnitStruct, Level2Update>
         where TBook : IOrderBook<TUnit>, new()
         where TUnit : IOrderUnit, new()
     {
@@ -108,7 +108,7 @@ namespace Kucoin.NET.Websockets.Observations
         /// <param name="changes">The changes to sequence.</param>
         /// <param name="pieces">The collection to change (either an ask or a bid collection)</param>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        protected void SequencePieces(IList<OrderUnit> changes, Level2KeyedCollection<OrderUnit> pieces)
+        protected void SequencePieces(IList<OrderUnit> changes, Level2KeyedCollection<OrderUnitStruct> pieces)
         {
             foreach (var change in changes)
             {
@@ -129,7 +129,7 @@ namespace Kucoin.NET.Websockets.Observations
                     }
                     else
                     {
-                        var newPiece = new OrderUnit
+                        var newPiece = new OrderUnitStruct
                         {
                             Price = change.Price,
                             Size = change.Size,
@@ -220,7 +220,7 @@ namespace Kucoin.NET.Websockets.Observations
         /// <param name="dest">Destination collection.</param>
         /// <param name="pieces">The number of pieces to copy.</param>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        protected void CopyTo(IList<OrderUnit> src, IList<TUnit> dest, int pieces)
+        protected void CopyTo(IList<OrderUnitStruct> src, IList<TUnit> dest, int pieces)
         {
             int i, c = pieces < src.Count ? pieces : src.Count;
             int x = dest.Count;

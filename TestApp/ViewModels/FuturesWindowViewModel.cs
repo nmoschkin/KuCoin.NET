@@ -79,7 +79,7 @@ namespace KuCoinApp
 
         protected ObservableCollection<CurrencyViewModel> currencies = new ObservableCollection<CurrencyViewModel>();
 
-        protected ILevel2OrderBookProvider<FuturesOrderBook, ObservableOrderUnit, FuturesLevel2Update> futureslevel2;
+        protected ILevel2OrderBookProvider<FuturesOrderBook, ObservableOrderUnit, KeyedOrderBook<OrderUnitStruct>, OrderUnitStruct, FuturesLevel2Update> futureslevel2;
         
         protected List<SymbolViewModel> recentSymbols = new List<SymbolViewModel>();
 
@@ -92,7 +92,7 @@ namespace KuCoinApp
 
         public override event EventHandler AskQuit;
 
-        public ILevel2OrderBookProvider<FuturesOrderBook, ObservableOrderUnit, FuturesLevel2Update> FuturesLevel2
+        public ILevel2OrderBookProvider<FuturesOrderBook, ObservableOrderUnit, KeyedOrderBook<OrderUnitStruct>, OrderUnitStruct, FuturesLevel2Update> FuturesLevel2
         {
             get => futureslevel2;
             protected set

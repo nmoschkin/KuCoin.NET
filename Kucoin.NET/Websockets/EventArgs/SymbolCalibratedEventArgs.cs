@@ -10,9 +10,11 @@ namespace Kucoin.NET.Websockets
     /// <summary>
     /// Provides data for a SymbolCalibrated event.
     /// </summary>
-    public class SymbolCalibratedEventArgs<TBook, TUnit, TUpdate> : EventArgs 
-        where TBook: IOrderBook<TUnit>
-        where TUnit: IOrderUnit
+    public class SymbolCalibratedEventArgs<TBookOut, TUnitOut, TBookIn, TUnitIn, TUpdate> : EventArgs 
+        where TBookOut: IOrderBook<TUnitOut>
+        where TUnitOut: IOrderUnit
+        where TBookIn: KeyedOrderBook<TUnitIn>
+        where TUnitIn: IOrderUnit 
         where TUpdate: new()
     {
         /// <summary>
@@ -26,9 +28,9 @@ namespace Kucoin.NET.Websockets
         public int MarketDepth { get; private set; }
 
 
-        public ILevel2OrderBookProvider<TBook, TUnit, TUpdate> Provider { get; private set; }
+        public ILevel2OrderBookProvider<TBookOut, TUnitOut, TBookIn, TUnitIn, TUpdate> Provider { get; private set; }
 
-        public SymbolCalibratedEventArgs(ILevel2OrderBookProvider<TBook, TUnit, TUpdate> provider)
+        public SymbolCalibratedEventArgs(ILevel2OrderBookProvider<TBookOut, TUnitOut, TBookIn, TUnitIn, TUpdate> provider)
 
         {
             Provider = provider;

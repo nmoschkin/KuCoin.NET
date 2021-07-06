@@ -15,7 +15,7 @@ namespace Kucoin.NET.Futures.Websockets.Observations
     /// <summary>
     /// KuCoin Futures Level 2 Observation standard implementation.
     /// </summary>
-    public class FuturesLevel2Observation : Level2ObservationBase<FuturesOrderBook, ObservableOrderUnit, FuturesLevel2Update>
+    public class FuturesLevel2Observation : Level2ObservationBase<FuturesOrderBook, ObservableOrderUnit, KeyedOrderBook<OrderUnitStruct>, OrderUnitStruct, FuturesLevel2Update>
     {
         protected bool calibrated;
         protected bool initialized;
@@ -83,7 +83,7 @@ namespace Kucoin.NET.Futures.Websockets.Observations
         /// </summary>
         /// <param name="change">The change to sequence.</param>
         /// <param name="pieces">The collection to change (either an ask or a bid collection)</param>
-        protected void SequencePieces(FuturesLevel2Update change, Level2KeyedCollection<OrderUnit> pieces)
+        protected void SequencePieces(FuturesLevel2Update change, Level2KeyedCollection<OrderUnitStruct> pieces)
         {
             decimal cp = change.Change.Price;
 
@@ -99,12 +99,12 @@ namespace Kucoin.NET.Futures.Websockets.Observations
 
                     piece.Size = change.Change.Size;
 
-                    if (piece is ISequencedOrderUnit seqpiece && change is ISequencedOrderUnit seqchange)
-                        seqpiece.Sequence = seqchange.Sequence;
+                    if (piece is ISequencedOrderUnit seqpiece)
+                        seqpiece.Sequence = change.Sequence;
                 }
                 else
                 {
-                    var ou = new OrderUnit();
+                    var ou = new OrderUnitStruct();
 
                     ou.Price = change.Change.Price;
                     ou.Size = change.Change.Size;
@@ -188,7 +188,7 @@ namespace Kucoin.NET.Futures.Websockets.Observations
         /// <param name="src">Source data.</param>
         /// <param name="dest">Destination collection.</param>
         /// <param name="pieces">The number of pieces to copy.</param>
-        protected void CopyTo(IList<OrderUnit> src, IList<ObservableOrderUnit> dest, int pieces)
+        protected void CopyTo(IList<OrderUnitStruct> src, IList<ObservableOrderUnit> dest, int pieces)
         {
             int i, c = pieces < src.Count ? pieces : src.Count;
             int x = dest.Count;
@@ -277,7 +277,7 @@ namespace Kucoin.NET.Futures.Websockets.Observations
             {
                 if (connectedFeed != null)
                 {
-                    ((Level2Base<FuturesOrderBook, ObservableOrderUnit, FuturesLevel2Update, FuturesLevel2Observation>)connectedFeed).RemoveSymbol(symbol).Wait();
+                    ((Level2Base<FuturesOrderBook, ObservableOrderUnit, KeyedOrderBook<OrderUnitStruct>, OrderUnitStruct, FuturesLevel2Update, FuturesLevel2Observation>)connectedFeed).RemoveSymbol(symbol).Wait();
                 }
             }
 
@@ -316,7 +316,7 @@ namespace Kucoin.NET.Futures.Websockets.Observations
     /// </summary>
     /// <typeparam name="TBook">The type of your custom order book.</typeparam>
     /// <typeparam name="TUnit">The type of your custom order pieces.</typeparam>
-    public class CustomFuturesLevel2Observation<TBook, TUnit> : Level2ObservationBase<TBook, TUnit, FuturesLevel2Update>
+    public class CustomFuturesLevel2Observation<TBook, TUnit> : Level2ObservationBase<TBook, TUnit, KeyedOrderBook<OrderUnitStruct>, OrderUnitStruct, FuturesLevel2Update>
         where TBook: IOrderBook<TUnit>, new()
         where TUnit: IOrderUnit, new()
     {
@@ -388,7 +388,7 @@ namespace Kucoin.NET.Futures.Websockets.Observations
         /// </summary>
         /// <param name="change">The change to sequence.</param>
         /// <param name="pieces">The collection to change (either an ask or a bid collection)</param>
-        protected void SequencePieces(FuturesLevel2Update change, Level2KeyedCollection<OrderUnit> pieces)
+        protected void SequencePieces(FuturesLevel2Update change, Level2KeyedCollection<OrderUnitStruct> pieces)
         {
             decimal cp = change.Change.Price;
 
@@ -404,12 +404,12 @@ namespace Kucoin.NET.Futures.Websockets.Observations
 
                     piece.Size = change.Change.Size;
 
-                    if (piece is ISequencedOrderUnit seqpiece && change is ISequencedOrderUnit seqchange)
-                        seqpiece.Sequence = seqchange.Sequence;
+                    if (piece is ISequencedOrderUnit seqpiece)
+                        seqpiece.Sequence = change.Sequence;
                 }
                 else
                 {
-                    var ou = new OrderUnit();
+                    var ou = new OrderUnitStruct();
 
                     ou.Price = change.Change.Price;
                     ou.Size = change.Change.Size;
@@ -495,7 +495,7 @@ namespace Kucoin.NET.Futures.Websockets.Observations
         /// <param name="src">Source data.</param>
         /// <param name="dest">Destination collection.</param>
         /// <param name="pieces">The number of pieces to copy.</param>
-        protected void CopyTo(IList<OrderUnit> src, IList<TUnit> dest, int pieces)
+        protected void CopyTo(IList<OrderUnitStruct> src, IList<TUnit> dest, int pieces)
         {
             int i, c = pieces < src.Count ? pieces : src.Count;
             int x = dest.Count;

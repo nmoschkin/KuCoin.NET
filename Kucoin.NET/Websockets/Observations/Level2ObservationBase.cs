@@ -22,24 +22,26 @@ namespace Kucoin.NET.Websockets.Observations
     /// <summary>
     /// Level 2 Observation base class.
     /// </summary>
-    /// <typeparam name="TBook">The type of the order book to maintain.</typeparam>
-    /// <typeparam name="TUnit">The type of order units contained in the order book.</typeparam>
+    /// <typeparam name="TBookOut">The type of the order book to maintain.</typeparam>
+    /// <typeparam name="TUnitOut">The type of order units contained in the order book.</typeparam>
     /// <typeparam name="TUpdate">The type of data to expect from the observable source.</typeparam>
     /// <remarks>
     /// Observations link <see cref="IObservable{T}"/> to <see cref="IObserver{T}"/>.
     /// </remarks>
-    public abstract class Level2ObservationBase<TBook, TUnit, TUpdate> : 
+    public abstract class Level2ObservationBase<TBookOut, TUnitOut, TBookIn, TUnitIn, TUpdate> : 
         ObservableBase, 
-        ILevel2OrderBookProvider<TBook, TUnit, TUpdate>
-        where TBook: IOrderBook<TUnit>, new()
-        where TUnit: IOrderUnit, new()
+        ILevel2OrderBookProvider<TBookOut, TUnitOut, TBookIn, TUnitIn, TUpdate>
+        where TBookOut: IOrderBook<TUnitOut>, new()
+        where TUnitOut: IOrderUnit, new()
+        where TBookIn: KeyedOrderBook<TUnitIn>, new()
+        where TUnitIn: IOrderUnit, new()
         where TUpdate : new()
     {
-        public virtual event EventHandler<OrderBookUpdatedEventArgs<TBook, TUnit>> OrderBookUpdated;
+        public virtual event EventHandler<OrderBookUpdatedEventArgs<TBookOut, TUnitOut>> OrderBookUpdated;
         public virtual event OnNextHandler<TUpdate> NextObject;
 
-        protected KeyedOrderBook<OrderUnit> fullDepth;
-        protected TBook orderBook;
+        protected TBookIn fullDepth;
+        protected TBookOut orderBook;
         protected string symbol;
         protected int pieces;
         protected KucoinBaseWebsocketFeed connectedFeed;
@@ -64,7 +66,7 @@ namespace Kucoin.NET.Websockets.Observations
             this.connectedFeed = parent;
             this.pieces = pieces;
 
-            orderBook = new TBook();
+            orderBook = new TBookOut();
             cts = new CancellationTokenSource();
 
             PushThread = new Thread(
@@ -88,7 +90,7 @@ namespace Kucoin.NET.Websockets.Observations
                             pr = false;
 
                             PushLive();
-                            OrderBookUpdated?.Invoke(this, new OrderBookUpdatedEventArgs<TBook, TUnit>(this.symbol, orderBook));
+                            OrderBookUpdated?.Invoke(this, new OrderBookUpdatedEventArgs<TBookOut, TUnitOut>(this.symbol, orderBook));
                         }
 
                         // we always want to give up time-slices on a thread like this.
@@ -138,7 +140,7 @@ namespace Kucoin.NET.Websockets.Observations
         /// <summary>
         /// Gets the full-depth order book.
         /// </summary>
-        public KeyedOrderBook<OrderUnit> FullDepthOrderBook
+        public TBookIn FullDepthOrderBook
         {
             get => fullDepth;
             internal set
@@ -150,7 +152,7 @@ namespace Kucoin.NET.Websockets.Observations
         /// <summary>
         /// Gets the order book truncated to <see cref="Pieces"/> asks and bids.
         /// </summary>
-        public TBook OrderBook
+        public TBookOut OrderBook
         {
             get => orderBook;
             internal set

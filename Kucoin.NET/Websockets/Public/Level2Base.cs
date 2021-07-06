@@ -31,12 +31,14 @@ namespace Kucoin.NET.Websockets.Public
     /// Generally, you should not use this base class to construct your own Level 2 handlers.
     /// Use either <see cref="Level2StandardBase{TBook, TUnit}"/> or <see cref="Level2FuturesBase{TBook, TUnit}"/>, instead.
     /// </remarks>
-    public abstract class Level2Base<TBook, TUnit, TUpdate, TObservation> :
+    public abstract class Level2Base<TBookOut, TUnitOut, TBookIn, TUnitIn, TUpdate, TObservation> :
         KucoinBaseWebsocketFeed
-        where TBook : IOrderBook<TUnit>, new()
-        where TUnit : IOrderUnit, new()
+        where TBookOut : IOrderBook<TUnitOut>, new()
+        where TUnitOut : IOrderUnit, new()
+        where TBookIn : KeyedOrderBook<TUnitIn>, new()
+        where TUnitIn : IOrderUnit, new()
         where TUpdate : new()
-        where TObservation : Level2ObservationBase<TBook, TUnit, TUpdate>
+        where TObservation : Level2ObservationBase<TBookOut, TUnitOut, TBookIn, TUnitIn, TUpdate>
     {
 
         internal readonly Dictionary<string, TObservation> activeFeeds = new Dictionary<string, TObservation>();
@@ -69,7 +71,7 @@ namespace Kucoin.NET.Websockets.Public
         /// <summary>
         /// Event that gets fired when the feed for a symbol has been calibrated and is ready to be used.
         /// </summary>
-        public virtual event EventHandler<SymbolCalibratedEventArgs<TBook, TUnit, TUpdate>> SymbolCalibrated;
+        public virtual event EventHandler<SymbolCalibratedEventArgs<TBookOut, TUnitOut, TBookIn, TUnitIn, TUpdate>> SymbolCalibrated;
 
         /// <summary>
         /// Create a new Level 2 feed.
@@ -177,7 +179,7 @@ namespace Kucoin.NET.Websockets.Public
         /// <returns></returns>
         public virtual async Task<Dictionary<string, TObservation>> AddSymbols(IEnumerable<string> symbols)
         {
-            if (disposed) throw new ObjectDisposedException(nameof(Level2Base<TBook, TUnit, TUpdate, TObservation>));
+            if (disposed) throw new ObjectDisposedException(nameof(Level2Base<TBookOut, TUnitOut, TBookIn, TUnitIn, TUpdate, TObservation>));
             if (!Connected)
             {
                 await Connect();
@@ -243,7 +245,7 @@ namespace Kucoin.NET.Websockets.Public
         /// <returns></returns>
         internal virtual async Task RemoveSymbols(IEnumerable<string> symbols)
         {
-            if (disposed) throw new ObjectDisposedException(nameof(Level2Base<TBook, TUnit, TUpdate, TObservation>));
+            if (disposed) throw new ObjectDisposedException(nameof(Level2Base<TBookOut, TUnitOut, TBookIn, TUnitIn, TUpdate, TObservation>));
             if (!Connected) return;
 
             var sb = new StringBuilder();
@@ -294,7 +296,7 @@ namespace Kucoin.NET.Websockets.Public
         /// Returns the full market depth. 
         /// Use this to calibrate a full level 2 feed.
         /// </remarks>
-        public virtual async Task<KeyedOrderBook<OrderUnit>> GetAggregatedOrder(string symbol)
+        public virtual async Task<TBookIn> GetAggregatedOrder(string symbol)
         {
             var curl = AggregateEndpoint;
             var param = new Dictionary<string, object>();
@@ -302,7 +304,7 @@ namespace Kucoin.NET.Websockets.Public
             param.Add("symbol", symbol);
 
             var jobj = await MakeRequest(HttpMethod.Get, curl, 5, false, param);
-            var result = jobj.ToObject<KeyedOrderBook<OrderUnit>>();
+            var result = jobj.ToObject<TBookIn>();
 
             foreach (var ask in result.Asks)
             {
@@ -376,7 +378,7 @@ namespace Kucoin.NET.Websockets.Public
 
                                     _ = Task.Run(() =>
                                     {
-                                        SymbolCalibrated?.Invoke(this, new SymbolCalibratedEventArgs<TBook, TUnit, TUpdate>(af));
+                                        SymbolCalibrated?.Invoke(this, new SymbolCalibratedEventArgs<TBookOut, TUnitOut, TBookIn, TUnitIn, TUpdate>(af));
                                         State = FeedState.Running;
                                     });
 

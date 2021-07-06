@@ -12,7 +12,7 @@ namespace Kucoin.NET.Futures.Websockets
     /// <summary>
     /// Standard Futures Market Level 2 feed implementation with observable and UI data binding support.
     /// </summary>
-    public class FuturesLevel2 : Level2Base<FuturesOrderBook, ObservableOrderUnit, FuturesLevel2Update, FuturesLevel2Observation>
+    public class FuturesLevel2 : Level2Base<FuturesOrderBook, ObservableOrderUnit, KeyedOrderBook<OrderUnitStruct>, OrderUnitStruct, FuturesLevel2Update, FuturesLevel2Observation>
     {
         /// <summary>
         /// Create a new futures Level 2 feed.
@@ -43,7 +43,7 @@ namespace Kucoin.NET.Futures.Websockets
     /// </summary>
     /// <typeparam name="TBook">The type of your custom order book.</typeparam>
     /// <typeparam name="TUnit">The type of your custom order pieces.</typeparam>
-    public abstract class Level2FuturesBase<TBook, TUnit> : Level2Base<TBook, TUnit, FuturesLevel2Update, CustomFuturesLevel2Observation<TBook, TUnit>>
+    public abstract class Level2FuturesBase<TBook, TUnit> : Level2Base<TBook, TUnit, KeyedOrderBook<OrderUnitStruct>, OrderUnitStruct, FuturesLevel2Update, CustomFuturesLevel2Observation<TBook, TUnit>>
         where TBook : IOrderBook<TUnit>, new()
         where TUnit : IOrderUnit, new()
     {

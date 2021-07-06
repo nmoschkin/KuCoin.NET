@@ -90,8 +90,6 @@ namespace KuCoinApp
 
         protected ILevel3OrderBookProvider level3;
 
-        protected ILevel2OrderBookProvider<FuturesOrderBook, ObservableOrderUnit, FuturesLevel2Update> futureslevel2;
-
         protected List<SymbolViewModel> recentSymbols = new List<SymbolViewModel>();
 
         protected ObservableStaticMarketDepthUpdate marketUpdate;
@@ -101,16 +99,6 @@ namespace KuCoinApp
         protected string sizeFormat = "0.00";
 
         public override event EventHandler AskQuit;
-
-
-        public ILevel2OrderBookProvider<FuturesOrderBook, ObservableOrderUnit, FuturesLevel2Update> FuturesLevel2
-        {
-            get => futureslevel2;
-            protected set
-            {
-                SetProperty(ref futureslevel2, value);
-            }
-        }
 
         public ICommand RefreshSymbolsCommand { get; protected set; }
         public ICommand RefreshKlineCommand { get; protected set; }

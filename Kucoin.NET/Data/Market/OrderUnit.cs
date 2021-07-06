@@ -16,7 +16,7 @@ namespace Kucoin.NET.Data.Market
     /// </summary>
 
     [JsonConverter(typeof(OrderUnitConverter))]
-    public class OrderUnit : ICloneable, ISequencedOrderUnit
+    public class OrderUnit : ISequencedOrderUnit
     {
         protected decimal price;
         protected decimal size;
@@ -95,7 +95,7 @@ namespace Kucoin.NET.Data.Market
         /// Create a new order unit from this object.
         /// </summary>
         /// <returns></returns>
-        public virtual T Clone<T>() where T: IOrderUnit, new()
+        public virtual T Clone<T>() where T : IOrderUnit, new()
         {
             var ret = new T()
             {
@@ -199,12 +199,81 @@ namespace Kucoin.NET.Data.Market
         {
         }
 
-        protected void OnPropertyChanged([CallerMemberName]string propertyName = null)
+        protected void OnPropertyChanged([CallerMemberName] string propertyName = null)
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
-        
 
+    }
+
+    [JsonConverter(typeof(OrderUnitConverter))]
+    public struct OrderUnitStruct : ISequencedOrderUnit
+    {
+        internal long seq;
+
+        internal decimal price;
+
+        internal decimal size;
+
+        public long Sequence
+        {
+            get => seq;
+            set => seq = value;
+        }
+        
+        public decimal Price
+        {
+            get => price;
+            set => price = value;
+        }
+        
+        public decimal Size
+        {
+            get => size;
+            set => size = value;
+        }
+
+        internal OrderUnitStruct(string[] data)
+        {
+            if (data[0].Contains("E"))
+            {
+                price = (decimal)double.Parse(data[0]);
+            }
+            else
+            {
+                price = decimal.Parse(data[0]);
+            }
+
+            size = decimal.Parse(data[1]);
+            if (data.Length > 2) seq = long.Parse(data[2]);
+            else seq = 0;
+        }
+
+        public T Clone<T>() where T: IOrderUnit, new()
+        {
+            var objNew = new T()
+            {
+                Price = price,
+                Size = size
+            };
+
+            if (objNew is ISequencedOrderUnit seqOut)
+            {
+                seqOut.Sequence = seq;
+            }
+
+            return objNew;
+        }
+
+        public OrderUnitStruct Clone()
+        {
+            return (OrderUnitStruct)MemberwiseClone();
+        }
+
+        object ICloneable.Clone()
+        {
+            return MemberwiseClone();
+        }
     }
 
 }
