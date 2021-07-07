@@ -8,7 +8,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace Kucoin.NET.Futures.Data.Order
+namespace Kucoin.NET.Futures.Data.Trade
 {
 
     /// <summary>

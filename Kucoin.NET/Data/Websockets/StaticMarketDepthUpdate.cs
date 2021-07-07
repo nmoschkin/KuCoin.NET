@@ -68,7 +68,6 @@ namespace Kucoin.NET.Data.Websockets
 
     }
 
-
     /// <summary>
     /// Level 2 Static Market Depth Feed (5/50) Changes
     /// </summary>
@@ -239,6 +238,7 @@ namespace Kucoin.NET.Data.Websockets
         }
 
         [JsonProperty("timestamp")]
+        [JsonConverter(typeof(AutoTimeConverter), TimeTypes.InMilliseconds)]
         public override DateTime Timestamp
         {
             get => time;

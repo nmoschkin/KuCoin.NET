@@ -229,17 +229,19 @@ namespace Kucoin.NET.Websockets
         /// <param name="obj"></param>
         protected override async Task PushNext(T obj)
         {
-            if (observations == null || observations.Count == 0) return;
 
             await Task.Run(() =>
             {
                 List<Action> actions = new List<Action>();
 
-                foreach (SymbolObservation<T> obs in observations)
+                if (observations != null && observations.Count != 0)
                 {
-                    if (obs.ActiveSymbols.Count == 0 || obs.ActiveSymbols.Contains(obj.Symbol))
+                    foreach (SymbolObservation<T> obs in observations)
                     {
-                        actions.Add(() => obs.Observer.OnNext(obj));
+                        if (obs.ActiveSymbols.Count == 0 || obs.ActiveSymbols.Contains(obj.Symbol))
+                        {
+                            actions.Add(() => obs.Observer.OnNext(obj));
+                        }
                     }
                 }
 

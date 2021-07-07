@@ -8,7 +8,7 @@ using Kucoin.NET.Json;
 using Kucoin.NET.Data.Order;
 using Kucoin.NET.Helpers;
 
-namespace Kucoin.NET.Futures.Data.Order
+namespace Kucoin.NET.Futures.Data.Trade
 {
     /// <summary>
     /// Order list query parameters object.

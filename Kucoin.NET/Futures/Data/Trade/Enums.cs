@@ -7,7 +7,7 @@ using System.Collections.Generic;
 using System.Runtime.Serialization;
 using System.Text;
 
-namespace Kucoin.NET.Futures.Data.Order
+namespace Kucoin.NET.Futures.Data.Trade
 {
 
     [JsonConverter(typeof(EnumToStringConverter<FuturesOrderType>))]

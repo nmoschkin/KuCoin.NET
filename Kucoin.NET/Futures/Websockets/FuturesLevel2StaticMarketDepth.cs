@@ -1,37 +1,41 @@
 ﻿using Kucoin.NET.Data.Websockets;
+using Kucoin.NET.Futures.Data.Websockets;
+using Kucoin.NET.Helpers;
+using Kucoin.NET.Websockets;
+
+using Newtonsoft.Json;
 
 using System;
 using System.Collections.Generic;
+using System.Text;
 using System.Threading.Tasks;
-using Newtonsoft.Json;
-using Kucoin.NET.Helpers;
 
-namespace Kucoin.NET.Websockets.Public
+namespace Kucoin.NET.Futures.Websockets
 {
 
     /// <summary>
     /// Level 2 5 best asks/bids.
     /// </summary>
-    public class Level2Depth5 : SymbolTopicFeedBase<StaticMarketDepthUpdate>
+    public class FuturesLevel2Depth5 : SymbolTopicFeedBase<FuturesStaticMarketDepthUpdate>
     {
         public override bool IsPublic => true;
 
         protected override string Subject => "level2";
 
-        protected override string Topic => "/spotMarket/level2Depth5";
+        protected override string Topic => "/contractMarket/level2Depth5";
 
-        protected Dictionary<string, ObservableStaticMarketDepthUpdate> symbolObservables = new Dictionary<string, ObservableStaticMarketDepthUpdate>();
+        protected Dictionary<string, ObservableFuturesStaticMarketDepthUpdate> symbolObservables = new Dictionary<string, ObservableFuturesStaticMarketDepthUpdate>();
 
         /// <summary>
         /// Retrieves the observable market data for the given symbol, or null if not found.
         /// </summary>
         /// <param name="symbol">The trading symbol.</param>
         /// <returns>An observable object.</returns>
-        public ObservableStaticMarketDepthUpdate this[string symbol]
+        public ObservableFuturesStaticMarketDepthUpdate this[string symbol]
         {
             get
             {
-                if (symbolObservables.TryGetValue(symbol, out ObservableStaticMarketDepthUpdate update))
+                if (symbolObservables.TryGetValue(symbol, out ObservableFuturesStaticMarketDepthUpdate update))
                 {
                     return update;
                 }
@@ -47,7 +51,7 @@ namespace Kucoin.NET.Websockets.Public
         /// </summary>
         /// <param name="symbol">The trading pair (symbol) to subscribe.</param>
         /// <returns>A new <see cref="Observations.ILevel2OrderBookProvider"/> implementation instance.</returns>
-        public new async Task<ObservableStaticMarketDepthUpdate> AddSymbol(string symbol)
+        public new async Task<ObservableFuturesStaticMarketDepthUpdate> AddSymbol(string symbol)
         {
             var res = await AddSymbols(new string[] { symbol });
             return res[symbol];
@@ -60,14 +64,14 @@ namespace Kucoin.NET.Websockets.Public
         /// <returns>
         /// A <see cref="Dictionary{TKey, TValue}"/> containing a list of <see cref="Observations.ILevel2OrderBookProvider"/> implementation instances keyed by symbol.
         /// </returns>
-        public new async Task<Dictionary<string, ObservableStaticMarketDepthUpdate>> AddSymbols(IEnumerable<string> symbols)
+        public new async Task<Dictionary<string, ObservableFuturesStaticMarketDepthUpdate>> AddSymbols(IEnumerable<string> symbols)
         {
             await base.AddSymbols(symbols);
-            var dict = new Dictionary<string, ObservableStaticMarketDepthUpdate>();
+            var dict = new Dictionary<string, ObservableFuturesStaticMarketDepthUpdate>();
 
             foreach (var sym in symbols)
             {
-                var update = new ObservableStaticMarketDepthUpdate();
+                var update = new ObservableFuturesStaticMarketDepthUpdate();
                 dict.Add(sym, update);
 
                 if (!symbolObservables.ContainsKey(sym))
@@ -111,7 +115,7 @@ namespace Kucoin.NET.Websockets.Public
                     {
                         sym = msg.Topic.Substring(i + 1);
 
-                        if (symbolObservables.TryGetValue(sym, out ObservableStaticMarketDepthUpdate update))
+                        if (symbolObservables.TryGetValue(sym, out ObservableFuturesStaticMarketDepthUpdate update))
                         {
                             JsonConvert.PopulateObject(msg.Data.ToString(), update);
 
@@ -128,7 +132,7 @@ namespace Kucoin.NET.Websockets.Public
                             }
                         }
 
-                        var data = msg.Data.ToObject<StaticMarketDepthUpdate>();
+                        var data = msg.Data.ToObject<FuturesStaticMarketDepthUpdate>();
 
                         if (i != -1)
                         {
@@ -136,7 +140,6 @@ namespace Kucoin.NET.Websockets.Public
                         }
 
                         await PushNext(data);
-
                     }
 
                 }
@@ -153,7 +156,7 @@ namespace Kucoin.NET.Websockets.Public
         /// You must either create this instance on the main / UI thread or call <see cref="Dispatcher.Initialize"/> prior to 
         /// creating an instance of this class or an <see cref="InvalidOperationException"/> will be raised.
         /// </remarks>
-        public Level2Depth5() : base(null, null, null)
+        public FuturesLevel2Depth5() : base(null, null, null, futures: true)
         {
             if (!Dispatcher.Initialized)
             {
@@ -174,12 +177,12 @@ namespace Kucoin.NET.Websockets.Public
         /// You must either create this instance on the main / UI thread or call <see cref="Dispatcher.Initialize"/> prior to 
         /// creating an instance of this class or an <see cref="InvalidOperationException"/> will be raised.
         /// </remarks>
-        public Level2Depth5(IEnumerable<string> symbols,
+        public FuturesLevel2Depth5(IEnumerable<string> symbols,
           string key,
           string secret,
           string passphrase,
           bool isSandbox = false)
-            : base(key, secret, passphrase, isSandbox)
+            : base(key, secret, passphrase, isSandbox, futures: true)
         {
             if (!Dispatcher.Initialized)
             {
@@ -201,9 +204,9 @@ namespace Kucoin.NET.Websockets.Public
         /// You must either create this instance on the main / UI thread or call <see cref="Dispatcher.Initialize"/> prior to 
         /// creating an instance of this class or an <see cref="InvalidOperationException"/> will be raised.
         /// </remarks>
-        public Level2Depth5(string symbol
+        public FuturesLevel2Depth5(string symbol
             )
-            : base(null, null, null)
+            : base(null, null, null, futures: true)
 
         {
             if (!Dispatcher.Initialized)
@@ -227,9 +230,9 @@ namespace Kucoin.NET.Websockets.Public
         /// You must either create this instance on the main / UI thread or call <see cref="Dispatcher.Initialize"/> prior to 
         /// creating an instance of this class or an <see cref="InvalidOperationException"/> will be raised.
         /// </remarks>
-        public Level2Depth5(IEnumerable<string> symbols
+        public FuturesLevel2Depth5(IEnumerable<string> symbols
           )
-            : base(null, null, null)
+            : base(null, null, null, futures: true)
         {
             if (!Dispatcher.Initialized)
             {
@@ -253,9 +256,9 @@ namespace Kucoin.NET.Websockets.Public
     /// <summary>
     /// Level 2 50 best asks/bids
     /// </summary>
-    public class Level2Depth50 : Level2Depth5
+    public class FuturesLevel2Depth50 : FuturesLevel2Depth5
     {
-        protected override string Topic => "/spotMarket/level2Depth50";
+        protected override string Topic => "/contractMarket/level2Depth50";
 
         /// <summary>
         /// The depth of this level 2 feed.
@@ -274,7 +277,7 @@ namespace Kucoin.NET.Websockets.Public
         /// You must either create this instance on the main / UI thread or call <see cref="Dispatcher.Initialize"/> prior to 
         /// creating an instance of this class or an <see cref="InvalidOperationException"/> will be raised.
         /// </remarks>
-        public Level2Depth50() : base()
+        public FuturesLevel2Depth50() : base()
         {
             if (!Dispatcher.Initialized)
             {
@@ -291,7 +294,7 @@ namespace Kucoin.NET.Websockets.Public
         /// You must either create this instance on the main / UI thread or call <see cref="Dispatcher.Initialize"/> prior to 
         /// creating an instance of this class or an <see cref="InvalidOperationException"/> will be raised.
         /// </remarks>
-        public Level2Depth50(IEnumerable<string> symbols) : base()
+        public FuturesLevel2Depth50(IEnumerable<string> symbols) : base()
         {
             if (!Dispatcher.Initialized)
             {
@@ -313,7 +316,7 @@ namespace Kucoin.NET.Websockets.Public
         /// You must either create this instance on the main / UI thread or call <see cref="Dispatcher.Initialize"/> prior to 
         /// creating an instance of this class or an <see cref="InvalidOperationException"/> will be raised.
         /// </remarks>
-        public Level2Depth50(string symbol) : base()
+        public FuturesLevel2Depth50(string symbol) : base()
 
         {
             if (!Dispatcher.Initialized)

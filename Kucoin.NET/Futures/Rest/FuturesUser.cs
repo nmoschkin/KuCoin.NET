@@ -75,8 +75,8 @@ namespace Kucoin.NET.Futures.Rest
         }
         /* 
          * 
-         *  startAt	long	[Optional] Start time (milisecond)
-            endAt	long	[Optional] End time (milisecond)
+         *  startAt	long	[Optional] Start time (millisecond)
+            endAt	long	[Optional] End time (millisecond)
             type	String	[Optional] Type RealisedPNL-Realised profit and loss, Deposit-Deposit, Withdrawal-withdraw, Transferin-Transfer in, TransferOut-Transfer out
             offset	long	[Optional] Start offset
             maxCount	long	[Optional] Displayed size per page. The default size is 50
@@ -88,7 +88,7 @@ namespace Kucoin.NET.Futures.Rest
         public async Task<TransactionHistory> GetTransactions(
             string currency = null, 
             bool forward = true, 
-            int? offset = null,
+            long? offset = null,
             TransactionType? type = null, 
             DateTime? startTime = null, 
             DateTime? endTime = null, 

@@ -7,12 +7,12 @@ using Kucoin.NET.Data;
 
 using Newtonsoft.Json;
 
-namespace Kucoin.NET.Futures.Data.Order
+namespace Kucoin.NET.Futures.Data.Trade
 {
     /// <summary>
     /// Paginated order details
     /// </summary>
-    public class FuturesFillDetailsPage : IPaginated<FuturesFillDetails>
+    public class FuturesOrderDetailsPage : IPaginated<FuturesOrderDetails>
     {
         [JsonProperty("pageSize")]
         public int PageSize { get; set; }
@@ -24,7 +24,7 @@ namespace Kucoin.NET.Futures.Data.Order
         public int TotalNumber { get; set; }
 
         [JsonProperty("items")]
-        public IList<FuturesFillDetails> Items { get; set; }
+        public IList<FuturesOrderDetails> Items { get; set; }
 
         [JsonProperty("totalPages")]
         public int TotalPages { get; set; }

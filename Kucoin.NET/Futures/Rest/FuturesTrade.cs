@@ -1,6 +1,6 @@
 ﻿using Kucoin.NET.Data.Market;
 using Kucoin.NET.Data.Order;
-using Kucoin.NET.Futures.Data.Order;
+using Kucoin.NET.Futures.Data.Trade;
 using Kucoin.NET.Helpers;
 
 using System;
@@ -168,9 +168,9 @@ namespace Kucoin.NET.Futures.Rest
         {
             var url = "/api/v1/recentFills";
 
-            var res = await MakeRequest(HttpMethod.Get, url);
+            var jobj = await MakeRequest(HttpMethod.Get, url);
 
-            return res.ToObject<FuturesFillDetails[]>();
+            return jobj.ToObject<FuturesFillDetails[]>();
 
         }
 
@@ -181,9 +181,9 @@ namespace Kucoin.NET.Futures.Rest
             var dict = new Dictionary<string, object>();
             dict.Add("symbol", symbol);
 
-            var res = await MakeRequest(HttpMethod.Get, url, reqParams: dict);
+            var jobj = await MakeRequest(HttpMethod.Get, url, reqParams: dict);
 
-            return res.ToObject<ActiveOrderValue>();
+            return jobj.ToObject<ActiveOrderValue>();
         }
 
         public async Task<PositionDetails> GetPositionDetails(string symbol)
@@ -193,9 +193,9 @@ namespace Kucoin.NET.Futures.Rest
             var dict = new Dictionary<string, object>();
             dict.Add("symbol", symbol);
 
-            var res = await MakeRequest(HttpMethod.Get, url, reqParams: dict);
+            var jobj = await MakeRequest(HttpMethod.Get, url, reqParams: dict);
 
-            return res.ToObject<PositionDetails>();
+            return jobj.ToObject<PositionDetails>();
         }
 
 
@@ -206,9 +206,9 @@ namespace Kucoin.NET.Futures.Rest
             var dict = new Dictionary<string, object>();
             dict.Add("symbol", symbol);
 
-            var res = await MakeRequest(HttpMethod.Get, url, reqParams: dict);
+            var jobj = await MakeRequest(HttpMethod.Get, url, reqParams: dict);
 
-            return res.ToObject<PositionDetails[]>();
+            return jobj.ToObject<PositionDetails[]>();
         }
 
         public async Task ToggleAutoDepositMargin(string symbol, bool enable)
@@ -235,6 +235,61 @@ namespace Kucoin.NET.Futures.Rest
             dict.Add("bizNo", Guid.NewGuid().ToString("d"));
 
             await MakeRequest(HttpMethod.Post, url, reqParams: dict);
+        }
+
+
+        public async Task<FundingHistory> GetFundingHistory(string symbol,
+            bool forward = true,
+            long? offset = null,
+            DateTime? startTime = null,
+            DateTime? endTime = null,
+            int maxCount = 50)
+        {
+
+            var url = "/api/v1/funding-history";
+
+            var dict = new Dictionary<string, object>();
+
+            dict.Add("symbol", symbol);
+
+            dict.Add("forward", forward);
+            dict.Add("maxCount", maxCount);
+
+            long st, et;
+            DateTime d;
+
+            if (offset != null)
+            {
+                dict.Add("offset", offset);
+            }
+
+            if (startTime == null)
+            {
+                st = 0;
+            }
+            else
+            {
+                d = (DateTime)startTime;
+                st = EpochTime.DateToMilliseconds(d);
+                dict.Add("startAt", st);
+            }
+
+            if (endTime == null)
+            {
+                et = 0;
+            }
+            else
+            {
+                d = (DateTime)endTime;
+                et = EpochTime.DateToMilliseconds(d);
+                dict.Add("endAt", et);
+            }
+
+            if (startTime != null && endTime != null && et < st) throw new ArgumentException("End time must be greater than start time");
+
+            var jobj = await MakeRequest(HttpMethod.Get, url, reqParams: dict);
+            return jobj.ToObject<FundingHistory>();
+
         }
 
 

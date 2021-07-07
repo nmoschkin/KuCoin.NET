@@ -171,7 +171,15 @@ namespace Kucoin.NET.Futures.Rest
 
             foreach (var values in klineRaw)
             {
-                var candle = new TCandle();
+                var candle = new TCandle
+                {
+                    Timestamp = EpochTime.MillisecondsToDate(long.Parse(values[0])),
+                    OpenPrice = decimal.Parse(values[1]),
+                    HighPrice = decimal.Parse(values[2]),
+                    LowPrice = decimal.Parse(values[3]),
+                    ClosePrice = decimal.Parse(values[4]),
+                    Volume = decimal.Parse(values[5])
+                };
 
                 if (candle is IWritableTypedBasicCandle<FuturesKlineType> tc)
                 {
@@ -182,18 +190,230 @@ namespace Kucoin.NET.Futures.Rest
                     tce.Type = type;
                 }
 
-                candle.Timestamp = EpochTime.MillisecondsToDate(long.Parse(values[0]));
-
-                candle.OpenPrice = decimal.Parse(values[1]);
-                candle.HighPrice = decimal.Parse(values[2]);
-                candle.LowPrice = decimal.Parse(values[3]);
-                candle.ClosePrice = decimal.Parse(values[4]);
-                candle.Volume = decimal.Parse(values[5]);
-
                 results.Add(candle);
             }
 
             return results;
+
+        }
+
+        public async Task<IList<HistoricalData>> GetHistoricalData(string symbol)
+        {
+
+            var url = "/api/v1/trade/history";
+
+            var dict = new Dictionary<string, object>();
+
+            dict.Add("symbol", symbol);
+
+
+            var jobj = await MakeRequest(HttpMethod.Get, url, reqParams: dict);
+
+            return jobj.ToObject<HistoricalData[]>();
+        }
+
+
+        public async Task<InterestHistory> GetInterestRateList(string symbol,
+            bool forward = true,
+            long? offset = null,
+            DateTime? startTime = null,
+            DateTime? endTime = null,
+            int maxCount = 50)
+        {
+
+            var url = "/api/v1/interest/query";
+
+            var dict = new Dictionary<string, object>();
+
+            dict.Add("symbol", symbol);
+
+            dict.Add("forward", forward);
+            dict.Add("maxCount", maxCount);
+
+            long st, et;
+            DateTime d;
+
+            if (offset != null)
+            {
+                dict.Add("offset", offset);
+            }
+
+            if (startTime == null)
+            {
+                st = 0;
+            }
+            else
+            {
+                d = (DateTime)startTime;
+                st = EpochTime.DateToMilliseconds(d);
+                dict.Add("startAt", st);
+            }
+
+            if (endTime == null)
+            {
+                et = 0;
+            }
+            else
+            {
+                d = (DateTime)endTime;
+                et = EpochTime.DateToMilliseconds(d);
+                dict.Add("endAt", et);
+            }
+
+            if (startTime != null && endTime != null && et < st) throw new ArgumentException("End time must be greater than start time");
+
+            var jobj = await MakeRequest(HttpMethod.Get, url, reqParams: dict);
+            return jobj.ToObject<InterestHistory>();
+
+        }
+
+
+        public async Task<IndexList> GetIndexList(string symbol,
+            bool forward = true,
+            long? offset = null,
+            DateTime? startTime = null,
+            DateTime? endTime = null,
+            int maxCount = 50)
+        {
+
+            var url = "/api/v1/index/query";
+
+            var dict = new Dictionary<string, object>();
+
+            dict.Add("symbol", symbol);
+
+            dict.Add("forward", forward);
+            dict.Add("maxCount", maxCount);
+
+            long st, et;
+            DateTime d;
+
+            if (offset != null)
+            {
+                dict.Add("offset", offset);
+            }
+
+            if (startTime == null)
+            {
+                st = 0;
+            }
+            else
+            {
+                d = (DateTime)startTime;
+                st = EpochTime.DateToMilliseconds(d);
+                dict.Add("startAt", st);
+            }
+
+            if (endTime == null)
+            {
+                et = 0;
+            }
+            else
+            {
+                d = (DateTime)endTime;
+                et = EpochTime.DateToMilliseconds(d);
+                dict.Add("endAt", et);
+            }
+
+            if (startTime != null && endTime != null && et < st) throw new ArgumentException("End time must be greater than start time");
+
+            var jobj = await MakeRequest(HttpMethod.Get, url, reqParams: dict);
+            return jobj.ToObject<IndexList>();
+
+        }
+
+        public async Task<MarkPrice> GetMarkPrice(string symbol)
+        {
+            var url = $"/api/v1/mark-price/{symbol}/current";
+            var jobj = await MakeRequest(HttpMethod.Get, url);
+
+            return jobj.ToObject<MarkPrice>();
+        }
+
+
+        public async Task<PremiumIndex> GetPremiumIndex(string symbol,
+            bool forward = true,
+            long? offset = null,
+            DateTime? startTime = null,
+            DateTime? endTime = null,
+            int maxCount = 50)
+        {
+
+            var url = "/api/v1/premium/query";
+
+            var dict = new Dictionary<string, object>();
+
+            dict.Add("symbol", symbol);
+
+            dict.Add("forward", forward);
+            dict.Add("maxCount", maxCount);
+
+            long st, et;
+            DateTime d;
+
+            if (offset != null)
+            {
+                dict.Add("offset", offset);
+            }
+
+            if (startTime == null)
+            {
+                st = 0;
+            }
+            else
+            {
+                d = (DateTime)startTime;
+                st = EpochTime.DateToMilliseconds(d);
+                dict.Add("startAt", st);
+            }
+
+            if (endTime == null)
+            {
+                et = 0;
+            }
+            else
+            {
+                d = (DateTime)endTime;
+                et = EpochTime.DateToMilliseconds(d);
+                dict.Add("endAt", et);
+            }
+
+            if (startTime != null && endTime != null && et < st) throw new ArgumentException("End time must be greater than start time");
+
+            var jobj = await MakeRequest(HttpMethod.Get, url, reqParams: dict);
+            return jobj.ToObject<PremiumIndex>();
+
+        }
+
+
+        public async Task<FundingRate> GetCurrentFundingRate(string symbol)
+        {
+            var url = $"/api/v1/funding-rate/{symbol}/current";
+            var jobj = await MakeRequest(HttpMethod.Get, url);
+
+            return jobj.ToObject<FundingRate>();
+        }
+
+        public async Task<DateTime> GetTimestamp()
+        {
+
+            var url = "/api/v1/timestamp";
+            var jobj = await MakeRequest(HttpMethod.Get, url);
+
+            var l = jobj.ToObject<long>();
+
+            return EpochTime.MillisecondsToDate(l);
+
+        }
+
+
+        public async Task<ServiceInfo> GetServiceStatus()
+        {
+
+            var url = "/api/v1/status";
+            var jobj = await MakeRequest(HttpMethod.Get, url);
+
+            return jobj.ToObject<ServiceInfo>();
 
         }
 

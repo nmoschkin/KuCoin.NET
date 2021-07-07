@@ -7,6 +7,8 @@ using System.Net.NetworkInformation;
 using System.Text;
 using System.Threading.Tasks;
 using Kucoin.NET.Helpers;
+using Kucoin.NET.Futures.Rest;
+using Kucoin.NET.Futures.Websockets;
 
 namespace KuCoinConsole
 {
@@ -56,7 +58,6 @@ namespace KuCoinConsole
         static object lockObj = new object();
         static Kucoin.NET.Rest.Market market;
         static bool ready = false;
-
         static void Main(string[] args)
         {
 
@@ -87,13 +88,9 @@ namespace KuCoinConsole
 
             /**/
 
-
-
             // Use simple credentials:
             // Comment this out if you uncomment the code above.
             cred = SimpleCredentials.Instance;
-
-
 
             // Create the new websocket client.
             l3conn = new Level3(cred);
