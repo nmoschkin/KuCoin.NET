@@ -98,20 +98,24 @@ namespace KuCoinConsole
             cred = SimpleCredentials.Instance;
 
 
-            ticker = new ContractMarketSnapshotTicker();
-            ticker.Connect().Wait();
+            /* Testing Futures Ticker */
+            /* Uncomment To Use */
+            //ticker = new ContractMarketSnapshotTicker();
+            //ticker.Connect().Wait();
 
-            ticker.FeedDataReceived += Ticker_FeedDataReceived;
+            //ticker.FeedDataReceived += Ticker_FeedDataReceived;
 
-            ticker.AddSymbol("ETHUSDM").Wait();
+            //ticker.AddSymbol("ETHUSDM").Wait();
             
 
-            while(ticker.Connected)
-            {
-                Task.Delay(100).Wait();
-            }
+            //while(ticker.Connected)
+            //{
+            //    Task.Delay(100).Wait();
+            //}
 
-            return;
+            //return;
+            /* Uncomment To Use */
+            /* Testing Futures Ticker */
 
 
 
