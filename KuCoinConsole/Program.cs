@@ -56,8 +56,13 @@ namespace KuCoinConsole
 
         static StringBuilder readOut = new StringBuilder();
         static object lockObj = new object();
+        
         static Kucoin.NET.Rest.Market market;
+        
         static bool ready = false;
+
+        static ContractMarketSnapshotTicker ticker;
+
         static void Main(string[] args)
         {
 
@@ -91,6 +96,24 @@ namespace KuCoinConsole
             // Use simple credentials:
             // Comment this out if you uncomment the code above.
             cred = SimpleCredentials.Instance;
+
+
+            ticker = new ContractMarketSnapshotTicker();
+            ticker.Connect().Wait();
+
+            ticker.FeedDataReceived += Ticker_FeedDataReceived;
+
+            ticker.AddSymbol("ETHUSDM").Wait();
+            
+
+            while(ticker.Connected)
+            {
+                Task.Delay(100).Wait();
+            }
+
+            return;
+
+
 
             // Create the new websocket client.
             l3conn = new Level3(cred);
@@ -189,6 +212,18 @@ namespace KuCoinConsole
                 Console.CursorLeft = 0;
             }
 
+        }
+
+        private static void Ticker_FeedDataReceived(object sender, Kucoin.NET.Websockets.FeedDataReceivedEventArgs<Kucoin.NET.Futures.Data.Websockets.ContractMarketSnapshot> e)
+        {
+
+            // Console.Write($"{e.Data.Symbol}: Mark Price - {e.Data.MarkPrice:#,##0.00########}: Index Price - {e.Data.IndexPrice:#,##0.00########}                       \r");
+
+            Console.Write($"{e.Data}          \r");
+        }
+
+        private static void Ticker_DataReceived(object sender, Kucoin.NET.Websockets.DataReceivedEventArgs e)
+        {
         }
 
         /// <summary>

@@ -253,7 +253,7 @@ namespace Kucoin.NET.Websockets
                     });
                 }
 
-                Parallel.Invoke(actions.ToArray());
+                if (actions.Count > 0) Parallel.Invoke(actions.ToArray());
             });
         }
 
