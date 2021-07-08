@@ -252,6 +252,8 @@ namespace KuCoinConsole
                 {
                     if (obs.Value.FullDepthOrderBook is null) continue;
 
+                    //ba = ((IList<AtomicOrderStruct>)obs.Value.FullDepthOrderBook.Asks)[0].Price;
+                    //bb = ((IList<AtomicOrderStruct>)obs.Value.FullDepthOrderBook.Bids)[0].Price;
                     ba = ((IList<OrderUnitStruct>)obs.Value.FullDepthOrderBook.Asks)[0].Price;
                     bb = ((IList<OrderUnitStruct>)obs.Value.FullDepthOrderBook.Bids)[0].Price;
 
@@ -259,7 +261,7 @@ namespace KuCoinConsole
 
                     curr = market.Currencies[market.Symbols[obs.Value.Symbol].BaseCurrency].FullName;
 
-                    var text = $"{MinChars(obs.Value.Symbol, 12)} - Best Ask: {MinChars(ba.ToString("#,##0.00######"), 12)} Best Bid: {MinChars(bb.ToString("#,##0.00######"), 12)}  {curr}            ";
+                    var text = $"{MinChars(obs.Value.Symbol, 12)} - Best Ask: {MinChars(ba.ToString("#,##0.00######"), 12)} Best Bid: {MinChars(bb.ToString("#,##0.00######"), 12)} - {curr}            ";
 
                     readOut.AppendLine(text);
                 }
