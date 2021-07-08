@@ -32,7 +32,7 @@ namespace Kucoin.NET.Websockets.Public
         {
         }
 
-        public override string AggregateEndpoint => "/api/v3/market/orderbook/level2";
+        public override string OrderBookEndPoint => "/api/v3/market/orderbook/level2";
 
         public override string Subject => "trade.l2update";
 
@@ -56,7 +56,7 @@ namespace Kucoin.NET.Websockets.Public
         /// </remarks>
         public async Task<KeyedOrderBook<OrderUnitStruct>> GetPartList(string symbol, int pieces)
         {
-            var curl = pieces > 0 ? $"{AggregateEndpoint}_{pieces}" : AggregateEndpoint;
+            var curl = pieces > 0 ? $"{OrderBookEndPoint}_{pieces}" : OrderBookEndPoint;
             var param = new Dictionary<string, object>();
 
             param.Add("symbol", symbol);
@@ -100,11 +100,18 @@ namespace Kucoin.NET.Websockets.Public
         /// <summary>
         /// Create a new Level 2 feed.
         /// </summary>
-        public Level2StandardBase() : base()
+        public Level2StandardBase(ICredentialsProvider cred) : base(cred)
         {
         }
 
-        public override string AggregateEndpoint => "/api/v2/market/orderbook/level2";
+        /// <summary>
+        /// Create a new Level 2 feed.
+        /// </summary>
+        public Level2StandardBase(string key, string secret, string passphrase, bool isSandbox = false) : base(key, secret, passphrase, isSandbox)
+        {
+        }
+
+        public override string OrderBookEndPoint => "/api/v3/market/orderbook/level2";
 
         public override string Subject => "trade.l2update";
 

@@ -85,7 +85,7 @@ namespace Kucoin.NET.Websockets.Public
 
         public override string Topic => "/spotMarket/level3";
 
-        public override string AggregateEndpoint => "/api/v3/market/orderbook/level3";
+        public override string OrderBookEndPoint => "/api/v3/market/orderbook/level3";
 
         protected override Level3Observation CreateNewObservation(string symbol)
         {

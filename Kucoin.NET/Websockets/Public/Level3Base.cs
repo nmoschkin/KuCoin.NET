@@ -48,9 +48,9 @@ namespace Kucoin.NET.Websockets.Public
         public abstract string Topic { get; }
 
         /// <summary>
-        /// Get the aggregated order book retrieval end point.
+        /// Get the order book retrieval end point.
         /// </summary>
-        public abstract string AggregateEndpoint { get; }
+        public abstract string OrderBookEndPoint { get; }
 
         public override bool IsPublic => false;
 
@@ -289,7 +289,7 @@ namespace Kucoin.NET.Websockets.Public
         /// </remarks>
         public virtual async Task<TBookIn> GetAtomicOrderBook(string symbol)
         {
-            var curl = AggregateEndpoint;
+            var curl = OrderBookEndPoint;
             var param = new Dictionary<string, object>();
 
             param.Add("symbol", symbol);

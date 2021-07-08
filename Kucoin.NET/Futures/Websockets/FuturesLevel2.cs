@@ -27,7 +27,7 @@ namespace Kucoin.NET.Futures.Websockets
 
         public override string Subject => "level2";
 
-        public override string AggregateEndpoint => "/api/v1/level2/snapshot";
+        public override string OrderBookEndPoint => "/api/v1/level2/snapshot";
 
         public override string Topic => "/contractMarket/level2";
         
@@ -56,7 +56,7 @@ namespace Kucoin.NET.Futures.Websockets
 
         public override string Subject => "level2";
 
-        public override string AggregateEndpoint => "/api/v1/level2/snapshot";
+        public override string OrderBookEndPoint => "/api/v1/level2/snapshot";
 
         public override string Topic => "/contractMarket/level2";
 
