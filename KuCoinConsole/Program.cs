@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using Kucoin.NET.Helpers;
 using Kucoin.NET.Futures.Rest;
 using Kucoin.NET.Futures.Websockets;
+using Kucoin.NET.Data.Market;
 
 namespace KuCoinConsole
 {
@@ -50,9 +51,9 @@ namespace KuCoinConsole
 
     public static class Program
     {
-        static Dictionary<string, Level3Observation> observers = new Dictionary<string, Level3Observation>();
+        static Dictionary<string, Level2Observation> observers = new Dictionary<string, Level2Observation>();
 
-        static Level3 l3conn;
+        static Level2 l2conn;
 
         static StringBuilder readOut = new StringBuilder();
         static object lockObj = new object();
@@ -74,6 +75,9 @@ namespace KuCoinConsole
 
             ICredentialsProvider cred;
 
+            // Use simple credentials:
+            cred = SimpleCredentials.Instance;
+
 
             // If you want to run the WPF app, and set up your credentials from there, 
             // you can uncomment this code and use the same pin you use in the WPF app.
@@ -81,21 +85,17 @@ namespace KuCoinConsole
 
             /**/
 
-            //Console.WriteLine("Type your pin and press enter: ");
+            Console.WriteLine("Type your pin and press enter: ");
 
-            //var pin = Console.ReadLine();
-            //cred = CryptoCredentials.LoadFromStorage(Seed, pin);
+            var pin = Console.ReadLine();
+            cred = CryptoCredentials.LoadFromStorage(Seed, pin);
 
-            //if (cred == null)
-            //{
-            //    Console.WriteLine("Invalid credentials!");
-            //}
+            if (cred == null)
+            {
+                Console.WriteLine("Invalid credentials!");
+            }
 
             /**/
-
-            // Use simple credentials:
-            // Comment this out if you uncomment the code above.
-            cred = SimpleCredentials.Instance;
 
 
             /* Testing Futures Ticker */
@@ -121,13 +121,13 @@ namespace KuCoinConsole
 
 
             // Create the new websocket client.
-            l3conn = new Level3(cred);
+            l2conn = new Level2(cred);
 
             // We want to monitor how much data is coming through the feed.
-            l3conn.MonitorThroughput = true;
+            l2conn.MonitorThroughput = true;
             
             // Disable Observable/UI book updating for console app.
-            l3conn.UpdateInterval = 0;
+            l2conn.UpdateInterval = 0;
 
             // clear the console (if you use a pin, this will get it off the screen)
             Console.Clear();
@@ -138,7 +138,7 @@ namespace KuCoinConsole
             // do not set this number too low.
             int delay = 100;
 
-            l3conn.Connect().ContinueWith(async (t) =>
+            l2conn.Connect().ContinueWith(async (t) =>
             {
 
                 // 10 of the most popular trading symbols
@@ -156,7 +156,7 @@ namespace KuCoinConsole
 
                     try
                     {
-                        var obs = await l3conn.AddSymbol(sym);
+                        var obs = await l2conn.AddSymbol(sym);
 
                         while (obs.Calibrated == false)
                         {
@@ -175,7 +175,7 @@ namespace KuCoinConsole
 
             }).Wait();
 
-            while (l3conn?.Connected ?? false)
+            while (l2conn?.Connected ?? false)
             {
                 if (!ready)
                 {
@@ -252,23 +252,22 @@ namespace KuCoinConsole
                 {
                     if (obs.Value.FullDepthOrderBook is null) continue;
 
-                    ba = obs.Value.FullDepthOrderBook.Asks[0].Price;
-                    bb = obs.Value.FullDepthOrderBook.Bids[0].Price;
-                    vol = obs.Value.Level3Volume;
+                    ba = ((IList<OrderUnitStruct>)obs.Value.FullDepthOrderBook.Asks)[0].Price;
+                    bb = ((IList<OrderUnitStruct>)obs.Value.FullDepthOrderBook.Bids)[0].Price;
 
                     var curr = "";
 
                     curr = market.Currencies[market.Symbols[obs.Value.Symbol].BaseCurrency].FullName;
 
-                    var text = $"{MinChars(obs.Value.Symbol, 12)} - Best Ask: {MinChars(ba.ToString("#,##0.00######"), 12)} Best Bid: {MinChars(bb.ToString("#,##0.00######"), 12)} - 1m Vol: {MinChars(vol.ToString("#,##0.0#"), 14)} {curr}            ";
+                    var text = $"{MinChars(obs.Value.Symbol, 12)} - Best Ask: {MinChars(ba.ToString("#,##0.00######"), 12)} Best Bid: {MinChars(bb.ToString("#,##0.00######"), 12)}  {curr}            ";
 
                     readOut.AppendLine(text);
                 }
 
                 readOut.AppendLine("                                                           ");
-                readOut.AppendLine($"Throughput: {PrintFriendlySpeed((ulong)l3conn.Throughput)}                           ");
+                readOut.AppendLine($"Throughput: {PrintFriendlySpeed((ulong)l2conn.Throughput)}                           ");
                 readOut.AppendLine("                                                           ");
-                readOut.AppendLine($"Queue Length: {l3conn.QueueLength}                                                           ");
+                readOut.AppendLine($"Queue Length: {l2conn.QueueLength}                                                           ");
             }
         }
 

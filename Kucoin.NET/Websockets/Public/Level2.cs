@@ -21,11 +21,18 @@ namespace Kucoin.NET.Websockets.Public
         /// <summary>
         /// Create a new Level 2 feed.
         /// </summary>
-        public Level2() : base()
+        public Level2(ICredentialsProvider cred) : base(cred)
         {
         }
 
-        public override string AggregateEndpoint => "/api/v2/market/orderbook/level2";
+        /// <summary>
+        /// Create a new Level 2 feed.
+        /// </summary>
+        public Level2(string key, string secret, string passphrase, bool isSandbox = false) : base(key, secret, passphrase, isSandbox)
+        {
+        }
+
+        public override string AggregateEndpoint => "/api/v3/market/orderbook/level2";
 
         public override string Subject => "trade.l2update";
 
@@ -54,7 +61,7 @@ namespace Kucoin.NET.Websockets.Public
 
             param.Add("symbol", symbol);
 
-            var jobj = await MakeRequest(HttpMethod.Get, curl, 5, false, param);
+            var jobj = await MakeRequest(HttpMethod.Get, curl, reqParams: param);
             var result = jobj.ToObject<KeyedOrderBook<OrderUnitStruct>>();
 
             foreach (var ask in result.Asks)
