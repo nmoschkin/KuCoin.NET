@@ -864,7 +864,7 @@ namespace KuCoinApp
                         }
                         catch { }
 
-                        level2Feed = new Level2();
+                        level2Feed = new Level2(cred);
 
                         tickerFeed = new TickerFeed();
                         klineFeed = new KlineFeed<KlineCandle>();
