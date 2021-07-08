@@ -29,7 +29,7 @@ namespace Kucoin.NET.Data.Order
         {
         }
 
-        public Level2KeyedCollection(bool descending) : base()
+        public Level2KeyedCollection(bool descending) : base(null, 0)
         {
             this.descending = descending;
         }

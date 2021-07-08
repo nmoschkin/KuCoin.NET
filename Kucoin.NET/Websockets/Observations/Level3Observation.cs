@@ -84,15 +84,15 @@ namespace Kucoin.NET.Websockets.Observations
         /// <param name="changes">The changes to sequence.</param>
         /// <param name="pieces">The collection to change (either an ask or a bid collection)</param>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        protected void SequencePieces(Level3Update change, Level3KeyedCollection<AtomicOrderStruct> pieces, Level3KeyedCollection<AtomicOrderStruct> otherPieces)
+        protected void SequencePieces(string subj, Level3Update change, Level3KeyedCollection<AtomicOrderStruct> pieces, Level3KeyedCollection<AtomicOrderStruct> otherPieces)
         {
 
-            if (change.Subject == "done")
+            if (subj == "done")
             {
                 pieces.Remove(change.OrderId);
 
             }
-            else if (change.Subject == "open")
+            else if (subj == "open")
             {
                 if (change.Price == null || change.Price == 0 || change.Size == null || change.Size == 0) return;
 
@@ -106,7 +106,7 @@ namespace Kucoin.NET.Websockets.Observations
 
                 pieces.Add(u);
             }
-            else if (change.Subject == "change")
+            else if (subj == "change")
             {
                 if (pieces.Contains(change.OrderId))
                 {
@@ -121,7 +121,7 @@ namespace Kucoin.NET.Websockets.Observations
                     pieces.Add(piece);
                 }
             }
-            else if (change.Subject == "match")
+            else if (subj == "match")
             {
                 if (otherPieces.Contains(change.MakerOrderId))
                 {
@@ -210,11 +210,11 @@ namespace Kucoin.NET.Websockets.Observations
 
                     if (value.Side == Side.Sell)
                     {
-                        SequencePieces(value, fullDepth.Asks, fullDepth.Bids);
+                        SequencePieces(value.Subject, value, fullDepth.Asks, fullDepth.Bids);
                     }
                     else if (value.Side == Side.Buy)
                     {
-                        SequencePieces(value, fullDepth.Bids, fullDepth.Asks);
+                        SequencePieces(value.Subject, value, fullDepth.Bids, fullDepth.Asks);
                     }
                     else
                     {

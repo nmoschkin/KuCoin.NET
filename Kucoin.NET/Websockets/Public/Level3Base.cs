@@ -32,6 +32,7 @@ namespace Kucoin.NET.Websockets.Public
 
         protected int defaultPieces = 50;
         protected int updateInterval = 500;
+        protected int updcalc = 500 * 10_000;
 
         protected int resets;
 
@@ -84,7 +85,10 @@ namespace Kucoin.NET.Websockets.Public
                 // the minimum value is 5 milliseconds
                 if (value < 5) value = 5;
 
-                SetProperty(ref updateInterval, value);
+                if (SetProperty(ref updateInterval, value))
+                {
+                    updcalc = updateInterval * 10_000;
+                }
             }
         }
 
@@ -360,7 +364,7 @@ namespace Kucoin.NET.Websockets.Public
 
                             af.OnNext(update);
 
-                            if ((DateTime.UtcNow.Ticks - cycle) >= ((updateInterval == 0 ? 60 : updateInterval) * 10_000))
+                            if ((DateTime.UtcNow.Ticks - cycle) >= (updcalc == 0 ? 600_000 : updcalc))
                             {
                                 await InitializeOrderBook(af.Symbol);
 
@@ -388,7 +392,7 @@ namespace Kucoin.NET.Websockets.Public
 
                                 if (updateInterval == 0) return;
 
-                                if ((DateTime.UtcNow.Ticks - cycle) >= (updateInterval * 10_000))
+                                if ((DateTime.UtcNow.Ticks - cycle) >= updcalc)
                                 {
                                     af.RequestPush();
                                     cycle = DateTime.UtcNow.Ticks;
