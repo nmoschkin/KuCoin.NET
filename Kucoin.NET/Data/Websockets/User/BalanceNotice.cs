@@ -74,7 +74,7 @@ namespace Kucoin.NET.Data.Websockets.User
         /// </summary>
         [JsonProperty("time")]
         [JsonConverter(typeof(AutoTimeConverter), TimeTypes.InMilliseconds)]
-        public DateTime Time { get; set; }
+        public DateTime Timestamp { get; set; }
 
         object ICloneable.Clone() => MemberwiseClone();
 

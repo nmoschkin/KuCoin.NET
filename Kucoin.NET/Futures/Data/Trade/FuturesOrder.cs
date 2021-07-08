@@ -38,7 +38,7 @@ namespace Kucoin.NET.Futures.Data.Trade
         /// [optional] Either limit or market
         /// </summary>
         [JsonProperty("type")]
-        public abstract FuturesOrderType Type { get; } 
+        public virtual FuturesOrderType Type { get; set; } 
 
         /// <summary>
         /// Leverage of the order
@@ -102,7 +102,8 @@ namespace Kucoin.NET.Futures.Data.Trade
         [JsonProperty("size")]
         public decimal Size { get; set; }
 
-        public override FuturesOrderType Type => FuturesOrderType.Market;
+        [JsonProperty("type")]
+        public override FuturesOrderType Type { get; set; } = FuturesOrderType.Market;
     }
 
     public class LimitFuturesOrder : FuturesOrderBase
@@ -162,7 +163,8 @@ namespace Kucoin.NET.Futures.Data.Trade
         [JsonProperty("visibleSize")]
         public decimal? VisibleSize { get; set; }
 
-        public override FuturesOrderType Type => FuturesOrderType.Limit;
+        [JsonProperty("type")]
+        public override FuturesOrderType Type { get; set; } = FuturesOrderType.Limit;
 
 
     }

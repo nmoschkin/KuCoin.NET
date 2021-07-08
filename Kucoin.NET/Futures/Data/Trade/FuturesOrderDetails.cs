@@ -107,7 +107,7 @@ namespace Kucoin.NET.Futures.Data.Trade
         /// Trigger price of stop orders
         /// </summary>
         [JsonProperty("stopPrice")]
-        public object StopPrice { get; set; }
+        public decimal StopPrice { get; set; }
 
 
         /// <summary>

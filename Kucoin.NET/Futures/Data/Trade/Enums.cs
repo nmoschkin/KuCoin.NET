@@ -70,11 +70,14 @@ namespace Kucoin.NET.Futures.Data.Trade
     [JsonConverter(typeof(EnumToStringConverter<FuturesOrderStatus>))]
     public enum FuturesOrderStatus
     {
-        [EnumMember(Value = "done")]
-        Done,
+        [EnumMember(Value = "match")]
+        Match,
 
         [EnumMember(Value = "open")]
-        Open
+        Open,
+
+        [EnumMember(Value = "done")]
+        Done
     }
 
 

@@ -61,7 +61,7 @@ namespace KuCoinConsole
         
         static bool ready = false;
 
-        static ContractMarketSnapshotTicker ticker;
+        static SymbolTradeOrderFeed ticker;
 
         static void Main(string[] args)
         {
@@ -100,15 +100,16 @@ namespace KuCoinConsole
 
             /* Testing Futures Ticker */
             /* Uncomment To Use */
-            //ticker = new ContractMarketSnapshotTicker();
+
+            //ticker = new SymbolTradeOrderFeed(cred.AttachedAccount);
+
             //ticker.Connect().Wait();
 
-            //ticker.FeedDataReceived += Ticker_FeedDataReceived;
+            //ticker.DataReceived += Ticker_DataReceived;
 
-            //ticker.AddSymbol("ETHUSDM").Wait();
-            
+            //ticker.AddSymbol("XBTUSDM").Wait();
 
-            //while(ticker.Connected)
+            //while (ticker.Connected)
             //{
             //    Task.Delay(100).Wait();
             //}
@@ -228,6 +229,7 @@ namespace KuCoinConsole
 
         private static void Ticker_DataReceived(object sender, Kucoin.NET.Websockets.DataReceivedEventArgs e)
         {
+            Console.WriteLine(e.Json);
         }
 
         /// <summary>

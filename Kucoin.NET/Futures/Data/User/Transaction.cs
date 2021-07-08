@@ -82,7 +82,7 @@ namespace Kucoin.NET.Futures.Data.User
         /// </summary>
         [JsonProperty("time")]
         [JsonConverter(typeof(AutoTimeConverter), TimeTypes.InMilliseconds)]
-        public DateTime Time { get; set; }
+        public DateTime Timestamp { get; set; }
 
 
         /// <summary>

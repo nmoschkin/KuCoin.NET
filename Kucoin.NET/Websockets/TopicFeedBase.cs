@@ -31,8 +31,9 @@ namespace Kucoin.NET.Websockets
                 string key,
                 string secret,
                 string passphrase,
-                bool isSandbox = false)
-        : base(key, secret, passphrase, isSandbox)
+                bool isSandbox = false,
+                bool futures = false)
+        : base(key, secret, passphrase, isSandbox, futures: futures)
         {
         }
 
@@ -40,7 +41,7 @@ namespace Kucoin.NET.Websockets
         /// Default Constructor
         /// </summary>
         /// <param name="credProvider"><see cref="ICredentialsProvider"/> implementation.</param>
-        public TopicFeedBase(ICredentialsProvider credProvider) : base(credProvider)
+        public TopicFeedBase(ICredentialsProvider credProvider, bool futures = false) : base(credProvider, futures: futures)
         {
         }
 
