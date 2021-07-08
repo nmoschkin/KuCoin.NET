@@ -128,7 +128,7 @@ namespace KuCoinConsole
 
             //// We want to monitor how much data is coming through the feed.
             //l2conn.MonitorThroughput = true;
-            
+
             //// Disable Observable/UI book updating for console app.
             //l2conn.UpdateInterval = 0;
 
@@ -177,9 +177,9 @@ namespace KuCoinConsole
                     {
                         Level3Observation obs;
 
-                        if (sym == "BTC-USDT")
-                        {
-                            // put bitcoin on its own.
+                        // not an even split because Bitcoin is heavy
+                        if (n++ < 4)
+                        {                            
                             obs = await l3conn.AddSymbol(sym);
                         }
                         else
