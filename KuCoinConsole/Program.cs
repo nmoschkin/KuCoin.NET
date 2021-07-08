@@ -51,9 +51,12 @@ namespace KuCoinConsole
 
     public static class Program
     {
-        static Dictionary<string, Level2Observation> observers = new Dictionary<string, Level2Observation>();
+        static Dictionary<string, Level3Observation> observers = new Dictionary<string, Level3Observation>();
+        //static Dictionary<string, Level2Observation> observers = new Dictionary<string, Level2Observation>();
 
         static Level2 l2conn;
+        static Level3 l3conn;
+        static Level3 l3conn2;
 
         static StringBuilder readOut = new StringBuilder();
         static object lockObj = new object();
@@ -85,15 +88,15 @@ namespace KuCoinConsole
 
             /**/
 
-            Console.WriteLine("Type your pin and press enter: ");
+            //Console.WriteLine("Type your pin and press enter: ");
 
-            var pin = Console.ReadLine();
-            cred = CryptoCredentials.LoadFromStorage(Seed, pin);
+            //var pin = Console.ReadLine();
+            //cred = CryptoCredentials.LoadFromStorage(Seed, pin);
 
-            if (cred == null)
-            {
-                Console.WriteLine("Invalid credentials!");
-            }
+            //if (cred == null)
+            //{
+            //    Console.WriteLine("Invalid credentials!");
+            //}
 
             /**/
 
@@ -121,13 +124,26 @@ namespace KuCoinConsole
 
 
             // Create the new websocket client.
-            l2conn = new Level2(cred);
+            //l2conn = new Level2(cred);
+
+            //// We want to monitor how much data is coming through the feed.
+            //l2conn.MonitorThroughput = true;
+            
+            //// Disable Observable/UI book updating for console app.
+            //l2conn.UpdateInterval = 0;
+
+            // Create the new websocket client.
+            l3conn = new Level3(cred);
+            l3conn2 = new Level3(cred);
 
             // We want to monitor how much data is coming through the feed.
-            l2conn.MonitorThroughput = true;
-            
+            l3conn.MonitorThroughput = true;
+            l3conn2.MonitorThroughput = true;
+
             // Disable Observable/UI book updating for console app.
-            l2conn.UpdateInterval = 0;
+            l3conn.UpdateInterval = 0;
+            l3conn2.UpdateInterval = 0;
+
 
             // clear the console (if you use a pin, this will get it off the screen)
             Console.Clear();
@@ -136,9 +152,10 @@ namespace KuCoinConsole
 
             // default update delay in milliseconds.
             // do not set this number too low.
-            int delay = 100;
+            int delay = 50;
 
-            l2conn.Connect().ContinueWith(async (t) =>
+            l3conn.Connect().ContinueWith(async (t) =>
+            //l2conn.Connect().ContinueWith(async (t) =>
             {
 
                 // 10 of the most popular trading symbols
@@ -149,6 +166,8 @@ namespace KuCoinConsole
                     // sort symbols alphabetically
                     return string.Compare(a, b);
                 });
+                
+                int n = 0;
 
                 foreach (var sym in syms)
                 {
@@ -156,7 +175,19 @@ namespace KuCoinConsole
 
                     try
                     {
-                        var obs = await l2conn.AddSymbol(sym);
+                        Level3Observation obs;
+
+                        if (sym == "BTC-USDT")
+                        {
+                            // put bitcoin on its own.
+                            obs = await l3conn.AddSymbol(sym);
+                        }
+                        else
+                        {
+                            obs = await l3conn2.AddSymbol(sym);
+                        }
+
+                        //var obs = await l2conn.AddSymbol(sym);
 
                         while (obs.Calibrated == false)
                         {
@@ -175,9 +206,10 @@ namespace KuCoinConsole
 
             }).Wait();
 
-            while (l2conn?.Connected ?? false)
-            {
-                if (!ready)
+            while (l3conn?.Connected ?? false)
+            //while (l2conn?.Connected ?? false)
+                {
+                    if (!ready)
                 {
                     // wait til all the feeds are calibrated before displaying anything
 
@@ -199,6 +231,8 @@ namespace KuCoinConsole
 
                 foreach (var obs in observers)
                 {
+                    if (obs.Value.FullDepthOrderBook == null) continue;
+
                     if (obs.Value.FullDepthOrderBook.Timestamp > ts)
                     {
                         ts = obs.Value.FullDepthOrderBook.Timestamp;
@@ -252,10 +286,10 @@ namespace KuCoinConsole
                 {
                     if (obs.Value.FullDepthOrderBook is null) continue;
 
-                    //ba = ((IList<AtomicOrderStruct>)obs.Value.FullDepthOrderBook.Asks)[0].Price;
-                    //bb = ((IList<AtomicOrderStruct>)obs.Value.FullDepthOrderBook.Bids)[0].Price;
-                    ba = ((IList<OrderUnitStruct>)obs.Value.FullDepthOrderBook.Asks)[0].Price;
-                    bb = ((IList<OrderUnitStruct>)obs.Value.FullDepthOrderBook.Bids)[0].Price;
+                    ba = ((IList<AtomicOrderStruct>)obs.Value.FullDepthOrderBook.Asks)[0].Price;
+                    bb = ((IList<AtomicOrderStruct>)obs.Value.FullDepthOrderBook.Bids)[0].Price;
+                    //ba = ((IList<OrderUnitStruct>)obs.Value.FullDepthOrderBook.Asks)[0].Price;
+                    //bb = ((IList<OrderUnitStruct>)obs.Value.FullDepthOrderBook.Bids)[0].Price;
 
                     var curr = "";
 
@@ -267,9 +301,13 @@ namespace KuCoinConsole
                 }
 
                 readOut.AppendLine("                                                           ");
-                readOut.AppendLine($"Throughput: {PrintFriendlySpeed((ulong)l2conn.Throughput)}                           ");
+                readOut.AppendLine($"Throughput:   {PrintFriendlySpeed((ulong)l3conn.Throughput)}                           ");
+                readOut.AppendLine($"Throughput 2: {PrintFriendlySpeed((ulong)l3conn2.Throughput)}                           ");
+                //readOut.AppendLine($"Throughput: {PrintFriendlySpeed((ulong)l2conn.Throughput)}                           ");
                 readOut.AppendLine("                                                           ");
-                readOut.AppendLine($"Queue Length: {l2conn.QueueLength}                                                           ");
+                readOut.AppendLine($"Queue Length:   {l3conn.QueueLength}                                                           ");
+                readOut.AppendLine($"Queue Length 2: {l3conn2.QueueLength}                                                           ");
+                //readOut.AppendLine($"Queue Length: {l2conn.QueueLength}                                                           ");
             }
         }
 
