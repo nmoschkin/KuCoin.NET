@@ -138,7 +138,7 @@ namespace Kucoin.NET.Websockets.Observations
 
                     // A match is a real component of volume.
                     // we can keep our own tally of the market volume per k-line.
-                    Level3Volume += csize * p;
+                    if (updVol) Level3Volume += csize * p;
                 }
             }
         }

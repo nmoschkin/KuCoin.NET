@@ -54,6 +54,7 @@ namespace Kucoin.NET.Websockets.Observations
         protected DateTime ckline;
 
         protected bool autoPush = true;
+        protected bool updVol = false;
 
         /// <summary>
         /// Level 2 observation base class.
@@ -108,13 +109,15 @@ namespace Kucoin.NET.Websockets.Observations
                         // a 5 millisecond delay provides an even data flow.
                         await Task.Delay(5);
 
-
-                        if (DateTime.UtcNow >= test)
+                        if (updVol)
                         {
-                            ckline = klineType.GetCurrentKlineStartTime();
-                            test = ckline.AddSeconds(klineType.Length);
+                            if (DateTime.UtcNow >= test)
+                            {
+                                ckline = klineType.GetCurrentKlineStartTime();
+                                test = ckline.AddSeconds(klineType.Length);
 
-                            Level3Volume = 0.0M;
+                                Level3Volume = 0.0M;
+                            }
                         }
 
                     }
@@ -182,6 +185,21 @@ namespace Kucoin.NET.Websockets.Observations
             }
         }
 
+        /// <summary>
+        /// Specify whether or not to calculate the instantaneous volume.
+        /// </summary>
+        public bool UpdateVolume
+        {
+            get => updVol;
+            set
+            {
+                SetProperty(ref updVol, value);
+            }
+        }
+
+        /// <summary>
+        /// The volume K-Line length.
+        /// </summary>
         public KlineType VolumeTime
         {
             get => klineType;
@@ -191,6 +209,9 @@ namespace Kucoin.NET.Websockets.Observations
             }
         }
 
+        /// <summary>
+        /// The current volume.
+        /// </summary>
         public decimal Level3Volume
         {
             get => l3vol;
