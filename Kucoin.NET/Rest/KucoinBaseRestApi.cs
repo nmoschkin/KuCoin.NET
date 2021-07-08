@@ -266,7 +266,7 @@ namespace Kucoin.NET.Rest
             string uri,
             int currentPage = 1,
             int pageSize = 50,
-            int timeout = 5,
+            int timeout = 10,
             bool auth = true,
             IDictionary<string, object> reqParams = null,
             bool wholeResponseJson = false)
@@ -311,7 +311,7 @@ namespace Kucoin.NET.Rest
         protected async Task<IList<TItem>> GetAllPaginatedResults<TItem, TPage>(
             HttpMethod method,
             string uri,
-            int timeout = 5,
+            int timeout = 10,
             bool auth = true,
             IDictionary<string, object> reqParams = null,
             bool wholeResponseJson = false)

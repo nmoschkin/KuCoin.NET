@@ -81,21 +81,21 @@ namespace KuCoinConsole
 
             /**/
 
-            //Console.WriteLine("Type your pin and press enter: ");
+            Console.WriteLine("Type your pin and press enter: ");
 
-            //var pin = Console.ReadLine();
-            //cred = CryptoCredentials.LoadFromStorage(Seed, pin);
+            var pin = Console.ReadLine();
+            cred = CryptoCredentials.LoadFromStorage(Seed, pin);
 
-            //if (cred == null)
-            //{
-            //    Console.WriteLine("Invalid credentials!");
-            //}
+            if (cred == null)
+            {
+                Console.WriteLine("Invalid credentials!");
+            }
 
             /**/
 
             // Use simple credentials:
             // Comment this out if you uncomment the code above.
-            cred = SimpleCredentials.Instance;
+            //cred = SimpleCredentials.Instance;
 
 
             /* Testing Futures Ticker */
