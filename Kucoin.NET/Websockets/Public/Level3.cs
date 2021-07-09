@@ -89,7 +89,10 @@ namespace Kucoin.NET.Websockets.Public
 
         protected override Level3Observation CreateNewObservation(string symbol)
         {
-            return new Level3Observation(this, symbol, defaultPieces);
+            return new Level3Observation(this, symbol, defaultPieces)
+            {
+                AutoPushEnabled = (UpdateInterval != 0)
+            };
         }
 
     }

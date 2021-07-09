@@ -543,6 +543,7 @@ namespace KuCoinApp
                                 App.Current?.Dispatcher?.Invoke(() =>
                                 {
                                     Level3 = (ILevel3OrderBookProvider)t.Result;
+                                    ((Level3Observation)level3).UpdateVolume = true;
                                     level3.VolumeTime = KlineType;
                                 });
 
@@ -602,9 +603,11 @@ namespace KuCoinApp
 
                     level3Feed?.AddSymbol(newSymbol).ContinueWith((t) =>
                     {
+
                         App.Current?.Dispatcher?.Invoke(() =>
                         {
                             Level3 = t.Result;
+                            ((Level3Observation)level3).UpdateVolume = true;
                             level3.VolumeTime = KlineType;
                         });
 
@@ -865,6 +868,7 @@ namespace KuCoinApp
                         catch { }
 
                         level2Feed = new Level2(cred);
+                        level3Feed = new Level3(cred);
 
                         tickerFeed = new TickerFeed();
                         klineFeed = new KlineFeed<KlineCandle>();
