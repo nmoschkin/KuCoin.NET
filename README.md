@@ -1,9 +1,11 @@
 # Kucoin.NET (Alpha)
-KuCoin API Libraries written in .NET Standard 2.0
+KuCoin API Libraries written in .NET 5.0 and .NET Standard 2.0
 
 __ATTENTION__: __READ INSTALLATION INSTRUCTIONS VERY CAREFULLY__
 
 This library is in active development, and it's brand new so things will undoubtedly change while I consider next steps.
+
+July 9th, 2021: Completed coding of all API functions. Split main project into .NET 5.0+ and .NET Standard 2.0 versions.  Testing is progressing with trading, etc.  
 
 July 4th, 2021: Majority of basic core implementation for spot and futures is done.  
 
@@ -11,7 +13,9 @@ If there are any more dramatic changes to the code, then they might be with the 
 
 ## Installation
 
-The library is being implemented as described in (https://docs.kucoin.com/#general), in .NET Standard 2.0.  It will compile anywhere the .NET Standard library is supported (Windows/Linux/Android/MacOS/iOS/etc.)
+The library is being implemented as described in (https://docs.kucoin.com/#general), in .NET 5.0 and .NET Standard 2.0.  It will compile anywhere the .NET Standard library is supported (Windows/Linux/Android/MacOS/iOS/etc.)
+
+New projects targeting Desktop, Console .NET MAUI, or Blazor should use the .NET 5.0+ library.  Older projects targeting the .NET Framework or Xamarin, or Mono projects should use the .NET Standard 2.0 library.
 
 The example project is built in .NET 5 using WPF for Windows Desktop, and uses my fork of the __FancyCandles__ chart library. It is included via a git submodule.
 
