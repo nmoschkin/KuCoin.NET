@@ -88,15 +88,15 @@ namespace KuCoinConsole
 
             /**/
 
-            Console.WriteLine("Type your pin and press enter: ");
+            //Console.WriteLine("Type your pin and press enter: ");
 
-            var pin = Console.ReadLine();
-            cred = CryptoCredentials.LoadFromStorage(Seed, pin);
+            //var pin = Console.ReadLine();
+            //cred = CryptoCredentials.LoadFromStorage(Seed, pin);
 
-            if (cred == null)
-            {
-                Console.WriteLine("Invalid credentials!");
-            }
+            //if (cred == null)
+            //{
+            //    Console.WriteLine("Invalid credentials!");
+            //}
 
             /**/
 
