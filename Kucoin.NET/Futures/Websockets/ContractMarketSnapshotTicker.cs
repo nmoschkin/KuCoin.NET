@@ -7,6 +7,9 @@ using System.Text;
 
 namespace Kucoin.NET.Futures.Websockets
 {
+    /// <summary>
+    /// Ticker for the 24 hour market snapshot
+    /// </summary>
     public class ContractMarketSnapshotTicker : SymbolTopicFeedBase<ContractMarketSnapshot>
     {
         public ContractMarketSnapshotTicker() : base(null, futures: true)

@@ -10,9 +10,11 @@ using System.Text;
 
 namespace Kucoin.NET.Futures.Data.Websockets
 {
+    /// <summary>
+    /// Contract market snapshot data
+    /// </summary>
     public class ContractMarketSnapshot : ISymbol
     {
-
         [JsonIgnore()]
         public string Symbol { get; set; }
 

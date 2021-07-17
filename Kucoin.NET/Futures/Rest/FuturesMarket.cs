@@ -19,7 +19,7 @@ namespace Kucoin.NET.Futures.Rest
         private ObservableDictionary<string, FuturesContract> contractList;
 
 
-        public FuturesMarket() : base(cred: null)
+        public FuturesMarket() : base(credProvider: null)
         {
         }
 
@@ -197,6 +197,11 @@ namespace Kucoin.NET.Futures.Rest
 
         }
 
+        /// <summary>
+        /// Get historical trade data for the specified symbol.
+        /// </summary>
+        /// <param name="symbol">The trading symbol to query.</param>
+        /// <returns>A list of historical data points.</returns>
         public async Task<IList<HistoricalData>> GetHistoricalData(string symbol)
         {
 
@@ -212,7 +217,16 @@ namespace Kucoin.NET.Futures.Rest
             return jobj.ToObject<HistoricalData[]>();
         }
 
-
+        /// <summary>
+        /// Get the interest rate list.
+        /// </summary>
+        /// <param name="symbol">The symbol.</param>
+        /// <param name="forward">True if returning data in forward order.</param>
+        /// <param name="offset">Offset</param>
+        /// <param name="startTime">Start time</param>
+        /// <param name="endTime">End time</param>
+        /// <param name="maxCount">Max returned objects</param>
+        /// <returns></returns>
         public async Task<InterestHistory> GetInterestRateList(string symbol,
             bool forward = true,
             long? offset = null,
@@ -268,6 +282,16 @@ namespace Kucoin.NET.Futures.Rest
         }
 
 
+        /// <summary>
+        /// Get the market index list
+        /// </summary>
+        /// <param name="symbol">The symbol.</param>
+        /// <param name="forward">True if returning data in forward order.</param>
+        /// <param name="offset">Offset</param>
+        /// <param name="startTime">Start time</param>
+        /// <param name="endTime">End time</param>
+        /// <param name="maxCount">Max returned objects</param>
+        /// <returns></returns>
         public async Task<IndexList> GetIndexList(string symbol,
             bool forward = true,
             long? offset = null,
@@ -322,6 +346,11 @@ namespace Kucoin.NET.Futures.Rest
 
         }
 
+        /// <summary>
+        /// Get the mark price info for the specified symbol
+        /// </summary>
+        /// <param name="symbol">The symbol.</param>
+        /// <returns></returns>
         public async Task<MarkPrice> GetMarkPrice(string symbol)
         {
             var url = $"/api/v1/mark-price/{symbol}/current";
@@ -330,7 +359,16 @@ namespace Kucoin.NET.Futures.Rest
             return jobj.ToObject<MarkPrice>();
         }
 
-
+        /// <summary>
+        /// Get the premium index for the specified symbol.
+        /// </summary>
+        /// <param name="symbol">The symbol.</param>
+        /// <param name="forward">True if returning data in forward order.</param>
+        /// <param name="offset">Offset</param>
+        /// <param name="startTime">Start time</param>
+        /// <param name="endTime">End time</param>
+        /// <param name="maxCount">Max returned objects</param>
+        /// <returns></returns>
         public async Task<PremiumIndex> GetPremiumIndex(string symbol,
             bool forward = true,
             long? offset = null,
@@ -385,7 +423,11 @@ namespace Kucoin.NET.Futures.Rest
 
         }
 
-
+        /// <summary>
+        /// Get the current funding rate for the specified symbol.
+        /// </summary>
+        /// <param name="symbol">The trading symbol</param>
+        /// <returns></returns>
         public async Task<FundingRate> GetCurrentFundingRate(string symbol)
         {
             var url = $"/api/v1/funding-rate/{symbol}/current";
@@ -394,6 +436,10 @@ namespace Kucoin.NET.Futures.Rest
             return jobj.ToObject<FundingRate>();
         }
 
+        /// <summary>
+        /// Get the system time stamp
+        /// </summary>
+        /// <returns></returns>
         public async Task<DateTime> GetTimestamp()
         {
 
@@ -406,7 +452,10 @@ namespace Kucoin.NET.Futures.Rest
 
         }
 
-
+        /// <summary>
+        /// Get the current KuCoin Futures service status and message
+        /// </summary>
+        /// <returns></returns>
         public async Task<ServiceInfo> GetServiceStatus()
         {
 

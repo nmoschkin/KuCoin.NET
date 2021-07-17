@@ -10,13 +10,30 @@ using System.Text;
 namespace Kucoin.NET.Futures.Data.Websockets
 {
 
+    /// <summary>
+    /// Account event types
+    /// </summary>
     public enum EventType
     {
+        /// <summary>
+        /// Order margin event
+        /// </summary>
         OrderMargin,
+
+        /// <summary>
+        /// Available balance change event
+        /// </summary>
         AvailableBalance,
+
+        /// <summary>
+        /// Withdrawal event
+        /// </summary>
         WithdrawalAmount
     }
 
+    /// <summary>
+    /// Account event data
+    /// </summary>
     public class AccountEventData
     {
         /// <summary>

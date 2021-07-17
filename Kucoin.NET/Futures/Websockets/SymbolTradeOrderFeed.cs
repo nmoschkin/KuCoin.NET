@@ -10,7 +10,9 @@ using System.Threading.Tasks;
 
 namespace Kucoin.NET.Futures.Websockets
 {
-
+    /// <summary>
+    /// Trade Order Feed
+    /// </summary>
     public class TradeOrderFeed : TopicFeedBase<TradeOrder>
     {
         public TradeOrderFeed(ICredentialsProvider cred) : base(cred, futures: true)
@@ -38,6 +40,9 @@ namespace Kucoin.NET.Futures.Websockets
 
     }
 
+    /// <summary>
+    /// Symbol-based Trade Order Feed
+    /// </summary>
     public class SymbolTradeOrderFeed : SymbolTopicFeedBase<TradeOrder>
     {
 

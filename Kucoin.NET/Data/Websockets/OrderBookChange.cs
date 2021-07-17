@@ -29,19 +29,19 @@ namespace Kucoin.NET.Data.Websockets
         public string Currency { get; set; }
 
         /// <summary>
-        /// DailyIntRate
+        /// Daily interest rate
         /// </summary>
         [JsonProperty("dailyIntRate")]
         public decimal DailyIntRate { get; set; }
 
         /// <summary>
-        /// AnnualIntRate
+        /// Annual interest rate
         /// </summary>
         [JsonProperty("annualIntRate")]
         public decimal AnnualIntRate { get; set; }
 
         /// <summary>
-        /// Term
+        /// Term (in days)
         /// </summary>
         [JsonProperty("term")]
         public long Term { get; set; }

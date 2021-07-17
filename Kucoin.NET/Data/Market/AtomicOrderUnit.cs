@@ -13,7 +13,7 @@ namespace Kucoin.NET.Data.Market
 {
 
     /// <summary>
-    /// Level 2 Ask or Bid
+    /// Atomic (Level 3) Order Unit
     /// </summary>
 
     [JsonConverter(typeof(AtomicOrderUnitConverter))]
@@ -32,7 +32,9 @@ namespace Kucoin.NET.Data.Market
         /// </summary>
         public virtual decimal Total => price * size;
 
-
+        /// <summary>
+        /// The Order Id
+        /// </summary>
         public virtual string OrderId
         {
             get => orderId;
@@ -76,6 +78,9 @@ namespace Kucoin.NET.Data.Market
             }
         }
 
+        /// <summary>
+        /// The timestamp of this order.
+        /// </summary>
         public virtual DateTime Timestamp
         {
             get => time;
@@ -110,6 +115,9 @@ namespace Kucoin.NET.Data.Market
             time = EpochTime.NanosecondsToDate((long)data[3]);
         }
 
+        /// <summary>
+        /// Create a new atomic order unit.
+        /// </summary>
         public AtomicOrderUnit()
         {
         }
@@ -120,7 +128,7 @@ namespace Kucoin.NET.Data.Market
         }
 
         /// <summary>
-        /// Create a new order unit from this object.
+        /// Create a new atomic order unit implementation from the values in this object.
         /// </summary>
         /// <returns></returns>
         public virtual T Clone<T>() where T : IAtomicOrderUnit, new()
@@ -145,7 +153,7 @@ namespace Kucoin.NET.Data.Market
 
 
     /// <summary>
-    /// Level 2 Ask or Bid
+    /// Observable Atomic (Level 3) Order Unit
     /// </summary>
 
     [JsonConverter(typeof(AtomicOrderUnitConverter))]
@@ -209,10 +217,17 @@ namespace Kucoin.NET.Data.Market
             }
         }
 
+        /// <summary>
+        /// Initialize the object with data.
+        /// </summary>
+        /// <param name="data">Data.</param>
         internal ObservableAtomicOrderUnit(object[] data) : base(data)
         {
         }
 
+        /// <summary>
+        /// Create a new observable atomic order unit.
+        /// </summary>
         public ObservableAtomicOrderUnit() : base()
         {
         }
@@ -225,6 +240,9 @@ namespace Kucoin.NET.Data.Market
 
     }
 
+    /// <summary>
+    /// Atomic (Level 3) Order Unit (struct implementation)
+    /// </summary>
     [JsonConverter(typeof(AtomicOrderUnitConverter))]
     public struct AtomicOrderStruct : IAtomicOrderUnit
     {
@@ -261,6 +279,10 @@ namespace Kucoin.NET.Data.Market
             set => size = value;
         }
 
+        /// <summary>
+        /// Initialize the structure from data.
+        /// </summary>
+        /// <param name="data">The data.</param>
         internal AtomicOrderStruct(object[] data)
         {
             orderId = (string)data[0];
@@ -269,9 +291,31 @@ namespace Kucoin.NET.Data.Market
             timestamp = EpochTime.NanosecondsToDate((long)data[3]);
         }
 
+        /// <summary>
+        /// Make an exact copy of this struct.
+        /// </summary>
+        /// <returns></returns>
         public AtomicOrderStruct Clone()
         {
             return (AtomicOrderStruct)MemberwiseClone();
+        }
+
+        /// <summary>
+        /// Create a new atomic order unit implementation from the values in this object.
+        /// </summary>
+        /// <typeparam name="T">A type that implements <see cref="IAtomicOrderUnit"/> and can be created.</typeparam>
+        /// <returns></returns>
+        public T Clone<T>() where T: IAtomicOrderUnit, new()
+        {
+            T ret = new T()
+            {
+                Price = Price,
+                Size = Size,
+                OrderId = OrderId,
+                Timestamp = Timestamp
+            };
+
+            return ret;
         }
 
         object ICloneable.Clone()

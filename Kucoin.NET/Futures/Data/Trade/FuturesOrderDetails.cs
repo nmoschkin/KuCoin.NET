@@ -11,6 +11,9 @@ using System.Text;
 
 namespace Kucoin.NET.Futures.Data.Trade
 {
+    /// <summary>
+    /// Futures Order Details
+    /// </summary>
     public class FuturesOrderDetails
     {
         /// <summary>

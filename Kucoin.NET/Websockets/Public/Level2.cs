@@ -100,13 +100,18 @@ namespace Kucoin.NET.Websockets.Public
         /// <summary>
         /// Create a new Level 2 feed.
         /// </summary>
-        public Level2StandardBase(ICredentialsProvider cred) : base(cred)
+        /// <param name="credProvider"><see cref="ICredentialsProvider"/> implementation.</param>
+        public Level2StandardBase(ICredentialsProvider credProvider) : base(credProvider)
         {
         }
 
         /// <summary>
         /// Create a new Level 2 feed.
         /// </summary>
+        /// <param name="key">API Key</param>
+        /// <param name="secret">API Secret</param>
+        /// <param name="passphrase">API Passphrase</param>
+        /// <param name="isSandbox">Is Sandbox Mode</param>
         public Level2StandardBase(string key, string secret, string passphrase, bool isSandbox = false) : base(key, secret, passphrase, isSandbox)
         {
         }

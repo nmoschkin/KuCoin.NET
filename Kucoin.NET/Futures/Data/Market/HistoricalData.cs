@@ -10,6 +10,9 @@ using System.Text;
 
 namespace Kucoin.NET.Futures.Data.Market
 {
+    /// <summary>
+    /// Historical trade data
+    /// </summary>
     public class HistoricalData
     {
         /// <summary>

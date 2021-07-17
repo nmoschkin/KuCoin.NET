@@ -9,6 +9,9 @@ using System.Text;
 
 namespace Kucoin.NET.Futures.Data.Websockets
 {
+    /// <summary>
+    /// Funding Settlement Data
+    /// </summary>
     public class FundingSettlement
     {
 

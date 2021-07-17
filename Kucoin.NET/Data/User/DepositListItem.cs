@@ -80,14 +80,14 @@ namespace Kucoin.NET.Data.User
     public class DepositListItem
     {
         /// <summary>
-        /// Address
+        /// Wallet Address
         /// </summary>
         [JsonProperty("address")]
         public string Address { get; set; }
 
 
         /// <summary>
-        /// Memo
+        /// Wallet Address Memo (for currencies such as XLM)
         /// </summary>
         [JsonProperty("memo")]
         public string Memo { get; set; }
@@ -115,21 +115,21 @@ namespace Kucoin.NET.Data.User
 
 
         /// <summary>
-        /// IsInner
+        /// Is inner transfer
         /// </summary>
         [JsonProperty("isInner")]
         public bool IsInner { get; set; }
 
 
         /// <summary>
-        /// WalletTxId
+        /// Wallet transaction Id
         /// </summary>
         [JsonProperty("walletTxId")]
         public string WalletTxId { get; set; }
 
 
         /// <summary>
-        /// Status
+        /// Deposit Status
         /// </summary>
         [JsonProperty("status")]
         public DepositStatus Status { get; set; }

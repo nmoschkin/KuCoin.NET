@@ -10,14 +10,29 @@ using System.Threading.Tasks;
 
 namespace Kucoin.NET.Futures.Websockets
 {
+    /// <summary>
+    /// Futures account events feed
+    /// </summary>
     public class AccountEventFeed : TopicFeedBase<AccountEventData>
     {
+        /// <summary>
+        /// Order Margin Event
+        /// </summary>
         public event EventHandler<AccountEventData> OrderMaginEvent;
 
+        /// <summary>
+        /// Balance Changed Event
+        /// </summary>
         public event EventHandler<AccountEventData> AvailableBalanceEvent;
 
+        /// <summary>
+        /// Withdrawal or Hold Event
+        /// </summary>
         public event EventHandler<AccountEventData> WithdrawHoldEvent;
 
+        /// <summary>
+        /// Account Event
+        /// </summary>
         public event EventHandler<AccountEventData> AccountEvent;
 
         public AccountEventFeed(ICredentialsProvider cred) : base(cred, futures: true)

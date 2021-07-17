@@ -7,6 +7,9 @@ using System.Text;
 
 namespace Kucoin.NET.Futures.Websockets.Observations
 {
+    /// <summary>
+    /// Funding event observation
+    /// </summary>
     public class FundingObservation : FeedObservation<FundingSettlement>
     {
         private new PositionChangeFeed feed;

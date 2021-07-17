@@ -21,63 +21,63 @@ namespace Kucoin.NET.Data.User
 
 
         /// <summary>
-        /// LimitBTCAmount
+        /// Limit BTC Amount
         /// </summary>
         [JsonProperty("limitBTCAmount")]
         public decimal LimitBTCAmount { get; set; }
 
 
         /// <summary>
-        /// UsedBTCAmount
+        /// Used BTC Amount
         /// </summary>
         [JsonProperty("usedBTCAmount")]
         public long UsedBTCAmount { get; set; }
 
 
         /// <summary>
-        /// LimitAmount
+        /// Limit Amount
         /// </summary>
         [JsonProperty("limitAmount")]
         public decimal LimitAmount { get; set; }
 
 
         /// <summary>
-        /// RemainAmount
+        /// Remain Amount
         /// </summary>
         [JsonProperty("remainAmount")]
         public decimal RemainAmount { get; set; }
 
 
         /// <summary>
-        /// AvailableAmount
+        /// Available Amount
         /// </summary>
         [JsonProperty("availableAmount")]
         public decimal AvailableAmount { get; set; }
 
 
         /// <summary>
-        /// WithdrawMinFee
+        /// Withdraw Min Fee
         /// </summary>
         [JsonProperty("withdrawMinFee")]
         public decimal WithdrawMinFee { get; set; }
 
 
         /// <summary>
-        /// InnerWithdrawMinFee
+        /// Inner Withdraw Min Fee
         /// </summary>
         [JsonProperty("innerWithdrawMinFee")]
         public decimal InnerWithdrawMinFee { get; set; }
 
 
         /// <summary>
-        /// WithdrawMinSize
+        /// Withdraw Min Size
         /// </summary>
         [JsonProperty("withdrawMinSize")]
         public decimal WithdrawMinSize { get; set; }
 
 
         /// <summary>
-        /// IsWithdrawEnabled
+        /// Is Withdraw Enabled
         /// </summary>
         [JsonProperty("isWithdrawEnabled")]
         public bool IsWithdrawEnabled { get; set; }

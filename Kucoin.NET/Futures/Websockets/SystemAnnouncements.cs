@@ -9,6 +9,10 @@ using System.Threading.Tasks;
 
 namespace Kucoin.NET.Futures.Websockets
 {
+
+    /// <summary>
+    /// System Announcements Feed
+    /// </summary>
     public class SystemAnnouncements : KucoinBaseWebsocketFeed<FundingPoint>
     {
         public SystemAnnouncements() : base(null, futures: true)

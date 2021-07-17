@@ -4,9 +4,19 @@ using System.Text;
 
 namespace Kucoin.NET.Data.Market
 {
+    /// <summary>
+    /// Enumeration of whether the kline length is represented in seconds, or minutes.
+    /// </summary>
     public enum KlineLengthType
     {
+        /// <summary>
+        /// K-Line is represented in seconds.
+        /// </summary>
         Seconds,
+
+        /// <summary>
+        /// K-Line is represented in minutes.
+        /// </summary>
         Minutes
     }
 
@@ -64,8 +74,6 @@ namespace Kucoin.NET.Data.Market
         DateTime GetCurrentKlineStartTime();
 
         string ToString(string format);
-
-
 
     }
 

@@ -38,7 +38,7 @@ namespace Kucoin.NET.Futures.Data.Trade
         }
 
         /// <summary>
-        /// 
+        /// Order status
         /// </summary>
         [JsonProperty("status")]
         public FuturesOrderStatus? Status { get; set; }
@@ -46,26 +46,26 @@ namespace Kucoin.NET.Futures.Data.Trade
         [JsonProperty("symbol")]
         public string Symbol { get; set; }
         /// <summary>
-        /// 
+        /// Side (buy or sell)
         /// </summary>
         [JsonProperty("side")]
         public Side? Side { get; set; }
 
         /// <summary>
-        /// 
+        /// Order type
         /// </summary>
         [JsonProperty("type")]
         public OrderType? Type { get; set; }
 
         /// <summary>
-        /// 
+        /// Start time
         /// </summary>
         [JsonProperty("startAt")]
         [JsonConverter(typeof(AutoTimeConverter), TimeTypes.InMilliseconds)]
         public DateTime? StartAt { get; set; }
 
         /// <summary>
-        /// 
+        /// End time
         /// </summary>
         [JsonProperty("endAt")]
         [JsonConverter(typeof(AutoTimeConverter), TimeTypes.InMilliseconds)]
@@ -98,6 +98,9 @@ namespace Kucoin.NET.Futures.Data.Trade
             EndAt = endAt;
         }
 
+        /// <summary>
+        /// Order type
+        /// </summary>
         [JsonProperty("type")]
         public new FuturesOrderType? Type { get; set; }
     }

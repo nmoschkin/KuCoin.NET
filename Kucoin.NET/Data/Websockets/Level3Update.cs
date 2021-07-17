@@ -11,12 +11,21 @@ using System.Text;
 
 namespace Kucoin.NET.Data.Websockets
 {
+    /// <summary>
+    /// Order completion reasons
+    /// </summary>
     [JsonConverter(typeof(EnumToStringConverter<DoneReason>))]
     public enum DoneReason
     {
+        /// <summary>
+        /// The order was filled
+        /// </summary>
         [EnumMember(Value="filled")]
         Filled,
 
+        /// <summary>
+        /// The order was canceled
+        /// </summary>
         [EnumMember(Value = "canceled")]
         Canceled
     }

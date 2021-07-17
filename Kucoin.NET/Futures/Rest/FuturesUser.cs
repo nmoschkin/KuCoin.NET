@@ -16,10 +16,21 @@ namespace Kucoin.NET.Futures.Rest
     /// </summary>
     public class FuturesUser : FuturesBaseRestApi
     {
-        public FuturesUser(ICredentialsProvider cred) : base(cred)
+        /// <summary>
+        /// Create a new Futures User Manager class with the specified credentials.
+        /// </summary>
+        /// <param name="credProvider">An object that implements <see cref="ICredentialsProvider"/>.</param>
+        public FuturesUser(ICredentialsProvider credProvider) : base(credProvider)
         {
         }
 
+        /// <summary>
+        /// Create a new Futures User Manager class with the specified credentials.
+        /// </summary>
+        /// <param name="key">API Key</param>
+        /// <param name="secret">API Secret</param>
+        /// <param name="passphrase">API Passphrase</param>
+        /// <param name="isSandbox">Is sandbox / not real-time.</param>
         public FuturesUser(
             string key, 
             string secret, 
@@ -55,7 +66,11 @@ namespace Kucoin.NET.Futures.Rest
             return jobj.ToObject<FuturesAccount>();
         }
 
-
+        /// <summary>
+        /// Get deposit address information for the specified currency
+        /// </summary>
+        /// <param name="currency">The currency (XBT or USDT)</param>
+        /// <returns></returns>
         public async Task<AccountAddress> GetDepositAddress(FuturesCurrency? currency = FuturesCurrency.XBT)
         {
             var dict = new Dictionary<string, object>();
@@ -73,18 +88,18 @@ namespace Kucoin.NET.Futures.Rest
             return jobj.ToObject<AccountAddress>();
 
         }
-        /* 
-         * 
-         *  startAt	long	[Optional] Start time (millisecond)
-            endAt	long	[Optional] End time (millisecond)
-            type	String	[Optional] Type RealisedPNL-Realised profit and loss, Deposit-Deposit, Withdrawal-withdraw, Transferin-Transfer in, TransferOut-Transfer out
-            offset	long	[Optional] Start offset
-            maxCount	long	[Optional] Displayed size per page. The default size is 50
-            currency	String	[Optional] Currency of transaction history XBT or USDT
-            forward	boolean	[optional] This parameter functions to judge whether the lookup is forward or not. True means “yes” and False means “no”. This parameter is set as true by default
-         * 
-         */
 
+        /// <summary>
+        /// List transactions with the specified optional parameters
+        /// </summary>
+        /// <param name="currency">The trading currency (XBT or USDT).</param>
+        /// <param name="forward">True if returning data in forward order.</param>
+        /// <param name="offset">Offset</param>
+        /// <param name="type">The transaction type</param>
+        /// <param name="startTime">Start time</param>
+        /// <param name="endTime">End time</param>
+        /// <param name="maxCount">Max returned objects</param>
+        /// <returns></returns>
         public async Task<TransactionHistory> GetTransactions(
             string currency = null, 
             bool forward = true, 
@@ -149,7 +164,14 @@ namespace Kucoin.NET.Futures.Rest
 
         }
 
-
+        /// <summary>
+        /// Gets a list of deposits based on the specified parameters.
+        /// </summary>
+        /// <param name="currency">The trading currency (XBT or USDT).</param>
+        /// <param name="status">Deposit status</param>
+        /// <param name="startTime">Start time</param>
+        /// <param name="endTime">End time</param>
+        /// <returns></returns>
         public async Task<IList<Deposit>> GetDepositsList(
             string currency = null,
             DepositStatus? status = null,

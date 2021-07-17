@@ -1211,6 +1211,7 @@ namespace Kucoin.NET.Websockets
         /// <param name="url">Optional alternate base URL.</param>
         /// <param name="isv1api">Is v1 API.</param>
         /// <param name="multiplexHost">Optional multiplex host to attach to as a client.</param>
+        /// <param name="futures">Use the Futures API endpoint.</param>
         public KucoinBaseWebsocketFeed(
             string key,
             string secret,
@@ -1230,6 +1231,7 @@ namespace Kucoin.NET.Websockets
         /// <param name="url">Optional alternate base URL.</param>
         /// <param name="isv1api">Is v1 API.</param>
         /// <param name="multiplexHost">Optional multiplex host to attach to as a client.</param>
+        /// <param name="futures">Use the Futures API endpoint.</param>
         public KucoinBaseWebsocketFeed(
             ICredentialsProvider credProvider,
             string url = null,

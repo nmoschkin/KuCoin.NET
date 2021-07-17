@@ -9,6 +9,9 @@ using System.Threading.Tasks;
 
 namespace Kucoin.NET.Futures.Websockets
 {
+    /// <summary>
+    /// Ticker to watch the contract market
+    /// </summary>
     public class ContractMarketTicker : SymbolTopicFeedBase<ContractMarketData>
     {
 

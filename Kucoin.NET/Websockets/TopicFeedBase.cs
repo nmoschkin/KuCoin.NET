@@ -27,6 +27,7 @@ namespace Kucoin.NET.Websockets
         /// <param name="secret">API Secret</param>
         /// <param name="passphrase">API Passphrase</param>
         /// <param name="isSandbox">Is Sandbox Mode</param>
+        /// <param name="futures">Use the Futures API endpoint.</param>
         public TopicFeedBase(
                 string key,
                 string secret,
@@ -41,6 +42,7 @@ namespace Kucoin.NET.Websockets
         /// Default Constructor
         /// </summary>
         /// <param name="credProvider"><see cref="ICredentialsProvider"/> implementation.</param>
+        /// <param name="futures">Use the Futures API endpoint.</param>
         public TopicFeedBase(ICredentialsProvider credProvider, bool futures = false) : base(credProvider, futures: futures)
         {
         }

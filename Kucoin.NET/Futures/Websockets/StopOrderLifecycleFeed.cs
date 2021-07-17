@@ -10,6 +10,9 @@ using System.Threading.Tasks;
 
 namespace Kucoin.NET.Futures.Websockets
 {
+    /// <summary>
+    /// Stop Order Lifecycle Event Feed
+    /// </summary>
     public class StopOrderLifecycleFeed : TopicFeedBase<AdvancedOrder>
     {
 

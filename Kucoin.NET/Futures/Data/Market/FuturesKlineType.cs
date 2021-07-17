@@ -30,28 +30,64 @@ namespace Kucoin.NET.Futures.Data.Market
             length = value;
         }
 
+        /// <summary>
+        /// Invalid K-Line type
+        /// </summary>
         public static FuturesKlineType Invalid = new FuturesKlineType(0);
 
+        /// <summary>
+        /// 1 minute K-line
+        /// </summary>
         public static FuturesKlineType Min1 = new FuturesKlineType(1);
 
+        /// <summary>
+        /// 5 minute K-line
+        /// </summary>
         public static FuturesKlineType Min5 = new FuturesKlineType(5);
-        
+
+        /// <summary>
+        /// 15 minute K-line
+        /// </summary>
         public static FuturesKlineType Min15 = new FuturesKlineType(15);
-        
+
+        /// <summary>
+        /// 30 minute K-line
+        /// </summary>
         public static FuturesKlineType Min30 = new FuturesKlineType(30);
-        
+
+        /// <summary>
+        /// 1 hour K-line
+        /// </summary>
         public static FuturesKlineType Hour1 = new FuturesKlineType(60);
-        
+
+        /// <summary>
+        /// 2 hour K-line
+        /// </summary>
         public static FuturesKlineType Hour2 = new FuturesKlineType(120);
-        
+
+        /// <summary>
+        /// 4 hour K-line
+        /// </summary>
         public static FuturesKlineType Hour4 = new FuturesKlineType(240);
-        
+
+        /// <summary>
+        /// 8 hour K-line
+        /// </summary>
         public static FuturesKlineType Hour8 = new FuturesKlineType(480);
-        
+
+        /// <summary>
+        /// 12 hour K-line
+        /// </summary>
         public static FuturesKlineType Hour12 = new FuturesKlineType(720);
-        
+
+        /// <summary>
+        /// 1 day K-line
+        /// </summary>
         public static FuturesKlineType Day1 = new FuturesKlineType(1440);
-        
+
+        /// <summary>
+        /// 1 week K-line
+        /// </summary>
         public static FuturesKlineType Week1 = new FuturesKlineType(10080);
 
         private static readonly FieldInfo[] klineFields = typeof(FuturesKlineType).GetFields(BindingFlags.Public | BindingFlags.Static);
@@ -86,6 +122,12 @@ namespace Kucoin.NET.Futures.Data.Market
         {
             return length.ToString();
         }
+
+        /// <summary>
+        /// Formats the value of the current instance using the specified format.
+        /// </summary>
+        /// <param name="format">The format to use (or null)</param>
+        /// <returns></returns>
         public string ToString(string format)
         {
             if (format == "g") return ToString();
@@ -152,6 +194,11 @@ namespace Kucoin.NET.Futures.Data.Market
             return dt;
         }
 
+        /// <summary>
+        /// Formats the value of the current instance using the specified format.
+        /// </summary>
+        /// <param name="formatted">True to return a formatted time.</param>
+        /// <returns></returns>
         public string ToString(bool formatted)
         {
             if (!formatted)

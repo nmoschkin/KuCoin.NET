@@ -6,6 +6,9 @@ using System.Text;
 
 namespace Kucoin.NET.Futures.Data.Trade
 {
+    /// <summary>
+    /// Active order value information
+    /// </summary>
     public class ActiveOrderValue
     {
 

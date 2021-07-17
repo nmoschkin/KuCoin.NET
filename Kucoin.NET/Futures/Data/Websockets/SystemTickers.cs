@@ -10,12 +10,25 @@ using System.Text;
 
 namespace Kucoin.NET.Futures.Data.Websockets
 {
+    /// <summary>
+    /// Funding Point Event Types
+    /// </summary>
     public enum FundingPointType
     {
+        /// <summary>
+        /// Funding Cycle Begin
+        /// </summary>
         Begin,
+
+        /// <summary>
+        /// Funding Cycle End
+        /// </summary>
         End
     }
 
+    /// <summary>
+    /// Funding Point (Begin or End)
+    /// </summary>
     public class FundingPoint : ISymbol
     {
 
@@ -54,12 +67,25 @@ namespace Kucoin.NET.Futures.Data.Websockets
 
     }
 
+    /// <summary>
+    /// Contract data type
+    /// </summary>
     public enum ContractDataType
     {
+        /// <summary>
+        /// Mark Index Price
+        /// </summary>
         MarkIndexPrice,
+
+        /// <summary>
+        /// Funding Rate
+        /// </summary>
         FundingRate
     }
 
+    /// <summary>
+    /// Contract Market Data
+    /// </summary>
     public class ContractMarketData : ISymbol
     {
         /// <summary>

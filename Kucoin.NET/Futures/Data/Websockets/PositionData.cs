@@ -10,6 +10,9 @@ using System.Text;
 
 namespace Kucoin.NET.Futures.Data.Websockets
 {
+    /// <summary>
+    /// Position Information
+    /// </summary>
     public class PositionData : ISymbol
     {
         [JsonIgnore]

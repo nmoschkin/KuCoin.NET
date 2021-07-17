@@ -13,14 +13,39 @@ using System.Net;
 
 namespace Kucoin.NET.Websockets.Public
 {
-
+    /// <summary>
+    /// Enumeration values that indicate the current state of a Leve 2 or Level 3 feed.
+    /// </summary>
     public enum FeedState
     {
+        /// <summary>
+        /// The feed is disconnected
+        /// </summary>
         Disconnected,
+
+        /// <summary>
+        /// The feed is connected, but not subscribed
+        /// </summary>
         Connected,
+
+        /// <summary>
+        /// The feed is subscribed but not running.
+        /// </summary>
         Subscribed,
+
+        /// <summary>
+        /// The feed has been unsubscribed.
+        /// </summary>
         Unsubscribed,
+
+        /// <summary>
+        /// The feed is loading or initializing.
+        /// </summary>
         Initializing,
+
+        /// <summary>
+        /// The feed is running.
+        /// </summary>
         Running
     }
 
@@ -78,7 +103,7 @@ namespace Kucoin.NET.Websockets.Public
         /// <summary>
         /// Create a new Level 2 feed.
         /// </summary>
-        /// <param name="futures">True if the feed is for KuCoin Futures.</param>
+        /// <param name="futures">Use the Futures API endpoint.</param>
         public Level2Base(
             bool futures = false)
             : base(null, null, null, futures: futures)
@@ -86,12 +111,26 @@ namespace Kucoin.NET.Websockets.Public
             recvBufferSize = 65535;
         }
 
+        /// <summary>
+        /// Create a new Level 2 feed.
+        /// </summary>
+        /// <param name="credProvider"><see cref="ICredentialsProvider"/> implementation.</param>
         public Level2Base(ICredentialsProvider credProvider) : base(credProvider)
         {
+            recvBufferSize = 65535;
         }
 
+        /// <summary>
+        /// Create a new Level 2 feed.
+        /// </summary>
+        /// <param name="key">API Key</param>
+        /// <param name="secret">API Secret</param>
+        /// <param name="passphrase">API Passphrase</param>
+        /// <param name="isSandbox">Is Sandbox Mode</param>
+        /// <param name="futures">Use the Futures API endpoint.</param>
         public Level2Base(string key, string secret, string passphrase, bool isSandbox=false,bool futures=false) : base(key,secret,passphrase, isSandbox: isSandbox, futures: futures)
         {
+            recvBufferSize = 65535;
         }
 
         /// <summary>
@@ -149,10 +188,13 @@ namespace Kucoin.NET.Websockets.Public
             }
         }
 
+        /// <summary>
+        /// Gets the current feed state.
+        /// </summary>
         public FeedState State
         {
             get => state;
-            set
+            internal set
             {
                 SetProperty(ref state, value);
             }

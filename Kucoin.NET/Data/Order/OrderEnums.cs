@@ -125,38 +125,71 @@ namespace Kucoin.NET.Data.Order
 
     }
 
+    /// <summary>
+    /// Stop order type
+    /// </summary>
     [JsonConverter(typeof(EnumToStringConverter<StopType>))]
     public enum StopType
     {
+        /// <summary>
+        /// Stop entry
+        /// </summary>
         [EnumMember(Value = "entry")]
         Entry,
 
+        /// <summary>
+        /// Stop loss
+        /// </summary>
         [EnumMember(Value = "loss")]
         Loss
     }
 
+    /// <summary>
+    /// Order status
+    /// </summary>
     [JsonConverter(typeof(EnumToStringConverter<OrderStatus>))]
     public enum OrderStatus
     {
+        /// <summary>
+        /// Done
+        /// </summary>
         [EnumMember(Value = "done")]
         Done,
 
+        /// <summary>
+        /// Active
+        /// </summary>
         [EnumMember(Value = "active")]
         Active
     }
 
+    /// <summary>
+    /// Order types
+    /// </summary>
     [JsonConverter(typeof(EnumToStringConverter<OrderType>))]
     public enum OrderType
     {
+        /// <summary>
+        /// Market order
+        /// </summary>
         [EnumMember(Value = "market")]
         Market,
 
+        /// <summary>
+        /// Limit order
+        /// </summary>
         [EnumMember(Value = "limit")]
         Limit,
 
+        /// <summary>
+        /// Market stop order
+        /// </summary>
         [EnumMember(Value = "market_stop")]
         MarketStop,
 
+        /// <summary>
+        /// Limit stop order
+        /// </summary>
         [EnumMember(Value = "limit_stop")]
         LimitStop
 

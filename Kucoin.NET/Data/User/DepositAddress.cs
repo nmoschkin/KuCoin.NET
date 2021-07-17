@@ -56,9 +56,15 @@ namespace Kucoin.NET.Data.User
 
     public class WithdrawalAddress : SpotAddressBase
     {
+        /// <summary>
+        /// Is inner address
+        /// </summary>
         [JsonProperty("isInner")]
         public bool IsInner { get; set; }
 
+        /// <summary>
+        /// Notes and remarks
+        /// </summary>
         [JsonProperty("remark")]
         public string Remark { get; set; }
 

@@ -10,12 +10,21 @@ using System.Text;
 namespace Kucoin.NET.Futures.Data.User
 {
 
+    /// <summary>
+    /// Futures currency types
+    /// </summary>
     [JsonConverter(typeof(EnumToStringConverter<FuturesCurrency>))]
     public enum FuturesCurrency
     {
-        [EnumMember(Value = "XBD")]
+        /// <summary>
+        /// XBT
+        /// </summary>
+        [EnumMember(Value = "XBT")]
         XBT,
 
+        /// <summary>
+        /// USDT / Tether
+        /// </summary>
         [EnumMember(Value = "USDT")]
         USDT
     }

@@ -9,7 +9,9 @@ using System.Text;
 
 namespace Kucoin.NET.Futures.Data.Market
 {
-
+    /// <summary>
+    /// Futures interest rate history page results
+    /// </summary>
     public class InterestHistory
     {
 
@@ -21,6 +23,9 @@ namespace Kucoin.NET.Futures.Data.Market
     }
 
 
+    /// <summary>
+    /// Futures interest rate information
+    /// </summary>
     public class FuturesInterestRate
     {
         /// <summary>

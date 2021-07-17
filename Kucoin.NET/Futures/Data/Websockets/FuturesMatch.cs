@@ -10,6 +10,9 @@ using System.Text;
 
 namespace Kucoin.NET.Futures.Data.Websockets
 {
+    /// <summary>
+    /// Futures Order Match
+    /// </summary>
     public class FuturesMatch : ISymbol
     {
         /// <summary>

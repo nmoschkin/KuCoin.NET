@@ -11,7 +11,9 @@ using System.Text;
 
 namespace Kucoin.NET.Futures.Data.User
 {
-
+    /// <summary>
+    /// Deposit
+    /// </summary>
     public class Deposit
     {
         /// <summary>

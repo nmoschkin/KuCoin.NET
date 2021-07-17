@@ -126,6 +126,9 @@ namespace Kucoin.NET.Websockets.Public
             }
         }
 
+        /// <summary>
+        /// Gets the current feed state.
+        /// </summary>
         public FeedState State
         {
             get => state;

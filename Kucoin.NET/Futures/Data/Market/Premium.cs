@@ -11,7 +11,9 @@ namespace Kucoin.NET.Futures.Data.Market
 {
 
 
-
+    /// <summary>
+    /// Premium index page
+    /// </summary>
     public class PremiumIndex
     {
 
@@ -22,6 +24,9 @@ namespace Kucoin.NET.Futures.Data.Market
         public List<Premium> DataList { get; set; }
     }
 
+    /// <summary>
+    /// Premium index
+    /// </summary>
     public class Premium
     {
         /// <summary>

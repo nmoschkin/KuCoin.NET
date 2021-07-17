@@ -39,42 +39,42 @@ namespace Kucoin.NET.Data.Order
         }
 
         /// <summary>
-        /// 
+        /// Order status
         /// </summary>
         [JsonProperty("status")]
         public OrderStatus? Status { get; set; }
 
         [JsonProperty("symbol")]
         public string Symbol { get; set; }
+        
         /// <summary>
-        /// 
+        /// Trading side (buy or sell)
         /// </summary>
         [JsonProperty("side")]
         public Side? Side { get; set; }
 
         /// <summary>
-        /// 
+        /// Order type
         /// </summary>
         [JsonProperty("type")]
         public OrderType? Type { get; set; }
 
         /// <summary>
-        /// 
+        /// Trade type
         /// </summary>
         [JsonProperty("tradeType")]
         public TradeType? TradeType { get; set; }
         
-        // TO DO: Fix this up
         
         /// <summary>
-        /// 
+        /// Start time
         /// </summary>
         [JsonProperty("startAt")]
         [JsonConverter(typeof(AutoTimeConverter), TimeTypes.InMilliseconds)]
         public DateTime? StartAt { get; set; }
 
         /// <summary>
-        /// 
+        /// End time
         /// </summary>
         [JsonProperty("endAt")]
         [JsonConverter(typeof(AutoTimeConverter), TimeTypes.InMilliseconds)]

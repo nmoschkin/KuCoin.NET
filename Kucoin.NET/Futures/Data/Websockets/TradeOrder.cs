@@ -13,21 +13,39 @@ using System.Text;
 
 namespace Kucoin.NET.Futures.Data.Websockets
 {
+    /// <summary>
+    /// Trade Message Types
+    /// </summary>
     [JsonConverter(typeof(EnumToStringConverter<TradeMessageType>))]
     public enum TradeMessageType
     {
+        /// <summary>
+        /// Match
+        /// </summary>
         [EnumMember(Value = "match")]
         Match,
 
+        /// <summary>
+        /// Open
+        /// </summary>
         [EnumMember(Value = "open")]
         Open,
 
+        /// <summary>
+        /// Filled
+        /// </summary>
         [EnumMember(Value = "filled")]
         Filled,
 
+        /// <summary>
+        /// Canceled
+        /// </summary>
         [EnumMember(Value = "canceled")]
         Canceled,
 
+        /// <summary>
+        /// Updated
+        /// </summary>
         [EnumMember(Value = "update")]
         Update
     }

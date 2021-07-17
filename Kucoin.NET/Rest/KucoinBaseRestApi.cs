@@ -73,6 +73,8 @@ namespace Kucoin.NET.Rest
         /// <param name="futures">Use KuCoin Futures API endpoints.</param>
         /// <remarks>
         /// If <paramref name="credProvider"/> is null, then this class will be initialized for public API use.
+        /// If <paramref name="credProvider"/> is not null, then this class will be initialized for private API use,
+        /// the <paramref name="futures"/> parameter is ignored, and the value of <see cref="ICredentialsProvider.GetFutures"/> is used, instead.
         /// </remarks>
         public KucoinBaseRestApi(
             ICredentialsProvider credProvider,
@@ -85,6 +87,7 @@ namespace Kucoin.NET.Rest
             if (credProvider != null)
             {
                 cred = new MemoryEncryptedCredentialsProvider(credProvider);
+                futures = cred.GetFutures();
             }
 
             SetDefaultUrl(futures, cred?.GetSandbox() ?? false, url);
@@ -101,7 +104,7 @@ namespace Kucoin.NET.Rest
         /// <param name="isv1api">Is version 1 API.</param>
         /// <param name="futures">Use KuCoin Futures API endpoints.</param>
         /// <remarks>
-        /// If <paramref name="key"/>, <paramref name="secret"/>, and <paramref name="passphrase"/> are null, then this class will be initialized for public API use.
+        /// If <paramref name="key"/>, <paramref name="secret"/>, or <paramref name="passphrase"/> are null, then this class will be initialized for public API use.
         /// </remarks>
         public KucoinBaseRestApi(
             string key,

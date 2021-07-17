@@ -10,6 +10,9 @@ using System.Text;
 
 namespace Kucoin.NET.Futures.Data.Websockets
 {
+    /// <summary>
+    /// Static market depth update for KuCoin Futures Level 2 static depth market feeds
+    /// </summary>
     public class FuturesStaticMarketDepthUpdate : StaticMarketDepthUpdate
     {
 
@@ -18,6 +21,9 @@ namespace Kucoin.NET.Futures.Data.Websockets
         public override DateTime Timestamp { get => base.Timestamp; set => base.Timestamp = value; }
     }
 
+    /// <summary>
+    /// Observable static market depth update for KuCoin Futures Level 2 static depth market feeds
+    /// </summary>
     public class ObservableFuturesStaticMarketDepthUpdate : ObservableStaticMarketDepthUpdate
     {
 

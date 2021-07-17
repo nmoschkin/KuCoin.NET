@@ -20,6 +20,9 @@ namespace Kucoin.NET.Futures.Data.Trade
         public List<FundingDetails> DataList { get; set; }
     }
 
+    /// <summary>
+    /// Funding Details
+    /// </summary>
     public class FundingDetails
     {
 

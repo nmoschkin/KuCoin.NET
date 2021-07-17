@@ -9,7 +9,9 @@ using System.Text;
 
 namespace Kucoin.NET.Futures.Data.Market
 {
-
+    /// <summary>
+    /// Index data list page
+    /// </summary>
     public class IndexList
     {
 
@@ -20,6 +22,9 @@ namespace Kucoin.NET.Futures.Data.Market
         public List<IndexData> DataList { get; set; }
     }
 
+    /// <summary>
+    /// Index decomposition
+    /// </summary>
     public class IndexDecomposition
     {
 
@@ -46,7 +51,9 @@ namespace Kucoin.NET.Futures.Data.Market
 
     }
 
-
+    /// <summary>
+    /// Index data
+    /// </summary>
     public class IndexData
     {
 

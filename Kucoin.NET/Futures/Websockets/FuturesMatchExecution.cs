@@ -9,6 +9,9 @@ using System.Threading.Tasks;
 
 namespace Kucoin.NET.Futures.Websockets
 {
+    /// <summary>
+    /// Futures Match Execution Event Feed
+    /// </summary>
     public class FuturesMatchExecution : SymbolTopicFeedBase<FuturesMatch>
     {
         public FuturesMatchExecution() : base(null, futures: true)

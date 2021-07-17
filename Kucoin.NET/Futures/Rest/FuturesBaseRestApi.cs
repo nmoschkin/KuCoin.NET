@@ -13,14 +13,26 @@ namespace Kucoin.NET.Futures.Rest
     /// </summary>
     public abstract class FuturesBaseRestApi : KucoinBaseRestApi
     {
-        public FuturesBaseRestApi(ICredentialsProvider cred) : base(cred, futures: true)
+
+        /// <summary>
+        /// Default Constructor (Futures API)
+        /// </summary>
+        /// <param name="credProvider">An object that implements <see cref="ICredentialsProvider"/>.</param>
+        public FuturesBaseRestApi(ICredentialsProvider credProvider) : base(credProvider, futures: true)
         {
-            if (cred != null && cred.GetFutures() != true)
+            if (credProvider != null && credProvider.GetFutures() != true)
             {
                 throw new InvalidCredentialException("Must be marked as Futures credentials.");
             }
         }
 
+        /// <summary>
+        /// Default Constructor (Futures API)
+        /// </summary>
+        /// <param name="key">API Key</param>
+        /// <param name="secret">API Secret</param>
+        /// <param name="passphrase">API Passphrase</param>
+        /// <param name="isSandbox">Is sandbox / not real-time.</param>
         public FuturesBaseRestApi(
             string key,
             string secret,

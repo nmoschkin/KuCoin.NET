@@ -68,7 +68,7 @@ namespace Kucoin.NET.Data.Websockets.User
 
 
         /// <summary>
-        /// OrderType
+        /// Order Type
         /// </summary>
         [JsonProperty("orderType")]
         public OrderType OrderType { get; set; }
@@ -96,7 +96,7 @@ namespace Kucoin.NET.Data.Websockets.User
 
 
         /// <summary>
-        /// InternalOrderTime
+        /// Order Time
         /// </summary>
         [JsonProperty("orderTime")]
         [JsonConverter(typeof(AutoTimeConverter), TimeTypes.InNanoseconds)]
@@ -121,14 +121,14 @@ namespace Kucoin.NET.Data.Websockets.User
 
 
         /// <summary>
-        /// ClientOid
+        /// Client Oid
         /// </summary>
         [JsonProperty("clientOid")]
         public string ClientOid { get; set; }
 
 
         /// <summary>
-        /// RemainSize
+        /// Remain Size
         /// </summary>
         [JsonProperty("remainSize")]
         public decimal RemainSize { get; set; }
@@ -158,28 +158,28 @@ namespace Kucoin.NET.Data.Websockets.User
 
 
         /// <summary>
-        /// FilledSize
+        /// Filled Size
         /// </summary>
         [JsonProperty("filledSize")]
         public decimal FilledSize { get; set; }
 
 
         /// <summary>
-        /// MatchPrice
+        /// Match Price
         /// </summary>
         [JsonProperty("matchPrice")]
         public decimal MatchPrice { get; set; }
 
 
         /// <summary>
-        /// MatchSize
+        /// Match Size
         /// </summary>
         [JsonProperty("matchSize")]
         public decimal MatchSize { get; set; }
 
 
         /// <summary>
-        /// TradeId
+        /// Trade Id
         /// </summary>
         [JsonProperty("tradeId")]
         public string TradeId { get; set; }
@@ -187,7 +187,7 @@ namespace Kucoin.NET.Data.Websockets.User
 
 
         /// <summary>
-        /// OldSize
+        /// Old Size
         /// </summary>
         [JsonProperty("oldSize")]
         public decimal OldSize { get; set; }
