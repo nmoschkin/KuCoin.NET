@@ -401,7 +401,7 @@
                         VerticalAlignment="Center"
                         FontFamily="Calibri"
                         FontSize="12">
-                        <Run Text="{Binding Level2Feed.State}" />
+                        <Run Text="{Binding Level2Feed.State, Mode=OneWay}" />
                     </TextBlock>
 
                     <TextBlock

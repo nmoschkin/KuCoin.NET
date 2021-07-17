@@ -403,7 +403,7 @@
                         VerticalAlignment="Center"
                         FontFamily="Calibri"
                         FontSize="12">
-                        <Run Text="{Binding FuturesLevel2Feed.State}" />
+                        <Run Text="{Binding FuturesLevel2Feed.State, Mode=OneWay}" />
                     </TextBlock>
 
                     <TextBlock
