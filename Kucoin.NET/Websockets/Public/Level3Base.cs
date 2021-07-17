@@ -276,7 +276,7 @@ namespace Kucoin.NET.Websockets.Public
             if (activeFeeds.Count == 0)
             {
                 cycle = 0;
-                resets = 0;
+                Resets = 0;
                 State = FeedState.Unsubscribed;
             }
         }

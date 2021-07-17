@@ -149,7 +149,6 @@ namespace Kucoin.NET.Websockets.Observations
         public override void Reset()
         {
             orderBuffer = new List<Level2Update>();
-
             Initialized = false;
             Calibrated = false;
         }
@@ -194,6 +193,11 @@ namespace Kucoin.NET.Websockets.Observations
                     }
                     else if (value.SequenceEnd <= fullDepth.Sequence)
                     {
+                        return;
+                    }
+                    else if (value.SequenceStart != fullDepth.Sequence + 1)
+                    {
+                        Reset();
                         return;
                     }
 

@@ -32,7 +32,6 @@ namespace KuCoinApp
     public class MainWindowViewModel : WindowViewModelBase, IObserver<Ticker>, IObserver<KlineFeedMessage<KlineCandle>>
     {
         protected Level2 level2Feed;
-        protected Level3 level3Feed;
 
         protected FuturesLevel2 futuresl2;
 
@@ -86,9 +85,7 @@ namespace KuCoinApp
 
         protected ObservableCollection<CurrencyViewModel> currencies = new ObservableCollection<CurrencyViewModel>();
 
-        protected ILevel2OrderBookProvider level2;
-
-        protected ILevel3OrderBookProvider level3;
+        protected Level2Observation level2;
 
         protected List<SymbolViewModel> recentSymbols = new List<SymbolViewModel>();
 
@@ -138,16 +135,8 @@ namespace KuCoinApp
             }
         }
 
-        public ILevel3OrderBookProvider Level3
-        {
-            get => level3;
-            set
-            {
-                SetProperty(ref level3, value);
-            }
-        }
 
-        public ILevel2OrderBookProvider Level2
+        public Level2Observation Level2
         {
             get => level2;
             set
@@ -245,15 +234,6 @@ namespace KuCoinApp
             }
         }
 
-
-        public Level3 Level3Feed
-        {
-            get => level3Feed;
-            set
-            {
-                SetProperty(ref level3Feed, value);
-            }
-        }
 
         public Level2 Level2Feed
         {
@@ -505,71 +485,28 @@ namespace KuCoinApp
 
                             if (isKlineChange)
                             {
-                                level3.VolumeTime = KlineType;
+                                return;
                             }
 
-                            //if (cred.AttachedAccount != null && (futuresl2 == null || futuresl2.Connected == false))
-                            //{
-                            //    futuresl2 = new FuturesLevel2(cred.AttachedAccount);
-                            //    await level2Feed.Connect();
-                            //}
-
-                            //var fsym = newSymbol.Replace("-", "") + "M";
-                            //await futuresl2.AddSymbol(fsym).ContinueWith((t) =>
-                            //{
-                            //    App.Current?.Dispatcher?.Invoke(() =>
-                            //    {
-                            //        FuturesLevel2 = t.Result;
-                            //    });
-
-                            //});
-
-
-
-
-                            if (Level3 != null)
+                            if (Level2 != null)
                             {
-                                Level3.Dispose();
+                                Level2.Dispose();
                             }
 
-                            if (level3Feed == null || level3Feed.Connected == false)
+                            if (level2Feed == null || level2Feed.Connected == false)
                             {
-                                level3Feed = new Level3(cred);
-                                await level3Feed.Connect();
+                                level2Feed = new Level2(cred);
+                                await level2Feed.Connect();
                             }
 
-                            await level3Feed.AddSymbol(newSymbol).ContinueWith((t) =>
+                            await level2Feed.AddSymbol(newSymbol).ContinueWith((t) =>
                             {
                                 App.Current?.Dispatcher?.Invoke(() =>
                                 {
-                                    Level3 = (ILevel3OrderBookProvider)t.Result;
-                                    ((Level3Observation)level3).UpdateVolume = true;
-                                    level3.VolumeTime = KlineType;
+                                    Level2 = t.Result;
                                 });
 
                             });
-
-
-
-                            //if (Level2 != null)
-                            //{
-                            //    Level2.Dispose();
-                            //}
-
-                            //if (level2Feed == null || level2Feed.Connected == false)
-                            //{
-                            //    level2Feed = new Level2();
-                            //    await level2Feed.Connect();
-                            //}
-
-                            //await level2Feed.AddSymbol(newSymbol).ContinueWith((t) =>
-                            //{
-                            //    App.Current?.Dispatcher?.Invoke(() =>
-                            //    {
-                            //        Level2 = t.Result;
-                            //    });
-
-                            //});
 
                         });
                     });
@@ -580,55 +517,20 @@ namespace KuCoinApp
             {
                 RefreshData().ContinueWith(async (t2) =>
                 {
-                    //if (level2Feed == null || level2Feed.Connected == false)
-                    //{
-                    //    level2Feed = new Level2();
-                    //    await level2Feed.Connect();
-                    //}
-
-                    //level2Feed?.AddSymbol(newSymbol).ContinueWith((t) =>
-                    //{
-                    //    App.Current?.Dispatcher?.Invoke(() =>
-                    //    {
-                    //        Level2 = t.Result;
-                    //    });
-
-                    //});
-
-                    if (level3Feed == null || level3Feed.Connected == false)
+                    if (level2Feed == null || level2Feed.Connected == false)
                     {
-                        level3Feed = new Level3(cred);
-                        await level3Feed.Connect();
+                        level2Feed = new Level2(cred);
+                        await level2Feed.Connect();
                     }
 
-                    level3Feed?.AddSymbol(newSymbol).ContinueWith((t) =>
+                    level2Feed?.AddSymbol(newSymbol).ContinueWith((t) =>
                     {
-
                         App.Current?.Dispatcher?.Invoke(() =>
                         {
-                            Level3 = t.Result;
-                            ((Level3Observation)level3).UpdateVolume = true;
-                            level3.VolumeTime = KlineType;
+                            Level2 = t.Result;
                         });
 
                     });
-
-                    //if (cred.AttachedAccount != null && (futuresl2 == null || futuresl2.Connected == false))
-                    //{
-                    //    futuresl2 = new FuturesLevel2(cred.AttachedAccount);
-                    //    await level2Feed.Connect();
-                    //}
-
-                    //var fsym = newSymbol.Replace("-", "") + "M";
-                    //await futuresl2.AddSymbol(fsym).ContinueWith((t) =>
-                    //{
-                    //    App.Current?.Dispatcher?.Invoke(() =>
-                    //    {
-                    //        FuturesLevel2 = t.Result;
-                    //    });
-
-                    //});
-
 
                     await tickerFeed.AddSymbol(newSymbol);
                     await klineFeed.AddSymbol(newSymbol, KlineType);
@@ -775,16 +677,8 @@ namespace KuCoinApp
             {
                 App.Current?.Dispatcher.Invoke(() =>
                 {
-                    if (level3?.Level3Volume > ticker.Candles.Volume)
-                    {
-                        Volume = level3.Level3Volume;
-                    }
-                    else
-                    {
-                        Volume = ticker.Candles.Volume;
-                    }
+                    Volume = ticker.Candles.Volume;
                     VolumeTime = ticker.Timestamp;
-
                 });
             }
             else
@@ -868,8 +762,6 @@ namespace KuCoinApp
                         catch { }
 
                         level2Feed = new Level2(cred);
-                        level3Feed = new Level3(cred);
-
                         tickerFeed = new TickerFeed();
                         klineFeed = new KlineFeed<KlineCandle>();
 
@@ -1045,8 +937,8 @@ namespace KuCoinApp
                     }
 
                     //Level2Feed = new Level2();
-                    Level3Feed = new Level3(cred);
-                    level3Feed.FeedDisconnected += Level3Feed_FeedDisconnected;
+                    Level2Feed = new Level2(cred);
+                    level2Feed.FeedDisconnected += Level2Feed_FeedDisconnected;
 
                     // Bring up the testing console.
 
@@ -1065,22 +957,10 @@ namespace KuCoinApp
                     if (cred != null)
                     {
 
-                        //level2Feed.MonitorThroughput = true;
-                        //level2Feed.UpdateInterval = 100;
-                        //level2Feed.DefaultPieces = 50;
-
-                        level3Feed.MonitorThroughput = true;
-                        level3Feed.UpdateInterval = 100;
-                        level3Feed.DefaultPieces = 50;
-                        level3Feed.ReceiveThreadPriority = System.Threading.ThreadPriority.Normal;
-
-                        // for testing futures
-
-                        //if (cred.AttachedAccount != null)
-                        //{
-                        //    futuresl2 = new FuturesLevel2(cred.AttachedAccount);
-                        //    futuresl2.UpdateInterval = 50;
-                        //}
+                        level2Feed.MonitorThroughput = true;
+                        level2Feed.UpdateInterval = 100;
+                        level2Feed.DefaultPieces = 50;
+                        level2Feed.ReceiveThreadPriority = System.Threading.ThreadPriority.Normal;
 
                         if (!cred.Sandbox)
                         {
@@ -1096,8 +976,8 @@ namespace KuCoinApp
 
                             // give its own socket because of the speed of data.
                             //await level2Feed.Connect(true);
-                            //await level2Feed.Connect();
-                            await level3Feed.Connect();
+                            await level2Feed.Connect();
+                            //await level3Feed.Connect();
 
                             // for testing futures
                             //await futuresl2.Connect();
@@ -1128,7 +1008,6 @@ namespace KuCoinApp
                     {
                         CryptoCredentials.Pin = pin;
 
-                        await level2Feed?.Connect();
                         await tickerFeed.Connect(true);
                         await klineFeed.MultiplexInit(tickerFeed);
                     }
@@ -1184,12 +1063,11 @@ namespace KuCoinApp
 
         }
 
-        private async void Level3Feed_FeedDisconnected(object sender, FeedDisconnectedEventArgs e)
+        private async void Level2Feed_FeedDisconnected(object sender, FeedDisconnectedEventArgs e)
         {
-            if (Level3Feed.Disposed == false)
+            if (Level2Feed.Disposed == false)
             {
-                
-                await Level3Feed.Connect();
+                await Level2Feed.Connect();
                 UpdateSymbol((string)symbol, (string)symbol, true);
             }
 
@@ -1197,7 +1075,6 @@ namespace KuCoinApp
 
         public override void Dispose()
         {
-            level3Feed?.Dispose();
             level2Feed?.Dispose();
 
             tickerSubscription.Dispose();
