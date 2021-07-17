@@ -403,5 +403,25 @@ namespace Kucoin.NET.Websockets.Public
                 }
             }
         }
+
+        protected override void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                if (activeFeeds != null && activeFeeds.Count > 0)
+                {
+                    TObservation[] feeds = new TObservation[activeFeeds.Count];
+                    activeFeeds.Values.CopyTo(feeds, 0);
+
+                    foreach (var feed in feeds)
+                    {
+                        feed.Dispose();
+                    }
+
+                }
+            }
+
+            base.Dispose(disposing);
+        }
     }
 }

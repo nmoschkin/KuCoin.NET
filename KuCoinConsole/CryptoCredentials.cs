@@ -349,6 +349,7 @@ namespace KuCoinConsole
 
         }
 
+
         /// <summary>
         /// Loads API Key information from encrypted storage.
         /// </summary>
@@ -356,6 +357,7 @@ namespace KuCoinConsole
         /// <param name="pin">The pin to use to decrypt the storage.</param>
         /// <param name="create">True to create a new credentials file that does not exist.</param>
         /// <returns></returns>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Interoperability", "CA1416:Validate platform compatibility", Justification = "<Pending>")]
         public static CryptoCredentials LoadFromStorage(Guid seed, string pin = null, bool create = true, bool autoUpgrade = true)
         {
             if (pin == null) pin = CryptoCredentials.Pin;
@@ -434,7 +436,12 @@ namespace KuCoinConsole
                     if (File.Exists(path)) File.Delete(path);
 
                     File.WriteAllText(path, crypted);
-                    File.Encrypt(path);
+                    
+                    try
+                    {
+                        File.Encrypt(path);
+                    }
+                    catch { }
 
                     File.Delete(oldpath);                    
                 }
@@ -465,6 +472,7 @@ namespace KuCoinConsole
             return cred;                
         }
 
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Interoperability", "CA1416:Validate platform compatibility", Justification = "<Pending>")]
         public static Guid GetHvcyp(Guid? newval = null)
         {
             var path = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
@@ -490,7 +498,11 @@ namespace KuCoinConsole
                 g = newval ?? Guid.NewGuid();
 
                 File.WriteAllText(path, g.ToString("d"));
-                File.Encrypt(path);
+                try
+                {
+                    File.Encrypt(path);
+                }
+                catch { }
 
                 return g;
             }
@@ -562,10 +574,12 @@ namespace KuCoinConsole
             return false;
         }
 
+
         /// <summary>
         /// Save the credentials to encrypted storage.
         /// </summary>
         /// <param name="pin">The pin with which to save the credentials.</param>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Interoperability", "CA1416:Validate platform compatibility", Justification = "<Pending>")]
         public virtual void SaveToStorage(string pin = null)
         {
             if (pin == null) pin = CryptoCredentials.Pin;
@@ -596,8 +610,14 @@ namespace KuCoinConsole
 
             File.WriteAllText(path, crypted);
             
-            if (version >= 2) 
-                File.Encrypt(path);
+            if (version >= 2)
+            {
+                try
+                {
+                    File.Encrypt(path);
+                }
+                catch { }
+            }
         }
 
         /// <summary>

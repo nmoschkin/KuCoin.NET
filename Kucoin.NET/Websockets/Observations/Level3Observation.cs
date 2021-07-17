@@ -307,6 +307,8 @@ namespace Kucoin.NET.Websockets.Observations
                 {
                     Dispatcher.InvokeOnMainThread((o) =>
                     {
+                        if (orderBook == null) return;
+
                         orderBook.Sequence = fullDepth.Sequence;
                         orderBook.Timestamp = fullDepth.Timestamp;
 
@@ -316,6 +318,8 @@ namespace Kucoin.NET.Websockets.Observations
                 }
                 else
                 {
+                    if (orderBook == null) return;
+
                     orderBook.Sequence = fullDepth.Sequence;
                     orderBook.Timestamp = fullDepth.Timestamp;
 
@@ -355,16 +359,13 @@ namespace Kucoin.NET.Websockets.Observations
                 }
             }
 
-            lock (lockObj)
-            {
-                connectedFeed = null;
-                fullDepth = default;
-                orderBook = default;
-                pieces = 0;
-                symbol = null;
-                calibrated = false;
-                initialized = false;
-            }
+            connectedFeed = null;
+            fullDepth = default;
+            orderBook = default;
+            pieces = 0;
+            symbol = null;
+            calibrated = false;
+            initialized = false;
         }
 
         public override void OnCompleted()

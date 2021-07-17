@@ -447,7 +447,7 @@ namespace Kucoin.NET.Websockets
 
             await socket.ConnectAsync(new Uri(uri), ctsReceive.Token);
             
-            if (socket.State == WebSocketState.Open)
+            if (socket?.State == WebSocketState.Open)
             {
                 // The Pinger:
 

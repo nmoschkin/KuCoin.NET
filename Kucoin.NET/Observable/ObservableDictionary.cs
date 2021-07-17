@@ -362,7 +362,11 @@ namespace Kucoin.NET.Observable
         /// <param name="key">The key to search for.</param>
         /// <param name="value">Receives the item that was found, or null/default.</param>
         /// <returns>True if the item was found.</returns>
+#if DOTNETSTD
         public bool TryGetValue(TKey key, out TValue value)
+#else
+        new public bool TryGetValue(TKey key, out TValue value)
+#endif
         {
             if (!Contains(key))
             {
@@ -403,7 +407,7 @@ namespace Kucoin.NET.Observable
             return GetInsertIndex(value, true);
         }
 
-        #region KeyedCollection overrides
+#region KeyedCollection overrides
 
         protected override TKey GetKeyForItem(TValue item)
         {
@@ -477,19 +481,19 @@ namespace Kucoin.NET.Observable
 
         }
 
-        #endregion
+#endregion
 
-        #region INotifyCollectionChanged
+#region INotifyCollectionChanged
 
         protected void OnCollectionChanged(NotifyCollectionChangedEventArgs e)
         {
             if (!noevent) CollectionChanged?.Invoke(this, e);
         }
 
-        #endregion
+#endregion
 
 
-        #region INotifyPropertyChanged
+#region INotifyPropertyChanged
 
         /// <summary>
         /// Set a property value if the current value is not equal to the new value and raise the <see cref="INotifyPropertyChanged.PropertyChanged"/> event.
@@ -544,11 +548,11 @@ namespace Kucoin.NET.Observable
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
 
-        #endregion
+#endregion
 
 
 
-        #region Sorting
+#region Sorting
 
 
         /// <summary>
@@ -636,9 +640,9 @@ namespace Kucoin.NET.Observable
             }
         }
 
-        #endregion
+#endregion
 
-        #region Comparison 
+#region Comparison 
 
         protected virtual Comparison<TValue> MakeComparison()
         {
@@ -894,7 +898,7 @@ namespace Kucoin.NET.Observable
 
         }
 
-        #endregion
+#endregion
     }
 
 

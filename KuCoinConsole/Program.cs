@@ -40,10 +40,15 @@ namespace KuCoinConsole
 
         public bool GetSandbox() => false;
 
+        /*  You must use a key to connect to the new Level 2 / Level 3 feeds. */
+
+        // Enter your Kucoin Credentials Here
         public string GetKey() => "yourkey";
 
+        // Enter your Kucoin Credentials Here
         public string GetSecret() => "yoursecret";
 
+        // Enter your Kucoin Credentials Here
         public string GetPassphrase() => "yourpassphrase";
 
     }
@@ -51,12 +56,9 @@ namespace KuCoinConsole
 
     public static class Program
     {
-        static Dictionary<string, Level3Observation> observers = new Dictionary<string, Level3Observation>();
-        //static Dictionary<string, Level2Observation> observers = new Dictionary<string, Level2Observation>();
+        static Dictionary<string, Level2Observation> observers = new Dictionary<string, Level2Observation>();
 
         static Level2 l2conn;
-        static Level3 l3conn;
-        static Level3 l3conn2;
 
         static StringBuilder readOut = new StringBuilder();
         static object lockObj = new object();
@@ -64,8 +66,6 @@ namespace KuCoinConsole
         static Kucoin.NET.Rest.Market market;
         
         static bool ready = false;
-
-        static SymbolTradeOrderFeed ticker;
 
         static void Main(string[] args)
         {
@@ -103,7 +103,7 @@ namespace KuCoinConsole
 
             /* Testing Futures Ticker */
             /* Uncomment To Use */
-
+            /* (Can only be used with access pin) */
             //ticker = new SymbolTradeOrderFeed(cred.AttachedAccount);
 
             //ticker.Connect().Wait();
@@ -124,25 +124,13 @@ namespace KuCoinConsole
 
 
             // Create the new websocket client.
-            //l2conn = new Level2(cred);
-
-            //// We want to monitor how much data is coming through the feed.
-            //l2conn.MonitorThroughput = true;
-
-            //// Disable Observable/UI book updating for console app.
-            //l2conn.UpdateInterval = 0;
-
-            // Create the new websocket client.
-            l3conn = new Level3(cred);
-            l3conn2 = new Level3(cred);
+            l2conn = new Level2(cred);
 
             // We want to monitor how much data is coming through the feed.
-            l3conn.MonitorThroughput = true;
-            l3conn2.MonitorThroughput = true;
+            l2conn.MonitorThroughput = true;
 
             // Disable Observable/UI book updating for console app.
-            l3conn.UpdateInterval = 0;
-            l3conn2.UpdateInterval = 0;
+            l2conn.UpdateInterval = 0;
 
 
             // clear the console (if you use a pin, this will get it off the screen)
@@ -154,12 +142,11 @@ namespace KuCoinConsole
             // do not set this number too low.
             int delay = 50;
 
-            l3conn.Connect().ContinueWith(async (t) =>
-            //l2conn.Connect().ContinueWith(async (t) =>
+            l2conn.Connect().ContinueWith(async (t) =>
             {
 
                 // 10 of the most popular trading symbols
-                var syms = new List<string>(new string[] { "ETH-USDT", "XLM-USDT", "BTC-USDT", "ADA-USDT", "DOGE-USDT", "DOT-USDT", "UNI-USDT", "LTC-USDT", "LINK-USDT", "MATIC-USDT" });
+                var syms = new List<string>(new string[] { "KCS-USDT", "ETH-USDT", "XLM-USDT", "BTC-USDT", "ADA-USDT", "KCS-USDT", "DOT-USDT", "UNI-USDT", "LTC-USDT", "LINK-USDT", "MATIC-USDT" });
 
                 syms.Sort((a, b) =>
                 {
@@ -167,30 +154,23 @@ namespace KuCoinConsole
                     return string.Compare(a, b);
                 });
                 
-                int n = 0;
-
+                
                 foreach (var sym in syms)
                 {
                     Console.WriteLine($"Subscribing to {sym} ...");
 
                     try
                     {
-                        Level3Observation obs;
+                        Level2Observation obs;
 
-                        // not an even split because Bitcoin is heavy
-                        if (n++ < 4)
-                        {                            
-                            obs = await l3conn.AddSymbol(sym);
-                        }
-                        else
-                        {
-                            obs = await l3conn2.AddSymbol(sym);
-                        }
+                        obs = await l2conn.AddSymbol(sym);
 
-                        //var obs = await l2conn.AddSymbol(sym);
-
+                        
                         while (obs.Calibrated == false)
                         {
+                            // we are waiting for the order book to be initialized
+                            // so that we don't throw too many processes at the system
+                            // at one time
                             await Task.Delay(delay);
                         }
 
@@ -206,8 +186,8 @@ namespace KuCoinConsole
 
             }).Wait();
 
-            while (l3conn?.Connected ?? false)
-            //while (l2conn?.Connected ?? false)
+            // loop until the connection is broken or the program is exited.
+            while (l2conn?.Connected ?? false)
                 {
                     if (!ready)
                 {
@@ -276,7 +256,7 @@ namespace KuCoinConsole
 
             lock (lockObj)
             {
-                decimal ba, bb, vol;
+                decimal ba, bb;
 
                 readOut.Clear();
                 readOut.AppendLine($"Feed Time Stamp: {timestamp:G}                 ");
@@ -286,10 +266,8 @@ namespace KuCoinConsole
                 {
                     if (obs.Value.FullDepthOrderBook is null) continue;
 
-                    ba = ((IList<AtomicOrderStruct>)obs.Value.FullDepthOrderBook.Asks)[0].Price;
-                    bb = ((IList<AtomicOrderStruct>)obs.Value.FullDepthOrderBook.Bids)[0].Price;
-                    //ba = ((IList<OrderUnitStruct>)obs.Value.FullDepthOrderBook.Asks)[0].Price;
-                    //bb = ((IList<OrderUnitStruct>)obs.Value.FullDepthOrderBook.Bids)[0].Price;
+                    ba = ((IList<OrderUnitStruct>)obs.Value.FullDepthOrderBook.Asks)[0].Price;
+                    bb = ((IList<OrderUnitStruct>)obs.Value.FullDepthOrderBook.Bids)[0].Price;
 
                     var curr = "";
 
@@ -301,13 +279,9 @@ namespace KuCoinConsole
                 }
 
                 readOut.AppendLine("                                                           ");
-                readOut.AppendLine($"Throughput:   {PrintFriendlySpeed((ulong)l3conn.Throughput)}                           ");
-                readOut.AppendLine($"Throughput 2: {PrintFriendlySpeed((ulong)l3conn2.Throughput)}                           ");
-                //readOut.AppendLine($"Throughput: {PrintFriendlySpeed((ulong)l2conn.Throughput)}                           ");
+                readOut.AppendLine($"Throughput: {PrintFriendlySpeed((ulong)l2conn.Throughput)}                           ");
                 readOut.AppendLine("                                                           ");
-                readOut.AppendLine($"Queue Length:   {l3conn.QueueLength}                                                           ");
-                readOut.AppendLine($"Queue Length 2: {l3conn2.QueueLength}                                                           ");
-                //readOut.AppendLine($"Queue Length: {l2conn.QueueLength}                                                           ");
+                readOut.AppendLine($"Queue Length: {l2conn.QueueLength}                                                           ");
             }
         }
 
