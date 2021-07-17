@@ -1,5 +1,5 @@
 # Kucoin.NET (Alpha)
-KuCoin API Libraries written in .NET 5.0 and .NET Standard 2.0
+KuCoin and KuCoin Futures API Libraries written in .NET 5.0 and .NET Standard 2.0
 
 __ATTENTION__: __READ INSTALLATION INSTRUCTIONS VERY CAREFULLY__
 
