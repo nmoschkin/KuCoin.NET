@@ -266,11 +266,6 @@ namespace Kucoin.NET.Futures.Websockets.Observations
             disposed = true;
 
             cts?.Cancel();
-            try
-            {
-                PushThread.Abort();
-            }
-            catch { }
             PushThread = null;
 
             if (disposing)
@@ -584,11 +579,6 @@ namespace Kucoin.NET.Futures.Websockets.Observations
             disposed = true;
 
             cts?.Cancel();
-            try
-            {
-                PushThread.Abort();
-            }
-            catch { }
             PushThread = null;
 
             if (disposing)
