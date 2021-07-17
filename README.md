@@ -5,11 +5,7 @@ __ATTENTION__: __READ INSTALLATION INSTRUCTIONS VERY CAREFULLY__
 
 This library is in active development, and it's brand new so things will undoubtedly change while I consider next steps.
 
-July 9th, 2021: Completed coding of all API functions. Split main project into .NET 5.0+ and .NET Standard 2.0 versions.  Testing is progressing with trading, etc.  
-
-July 4th, 2021: Majority of basic core implementation for spot and futures is done.  
-
-If there are any more dramatic changes to the code, then they might be with the Level 2 or Level 3 feeds, however I don't believe the primary classes will change that much, at this point.
+July 17th, 2021: __Feature Complete!__ Extensive documenting of code and objects is taking place.  The final form of the library is pretty much set. Testing on trading functions has yet to begin.
 
 ## Installation
 
