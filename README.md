@@ -3,8 +3,6 @@ KuCoin API Libraries written in .NET 5.0 and .NET Standard 2.0
 
 __ATTENTION__: __READ INSTALLATION INSTRUCTIONS VERY CAREFULLY__
 
-This library is in active development, and it's brand new so things will undoubtedly change while I consider next steps.
-
 July 17th, 2021: __Feature Complete!__ Extensive documenting of code and objects is taking place.  The final form of the library is pretty much set. Testing on trading functions has yet to begin.
 
 ## Installation
