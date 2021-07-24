@@ -376,23 +376,24 @@ namespace Kucoin.NET.Rest
 
             foreach (var values in klineRaw)
             {
-                var candle = new TCandle();
-                
+                var candle = new TCandle
+                {
+                    Timestamp = EpochTime.SecondsToDate(long.Parse(values[0])),
+
+                    OpenPrice = decimal.Parse(values[1]),
+                    ClosePrice = decimal.Parse(values[2]),
+
+                    HighPrice = decimal.Parse(values[3]),
+                    LowPrice = decimal.Parse(values[4]),
+
+                    Amount = decimal.Parse(values[5]),
+                    Volume = decimal.Parse(values[6])
+                };
+
                 if (candle is IWritableTypedCandle<KlineType> tc)
                 {
                     tc.Type = type;
                 }
-
-                candle.Timestamp = EpochTime.SecondsToDate(long.Parse(values[0]));
-
-                candle.OpenPrice = decimal.Parse(values[1]);
-                candle.ClosePrice = decimal.Parse(values[2]);
-
-                candle.HighPrice = decimal.Parse(values[3]);
-                candle.LowPrice = decimal.Parse(values[4]);
-
-                candle.Amount = decimal.Parse(values[5]);
-                candle.Volume = decimal.Parse(values[6]);
 
                 results.Add(candle);
             }
