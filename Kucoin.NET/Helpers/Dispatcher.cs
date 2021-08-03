@@ -7,7 +7,9 @@ namespace Kucoin.NET.Helpers
     /// </summary>
     public static class Dispatcher
     {
-        private static bool init;
+        private static bool init = false;
+        private static bool nosend = false;
+        private static bool nopost = false;
 
         /// <summary>
         /// The synchronization context for the current application.
@@ -33,6 +35,7 @@ namespace Kucoin.NET.Helpers
 
             Context = context;
             init = Context != null;
+            if (init) TestPlatform();
 
             return init;
         }
@@ -53,8 +56,40 @@ namespace Kucoin.NET.Helpers
             Context = SynchronizationContext.Current;
 
             init = Context != null;
+            if (init) TestPlatform();
 
             return init;
+        }
+
+        private static void TestPlatform()
+        {
+            try
+            {
+                Context.Send((o) =>
+                {
+                    return;
+                }, null);
+            }
+            catch
+            {
+                nosend = true;
+            }
+
+            try
+            {
+                Context.Post((o) =>
+                {
+                    return;
+                }, null);
+            }
+            catch
+            {
+                nopost = true;
+            }
+
+            // no supported invoke!
+            if (nosend && nopost) init = false;
+
         }
 
         /// <summary>
@@ -64,7 +99,14 @@ namespace Kucoin.NET.Helpers
         /// <param name="param">Optional parameter to pass to the function.</param>
         public static void InvokeOnMainThread(SendOrPostCallback callback, object param = null)
         {
-            Context.Send(callback, param);            
+            if (nosend)
+            {
+                Context.Post(callback, param);
+            }
+            else
+            {
+                Context.Send(callback, param);
+            }
         }
 
         /// <summary>
@@ -74,7 +116,14 @@ namespace Kucoin.NET.Helpers
         /// <param name="param">Optional parameter to pass to the function.</param>
         public static void BeginInvokeOnMainThread(SendOrPostCallback callback, object param = null)
         {
-            Context.Post(callback, param);
+            if (nopost)
+            {
+                Context.Send(callback, param);
+            }
+            else
+            {
+                Context.Post(callback, param);
+            }
         }
 
     }
