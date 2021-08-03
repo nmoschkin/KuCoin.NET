@@ -12,13 +12,31 @@ using Kucoin.NET.Rest;
 using KuCoinApp.Converters;
 using System.Runtime.CompilerServices;
 
-namespace KuCoinApp
+namespace KuCoinApp.Models
 {
     /// <summary>
     /// Secure storage for cryptographic credentials.
     /// </summary>
     public class CryptoCredentials : MemoryEncryptedCredentialsProvider, ICloneable
     {
+
+        /// <summary>
+        /// Gets or sets the name of the program for the storage of credentials.
+        /// </summary>
+        /// <remarks>
+        /// Changing this changes the local application data path.
+        /// </remarks>
+        public static string ProgramName { get; set; } = "KuCoin.NET";
+
+        /// <summary>
+        /// Gets the global credential name-encoding pin.
+        /// </summary>
+        /// <remarks>
+        /// Changing this will change how the names of encrypted files are generated.
+        /// </remarks>
+        public static string GlobalPin { get; set; } = "999999";
+
+
         public const int DefaultVersion = 2;
 
         protected static string pin;
@@ -34,6 +52,8 @@ namespace KuCoinApp
         protected int version = DefaultVersion;
 
         protected CryptoCredentials parent;
+
+        public static Guid AppSeed { get; set; }
 
         internal CryptoCredentials() : base(null, null, null)
         {
@@ -63,12 +83,12 @@ namespace KuCoinApp
         /// </remarks>
         public static string Pin
         {
-            get => string.IsNullOrEmpty(pin) ? pin : AesOperation.DecryptString(App.Current.Seed, pin);
+            get => string.IsNullOrEmpty(pin) ? pin : AesOperation.DecryptString(AppSeed, pin);
             set
             {
                 if (ValidatePin(value))
                 {
-                    pin = AesOperation.EncryptString(App.Current.Seed, value, out _);
+                    pin = AesOperation.EncryptString(AppSeed, value, out _);
                 }
             }
         }
@@ -186,7 +206,7 @@ namespace KuCoinApp
             }
         }
 
-        
+
 
         /// <summary>
         /// Gets or sets the API Key.
@@ -281,8 +301,8 @@ namespace KuCoinApp
 
         [JsonProperty("attachedAccount")]
         [JsonConverter(typeof(AttachedAccountConverter))]
-        public override ICredentialsProvider AttachedAccount 
-        { 
+        public override ICredentialsProvider AttachedAccount
+        {
             get
             {
                 if (attachedAccount == null && !futures)
@@ -335,12 +355,12 @@ namespace KuCoinApp
 
             var path = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
 
-            path = Path.Join(path, "KuCoin.NET");
+            path = Path.Combine(path, ProgramName);
             if (!Directory.Exists(path)) return;
 
             var file = GetCryptName(pin);
 
-            path = Path.Join(path, file);
+            path = Path.Combine(path, file);
 
             if (File.Exists(path))
             {
@@ -361,17 +381,18 @@ namespace KuCoinApp
             if (pin == null) pin = CryptoCredentials.Pin;
 
             if (!ValidatePin(pin)) return null;
+            if (Pin == null) Pin = pin;
 
             var path = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
             var cred = new CryptoCredentials();
             int vers;
 
-            path = Path.Join(path, "KuCoin.NET");
+            path = Path.Combine(path, ProgramName);
             if (!Directory.Exists(path)) Directory.CreateDirectory(path);
 
             var file = GetCryptName(pin);
-            
-            path = Path.Join(path, file);
+
+            path = Path.Combine(path, file);
 
             if (!CheckExists(path, out vers))
             {
@@ -391,7 +412,7 @@ namespace KuCoinApp
                 path += $".{vers}";
             }
             var crypted = File.ReadAllText(path);
-            
+
             try
             {
                 cred.version = vers;
@@ -416,7 +437,7 @@ namespace KuCoinApp
                 };
 
                 JsonConvert.PopulateObject(json, cred, jcfg);
-                
+
                 if (vers == 1 && autoUpgrade)
                 {
                     vers = DefaultVersion;
@@ -436,17 +457,17 @@ namespace KuCoinApp
                     File.WriteAllText(path, crypted);
                     File.Encrypt(path);
 
-                    File.Delete(oldpath);                    
+                    File.Delete(oldpath);
                 }
-                
-                
+
+
 
 #pragma warning disable IDE0059 // Unnecessary assignment of a value
                 json = null;
 #pragma warning restore IDE0059 // Unnecessary assignment of a value
 
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 string s = ex.Message;
             }
@@ -461,20 +482,20 @@ namespace KuCoinApp
             {
                 cr.Parent = cred;
             }
-            
-            return cred;                
+
+            return cred;
         }
 
         public static Guid GetHvcyp(Guid? newval = null)
         {
             var path = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
 
-            path = Path.Join(path, "KuCoin.NET");
+            path = Path.Combine(path, ProgramName);
             if (!Directory.Exists(path)) Directory.CreateDirectory(path);
 
-            var file = GetCryptName("999999", true);
+            var file = GetCryptName(GlobalPin, true);
 
-            path = Path.Join(path, file);
+            path = Path.Combine(path, file);
             Guid g;
 
             if (newval != null && File.Exists(path)) File.Delete(path);
@@ -572,12 +593,12 @@ namespace KuCoinApp
 
             var path = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
 
-            path = Path.Join(path, "KuCoin.NET");
+            path = Path.Combine(path, ProgramName);
 
             Directory.CreateDirectory(path);
             var file = GetCryptName(pin);
 
-            path = Path.Join(path, file);
+            path = Path.Combine(path, file);
 
             var json = JsonConvert.SerializeObject(this);
             string crypted = null;
@@ -595,8 +616,8 @@ namespace KuCoinApp
             if (File.Exists(path)) File.Delete(path);
 
             File.WriteAllText(path, crypted);
-            
-            if (version >= 2) 
+
+            if (version >= 2)
                 File.Encrypt(path);
         }
 
@@ -668,7 +689,7 @@ namespace KuCoinApp
             }
             else
             {
-                return base.GetPassphrase();   
+                return base.GetPassphrase();
             }
         }
 

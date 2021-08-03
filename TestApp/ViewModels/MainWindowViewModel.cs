@@ -928,7 +928,9 @@ namespace KuCoinApp
                         pin = CryptoCredentials.Pin;
                     }
                    
-                    cred = CryptoCredentials.LoadFromStorage(App.Current.Seed, pin, false);                    
+                    cred = CryptoCredentials.LoadFromStorage(App.Current.Seed, pin, false);
+
+                    if (cred != null && !cred.IsFilled) cred = null;
 
                     if (cred == null && PinWindow.LastCloseResult == false)
                     {
