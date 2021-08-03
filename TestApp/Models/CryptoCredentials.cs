@@ -12,7 +12,7 @@ using Kucoin.NET.Rest;
 using KuCoinApp.Converters;
 using System.Runtime.CompilerServices;
 
-namespace KuCoinApp.Models
+namespace KuCoinApp
 {
     /// <summary>
     /// Secure storage for cryptographic credentials.
