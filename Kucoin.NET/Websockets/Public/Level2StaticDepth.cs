@@ -67,12 +67,17 @@ namespace Kucoin.NET.Websockets.Public
 
             foreach (var sym in symbols)
             {
-                var update = new ObservableStaticMarketDepthUpdate();
-                dict.Add(sym, update);
-
-                if (!symbolObservables.ContainsKey(sym))
+                if (!symbolObservables.TryGetValue(sym, out ObservableStaticMarketDepthUpdate upd))
                 {
+                    var update = new ObservableStaticMarketDepthUpdate();
+                    update.parent = this;
+
+                    dict.Add(sym, update);
                     symbolObservables.Add(sym, update);
+                }
+                else
+                {
+                    dict.Add(sym, upd);
                 }
             }
 

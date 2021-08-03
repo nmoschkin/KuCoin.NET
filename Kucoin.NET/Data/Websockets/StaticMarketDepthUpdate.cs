@@ -1,6 +1,8 @@
 ﻿using Kucoin.NET.Data.Market;
 using Kucoin.NET.Helpers;
 using Kucoin.NET.Json;
+using Kucoin.NET.Websockets;
+using Kucoin.NET.Websockets.Public;
 
 using Newtonsoft.Json;
 
@@ -71,10 +73,12 @@ namespace Kucoin.NET.Data.Websockets
     /// <summary>
     /// Level 2 Static Market Depth Feed (5/50) Changes
     /// </summary>
-    public class ObservableStaticMarketDepthUpdate : StaticMarketDepthUpdate, IOrderUnitList<IOrderUnit>, INotifyPropertyChanged, ISymbol
+    public class ObservableStaticMarketDepthUpdate : StaticMarketDepthUpdate, IOrderUnitList<IOrderUnit>, INotifyPropertyChanged, ISymbol, IDisposable
     {
         private string symbol = null;
         private DateTime time;
+
+        internal object parent;
 
         private ObservableCollection<OrderUnit> observableAsks = null;
         private ObservableCollection<OrderUnit> observableBids = null;
@@ -215,6 +219,18 @@ namespace Kucoin.NET.Data.Websockets
                 }
             }
 
+        }
+
+        public void Dispose()
+        {
+            if (parent is Level2Depth5 l5)
+            {
+                l5.RemoveSymbol(symbol).Wait();
+            }
+            else if (parent is Level2Depth50 l50)
+            {
+                l50.RemoveSymbol(symbol).Wait();
+            }
         }
 
         [JsonIgnore]

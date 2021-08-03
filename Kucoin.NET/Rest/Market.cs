@@ -30,6 +30,23 @@ namespace Kucoin.NET.Rest
 
         protected ObservableDictionary<string, MarketCurrency> currencies;
 
+        static Market inst;
+
+        public static Market Instance
+        {
+            get
+            {
+                if (inst == null)
+                {
+                    inst = new Market();
+                    inst.RefreshCurrenciesAsync().Wait();
+                    inst.RefreshSymbolsAsync().Wait();
+                }
+
+                return inst;
+            }
+        }
+
         /// <summary>
         /// Get a list of all currencies that appear on the right-hand side of a trading symbol.
         /// </summary>
