@@ -12,6 +12,7 @@ using System.IO;
 using System.Net;
 using Kucoin.NET.Helpers;
 using System.ComponentModel;
+using System.Threading;
 
 namespace Kucoin.NET.Rest
 {
@@ -39,11 +40,63 @@ namespace Kucoin.NET.Rest
                 if (inst == null)
                 {
                     inst = new Market();
-                    inst.RefreshCurrenciesAsync().Wait();
-                    inst.RefreshSymbolsAsync().Wait();
+
+                    Parallel.Invoke(
+                        async () =>
+                        {
+                            await inst.RefreshCurrenciesAsync();
+                        },
+                        async () =>
+                        {
+                            await inst.RefreshSymbolsAsync();
+                        });
+
                 }
 
                 return inst;
+            }
+        }
+
+        /// <summary>
+        /// Create a new instance of the MarketData class.
+        /// </summary>
+        public Market() : base(null, null, null)
+        {
+        }
+
+        /// <summary>
+        /// Gets the dictionary of currencies keyed on currency.
+        /// </summary>
+        public ObservableDictionary<string, MarketCurrency> Currencies
+        {
+            get => currencies;
+            set
+            {
+                SetProperty(ref currencies, value);
+            }
+        }
+
+        /// <summary>
+        /// Gets the list of known ticker symbols.
+        /// </summary>
+        public ObservableDictionary<string, TradingSymbol> Symbols
+        {
+            get => symbols;
+            protected set
+            {
+                SetProperty(ref symbols, value);
+            }
+        }
+
+        /// <summary>
+        /// Gets the all-symbols ticker.
+        /// </summary>
+        public AllSymbolsTicker Tickers
+        {
+            get => tickers;
+            set
+            {
+                SetProperty(ref tickers, value);
             }
         }
 
@@ -70,7 +123,7 @@ namespace Kucoin.NET.Rest
 
             var distinct = new Dictionary<string, MarketCurrency>();
 
-            foreach (var sym in syms) 
+            foreach (var sym in syms)
             {
                 if (distinct.ContainsKey(sym.QuoteCurrency)) continue;
 
@@ -89,47 +142,66 @@ namespace Kucoin.NET.Rest
         }
 
         /// <summary>
-        /// Gets the dictionary of currencies keyed on currency.
+        /// Refresh trading symbols
         /// </summary>
-        public ObservableDictionary<string, MarketCurrency> Currencies
+        /// <returns></returns>
+        public async Task<IEnumerable<TradingSymbol>> RefreshSymbolsAsync()
         {
-            get => currencies;
-            set
+
+            try
             {
-                SetProperty(ref currencies, value);
+                var jobj = await MakeRequest(HttpMethod.Get, "/api/v1/symbols", 5, false);
+                var results = jobj.ToObject<List<TradingSymbol>>();
+
+
+                Symbols = new ObservableDictionary<string, TradingSymbol>(
+                    new Comparison<TradingSymbol>((a, b) => {
+                        return string.Compare(a.Symbol, b.Symbol);
+                    }), ListSortDirection.Ascending, results);
+
+
+                return results;
             }
+            catch(Exception ex)
+            {
+                throw ex;
+            }
+            finally
+            {
+            }
+
         }
 
-        /// <summary>
-        /// Create a new instance of the MarketData class.
-        /// </summary>
-        public Market() : base(null, null, null)
-        {
-        }
 
         /// <summary>
-        /// Gets the list of known ticker symbols.
+        /// Gets all the currencies
         /// </summary>
-        public ObservableDictionary<string, TradingSymbol> Symbols
+        /// <returns></returns>
+        public async Task<IEnumerable<MarketCurrency>> RefreshCurrenciesAsync()
         {
-            get => symbols;
-            protected set
+            try
             {
-                SetProperty(ref symbols, value);
+                var jobj = await MakeRequest(HttpMethod.Get, "api/v1/currencies", auth: false);
+
+                var results = jobj.ToObject<List<MarketCurrency>>();
+
+                Currencies = new ObservableDictionary<string, MarketCurrency>(
+                    new Comparison<MarketCurrency>((a, b) => {
+                        return string.Compare(a.Currency, b.Currency);
+                    }), ListSortDirection.Ascending, results);
+
+                return results;
             }
+            catch(Exception ex)
+            {
+                throw ex;
+            }
+            finally
+            {
+            }
+
         }
 
-        /// <summary>
-        /// Gets the all-symbols ticker.
-        /// </summary>
-        public AllSymbolsTicker Tickers
-        {
-            get => tickers;
-            set
-            {
-                SetProperty(ref tickers, value);
-            }
-        }
 
         /// <summary>
         /// Gets a ticker for the specified symbol.
@@ -199,36 +271,6 @@ namespace Kucoin.NET.Rest
             }
 
             return dict;
-        }
-
-        /// <summary>
-        /// Refresh trading symbols
-        /// </summary>
-        /// <returns></returns>
-        public async Task RefreshSymbolsAsync()
-        {
-
-            var jobj = await MakeRequest(HttpMethod.Get, "/api/v1/symbols", 5, false);
-            var slist = jobj.ToObject<List<TradingSymbol>>();
-
-            if (symbols == null)
-            {
-                Symbols = new ObservableDictionary<string, TradingSymbol>();
-            }
-
-            foreach (var item in slist)
-            {
-                if (!symbols.Contains(item.Symbol))
-                {
-                    symbols.Add(item);
-                }
-                else
-                {
-                    ((IDictionary<string, TradingSymbol>)symbols)[item.Symbol] = item;
-                }
-            }
-
-            //symbols.SortByKey();
         }
 
 
@@ -417,26 +459,6 @@ namespace Kucoin.NET.Rest
 
             return results;
 
-        }
-
-        /// <summary>
-        /// Gets all the currencies
-        /// </summary>
-        /// <returns></returns>
-        public async Task<IEnumerable<MarketCurrency>> RefreshCurrenciesAsync()
-        {
-            // api/v1/currencies
-
-            var jobj = await MakeRequest(HttpMethod.Get, "api/v1/currencies", auth: false);
-
-            var results = jobj.ToObject<List<MarketCurrency>>();
-
-            Currencies = new ObservableDictionary<string, MarketCurrency>(
-                new Comparison<MarketCurrency>((a, b) => {
-                return string.Compare(a.Currency, b.Currency);
-            }), ListSortDirection.Ascending, results);
-
-            return results;
         }
 
     }
