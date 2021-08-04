@@ -226,41 +226,45 @@ namespace Kucoin.NET.Websockets.Observations
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         protected void CopyTo(IList<OrderUnitStruct> src, IList<TUnit> dest, int pieces)
         {
-            int i, c = pieces < src.Count ? pieces : src.Count;
-            int x = dest.Count;
-
-            if (x != c)
+            try
             {
-                x = 0;
-                dest.Clear();
+                int i, c = pieces < src.Count ? pieces : src.Count;
+                int x = dest.Count;
 
-                foreach (var piece in src)
+                if (x != c)
                 {
+                    x = 0;
+                    dest.Clear();
 
-                    var u = new TUnit()
+                    foreach (var piece in src)
                     {
-                        Price = piece.Price,
-                        Size = piece.Size
-                    };
 
-                    if (u is ISequencedOrderUnit seq)
-                        seq.Sequence = piece.Sequence;
+                        var u = new TUnit()
+                        {
+                            Price = piece.Price,
+                            Size = piece.Size
+                        };
 
-                    dest.Add(u);
-                    if (++x == c) break;
+                        if (u is ISequencedOrderUnit seq)
+                            seq.Sequence = piece.Sequence;
+
+                        dest.Add(u);
+                        if (++x == c) break;
+                    }
                 }
-            }
-            else
-            {
-                for (i = 0; i < c; i++)
+                else
                 {
-                    dest[i].Price = src[i].Price;
-                    dest[i].Size = src[i].Size;
+                    for (i = 0; i < c; i++)
+                    {
+                        dest[i].Price = src[i].Price;
+                        dest[i].Size = src[i].Size;
 
-                    if (dest[i] is ISequencedOrderUnit seq)
-                        seq.Sequence = src[i].Sequence;
+                        if (dest[i] is ISequencedOrderUnit seq)
+                            seq.Sequence = src[i].Sequence;
+                    }
                 }
             }
+            catch { }
 
         }
 
@@ -322,7 +326,7 @@ namespace Kucoin.NET.Websockets.Observations
             {
                 if (connectedFeed != null)
                 {
-                    ((Level2)connectedFeed).RemoveSymbol(symbol).Wait();
+                    _ = ((Level2)connectedFeed).RemoveSymbol(symbol);
                 }
             }
 

@@ -272,7 +272,7 @@ namespace Kucoin.NET.Futures.Websockets.Observations
             {
                 if (connectedFeed != null)
                 {
-                    ((Level2Base<FuturesOrderBook, ObservableOrderUnit, KeyedOrderBook<OrderUnitStruct>, OrderUnitStruct, FuturesLevel2Update, FuturesLevel2Observation>)connectedFeed).RemoveSymbol(symbol).Wait();
+                    _ = ((Level2Base<FuturesOrderBook, ObservableOrderUnit, KeyedOrderBook<OrderUnitStruct>, OrderUnitStruct, FuturesLevel2Update, FuturesLevel2Observation>)connectedFeed).RemoveSymbol(symbol);
                 }
             }
 
@@ -585,7 +585,7 @@ namespace Kucoin.NET.Futures.Websockets.Observations
             {
                 if (connectedFeed != null)
                 {
-                    ((Level2FuturesBase<TBook, TUnit>)connectedFeed).RemoveSymbol(symbol).Wait();
+                    _ = ((Level2FuturesBase<TBook, TUnit>)connectedFeed).RemoveSymbol(symbol);
                 }
             }
 

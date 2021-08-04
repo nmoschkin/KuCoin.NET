@@ -350,7 +350,7 @@ namespace Kucoin.NET.Websockets.Observations
             {
                 if (connectedFeed != null)
                 {
-                    ((Level3)connectedFeed).RemoveSymbol(symbol).Wait();
+                    _ = ((Level3)connectedFeed).RemoveSymbol(symbol);
                 }
             }
 

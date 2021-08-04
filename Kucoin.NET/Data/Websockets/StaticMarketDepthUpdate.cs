@@ -225,11 +225,11 @@ namespace Kucoin.NET.Data.Websockets
         {
             if (parent is Level2Depth5 l5)
             {
-                l5.RemoveSymbol(symbol).Wait();
+                _ = l5.RemoveSymbol(symbol);
             }
             else if (parent is Level2Depth50 l50)
             {
-                l50.RemoveSymbol(symbol).Wait();
+                _ = l50.RemoveSymbol(symbol);
             }
         }
 
