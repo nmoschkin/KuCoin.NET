@@ -213,7 +213,7 @@ namespace Kucoin.NET.Websockets.Public
         /// <summary>
         /// Gets a list of all the active tickers subscribed for this kline feed.
         /// </summary>
-        public virtual IReadOnlyList<SymbolKline> ActiveTickers => ActiveTickers;
+        public IReadOnlyList<SymbolKline> ActiveTickers => activeTickers;
 
     }
 }
