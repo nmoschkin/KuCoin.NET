@@ -253,7 +253,7 @@ namespace Kucoin.NET.Data.Websockets
                 }
                 else
                 {
-                    if (price != null)
+                    if (!string.IsNullOrEmpty(price))
                     {
                         var dn = decimal.Parse(price);
                         m_price = dn;

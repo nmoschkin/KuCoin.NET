@@ -25,6 +25,8 @@ using KuCoinApp.Views;
 using Windows.ApplicationModel.Activation;
 using Kucoin.NET.Websockets;
 using System.Net.WebSockets;
+using System.Windows;
+using Kucoin.NET.Helpers;
 
 namespace KuCoinApp
 {
@@ -938,18 +940,12 @@ namespace KuCoinApp
                         return;
                     }
 
-                    //Level2Feed = new Level2();
-                    Level2Feed = new Level2(cred);
-                    level2Feed.FeedDisconnected += Level2Feed_FeedDisconnected;
-
                     // Bring up the testing console.
 
                     // Uncomment to use.
                     // await Program.TestMain(cred);
 
                     // Note, closing the testing console once it is open will close the program.
-
-
 
                     Symbols = market.Symbols;
 
@@ -958,6 +954,7 @@ namespace KuCoinApp
 
                     if (cred != null)
                     {
+                        Level2Feed = new Level2(cred);
 
                         level2Feed.MonitorThroughput = true;
                         level2Feed.UpdateInterval = 100;
@@ -978,7 +975,26 @@ namespace KuCoinApp
 
                             // give its own socket because of the speed of data.
                             //await level2Feed.Connect(true);
-                            await level2Feed.Connect();
+                            try
+                            {
+                                if (!await level2Feed?.Connect())
+                                {
+                                    MessageBox.Show("Credentials Invalid");
+                                    cred = null;
+                                }
+
+                                await tickerFeed.Connect(true);
+                                await klineFeed.MultiplexInit(tickerFeed);
+                            }
+                            catch (Exception ex)
+                            {
+                                Kucoin.NET.Helpers.Dispatcher.InvokeOnMainThread((o) =>
+                                {
+                                    MessageBox.Show("Credentials Invalid");
+                                    cred = null;
+                                });
+                            }
+
                             //await level3Feed.Connect();
 
                             // for testing futures
@@ -989,9 +1005,6 @@ namespace KuCoinApp
                             //await tickerFeed.MultiplexInit(level2Feed);
                             //await klineFeed.MultiplexInit(level2Feed);
 
-                            await tickerFeed.Connect(true);
-                            await klineFeed.MultiplexInit(tickerFeed);
-
                             // Now we have the multiplex host (tickerfeed)
                             // and the multiplexed client (klineFeed)
 
@@ -1000,7 +1013,15 @@ namespace KuCoinApp
                         }
                         else
                         {
-                            await level2Feed?.Connect();
+                            try
+                            {
+                                await level2Feed?.Connect();
+                            }
+                            catch (Exception ex)
+                            {
+                                MessageBox.Show("Credentials Invalid");
+                                cred = null;
+                            }
 
                             await tickerFeed.Connect(true);
                             await klineFeed.MultiplexInit(tickerFeed);
@@ -1014,24 +1035,23 @@ namespace KuCoinApp
                         await klineFeed.MultiplexInit(tickerFeed);
                     }
 
-                    if (string.IsNullOrEmpty(rec))
+                    if (cred == null || !cred.IsFilled)
                     {
-                        if (cred == null)
+                        _ = Task.Run(() =>
                         {
-                            _ = Task.Run(() =>
+                            Kucoin.NET.Helpers.Dispatcher.InvokeOnMainThread(async (obj) =>
                             {
-                                Kucoin.NET.Helpers.Dispatcher.InvokeOnMainThread(async (obj) =>
+                                if (EditCredentials())
                                 {
-                                    if (EditCredentials())
-                                    {
-                                        await LoginUser();
-                                    }
-                                });
+                                    await LoginUser();
+                                }
                             });
-                        }
+                        });
 
                         return;
                     }
+
+                    if (rec == null) return;
 
                     foreach (var sym in symbols)
                     {

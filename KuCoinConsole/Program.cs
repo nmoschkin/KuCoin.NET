@@ -10,6 +10,7 @@ using Kucoin.NET.Helpers;
 using Kucoin.NET.Futures.Rest;
 using Kucoin.NET.Futures.Websockets;
 using Kucoin.NET.Data.Market;
+using Kucoin.NET.Services;
 
 namespace KuCoinConsole
 {
@@ -56,16 +57,18 @@ namespace KuCoinConsole
 
     public static class Program
     {
-        static Dictionary<string, Level2Observation> observers = new Dictionary<string, Level2Observation>();
+        static Dictionary<string, ISymbolDataService> observers = new Dictionary<string, ISymbolDataService>();
 
         static Level2 l2conn;
-
+        static ISymbolDataService service;
         static StringBuilder readOut = new StringBuilder();
         static object lockObj = new object();
         
         static Kucoin.NET.Rest.Market market;
         
         static bool ready = false;
+
+        static List<object> feeds = new List<object>();
 
         static void Main(string[] args)
         {
@@ -88,15 +91,15 @@ namespace KuCoinConsole
 
             /**/
 
-            //Console.WriteLine("Type your pin and press enter: ");
+            Console.WriteLine("Type your pin and press enter: ");
 
-            //var pin = Console.ReadLine();
-            //cred = CryptoCredentials.LoadFromStorage(Seed, pin);
+            var pin = Console.ReadLine();
+            cred = CryptoCredentials.LoadFromStorage(Seed, pin);
 
-            //if (cred == null)
-            //{
-            //    Console.WriteLine("Invalid credentials!");
-            //}
+            if (cred == null || !((CryptoCredentials)cred).IsFilled)
+            {
+                Console.WriteLine("Invalid credentials!");
+            }
 
             /**/
 
@@ -120,53 +123,66 @@ namespace KuCoinConsole
             //return;
             /* Uncomment To Use */
             /* Testing Futures Ticker */
-
-
-
-            // Create the new websocket client.
-            l2conn = new Level2(cred);
-
-            // We want to monitor how much data is coming through the feed.
-            l2conn.MonitorThroughput = true;
-
-            // Disable Observable/UI book updating for console app.
-            l2conn.UpdateInterval = 0;
-
-
-            // clear the console (if you use a pin, this will get it off the screen)
-            Console.Clear();
-
-            Console.WriteLine("Connecting...");
-
-            // default update delay in milliseconds.
-            // do not set this number too low.
-            int delay = 50;
-
-            l2conn.Connect().ContinueWith(async (t) =>
+            int delay = 100;
+            service = new SymbolDataService();
+            var syms = new List<string>(new string[] { "KCS-USDT", "ETH-USDT", "XLM-USDT", "BTC-USDT", "ADA-USDT", "KCS-USDT", "DOT-USDT", "UNI-USDT", "LTC-USDT", "LINK-USDT", "MATIC-USDT" });
+            
+            service.Connect(cred).ConfigureAwait(false).GetAwaiter().GetResult();
+            
+            Task.Run(async () =>
             {
 
                 // 10 of the most popular trading symbols
-                var syms = new List<string>(new string[] { "KCS-USDT", "ETH-USDT", "XLM-USDT", "BTC-USDT", "ADA-USDT", "KCS-USDT", "DOT-USDT", "UNI-USDT", "LTC-USDT", "LINK-USDT", "MATIC-USDT" });
 
                 syms.Sort((a, b) =>
                 {
                     // sort symbols alphabetically
                     return string.Compare(a, b);
                 });
-                
-                
+
+                bool first = true;
+                bool swell = false;
+                int c = 0;
+                int limswell = 3;
+
+                ISymbolDataService curr = service;
+
                 foreach (var sym in syms)
                 {
                     Console.WriteLine($"Subscribing to {sym} ...");
 
                     try
                     {
-                        Level2Observation obs;
+                        if (first)
+                        {
+                            await curr.ChangeSymbol(sym);
+                            await curr.EnableLevel3();
+                            curr.Level3Feed.UpdateInterval = 0;
+                            curr.Level3Feed.MonitorThroughput = true;
+                            feeds.Add(curr.Level3Feed);
+                            first = false;
+                        }
+                        else
+                        {
+                            if (!swell && ++c >= limswell) 
+                            {
+                                swell = true;
+                                curr = await service.AddSymbol(sym, false);
+                                await curr.EnableLevel3();
+                                curr.Level3Feed.UpdateInterval = 0;
+                                curr.Level3Feed.MonitorThroughput = true;
+                                feeds.Add(curr.Level3Feed);
 
-                        obs = await l2conn.AddSymbol(sym);
+                                service = curr;
+                            }
+                            else
+                            {
+                                curr = await service.AddSymbol(sym, true);
+                            }
 
-                        
-                        while (obs.Calibrated == false)
+                        }
+
+                        while (curr.Level3Observation.Calibrated == false)
                         {
                             // we are waiting for the order book to be initialized
                             // so that we don't throw too many processes at the system
@@ -174,7 +190,7 @@ namespace KuCoinConsole
                             await Task.Delay(delay);
                         }
 
-                        observers.Add(sym, obs);
+                        observers.Add(sym, curr);
                     }
                     catch { }
                 }
@@ -184,23 +200,24 @@ namespace KuCoinConsole
                 Console.CursorVisible = false;
                 ready = true; 
 
-            }).Wait();
+            }).ConfigureAwait(false).GetAwaiter().GetResult();
 
             // loop until the connection is broken or the program is exited.
-            while (l2conn?.Connected ?? false)
+            while (service.Level3Feed.Connected)
                 {
-                    if (!ready)
+                
+                if (!ready)
                 {
                     // wait til all the feeds are calibrated before displaying anything
 
                     while (!ready)
                     {
-                        Task.Delay(delay).Wait();
+                        Task.Delay(delay).ConfigureAwait(false).GetAwaiter().GetResult();
                     }
                 }
 
                 // loop forever to keep the program alive.
-                Task.Delay(delay).Wait();
+                Task.Delay(delay).ConfigureAwait(false).GetAwaiter().GetResult();
 
                 // remember the cursor position on the screen
                 int lpos = Console.CursorTop;
@@ -211,11 +228,11 @@ namespace KuCoinConsole
 
                 foreach (var obs in observers)
                 {
-                    if (obs.Value.FullDepthOrderBook == null) continue;
+                    if (obs.Value.Level3Observation.FullDepthOrderBook == null) continue;
 
-                    if (obs.Value.FullDepthOrderBook.Timestamp > ts)
+                    if (obs.Value.Level3Observation.FullDepthOrderBook.Timestamp > ts)
                     {
-                        ts = obs.Value.FullDepthOrderBook.Timestamp;
+                        ts = obs.Value.Level3Observation.FullDepthOrderBook.Timestamp;
                     }
                 }
 
@@ -257,17 +274,19 @@ namespace KuCoinConsole
             lock (lockObj)
             {
                 decimal ba, bb;
-
+                
                 readOut.Clear();
                 readOut.AppendLine($"Feed Time Stamp: {timestamp:G}                 ");
                 readOut.AppendLine($"                                   ");
 
                 foreach (var obs in observers)
                 {
-                    if (obs.Value.FullDepthOrderBook is null) continue;
+                    var l3 = obs.Value.Level3Observation;
 
-                    ba = ((IList<OrderUnitStruct>)obs.Value.FullDepthOrderBook.Asks)[0].Price;
-                    bb = ((IList<OrderUnitStruct>)obs.Value.FullDepthOrderBook.Bids)[0].Price;
+                    if (l3.FullDepthOrderBook is null) continue;
+
+                    ba = ((IList<AtomicOrderStruct>)l3.FullDepthOrderBook.Asks)[0].Price;
+                    bb = ((IList<AtomicOrderStruct>)l3.FullDepthOrderBook.Bids)[0].Price;
 
                     var curr = "";
 
@@ -278,10 +297,18 @@ namespace KuCoinConsole
                     readOut.AppendLine(text);
                 }
 
-                readOut.AppendLine("                                                           ");
-                readOut.AppendLine($"Throughput: {PrintFriendlySpeed((ulong)l2conn.Throughput)}                           ");
-                readOut.AppendLine("                                                           ");
-                readOut.AppendLine($"Queue Length: {l2conn.QueueLength}                                                           ");
+                foreach (var f in feeds)
+                {
+                    if (f is Level3 l3a)
+                    {
+                        readOut.AppendLine("                                                           ");
+                        readOut.AppendLine($"Throughput: {PrintFriendlySpeed((ulong)l3a.Throughput)}                           ");
+                        readOut.AppendLine("                                                           ");
+                        readOut.AppendLine($"Queue Length: {l3a.QueueLength}                                                           ");
+
+                    }
+                }
+
             }
         }
 

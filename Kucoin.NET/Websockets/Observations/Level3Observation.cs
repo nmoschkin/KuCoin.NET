@@ -121,14 +121,11 @@ namespace Kucoin.NET.Websockets.Observations
                     pieces.Add(piece);
                 }
             }
-            else if (subj == "match")
+            else if (subj == "match" && change.Price is decimal p && change.Size is decimal csize)
             {
                 if (otherPieces.Contains(change.MakerOrderId))
                 {
                     var o = otherPieces[change.MakerOrderId];
-                    var p = (decimal)change.Price;
-                    decimal csize = (decimal)change.Size;
-
                     o.Size -= csize;
 
                     // A match is a real component of volume.
@@ -203,11 +200,11 @@ namespace Kucoin.NET.Websockets.Observations
                         return;
                     }
 
-                    if (value.Side == Side.Sell)
+                    if (value.side == "sell")
                     {
                         SequencePieces(value.Subject, value, fullDepth.Asks, fullDepth.Bids);
                     }
-                    else if (value.Side == Side.Buy)
+                    else if (value.side == "buy")
                     {
                         SequencePieces(value.Subject, value, fullDepth.Bids, fullDepth.Asks);
                     }

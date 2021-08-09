@@ -12,6 +12,7 @@ using System.Net.Http;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
+using System.Xml.XPath;
 
 namespace Kucoin.NET.Rest
 {
@@ -465,8 +466,9 @@ namespace Kucoin.NET.Rest
                 req.Content = new StringContent(json_data, Encoding.UTF8, "application/json");
 
                 var resp = await httpClient.SendAsync(req);
+                var result = await CheckResponseData(resp, wholeResponseJson);
 
-                return await CheckResponseData(resp, wholeResponseJson);
+                return result;
             }
         }
 

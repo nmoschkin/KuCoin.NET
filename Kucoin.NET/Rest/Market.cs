@@ -41,15 +41,18 @@ namespace Kucoin.NET.Rest
                 {
                     inst = new Market();
 
-                    Parallel.Invoke(
-                        async () =>
-                        {
-                            await inst.RefreshCurrenciesAsync();
-                        },
-                        async () =>
-                        {
-                            await inst.RefreshSymbolsAsync();
-                        });
+                    inst.RefreshCurrenciesAsync().ConfigureAwait(false).GetAwaiter().GetResult();
+                    inst.RefreshSymbolsAsync().ConfigureAwait(false).GetAwaiter().GetResult();
+
+                    //Parallel.Invoke(
+                    //    async () =>
+                    //    {
+                    //        await inst.RefreshCurrenciesAsync();
+                    //    },
+                    //    async () =>
+                    //    {
+                    //        await inst.RefreshSymbolsAsync();
+                    //    });
 
                 }
 

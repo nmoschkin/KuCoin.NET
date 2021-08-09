@@ -420,7 +420,20 @@ namespace Kucoin.NET.Websockets
         /// <returns>True if the connection was negotiated and established, successfully.</returns>
         public async Task<bool> Connect(bool initAsMultiplexHost = false, string tunnelId = null)
         {
-            if (socket == null) socket = new ClientWebSocket();
+            if (socket != null)
+            {
+                try
+                {
+                    socket.Dispose();
+                }
+                catch
+                {
+                    socket = null;
+                }
+
+            }
+
+            socket = new ClientWebSocket();
 
             if (disposed) throw new ObjectDisposedException(nameof(KucoinBaseWebsocketFeed));
             if (Connected) return false;
