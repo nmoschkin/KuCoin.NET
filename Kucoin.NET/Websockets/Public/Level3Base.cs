@@ -64,12 +64,14 @@ namespace Kucoin.NET.Websockets.Public
         {
             recvBufferSize = 131072;
             minQueueBuffer = 10000;
+            chunkSize = 512;
         }
 
         public Level3Base(string key, string secret, string passphrase, bool isSandbox = false, bool futures = false) : base(key, secret, passphrase, isSandbox: isSandbox, futures: futures)
         {
             recvBufferSize = 131072;
             minQueueBuffer = 10000;
+            chunkSize = 512;
         }
 
         /// <summary>
@@ -376,7 +378,7 @@ namespace Kucoin.NET.Websockets.Public
                                 lock (lockObj)
                                 {
                                     af.Calibrate();
-                                    af.RequestPush();
+                                    if (updateInterval != 0) af.RequestPush();
 
                                     cycle = DateTime.UtcNow.Ticks;
                                 }

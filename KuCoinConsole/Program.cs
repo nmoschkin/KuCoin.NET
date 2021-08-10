@@ -145,10 +145,9 @@ namespace KuCoinConsole
 
 
                 bool first = true;
-                bool swell = false;
+              
                 int c = 0;
-                int limswell = 1;
-
+              
                 ISymbolDataService curr = service;
 
                 foreach (var sym in syms)

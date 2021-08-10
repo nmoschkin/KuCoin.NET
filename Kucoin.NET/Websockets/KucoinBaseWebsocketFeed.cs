@@ -24,6 +24,7 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using System.Net.Http;
 using System.Net.WebSockets;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -929,6 +930,7 @@ namespace Kucoin.NET.Websockets
         /// <see cref="OnPong(FeedMessage)"/> or <see cref="HandleMessage(FeedMessage)"/> methods, and the <see cref="OnJsonReceived(string)"/> method.
         /// OnJsonReceive is called after all other handling has occurred.
         /// </remarks>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private async Task RouteJsonPacket(string json, FeedMessage e = null)
         {
             if (e == null) e = JsonConvert.DeserializeObject<FeedMessage>(json);
