@@ -63,11 +63,13 @@ namespace Kucoin.NET.Websockets.Public
         public Level3Base(ICredentialsProvider credProvider) : base(credProvider)
         {
             recvBufferSize = 131072;
+            minQueueBuffer = 10000;
         }
 
         public Level3Base(string key, string secret, string passphrase, bool isSandbox = false, bool futures = false) : base(key, secret, passphrase, isSandbox: isSandbox, futures: futures)
         {
             recvBufferSize = 131072;
+            minQueueBuffer = 10000;
         }
 
         /// <summary>

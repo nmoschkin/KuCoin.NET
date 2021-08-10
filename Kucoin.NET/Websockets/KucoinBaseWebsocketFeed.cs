@@ -896,7 +896,7 @@ namespace Kucoin.NET.Websockets
                     {
                         if (queue.Length < c)
                         {
-                            Array.Resize(ref queue, c);
+                            Array.Resize(ref queue, c * 2);
                         }
 
                         msgQueue.CopyTo(queue);

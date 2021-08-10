@@ -11,6 +11,7 @@ using Kucoin.NET.Futures.Rest;
 using Kucoin.NET.Futures.Websockets;
 using Kucoin.NET.Data.Market;
 using Kucoin.NET.Services;
+using System.ComponentModel;
 
 namespace KuCoinConsole
 {
@@ -125,8 +126,9 @@ namespace KuCoinConsole
             /* Testing Futures Ticker */
             int delay = 100;
             service = new SymbolDataService();
-            var syms = new List<string>(new string[] { "KCS-USDT", "ETH-USDT", "XLM-USDT", "BTC-USDT", "ADA-USDT", "KCS-USDT", "DOT-USDT", "UNI-USDT", "LTC-USDT", "LINK-USDT", "MATIC-USDT" });
-            
+            //var syms = new List<string>(new string[] { "BTC-USDT" });
+            var syms = new List<string>(new string[] { "KCS-USDT", "ETH-USDT", "XLM-USDT", "BTC-USDT", "ADA-USDT", "DOT-USDT", "UNI-USDT", "LTC-USDT", "LINK-USDT", "MATIC-USDT" });
+
             service.Connect(cred).ConfigureAwait(false).GetAwaiter().GetResult();
             
             Task.Run(async () =>
@@ -140,10 +142,12 @@ namespace KuCoinConsole
                     return string.Compare(a, b);
                 });
 
+
+
                 bool first = true;
                 bool swell = false;
                 int c = 0;
-                int limswell = 3;
+                int limswell = 1;
 
                 ISymbolDataService curr = service;
 
@@ -161,19 +165,27 @@ namespace KuCoinConsole
                             curr.Level3Feed.MonitorThroughput = true;
                             feeds.Add(curr.Level3Feed);
                             first = false;
+
+                            if (sym == "ADA-USDT")
+                            {
+                                service = new SymbolDataService();
+                                await service.Connect(cred);
+                                first = true;
+                            }
                         }
                         else
                         {
-                            if (!swell && ++c >= limswell) 
+                            if (sym == "BTC-USDT" || sym == "ETH-USDT")
                             {
-                                swell = true;
                                 curr = await service.AddSymbol(sym, false);
                                 await curr.EnableLevel3();
                                 curr.Level3Feed.UpdateInterval = 0;
                                 curr.Level3Feed.MonitorThroughput = true;
                                 feeds.Add(curr.Level3Feed);
 
-                                service = curr;
+                                service = new SymbolDataService();
+                                await service.Connect(cred);
+                                first = true;
                             }
                             else
                             {
@@ -191,6 +203,7 @@ namespace KuCoinConsole
                         }
 
                         observers.Add(sym, curr);
+                        if (first) curr = service;
                     }
                     catch { }
                 }
@@ -224,13 +237,13 @@ namespace KuCoinConsole
                 
                 // let's find the most current update date/time from all feeds
 
-                DateTime ts = DateTime.MinValue;
+                DateTime ts = DateTime.MaxValue;
 
                 foreach (var obs in observers)
                 {
                     if (obs.Value.Level3Observation.FullDepthOrderBook == null) continue;
 
-                    if (obs.Value.Level3Observation.FullDepthOrderBook.Timestamp > ts)
+                    if (obs.Value.Level3Observation.Symbol == "BTC-USDT")
                     {
                         ts = obs.Value.Level3Observation.FullDepthOrderBook.Timestamp;
                     }

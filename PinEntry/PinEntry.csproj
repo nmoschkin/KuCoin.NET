@@ -5,6 +5,7 @@
     <UseWPF>true</UseWPF>
     <RootNamespace>DataTools</RootNamespace>
     <AssemblyName>PinEntry</AssemblyName>
+    <Platforms>AnyCPU;ARM32;x64</Platforms>
   </PropertyGroup>
 
   <ItemGroup>

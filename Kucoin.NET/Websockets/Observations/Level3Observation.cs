@@ -108,8 +108,8 @@ namespace Kucoin.NET.Websockets.Observations
             }
             else if (subj == "change")
             {
-                if (pieces.Contains(change.OrderId))
-                {
+                //if (pieces.Contains(change.OrderId))
+                //{
                     var piece = pieces[change.OrderId];
                 
                     pieces.Remove(piece.OrderId);
@@ -119,19 +119,19 @@ namespace Kucoin.NET.Websockets.Observations
                     piece.Price = (decimal)change.Price;
 
                     pieces.Add(piece);
-                }
+                //}
             }
             else if (subj == "match" && change.Price is decimal p && change.Size is decimal csize)
             {
-                if (otherPieces.Contains(change.MakerOrderId))
-                {
+                //if (otherPieces.Contains(change.MakerOrderId))
+                //{
                     var o = otherPieces[change.MakerOrderId];
-                    o.Size -= csize;
+                    o.Size -= (decimal)csize;
 
                     // A match is a real component of volume.
                     // we can keep our own tally of the market volume per k-line.
-                    if (updVol) Level3Volume += csize * p;
-                }
+                    if (updVol) Level3Volume += (decimal)(csize * p);
+                //}
             }
         }
 
@@ -200,15 +200,7 @@ namespace Kucoin.NET.Websockets.Observations
                         return;
                     }
 
-                    if (value.side == "sell")
-                    {
-                        SequencePieces(value.Subject, value, fullDepth.Asks, fullDepth.Bids);
-                    }
-                    else if (value.side == "buy")
-                    {
-                        SequencePieces(value.Subject, value, fullDepth.Bids, fullDepth.Asks);
-                    }
-                    else
+                    if (value.Side == null)
                     {
                         if (value.Subject == "done")
                         {
@@ -222,6 +214,14 @@ namespace Kucoin.NET.Websockets.Observations
                                 fullDepth.Bids.Remove(value.OrderId);
                             }
                         }
+                    }
+                    else if (value.Side == Side.Sell)
+                    {
+                        SequencePieces(value.Subject, value, fullDepth.Asks, fullDepth.Bids);
+                    }
+                    else if (value.Side == Side.Buy) 
+                    {
+                        SequencePieces(value.Subject, value, fullDepth.Bids, fullDepth.Asks);
                     }
 
                     fullDepth.Sequence = value.Sequence;

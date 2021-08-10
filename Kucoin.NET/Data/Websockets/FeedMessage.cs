@@ -6,6 +6,7 @@ using System.Text;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Kucoin.NET.Json;
+using System.Runtime.CompilerServices;
 
 namespace Kucoin.NET.Data.Websockets
 {
@@ -67,7 +68,38 @@ namespace Kucoin.NET.Data.Websockets
         /// Deserialized data contents
         /// </summary>
         [JsonProperty("data")] 
-        public JToken Data { get; set; }
+        public virtual JToken Data { get; set; }
 
     }
+
+    /// <summary>
+    /// Websocket feed packet object
+    /// </summary>
+    public class FeedMessage<T> : FeedMessage
+    {
+        /// <summary>
+        /// Deserialized data contents
+        /// </summary>
+        [JsonProperty("data")]
+        new public virtual T Data { get; set; }
+
+    }
+
+
+
+    /// <summary>
+    /// Websocket feed packet object
+    /// </summary>
+    public class Level3FeedMessage : FeedMessage<Level3Update>
+    {
+
+        ///// <summary>
+        ///// Deserialized data contents
+        ///// </summary>
+        //[JsonProperty("data")]
+        //public override Level3Update Data { get => base.Data; set => base.Data = value; }
+
+    }
+
+
 }
