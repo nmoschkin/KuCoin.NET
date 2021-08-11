@@ -738,11 +738,51 @@ namespace Kucoin.NET.Websockets
 
         private Thread msgPumpThread;
 
-        protected int msgPumpIdleWait = 5;
+        protected int throttleThreshold = 1000;
 
-        protected bool alwaysIdle = false;
+        protected int throttleDelay = 50;
+
+        protected bool throttleEnabled = false;
 
         public int QueueLength => msgQueue?.Count ?? 0;
+
+
+        /// <summary>
+        /// Gets or sets a value indicating that the connection will
+        /// pause to wait for the message pump to catch up (default is disabled.)
+        /// </summary>
+        public virtual bool ThrottleEnabled
+        {
+            get => throttleEnabled;
+            set
+            {
+                SetProperty(ref throttleEnabled, value);
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the buffer length threshold that will trigger throttling (default 1000 unprocessed items.)
+        /// </summary>
+        public int ThrottleThreshold
+        {
+            get => throttleThreshold;
+            set
+            {
+                SetProperty(ref throttleThreshold, value);
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets a value indicating how many milliseconds the throttle delay should wait before continuing to add packets to the queue (default is 50 milliseconds.)
+        /// </summary>
+        public int ThrottleDelay
+        {
+            get => throttleDelay;
+            set
+            {
+                SetProperty(ref throttleDelay, value);
+            }
+        }
 
         /// <summary>
         /// The data receive thread.
@@ -791,17 +831,6 @@ namespace Kucoin.NET.Websockets
                 if (ctsReceive?.IsCancellationRequested ?? true) return;
 
                 c = result.Count;
-
-                if (c == 0 || alwaysIdle)
-                {
-                    // nothing in the queue, give up some time-slices.
-                    if (msgPumpIdleWait != 0) Task.Delay(msgPumpIdleWait)
-                            .ConfigureAwait(false)
-                            .GetAwaiter()
-                            .GetResult();
-
-                    continue;
-                }
 
                 if (monitorThroughput)
                 {
@@ -887,6 +916,17 @@ namespace Kucoin.NET.Websockets
                         }
                     }
                 }
+
+                if (throttleEnabled)
+                {
+                    if (msgQueue.Count > throttleThreshold)
+                    {
+                        Task.Delay(throttleDelay)
+                            .ConfigureAwait(false)
+                            .GetAwaiter()
+                            .GetResult();
+                    }
+                }
             }
         }
         
@@ -928,13 +968,13 @@ namespace Kucoin.NET.Websockets
                     RouteJsonPacket(queue[i]);
                 }
 
-                if (c == 0 || alwaysIdle)
+                if (c == 0)
                 {
                     // nothing in the queue, give up some time-slices.
-                    if (msgPumpIdleWait != 0) Task.Delay(msgPumpIdleWait)
-                            .ConfigureAwait(false)
-                            .GetAwaiter()
-                            .GetResult();
+                    Task.Delay(5)
+                        .ConfigureAwait(false)
+                        .GetAwaiter()
+                        .GetResult();
                 }
             }
 

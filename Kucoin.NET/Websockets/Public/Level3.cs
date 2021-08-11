@@ -19,13 +19,10 @@ namespace Kucoin.NET.Websockets.Public
     {
         private Dictionary<string, Level3Observation> activeFeeds = new Dictionary<string, Level3Observation>();
 
-
         protected object lockObj = new object();
-        protected long cycle = 0;
 
         protected int defaultPieces = 50;
         protected int updateInterval = 500;
-        protected int updcalc = 500 * 10_000;
 
         protected int resets;
 
@@ -47,36 +44,20 @@ namespace Kucoin.NET.Websockets.Public
         {
             recvBufferSize = 131072;
             minQueueBuffer = 10000;
-            chunkSize = 128;
+            chunkSize = 10240;
+            throttleDelay = 100;
+            throttleThreshold = 2000;
+            throttleEnabled = true;
         }
 
         public Level3(string key, string secret, string passphrase, bool isSandbox = false, bool futures = false) : base(key, secret, passphrase, isSandbox: isSandbox, futures: futures)
         {
             recvBufferSize = 131072;
             minQueueBuffer = 10000;
-            chunkSize = 128;
-        }
-
-        /// <summary>
-        /// Gets or sets a length of time (in milliseconds) that indicates how often the order book is pushed to the UI thread.
-        /// </summary>
-        /// <remarks>
-        /// The default value is 500 milliseconds.
-        /// If this value is set to 0, automatic updates are disabled.
-        /// </remarks>
-        public virtual int UpdateInterval
-        {
-            get => updateInterval;
-            set
-            {
-                // the minimum value is 5 milliseconds
-                if (value < 5) value = 5;
-
-                if (SetProperty(ref updateInterval, value))
-                {
-                    updcalc = updateInterval * 10_000;
-                }
-            }
+            chunkSize = 10240;
+            throttleDelay = 100;
+            throttleThreshold = 2000;
+            throttleEnabled = true;
         }
 
 
@@ -262,7 +243,6 @@ namespace Kucoin.NET.Websockets.Public
 
             if (activeFeeds.Count == 0)
             {
-                cycle = 0;
                 Resets = 0;
                 State = FeedState.Unsubscribed;
             }

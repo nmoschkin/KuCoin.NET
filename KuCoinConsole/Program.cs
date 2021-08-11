@@ -160,7 +160,6 @@ namespace KuCoinConsole
                         {
                             await curr.ChangeSymbol(sym);
                             await curr.EnableLevel3();
-                            curr.Level3Feed.UpdateInterval = 0;
                             curr.Level3Feed.MonitorThroughput = true;
                             feeds.Add(curr.Level3Feed);
                             first = false;
@@ -178,8 +177,7 @@ namespace KuCoinConsole
                             {
                                 curr = await service.AddSymbol(sym, false);
                                 await curr.EnableLevel3();
-                                curr.Level3Feed.UpdateInterval = 0;
-                                curr.Level3Feed.MonitorThroughput = true;
+
                                 feeds.Add(curr.Level3Feed);
 
                                 service = new SymbolDataService();
