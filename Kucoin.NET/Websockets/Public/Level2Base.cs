@@ -363,7 +363,7 @@ namespace Kucoin.NET.Websockets.Public
 
             param.Add("symbol", symbol);
 
-            var jobj = await MakeRequest(HttpMethod.Get, curl, 5, false, param);
+            var jobj = await MakeRequest(HttpMethod.Get, curl, 5, true, param);
             var result = jobj.ToObject<TBookIn>();
 
             foreach (var ask in result.Asks)
