@@ -96,7 +96,7 @@ namespace Kucoin.NET.Data.Order
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void Remove(string orderId)
         {
-            //if (!orderIds.ContainsKey(orderId)) return;
+            if (!orderIds.ContainsKey(orderId)) return;
             var item = orderIds[orderId];
 
             orderIds.Remove(orderId);
