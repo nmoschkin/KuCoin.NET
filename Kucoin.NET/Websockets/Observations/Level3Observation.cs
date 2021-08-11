@@ -127,14 +127,14 @@ namespace Kucoin.NET.Websockets.Observations
                     if (change.Price is decimal p && change.Size is decimal csize)
                     {
                         var o = otherPieces[change.MakerOrderId];
-                        o.Size -= (decimal)csize;
+                        o.Size -= csize;
 
                         otherPieces.Remove(o.OrderId);
                         if (o.Size > 0) otherPieces.Add(o);
 
                         // A match is a real component of volume.
                         // we can keep our own tally of the market volume per k-line.
-                        //if (updVol) Level3Volume += (csize * p);
+                        if (updVol) Level3Volume += (csize * p);
                     }
 
                     return;

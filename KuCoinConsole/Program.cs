@@ -125,11 +125,10 @@ namespace KuCoinConsole
             /* Uncomment To Use */
             /* Testing Futures Ticker */
             int delay = 100;
-            service = new SymbolDataService();
+            service = ServiceFactory.Instance.CreateConnected(cred);
             //var syms = new List<string>(new string[] { "BTC-USDT" });
             var syms = new List<string>(new string[] { "KCS-USDT", "ETH-USDT", "XLM-USDT", "BTC-USDT", "ADA-USDT", "LTC-USDT" });
 
-            service.Connect(cred).ConfigureAwait(false).GetAwaiter().GetResult();
             
             Task.Run(async () =>
             {
@@ -141,11 +140,7 @@ namespace KuCoinConsole
                     // sort symbols alphabetically
                     return string.Compare(a, b);
                 });
-
-
-
-                bool first = true;
-              
+             
                 int c = 0;
               
                 ISymbolDataService curr = service;
@@ -156,42 +151,16 @@ namespace KuCoinConsole
 
                     try
                     {
-                        if (first)
-                        {
-                            await curr.ChangeSymbol(sym);
-                            await curr.EnableLevel3();
-                            curr.Level3Feed.MonitorThroughput = true;
-                            curr.Level3Feed.UpdateInterval = 0;
+                        curr = ServiceFactory.Instance.AddOrChangeSymbol(sym, service, true);
+                        await curr.EnableLevel3();
 
+                        if (curr == service)
+                        {
                             feeds.Add(curr.Level3Feed);
-                            first = false;
-
-                            if (sym == "ADA-USDT")
-                            {
-                                service = new SymbolDataService();
-                                await service.Connect(cred);
-                                first = true;
-                            }
                         }
-                        else
-                        {
-                            if (sym == "BTC-USDT" || sym == "ETH-USDT")
-                            {
-                                curr = await service.AddSymbol(sym, false);
-                                await curr.EnableLevel3();
 
-                                feeds.Add(curr.Level3Feed);
-
-                                service = new SymbolDataService();
-                                await service.Connect(cred);
-                                first = true;
-                            }
-                            else
-                            {
-                                curr = await service.AddSymbol(sym, true);
-                            }
-
-                        }
+                        curr.Level3Feed.UpdateInterval = 0;
+                        curr.Level3Feed.MonitorThroughput = true;
 
                         while (curr.Level3Observation.Calibrated == false)
                         {
@@ -200,9 +169,8 @@ namespace KuCoinConsole
                             // at one time
                             await Task.Delay(delay);
                         }
-
+                        
                         observers.Add(sym, curr);
-                        if (first) curr = service;
                     }
                     catch { }
                 }
