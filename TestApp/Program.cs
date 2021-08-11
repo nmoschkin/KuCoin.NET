@@ -258,7 +258,7 @@ namespace KuCoinApp
 
             //Console.WriteLine("Listening to XLM-USDT: ");
 
-            var market = new Market();
+            var market = Market.Instance;
             //var markets = await market.GetMarketList();
 
             //Console.Write(string.Join("\r\n", markets));
@@ -417,7 +417,7 @@ namespace KuCoinApp
             if (acct.Balance == 0 && !ifZero) return;
 
             decimal fiatval = 0.0M;
-            if (market == null) market = new Market();
+            if (market == null) market = Market.Instance;
             Ticker ticker;
 
             if (acct.Currency != "USDT")

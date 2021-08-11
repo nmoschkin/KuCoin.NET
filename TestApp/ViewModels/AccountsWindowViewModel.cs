@@ -50,7 +50,7 @@ namespace KuCoinApp.ViewModels
         private Dictionary<string, AccountItemViewModel> marginDict;
         private Dictionary<string, AccountItemViewModel> poolxDict;
 
-        private Market market = new Market();
+        private Market market = Market.Instance;
 
         public ICommand RefreshAccountsCommand { get; private set; }
 

@@ -39,7 +39,7 @@ namespace KuCoinApp
 
         public static async Task UpdateCurrencies()
         {
-            var market = new Market();
+            var market = Market.Instance;
 
             await market.RefreshCurrenciesAsync();
             await market.RefreshSymbolsAsync();

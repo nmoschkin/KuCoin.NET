@@ -775,7 +775,7 @@ namespace KuCoinApp
 
 
             App.Current.Settings.PropertyChanged += Settings_PropertyChanged;
-            market = new Market();
+            market = Market.Instance;
             lastRange = App.Current.Settings.LastCandleRange;
 
             // Make sure you call this from the main thread,
@@ -876,7 +876,7 @@ namespace KuCoinApp
 
         protected override async Task Initialize()
         {
-            if (market == null) market = new Market();
+            if (market == null) market = Market.Instance;
             if (fmarket == null) fmarket = new FuturesMarket();
 
             await market.RefreshSymbolsAsync().ContinueWith(async (t) =>

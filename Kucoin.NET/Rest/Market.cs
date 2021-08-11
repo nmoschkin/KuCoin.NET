@@ -33,27 +33,27 @@ namespace Kucoin.NET.Rest
 
         static Market inst;
 
+        internal static void CreateMarket(bool getMarket)
+        {
+            if (inst == null)
+                inst = new Market();
+
+            if (getMarket)
+            {
+                inst.RefreshCurrenciesAsync().ConfigureAwait(false).GetAwaiter().GetResult();
+                inst.RefreshSymbolsAsync().ConfigureAwait(false).GetAwaiter().GetResult();
+            }
+
+        }
+       
+        
         public static Market Instance
         {
             get
             {
                 if (inst == null)
                 {
-                    inst = new Market();
-
-                    inst.RefreshCurrenciesAsync().ConfigureAwait(false).GetAwaiter().GetResult();
-                    inst.RefreshSymbolsAsync().ConfigureAwait(false).GetAwaiter().GetResult();
-
-                    //Parallel.Invoke(
-                    //    async () =>
-                    //    {
-                    //        await inst.RefreshCurrenciesAsync();
-                    //    },
-                    //    async () =>
-                    //    {
-                    //        await inst.RefreshSymbolsAsync();
-                    //    });
-
+                    CreateMarket(true);
                 }
 
                 return inst;

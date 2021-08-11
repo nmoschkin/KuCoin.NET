@@ -135,7 +135,7 @@ namespace KuCoinApp.ViewModels
                 return;
             }
 
-            var market = new Market();
+            var market = Market.Instance;
             var ticker = await market.GetTicker($"{CurrencyName}-{quoteCurrency}");
             
             lastQuotePrice = ticker.Price;
