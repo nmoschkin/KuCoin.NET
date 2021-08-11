@@ -13,6 +13,11 @@ using Kucoin.NET.Data.Market;
 using Kucoin.NET.Services;
 using System.ComponentModel;
 
+
+using Microsoft.AppCenter;
+using Microsoft.AppCenter.Analytics;
+using Microsoft.AppCenter.Crashes;
+
 namespace KuCoinConsole
 {
 
@@ -73,6 +78,11 @@ namespace KuCoinConsole
 
         static void Main(string[] args)
         {
+
+            // Analytics and crash reporting.
+            AppCenter.Start("d364ea69-c1fa-4d0d-8c37-debaa05f91bc",
+                   typeof(Analytics), typeof(Crashes));
+            // Analytics and crash reporting.
 
             Console.WriteLine("Loading Symbols and Currencies...");
 
