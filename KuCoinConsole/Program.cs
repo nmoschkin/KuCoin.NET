@@ -17,6 +17,7 @@ using System.ComponentModel;
 using Microsoft.AppCenter;
 using Microsoft.AppCenter.Analytics;
 using Microsoft.AppCenter.Crashes;
+using System.Runtime.InteropServices;
 
 namespace KuCoinConsole
 {
@@ -76,8 +77,13 @@ namespace KuCoinConsole
 
         static List<object> feeds = new List<object>();
 
+        
+        [DllImport("kernel32.dll")]
+        static extern bool AllocConsole();
+
         static void Main(string[] args)
         {
+            AllocConsole();
 
             // Analytics and crash reporting.
             AppCenter.Start("d364ea69-c1fa-4d0d-8c37-debaa05f91bc",
