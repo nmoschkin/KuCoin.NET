@@ -32,7 +32,15 @@ namespace Kucoin.NET.Data.Order
             {
                 lock (lockObj)
                 {
-                    return orderIds[orderId];
+                    
+                    if (orderIds.TryGetValue(orderId, out TUnit found))
+                    {
+                        return found;
+                    }
+                    else
+                    {
+                        return default;
+                    }
                 }
             }
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
