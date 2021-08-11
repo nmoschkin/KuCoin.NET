@@ -46,7 +46,7 @@ namespace Kucoin.NET.Websockets.Observations
         protected KucoinBaseWebsocketFeed connectedFeed;
         protected Thread PushThread;
         protected CancellationTokenSource cts;
-        protected object lockObj = new object();
+        internal object lockObj = new object();
         protected bool pushRequested = false;
 
         protected KlineType klineType = KlineType.Min1;

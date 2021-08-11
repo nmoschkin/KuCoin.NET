@@ -331,7 +331,7 @@ namespace Kucoin.NET.Websockets.Public
                     {
                         _ = Task.Run(() => State = FeedState.Initializing);
 
-                        lock (lockObj)
+                        lock (af.lockObj)
                         {
                             af.OnNext(update);
 
@@ -352,7 +352,7 @@ namespace Kucoin.NET.Websockets.Public
                     }
                     else
                     {
-                        lock (lockObj)
+                        lock (af.lockObj)
                         {
                             af.OnNext(update);
 
