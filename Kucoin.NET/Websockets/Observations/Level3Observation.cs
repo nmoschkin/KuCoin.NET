@@ -138,13 +138,13 @@ namespace Kucoin.NET.Websockets.Observations
 
                 case "match":
 
-                    if (change.Price is decimal p && change.Size is decimal csize)
+                    if (change.Price is decimal p && change.Size is decimal csize 
+                        && otherPieces.TryGetValue(change.MakerOrderId, out AtomicOrderStruct o))
                     {
-                        var o = otherPieces[change.MakerOrderId];
                         o.Size -= csize;
 
                         otherPieces.Remove(o.OrderId);
-                        if (o.Size > 0) otherPieces.Add(o);
+                        otherPieces.Add(o);
 
                         // A match is a real component of volume.
                         // we can keep our own tally of the market volume per k-line.
