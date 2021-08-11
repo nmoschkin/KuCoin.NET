@@ -123,15 +123,15 @@ namespace Kucoin.NET.Websockets.Observations
                     }
                     else
                     {
-                        //var u = new AtomicOrderStruct
-                        //{
-                        //    Price = change.Price ?? 0,
-                        //    Size = change.Size ?? 0,
-                        //    Timestamp = change.Timestamp ?? DateTime.Now,
-                        //    OrderId = change.OrderId
-                        //};
+                        var u2 = new AtomicOrderStruct
+                        {
+                            Price = change.Price ?? 0,
+                            Size = change.Size ?? 0,
+                            Timestamp = change.Timestamp ?? DateTime.Now,
+                            OrderId = change.OrderId
+                        };
 
-                        //pieces.Add(u);
+                        pieces.Add(u2);
                     }
 
                     return;

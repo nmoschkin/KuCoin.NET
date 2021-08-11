@@ -322,6 +322,7 @@ namespace Kucoin.NET.Websockets.Public
                 if (i != -1)
                 {
                     var symbol = msg.Topic.Substring(i + 1);
+                    if (string.IsNullOrEmpty(symbol)) return;
 
                     var af = activeFeeds[symbol];
                     var update = msg.Data;

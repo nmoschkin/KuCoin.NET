@@ -124,7 +124,12 @@ namespace KuCoinConsole
             //return;
             /* Uncomment To Use */
             /* Testing Futures Ticker */
+
+#if DEBUG
             int delay = 100;
+#else
+            int delay = 50;
+#endif
             service = ServiceFactory.Instance.CreateConnected(cred);
             //var syms = new List<string>(new string[] { "BTC-USDT" });
             var syms = new List<string>(new string[] { "KCS-USDT", "ETH-USDT", "XLM-USDT", "BTC-USDT", "ADA-USDT", "LTC-USDT" });
