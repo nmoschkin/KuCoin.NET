@@ -111,15 +111,29 @@ namespace Kucoin.NET.Websockets.Observations
 
                 case "change":
 
-                    var piece = pieces[change.OrderId];
+                    if (pieces.TryGetValue(change.OrderId, out AtomicOrderStruct piece))
+                    {
+                        pieces.Remove(piece.OrderId);
 
-                    pieces.Remove(piece.OrderId);
+                        piece.Size = change.Size ?? 0;
+                        piece.Timestamp = change.Timestamp ?? DateTime.Now;
+                        piece.Price = change.Price ?? 0;
 
-                    piece.Size = change.Size ?? 0;
-                    piece.Timestamp = change.Timestamp ?? DateTime.Now;
-                    piece.Price = change.Price ?? 0;
+                        pieces.Add(piece);
+                    }
+                    else
+                    {
+                        //var u = new AtomicOrderStruct
+                        //{
+                        //    Price = change.Price ?? 0,
+                        //    Size = change.Size ?? 0,
+                        //    Timestamp = change.Timestamp ?? DateTime.Now,
+                        //    OrderId = change.OrderId
+                        //};
 
-                    pieces.Add(piece);
+                        //pieces.Add(u);
+                    }
+
                     return;
 
                 case "match":
@@ -211,12 +225,12 @@ namespace Kucoin.NET.Websockets.Observations
                     {
                         if (value.Subject == "done")
                         {
-                            if (fullDepth.Asks.Contains(value.OrderId))
+                            if (fullDepth.Asks.ContainsKey(value.OrderId))
                             {
                                 fullDepth.Asks.Remove(value.OrderId);
                             }
 
-                            if (fullDepth.Bids.Contains(value.OrderId))
+                            if (fullDepth.Bids.ContainsKey(value.OrderId))
                             {
                                 fullDepth.Bids.Remove(value.OrderId);
                             }

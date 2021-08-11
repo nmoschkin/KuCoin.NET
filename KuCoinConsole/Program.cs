@@ -162,13 +162,13 @@ namespace KuCoinConsole
                         curr.Level3Feed.UpdateInterval = 0;
                         curr.Level3Feed.MonitorThroughput = true;
 
-                        while (curr.Level3Observation.Calibrated == false)
-                        {
-                            // we are waiting for the order book to be initialized
-                            // so that we don't throw too many processes at the system
-                            // at one time
-                            await Task.Delay(delay);
-                        }
+                        //while (curr.Level3Observation.Calibrated == false)
+                        //{
+                        //    // we are waiting for the order book to be initialized
+                        //    // so that we don't throw too many processes at the system
+                        //    // at one time
+                        //    await Task.Delay(delay);
+                        //}
                         
                         observers.Add(sym, curr);
                     }

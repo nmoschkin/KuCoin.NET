@@ -11,12 +11,14 @@ namespace Kucoin.NET.Data.Order
 {
 
 
-    public class KeyedBook<TUnit> : Collection<TUnit> where TUnit : IAtomicOrderUnit
+    public class KeyedBook<TUnit> : Collection<TUnit>, IReadOnlyDictionary<string, TUnit> where TUnit : IAtomicOrderUnit
     {
         protected object lockObj = new object();
-        protected Dictionary<string, TUnit> orderIds = new Dictionary<string, TUnit>();
+        internal Dictionary<string, TUnit> orderIds = new Dictionary<string, TUnit>();
 
         protected bool descending;
+
+        public bool Descending => descending;
 
         public KeyedBook() : this(false)
         {
@@ -27,20 +29,26 @@ namespace Kucoin.NET.Data.Order
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get
             {
-                return orderIds[orderId];
+                lock (lockObj)
+                {
+                    return orderIds[orderId];
+                }
             }
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             set
             {
-                int i = FindItem(value);
+                lock (lockObj)
+                {
+                    int i = FindItem(value);
 
-                if (i != -1)
-                {
-                    SetItem(i, value);
-                }
-                else
-                {
-                    InsertItem(i, value);
+                    if (i != -1)
+                    {
+                        SetItem(i, value);
+                    }
+                    else
+                    {
+                        InsertItem(i, value);
+                    }
                 }
             }
         }
@@ -78,54 +86,77 @@ namespace Kucoin.NET.Data.Order
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         protected override void InsertItem(int index, TUnit item)
         {
-            index = GetInsertIndex(item);
+            lock (lockObj)
+            {
+                index = GetInsertIndex(item);
 
-            orderIds.Add(item.OrderId, item);
-            base.InsertItem(index, item);
+                orderIds.Add(item.OrderId, item);
+                base.InsertItem(index, item);
+            }
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         protected override void RemoveItem(int index)
         {
-            orderIds.Remove(this[index].OrderId);
-            base.RemoveItem(index);
+            lock (lockObj)
+            {
+                orderIds.Remove(this[index].OrderId);
+                base.RemoveItem(index);
+            }
         }
 
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         protected override void ClearItems()
         {
-            orderIds.Clear();
-            base.ClearItems();
+            lock (lockObj)
+            {
+                orderIds.Clear();
+                base.ClearItems();
+            }
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void Remove(string orderId)
         {
-            if (!orderIds.ContainsKey(orderId)) return;
-            var item = orderIds[orderId];
-
-            orderIds.Remove(orderId);
-
-            var i = FindItem(item);
-            if (i != -1)
-                base.RemoveItem(i);
-        }
-
-        public string[] Keys
-        {
-            get
+            lock (lockObj)
             {
-                return orderIds.Keys.ToArray();
+                if (!orderIds.ContainsKey(orderId)) return;
+                var item = orderIds[orderId];
+
+                orderIds.Remove(orderId);
+
+                var i = FindItem(item);
+                if (i != -1)
+                    base.RemoveItem(i);
             }
         }
 
-        public TUnit[] Values
+        public IEnumerable<string> Keys
         {
             get
             {
-                return this.ToArray();
+                lock (lockObj)
+                {
+                    return orderIds.Keys.ToArray();
+                }
             }
+        }
+
+        public IEnumerable<TUnit> Values
+        {
+            get
+            {
+                lock (lockObj)
+                {
+                    return this.ToArray();
+               }
+            }
+        }
+
+        public bool TryGetValue(string orderId, out TUnit value)
+        {
+            return orderIds.TryGetValue(orderId, out value);
         }
 
         /// <summary>
@@ -265,22 +296,28 @@ namespace Kucoin.NET.Data.Order
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public bool Contains(string orderId)
+        public bool ContainsKey(string orderId)
         {
-            return orderIds.ContainsKey(orderId);
+            lock (lockObj)
+            {
+                return orderIds.ContainsKey(orderId);
+            }
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         protected override void SetItem(int index, TUnit item)
         {
-            if (index >= Count)
+            lock (lockObj)
             {
-                InsertItem(0, item);
-                return;
-            }
+                if (index >= Count)
+                {
+                    InsertItem(0, item);
+                    return;
+                }
 
-            RemoveItem(index);
-            InsertItem(index, item);
+                RemoveItem(index);
+                InsertItem(index, item);
+            }
         }
 
         /// <summary>
@@ -301,6 +338,11 @@ namespace Kucoin.NET.Data.Order
             }
 
             return output;
+        }
+
+        IEnumerator<KeyValuePair<string, TUnit>> IEnumerable<KeyValuePair<string, TUnit>>.GetEnumerator()
+        {
+            return ((IEnumerable<KeyValuePair<string, TUnit>>)orderIds).GetEnumerator();
         }
 
     }
