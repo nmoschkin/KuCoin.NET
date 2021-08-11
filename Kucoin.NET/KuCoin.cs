@@ -65,8 +65,6 @@ namespace Kucoin.NET
     public static class KuCoin
     {
 
-
-
         /// <summary>
         /// Global application-domain credentials utilization mode.
         /// </summary>
