@@ -47,21 +47,15 @@ namespace Kucoin.NET.Websockets.Public
         public Level3(ICredentialsProvider credProvider) : base(credProvider)
         {
             recvBufferSize = 131072;
-            minQueueBuffer = 10000;
+            minQueueBuffer = 500;
             chunkSize = 256;
-            throttleDelay = 100;
-            throttleThreshold = 2000;
-            throttleEnabled = true;
         }
 
         public Level3(string key, string secret, string passphrase, bool isSandbox = false, bool futures = false) : base(key, secret, passphrase, isSandbox: isSandbox, futures: futures)
         {
             recvBufferSize = 131072;
-            minQueueBuffer = 10000;
+            minQueueBuffer = 500;
             chunkSize = 256;
-            throttleDelay = 100;
-            throttleThreshold = 2000;
-            throttleEnabled = true;
         }
 
         /// <summary>

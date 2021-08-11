@@ -738,51 +738,7 @@ namespace Kucoin.NET.Websockets
 
         private Thread msgPumpThread;
 
-        protected int throttleThreshold = 1000;
-
-        protected int throttleDelay = 50;
-
-        protected bool throttleEnabled = false;
-
         public int QueueLength => msgQueue?.Count ?? 0;
-
-
-        /// <summary>
-        /// Gets or sets a value indicating that the connection will
-        /// pause to wait for the message pump to catch up (default is disabled.)
-        /// </summary>
-        public virtual bool ThrottleEnabled
-        {
-            get => throttleEnabled;
-            set
-            {
-                SetProperty(ref throttleEnabled, value);
-            }
-        }
-
-        /// <summary>
-        /// Gets or sets the buffer length threshold that will trigger throttling (default 1000 unprocessed items.)
-        /// </summary>
-        public int ThrottleThreshold
-        {
-            get => throttleThreshold;
-            set
-            {
-                SetProperty(ref throttleThreshold, value);
-            }
-        }
-
-        /// <summary>
-        /// Gets or sets a value indicating how many milliseconds the throttle delay should wait before continuing to add packets to the queue (default is 50 milliseconds.)
-        /// </summary>
-        public int ThrottleDelay
-        {
-            get => throttleDelay;
-            set
-            {
-                SetProperty(ref throttleDelay, value);
-            }
-        }
 
         /// <summary>
         /// The data receive thread.
@@ -797,7 +753,6 @@ namespace Kucoin.NET.Websockets
 
             int strlen = 0;
             int level = 0;
-            int q = 0;
 
             bool inQuote = false;
             bool inEsc = false;
@@ -815,18 +770,17 @@ namespace Kucoin.NET.Websockets
             // loop forever or until the connection is broken or canceled.
             while (!ctsReceive.IsCancellationRequested && socket?.State == WebSocketState.Open)
             {
-                //try
-                //{
+                try
+                {
                     result = socket.ReceiveAsync(arrSeg, ctsReceive.Token)
                         .ConfigureAwait(false)
                         .GetAwaiter()
                         .GetResult();
-                //}
-                //catch
-                //{
-                //    return;
-                //}
-
+                }
+                catch
+                {
+                    return;
+                }
 
                 if (ctsReceive?.IsCancellationRequested ?? true) return;
 
