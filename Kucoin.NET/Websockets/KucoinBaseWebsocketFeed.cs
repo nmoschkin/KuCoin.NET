@@ -281,10 +281,10 @@ namespace Kucoin.NET.Websockets
         /// <summary>
         /// Gets the current throughput of the socket in bits per second.
         /// </summary>
-        public long Throughput
+        public virtual long Throughput
         {
             get => throughput;
-            private set
+            protected set
             {
                 SetProperty(ref throughput, value);
             }
@@ -389,7 +389,7 @@ namespace Kucoin.NET.Websockets
             socket?.Dispose();
             socket = null;
             token = null;
-
+        
             OnPropertyChanged(nameof(Connected));
         }
 
@@ -498,14 +498,10 @@ namespace Kucoin.NET.Websockets
                 msgQueue.Capacity = minQueueBuffer;
 
                 // data receiver
-                inputReaderThread = new Thread(
-                    async () => { try { await DataReceiveThread(); } catch { } }
-                    );
+                inputReaderThread = new Thread(DataReceiveThread);
 
                 // observer notification pump
-                msgPumpThread = new Thread(
-                    async () => { try { await MessagePumpThread(); } catch { } }
-                    );
+                msgPumpThread = new Thread(MessagePumpThread);
 
                 inputReaderThread.IsBackground = true;
                 msgPumpThread.IsBackground = true;
@@ -742,12 +738,16 @@ namespace Kucoin.NET.Websockets
 
         private Thread msgPumpThread;
 
+        protected int msgPumpIdleWait = 5;
+
+        protected bool alwaysIdle = false;
+
         public int QueueLength => msgQueue?.Count ?? 0;
 
         /// <summary>
         /// The data receive thread.
         /// </summary>
-        private async Task DataReceiveThread()
+        private void DataReceiveThread()
         {
             Thread.CurrentThread.Priority = recvPriority;
 
@@ -757,6 +757,7 @@ namespace Kucoin.NET.Websockets
 
             int strlen = 0;
             int level = 0;
+            int q = 0;
 
             bool inQuote = false;
             bool inEsc = false;
@@ -768,20 +769,37 @@ namespace Kucoin.NET.Websockets
 
             var arrSeg = new ArraySegment<byte>(inputChunk);
             var tms = DateTime.UtcNow.Ticks;
+            
+            WebSocketReceiveResult result;
 
             // loop forever or until the connection is broken or canceled.
             while (!ctsReceive.IsCancellationRequested && socket?.State == WebSocketState.Open)
             {
-                var result = await socket.ReceiveAsync(arrSeg, ctsReceive.Token);
+                try
+                {
+                    result = socket.ReceiveAsync(arrSeg, ctsReceive.Token)
+                        .ConfigureAwait(false)
+                        .GetAwaiter()
+                        .GetResult();
+                }
+                catch
+                {
+                    return;
+                }
+
+
                 if (ctsReceive?.IsCancellationRequested ?? true) return;
 
                 c = result.Count;
 
-                if (c == 0)
+                if (c == 0 || alwaysIdle)
                 {
-                    // no data received.
-                    // let's give up some time-slices and try again.
-                    await Task.Delay(5);
+                    // nothing in the queue, give up some time-slices.
+                    if (msgPumpIdleWait != 0) Task.Delay(msgPumpIdleWait)
+                            .ConfigureAwait(false)
+                            .GetAwaiter()
+                            .GetResult();
+
                     continue;
                 }
 
@@ -866,19 +884,19 @@ namespace Kucoin.NET.Websockets
                             {
                                 msgQueue.Add(json);
                             }
-                            continue;
                         }
                     }
                 }
             }
         }
+        
 
         /// <summary>
         /// Separate thread that runs to pump messages to the observers in
         /// the order in which they were received without delaying the data
         /// receiving thread.
         /// </summary>
-        private async Task MessagePumpThread()
+        private void MessagePumpThread()
         {
             string[] queue = new string[minQueueBuffer];
             int c;
@@ -907,13 +925,16 @@ namespace Kucoin.NET.Websockets
 
                 for (int i = 0; i < c; i++)
                 {
-                    await RouteJsonPacket(queue[i]);
+                    RouteJsonPacket(queue[i]);
                 }
 
-                if (c == 0)
+                if (c == 0 || alwaysIdle)
                 {
                     // nothing in the queue, give up some time-slices.
-                    await Task.Delay(5);
+                    if (msgPumpIdleWait != 0) Task.Delay(msgPumpIdleWait)
+                            .ConfigureAwait(false)
+                            .GetAwaiter()
+                            .GetResult();
                 }
             }
 
@@ -931,7 +952,7 @@ namespace Kucoin.NET.Websockets
         /// OnJsonReceive is called after all other handling has occurred.
         /// </remarks>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private async Task RouteJsonPacket(string json, FeedMessage e = null)
+        protected virtual void RouteJsonPacket(string json, FeedMessage e = null)
         {
             if (e == null) e = JsonConvert.DeserializeObject<FeedMessage>(json);
 
@@ -945,7 +966,7 @@ namespace Kucoin.NET.Websockets
                 {
                     try
                     {
-                        await HandleMessage(e);
+                        HandleMessage(e).ConfigureAwait(false).GetAwaiter().GetResult();
                     }
                     catch(Exception ex)
                     {
@@ -967,7 +988,7 @@ namespace Kucoin.NET.Websockets
                     {
                         // pass the deserialized object to the client 
                         // so it doesn't need to be deserialized again.
-                        await p.RouteJsonPacket(json, e);
+                        p.RouteJsonPacket(json, e);
                     }
                 }
             }
