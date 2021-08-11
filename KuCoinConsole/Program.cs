@@ -127,7 +127,7 @@ namespace KuCoinConsole
             int delay = 100;
             service = new SymbolDataService();
             //var syms = new List<string>(new string[] { "BTC-USDT" });
-            var syms = new List<string>(new string[] { "KCS-USDT", "ETH-USDT", "XLM-USDT", "BTC-USDT", "ADA-USDT", "DOT-USDT", "UNI-USDT", "LTC-USDT", "LINK-USDT", "MATIC-USDT" });
+            var syms = new List<string>(new string[] { "KCS-USDT", "ETH-USDT", "XLM-USDT", "BTC-USDT", "ADA-USDT", "LTC-USDT" });
 
             service.Connect(cred).ConfigureAwait(false).GetAwaiter().GetResult();
             
@@ -236,13 +236,13 @@ namespace KuCoinConsole
                 
                 // let's find the most current update date/time from all feeds
 
-                DateTime ts = DateTime.MaxValue;
+                DateTime ts = DateTime.MinValue;
 
                 foreach (var obs in observers)
                 {
                     if (obs.Value.Level3Observation.FullDepthOrderBook == null) continue;
 
-                    if (obs.Value.Level3Observation.Symbol == "BTC-USDT")
+                    if (obs.Value.Level3Observation.FullDepthOrderBook.Timestamp > ts)
                     {
                         ts = obs.Value.Level3Observation.FullDepthOrderBook.Timestamp;
                     }

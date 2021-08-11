@@ -26,6 +26,7 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <DefineConstants>TRACE;DOTNETSTD</DefineConstants>
+    <BaseAddress>302842624</BaseAddress>
   </PropertyGroup>
 
   <ItemGroup>
