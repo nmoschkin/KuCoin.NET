@@ -18,6 +18,7 @@ using Microsoft.AppCenter;
 using Microsoft.AppCenter.Analytics;
 using Microsoft.AppCenter.Crashes;
 using System.Runtime.InteropServices;
+using Kucoin.NET;
 
 namespace KuCoinConsole
 {
@@ -141,12 +142,15 @@ namespace KuCoinConsole
             /* Uncomment To Use */
             /* Testing Futures Ticker */
 
+            var serviceFactory = KuCoin.GetServiceFactory();
+
+
 #if DEBUG
             int delay = 100;
 #else
             int delay = 50;
 #endif
-            service = ServiceFactory.Instance.CreateConnected(cred);
+            service = serviceFactory.CreateConnected(cred);
             //var syms = new List<string>(new string[] { "BTC-USDT" });
             var syms = new List<string>(new string[] { "KCS-USDT", "ETH-USDT", "XLM-USDT", "BTC-USDT", "ADA-USDT", "LTC-USDT" });
             
@@ -173,27 +177,26 @@ namespace KuCoinConsole
                     {
                         if (!observers.ContainsKey(sym))
                         {
-                            curr = ServiceFactory.Instance.EnableOrAddSymbol(sym, service, true);
+                            curr = serviceFactory.EnableOrAddSymbol(sym, service, true);
+
+                            if (curr == null) continue;
+
                             await curr.EnableLevel3();
 
-                            if (!feeds.Contains(curr.Level3Feed))
+                            if (curr.Level3Feed != null)
                             {
-                                feeds.Add(curr.Level3Feed);
+                                if (!feeds.Contains(curr.Level3Feed))
+                                {
+                                    feeds.Add(curr.Level3Feed);
+                                }
+
+                                curr.Level3Feed.UpdateInterval = 0;
+                                curr.Level3Feed.MonitorThroughput = true;
+
+                                observers.Add(sym, curr);
+
                             }
 
-                            curr.Level3Feed.UpdateInterval = 0;
-                            curr.Level3Feed.MonitorThroughput = true;
-
-                            //while (curr.Level3Observation.Calibrated == false)
-                            //{
-                            //    // we are waiting for the order book to be initialized
-                            //    // so that we don't throw too many processes at the system
-                            //    // at one time
-                            //    await Task.Delay(delay);
-                            //}
-
-
-                            observers.Add(sym, curr);
                         }
                     }
                     catch { }
