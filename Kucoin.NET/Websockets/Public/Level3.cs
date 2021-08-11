@@ -7,6 +7,7 @@ using Newtonsoft.Json;
 
 using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Net.Http;
 using System.Net.WebSockets;
 using System.Text;
@@ -23,6 +24,9 @@ namespace Kucoin.NET.Websockets.Public
 
         protected int defaultPieces = 50;
         protected int updateInterval = 500;
+        protected long updcalc = 500 * 10_000;
+        
+        protected long cycle = DateTime.UtcNow.Ticks;
 
         protected int resets;
 
@@ -60,16 +64,25 @@ namespace Kucoin.NET.Websockets.Public
             throttleEnabled = true;
         }
 
-
         /// <summary>
-        /// Gets the number of resets since the last subscription.
+        /// Gets or sets a length of time (in milliseconds) that indicates how often the order book is pushed to the UI thread.
         /// </summary>
-        public int Resets
+        /// <remarks>
+        /// The default value is 500 milliseconds.
+        /// If this value is set to 0, automatic updates are disabled.
+        /// </remarks>
+        public virtual int UpdateInterval
         {
-            get => resets;
-            internal set
+            get => updateInterval;
+            set
             {
-                SetProperty(ref resets, value);
+                // the minimum value is 5 milliseconds
+                if (value < 5) value = 5;
+
+                if (SetProperty(ref updateInterval, value))
+                {
+                    updcalc = updateInterval * 10_000;
+                }
             }
         }
 
@@ -94,6 +107,18 @@ namespace Kucoin.NET.Websockets.Public
             }
         }
 
+        /// <summary>
+        /// Gets the number of resets since the last subscription.
+        /// </summary>
+        public int Resets
+        {
+            get => resets;
+            internal set
+            {
+                SetProperty(ref resets, value);
+            }
+        }
+            
         /// <summary>
         /// Gets the current feed state.
         /// </summary>
@@ -319,7 +344,10 @@ namespace Kucoin.NET.Websockets.Public
                             InitializeOrderBook(af.Symbol).ConfigureAwait(false).GetAwaiter().GetResult();
 
                             af.Calibrate();
+                            af.RequestPush();
                         }
+
+                        cycle = DateTime.UtcNow.Ticks;
 
                         _ = Task.Run(() =>
                         {
@@ -333,6 +361,14 @@ namespace Kucoin.NET.Websockets.Public
                         lock (lockObj)
                         {
                             af.OnNext(update);
+
+                            if (updateInterval == 0) return;
+
+                            if ((DateTime.UtcNow.Ticks - cycle) >= updcalc)
+                            {
+                                af.RequestPush();
+                                cycle = DateTime.UtcNow.Ticks;
+                            }
                         }
                     }
                 }

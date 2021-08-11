@@ -161,6 +161,8 @@ namespace KuCoinConsole
                             await curr.ChangeSymbol(sym);
                             await curr.EnableLevel3();
                             curr.Level3Feed.MonitorThroughput = true;
+                            curr.Level3Feed.UpdateInterval = 0;
+
                             feeds.Add(curr.Level3Feed);
                             first = false;
 
