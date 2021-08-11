@@ -11,7 +11,7 @@ namespace Kucoin.NET.Data.Order
 {
 
 
-    public class KeyedBook<TUnit> : Collection<TUnit> where TUnit : IAtomicOrderUnit, IReadOnlyDictionary<string, TUnit>
+    public class KeyedBook<TUnit> : Collection<TUnit> where TUnit : IAtomicOrderUnit
     {
         protected object lockObj = new object();
         protected Dictionary<string, TUnit> orderIds = new Dictionary<string, TUnit>();
