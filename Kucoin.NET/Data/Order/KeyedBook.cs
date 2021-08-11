@@ -1,5 +1,7 @@
 ﻿using Kucoin.NET.Data.Market;
 
+using Newtonsoft.Json;
+
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -10,8 +12,7 @@ using System.Text;
 namespace Kucoin.NET.Data.Order
 {
 
-
-    public class KeyedBook<TUnit> : Collection<TUnit>, IReadOnlyDictionary<string, TUnit> where TUnit : IAtomicOrderUnit
+    public class KeyedBook<TUnit> : Collection<TUnit>/*, IReadOnlyDictionary<string, TUnit>*/ where TUnit : IAtomicOrderUnit
     {
         protected object lockObj = new object();
         internal Dictionary<string, TUnit> orderIds = new Dictionary<string, TUnit>();
@@ -340,10 +341,10 @@ namespace Kucoin.NET.Data.Order
             return output;
         }
 
-        IEnumerator<KeyValuePair<string, TUnit>> IEnumerable<KeyValuePair<string, TUnit>>.GetEnumerator()
-        {
-            return ((IEnumerable<KeyValuePair<string, TUnit>>)orderIds).GetEnumerator();
-        }
+        //IEnumerator<KeyValuePair<string, TUnit>> IEnumerable<KeyValuePair<string, TUnit>>.GetEnumerator()
+        //{
+        //    return ((IEnumerable<KeyValuePair<string, TUnit>>)orderIds).GetEnumerator();
+        //}
 
     }
 

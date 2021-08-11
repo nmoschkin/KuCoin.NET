@@ -191,6 +191,7 @@ namespace Kucoin.NET.Rest
 
                 // We don't care about nothing
                 NullValueHandling = NullValueHandling.Ignore
+                
             };
 
             // Set the new global default behavior for the JSON library.
