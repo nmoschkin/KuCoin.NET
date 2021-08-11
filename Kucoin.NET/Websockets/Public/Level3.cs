@@ -44,7 +44,7 @@ namespace Kucoin.NET.Websockets.Public
         {
             recvBufferSize = 131072;
             minQueueBuffer = 10000;
-            chunkSize = 10240;
+            chunkSize = 256;
             throttleDelay = 100;
             throttleThreshold = 2000;
             throttleEnabled = true;
@@ -54,7 +54,7 @@ namespace Kucoin.NET.Websockets.Public
         {
             recvBufferSize = 131072;
             minQueueBuffer = 10000;
-            chunkSize = 10240;
+            chunkSize = 256;
             throttleDelay = 100;
             throttleThreshold = 2000;
             throttleEnabled = true;

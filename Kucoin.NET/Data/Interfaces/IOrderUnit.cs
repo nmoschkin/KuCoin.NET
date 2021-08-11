@@ -27,7 +27,7 @@ namespace Kucoin.NET.Data.Market
     /// <summary>
     /// Level 3 Atomic Order Unit Interface
     /// </summary>
-    public interface IAtomicOrderUnit : IOrderUnit
+    public interface IAtomicOrderUnit : IOrderUnit //, IEquatable<IAtomicOrderUnit>
     {
         /// <summary>
         /// The Order Id
@@ -112,6 +112,28 @@ namespace Kucoin.NET.Data.Market
     }
 
     /// <summary>
+    /// Interface for a class that contains keyed collections of asks and bids for level 3.
+    /// </summary>
+    /// <typeparam name="TUnit"></typeparam>
+    public interface ILevel3OrderUnitList<TCol, TUnit>
+        : IOrderUnitList<TUnit>
+        where TCol : KeyedBook<TUnit>
+        where TUnit : IAtomicOrderUnit
+    {
+        /// <summary>
+        /// Asks (sell)
+        /// </summary>
+        new TCol Asks { get; }
+
+        /// <summary>
+        /// Bids (buy)
+        /// </summary>
+        new TCol Bids { get; }
+
+    }
+
+
+    /// <summary>
     /// Interface for any class that implements the properties of a full order book.
     /// </summary>
     /// <typeparam name="TUnit">A type that implements <see cref="IOrderUnit"/>.</typeparam>
@@ -136,8 +158,8 @@ namespace Kucoin.NET.Data.Market
     }
 
 
-    public interface IKeyedAtomicOrderBook<TCol, TUnit> : IAtomicOrderBook<TUnit>, IKeyedOrderUnitList<TCol, string, TUnit>
-        where TCol : Level3KeyedCollection<TUnit>
+    public interface IKeyedAtomicOrderBook<TCol, TUnit> : IAtomicOrderBook<TUnit>, ILevel3OrderUnitList<TCol, TUnit>
+        where TCol : KeyedBook<TUnit>
         where TUnit : IAtomicOrderUnit
     {
     }

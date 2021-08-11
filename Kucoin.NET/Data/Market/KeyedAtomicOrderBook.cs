@@ -6,6 +6,7 @@ using Kucoin.NET.Observable;
 using Newtonsoft.Json;
 
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Text;
@@ -16,7 +17,7 @@ namespace Kucoin.NET.Data.Market
     /// Represents Level 3 Market Data
     /// </summary>
     public class KeyedAtomicOrderBook<T> : 
-        IKeyedAtomicOrderBook<Level3KeyedCollection<T>, T>
+        IKeyedAtomicOrderBook<KeyedBook<T>, T>
         where T: IAtomicOrderUnit
     {
 
@@ -37,13 +38,13 @@ namespace Kucoin.NET.Data.Market
         /// The keyed list of asks (sell)
         /// </summary>
         [JsonProperty("asks")]
-        public Level3KeyedCollection<T> Asks { get; set; } = new Level3KeyedCollection<T>();
+        public KeyedBook<T> Asks { get; set; } = new KeyedBook<T>();
 
         /// <summary>
         /// The keyed list of bids (buy)
         /// </summary>
         [JsonProperty("bids")]
-        public Level3KeyedCollection<T> Bids { get; set; } = new Level3KeyedCollection<T>(true);
+        public KeyedBook<T> Bids { get; set; } = new KeyedBook<T>(true);
 
         IList<T> IOrderUnitList<T>.Asks => Asks;
 
@@ -121,4 +122,5 @@ namespace Kucoin.NET.Data.Market
 
         IList<T> IOrderUnitList<T>.Bids => bids;
     }
+
 }

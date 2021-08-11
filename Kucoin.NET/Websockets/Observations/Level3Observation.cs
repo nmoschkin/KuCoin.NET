@@ -84,7 +84,7 @@ namespace Kucoin.NET.Websockets.Observations
         /// <param name="changes">The changes to sequence.</param>
         /// <param name="pieces">The collection to change (either an ask or a bid collection)</param>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        protected void SequencePieces(string subj, Level3Update change, Level3KeyedCollection<AtomicOrderStruct> pieces, Level3KeyedCollection<AtomicOrderStruct> otherPieces)
+        protected void SequencePieces(string subj, Level3Update change, KeyedBook<AtomicOrderStruct> pieces, KeyedBook<AtomicOrderStruct> otherPieces)
         {
             switch(subj)
             {
@@ -95,13 +95,13 @@ namespace Kucoin.NET.Websockets.Observations
 
                 case "open":
 
-                    if (change.Price == null || change.Price == 0 || change.Size == null || change.Size == 0) return;
+                    //if (change.Price == null || change.Price == 0 || change.Size == null || change.Size == 0) return;
 
                     var u = new AtomicOrderStruct
                     {
-                        Price = (decimal)change.Price,
-                        Size = (decimal)change.Size,
-                        Timestamp = (DateTime)change.Timestamp,
+                        Price = change.Price ?? 0,
+                        Size = change.Size ?? 0,
+                        Timestamp = change.Timestamp ?? DateTime.Now,
                         OrderId = change.OrderId
                     };
 
@@ -130,11 +130,11 @@ namespace Kucoin.NET.Websockets.Observations
                         o.Size -= (decimal)csize;
 
                         otherPieces.Remove(o.OrderId);
-                        otherPieces.Add(o);
+                        if (o.Size > 0) otherPieces.Add(o);
 
                         // A match is a real component of volume.
                         // we can keep our own tally of the market volume per k-line.
-                        if (updVol) Level3Volume += (csize * p);
+                        //if (updVol) Level3Volume += (csize * p);
                     }
 
                     return;
@@ -185,8 +185,8 @@ namespace Kucoin.NET.Websockets.Observations
 
             lock (lockObj)
             {
-                try
-                {
+                //try
+                //{
                     if (!calibrated)
                     {
                         orderBuffer.Add(value);
@@ -233,14 +233,14 @@ namespace Kucoin.NET.Websockets.Observations
 
                     fullDepth.Sequence = value.Sequence;
                     fullDepth.Timestamp = value.Timestamp ?? DateTime.Now;
-                }
-                catch
-                {
+                //}
+                //catch
+                //{
 
-                }
+                //}
             }
 
-            NextObject?.Invoke(value);
+            //NextObject?.Invoke(value);
         }
 
         /// <summary>

@@ -815,17 +815,17 @@ namespace Kucoin.NET.Websockets
             // loop forever or until the connection is broken or canceled.
             while (!ctsReceive.IsCancellationRequested && socket?.State == WebSocketState.Open)
             {
-                try
-                {
+                //try
+                //{
                     result = socket.ReceiveAsync(arrSeg, ctsReceive.Token)
                         .ConfigureAwait(false)
                         .GetAwaiter()
                         .GetResult();
-                }
-                catch
-                {
-                    return;
-                }
+                //}
+                //catch
+                //{
+                //    return;
+                //}
 
 
                 if (ctsReceive?.IsCancellationRequested ?? true) return;
@@ -917,16 +917,16 @@ namespace Kucoin.NET.Websockets
                     }
                 }
 
-                if (throttleEnabled)
-                {
-                    if (msgQueue.Count > throttleThreshold)
-                    {
-                        Task.Delay(throttleDelay)
-                            .ConfigureAwait(false)
-                            .GetAwaiter()
-                            .GetResult();
-                    }
-                }
+                //if (throttleEnabled)
+                //{
+                //    if (msgQueue.Count > throttleThreshold)
+                //    {
+                //        Task.Delay(throttleDelay)
+                //            .ConfigureAwait(false)
+                //            .GetAwaiter()
+                //            .GetResult();
+                //    }
+                //}
             }
         }
         
