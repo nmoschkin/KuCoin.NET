@@ -149,7 +149,6 @@ namespace KuCoinConsole
             service = ServiceFactory.Instance.CreateConnected(cred);
             //var syms = new List<string>(new string[] { "BTC-USDT" });
             var syms = new List<string>(new string[] { "KCS-USDT", "ETH-USDT", "XLM-USDT", "BTC-USDT", "ADA-USDT", "LTC-USDT" });
-
             
             Task.Run(async () =>
             {
@@ -172,26 +171,30 @@ namespace KuCoinConsole
 
                     try
                     {
-                        curr = ServiceFactory.Instance.EnableOrAddSymbol(sym, service, true);
-                        await curr.EnableLevel3();
-
-                        if (curr == service)
+                        if (!observers.ContainsKey(sym))
                         {
-                            feeds.Add(curr.Level3Feed);
+                            curr = ServiceFactory.Instance.EnableOrAddSymbol(sym, service, true);
+                            await curr.EnableLevel3();
+
+                            if (!feeds.Contains(curr.Level3Feed))
+                            {
+                                feeds.Add(curr.Level3Feed);
+                            }
+
+                            curr.Level3Feed.UpdateInterval = 0;
+                            curr.Level3Feed.MonitorThroughput = true;
+
+                            //while (curr.Level3Observation.Calibrated == false)
+                            //{
+                            //    // we are waiting for the order book to be initialized
+                            //    // so that we don't throw too many processes at the system
+                            //    // at one time
+                            //    await Task.Delay(delay);
+                            //}
+
+
+                            observers.Add(sym, curr);
                         }
-
-                        curr.Level3Feed.UpdateInterval = 0;
-                        curr.Level3Feed.MonitorThroughput = true;
-
-                        //while (curr.Level3Observation.Calibrated == false)
-                        //{
-                        //    // we are waiting for the order book to be initialized
-                        //    // so that we don't throw too many processes at the system
-                        //    // at one time
-                        //    await Task.Delay(delay);
-                        //}
-                        
-                        observers.Add(sym, curr);
                     }
                     catch { }
                 }
