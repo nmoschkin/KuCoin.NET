@@ -86,52 +86,59 @@ namespace Kucoin.NET.Websockets.Observations
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         protected void SequencePieces(string subj, Level3Update change, Level3KeyedCollection<AtomicOrderStruct> pieces, Level3KeyedCollection<AtomicOrderStruct> otherPieces)
         {
-
-            if (subj == "done")
+            switch(subj)
             {
-                pieces.Remove(change.OrderId);
+                case "done":
 
-            }
-            else if (subj == "open")
-            {
-                if (change.Price == null || change.Price == 0 || change.Size == null || change.Size == 0) return;
+                    pieces.Remove(change.OrderId);
+                    return;
 
-                var u = new AtomicOrderStruct
-                {
-                    Price = (decimal)change.Price,
-                    Size = (decimal)change.Size,
-                    Timestamp = (DateTime)change.Timestamp,
-                    OrderId = change.OrderId
-                };
+                case "open":
 
-                pieces.Add(u);
-            }
-            else if (subj == "change")
-            {
-                //if (pieces.Contains(change.OrderId))
-                //{
+                    if (change.Price == null || change.Price == 0 || change.Size == null || change.Size == 0) return;
+
+                    var u = new AtomicOrderStruct
+                    {
+                        Price = (decimal)change.Price,
+                        Size = (decimal)change.Size,
+                        Timestamp = (DateTime)change.Timestamp,
+                        OrderId = change.OrderId
+                    };
+
+                    pieces.Add(u);
+
+                    return;
+
+                case "change":
+
                     var piece = pieces[change.OrderId];
-                
+
                     pieces.Remove(piece.OrderId);
 
-                    piece.Size = (decimal)change.Size;
-                    piece.Timestamp = (DateTime)change.Timestamp;
-                    piece.Price = (decimal)change.Price;
+                    piece.Size = change.Size ?? 0;
+                    piece.Timestamp = change.Timestamp ?? DateTime.Now;
+                    piece.Price = change.Price ?? 0;
 
                     pieces.Add(piece);
-                //}
-            }
-            else if (subj == "match" && change.Price is decimal p && change.Size is decimal csize)
-            {
-                //if (otherPieces.Contains(change.MakerOrderId))
-                //{
-                    var o = otherPieces[change.MakerOrderId];
-                    o.Size -= (decimal)csize;
+                    return;
 
-                    // A match is a real component of volume.
-                    // we can keep our own tally of the market volume per k-line.
-                    if (updVol) Level3Volume += (decimal)(csize * p);
-                //}
+                case "match":
+
+                    if (change.Price is decimal p && change.Size is decimal csize)
+                    {
+                        var o = otherPieces[change.MakerOrderId];
+                        o.Size -= (decimal)csize;
+
+                        otherPieces.Remove(o.OrderId);
+                        otherPieces.Add(o);
+
+                        // A match is a real component of volume.
+                        // we can keep our own tally of the market volume per k-line.
+                        if (updVol) Level3Volume += (csize * p);
+                    }
+
+                    return;
+
             }
         }
 
