@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text;
 
@@ -10,7 +11,7 @@ namespace Kucoin.NET.Data.Order
 {
 
 
-    public class KeyedBook<TUnit> : Collection<TUnit> where TUnit : IAtomicOrderUnit
+    public class KeyedBook<TUnit> : Collection<TUnit> where TUnit : IAtomicOrderUnit, IReadOnlyDictionary<string, TUnit>
     {
         protected object lockObj = new object();
         protected Dictionary<string, TUnit> orderIds = new Dictionary<string, TUnit>();
@@ -20,12 +21,13 @@ namespace Kucoin.NET.Data.Order
         public KeyedBook() : this(false)
         {
         }
-        public TUnit this[string key]
+
+        public TUnit this[string orderId]
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get
             {
-                return orderIds[key];
+                return orderIds[orderId];
             }
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             set
@@ -35,6 +37,10 @@ namespace Kucoin.NET.Data.Order
                 if (i != -1)
                 {
                     SetItem(i, value);
+                }
+                else
+                {
+                    InsertItem(i, value);
                 }
             }
         }
@@ -104,6 +110,22 @@ namespace Kucoin.NET.Data.Order
             var i = FindItem(item);
             if (i != -1)
                 base.RemoveItem(i);
+        }
+
+        public string[] Keys
+        {
+            get
+            {
+                return orderIds.Keys.ToArray();
+            }
+        }
+
+        public TUnit[] Values
+        {
+            get
+            {
+                return this.ToArray();
+            }
         }
 
         /// <summary>
