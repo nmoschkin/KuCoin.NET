@@ -253,6 +253,51 @@ namespace Kucoin.NET.Rest
         }
 
         /// <summary>
+        /// Resolve the correct credentials according to the global <see cref="KuCoin.UseCredentialsMode"/> setting.
+        /// </summary>
+        /// <returns></returns>
+        protected ICredentialsProvider ResolveCredentials()
+        {
+            ICredentialsProvider cred = this.cred;
+
+            var ucm = KuCoin.UseCredentialsMode;
+
+            if (ucm == UseCredentialsMode.Never)
+            {
+                return cred;
+            }
+
+            if (ucm == UseCredentialsMode.Default || ucm == UseCredentialsMode.Always && cred != null)
+            {
+                return cred;
+            }
+            else
+            {
+                cred = null;
+            }
+
+            if (KuCoin.Credentials != null && KuCoin.Credentials.Count > 0)
+            {
+                foreach (var checkCred in KuCoin.Credentials)
+                {
+                    if (checkCred.GetFutures() == IsFutures && checkCred.GetSandbox() == IsSandbox)
+                    {
+                        cred = checkCred;
+                        break;
+                    }
+                }
+
+                if (cred == null && KuCoin.UseCredentialsMode == UseCredentialsMode.Always)
+                {
+                    cred = KuCoin.Credentials[0];
+                }
+
+            }
+
+            return cred ?? this.cred;
+        }
+
+        /// <summary>
         /// Gets the results of a paginated list of <typeparamref name="TItem"/> by page.
         /// </summary>
         /// <typeparam name="TItem">A type of result to return.</typeparam>
@@ -426,9 +471,10 @@ namespace Kucoin.NET.Rest
 
             req.Headers.Clear();
 
-
             // KuCoin API Authentication Magic
 
+            ICredentialsProvider cred = ResolveCredentials();
+           
             if (auth && cred != null)
             {
                 var now_time = EpochTime.DateToSeconds(DateTime.Now) * 1000;

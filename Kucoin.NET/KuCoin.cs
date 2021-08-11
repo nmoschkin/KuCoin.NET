@@ -10,8 +10,54 @@ using System.Threading.Tasks;
 
 namespace Kucoin.NET
 {
+
     /// <summary>
-    /// Global Kucoin.NET library functions.
+    /// Global application-domain credentials utilization modes.
+    /// </summary>
+    public enum UseCredentialsMode
+    {
+        /// <summary>
+        /// Default behavior. 
+        /// </summary>
+        /// <remarks>
+        /// In the absence of an explicitly-passed <see cref="ICredentialsProvider"/>, the caller will
+        /// use the first instance of <see cref="ICredentialsProvider"/> in the global cache that satisfies 
+        /// the sandbox and futures configuration requirements of the caller.
+        /// </remarks>
+        Default,
+
+        /// <summary>
+        /// Always use credentials from the global cache, even if they do not match the caller's configuration.
+        /// </summary>
+        /// <remarks>
+        /// In the absence of an explicitly-passed <see cref="ICredentialsProvider"/>, the caller will
+        /// use the first instance of <see cref="ICredentialsProvider"/> in the global cache that satisfies 
+        /// the sandbox and futures requirements of the caller, or else the first available.
+        /// </remarks>
+        Always,
+
+        /// <summary>
+        /// Always use credentials from the global cache, even if they do not match the caller's configuration.
+        /// </summary>
+        /// <remarks>
+        /// The caller will use the first instance of <see cref="ICredentialsProvider"/> in the global cache that satisfies 
+        /// the sandbox and futures requirements of the caller, then the explicitly-passed <see cref="ICredentialsProvider"/>,
+        /// and then the first available credentials in the global cache.
+        /// </remarks>
+        AlwaysGlobalFirst,
+
+        /// <summary>
+        /// Never use credentials in the global cache, even if they are the only credentials available.
+        /// </summary>
+        /// <remarks>
+        /// Callers will always need their own local <see cref="ICredentialsProvider"/>.
+        /// </remarks>
+        Never
+    }
+
+
+    /// <summary>
+    /// Global Kucoin.NET library methods.
     /// </summary>
     /// <remarks>
     /// This is a starting point for accessing the rest of this library's features.
@@ -20,6 +66,15 @@ namespace Kucoin.NET
     {
 
 
+
+        /// <summary>
+        /// Global application-domain credentials utilization mode.
+        /// </summary>
+        /// <remarks>
+        /// Changes to this property take effect immediately, across the entire application domain.
+        /// </remarks>
+        public static UseCredentialsMode UseCredentialsMode { get; set; }
+        
         /// <summary>
         /// Create a credentials provider to use with the <see cref="IServiceFactory"/> instance acquired from <see cref="GetServiceFactory"/> or <see cref="Initialize"/>.
         /// </summary>
@@ -38,7 +93,7 @@ namespace Kucoin.NET
         /// At that point, the credentials are decrypted and returned to the caller.  The caller should dispose of the unencrypted versions as soon as they are no longer needed.
         /// Classes in this assembly only access the unecrypted versions of these values at the exact moment when a request must be sent.
         /// </remarks>
-        public static ICredentialsProvider CreateCredentialsProvider(string key, string secret, string passphrase, bool sandbox = false, bool futures = false, bool addToCache = false)
+        public static ICredentialsProvider CreateCredentialsProvider(string key, string secret, string passphrase, bool sandbox = false, bool futures = false, bool addToCache = true)
         {
             var result = new MemoryEncryptedCredentialsProvider(key, secret, passphrase, sandbox: sandbox, futures: futures);
 
@@ -164,7 +219,6 @@ namespace Kucoin.NET
         {
             return new User(credentialsProvider);
         }
-
 
     }
 }
