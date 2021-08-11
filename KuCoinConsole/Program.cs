@@ -156,7 +156,7 @@ namespace KuCoinConsole
 
                     try
                     {
-                        curr = ServiceFactory.Instance.AddOrChangeSymbol(sym, service, true);
+                        curr = ServiceFactory.Instance.EnableOrAddSymbol(sym, service, true);
                         await curr.EnableLevel3();
 
                         if (curr == service)

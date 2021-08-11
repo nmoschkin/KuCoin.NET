@@ -6,8 +6,14 @@ using System.Text;
 
 namespace Kucoin.NET.Services
 {
+    /// <summary>
+    /// <see cref="ISymbolDataService"/> factory implementation.
+    /// </summary>
     public class ServiceFactory : IServiceFactory
     {
+        /// <summary>
+        /// Gets the <see cref="IServiceFactory"/> instance for this application domain.
+        /// </summary>
         public static readonly ServiceFactory Instance;
 
         static ServiceFactory()
@@ -18,6 +24,7 @@ namespace Kucoin.NET.Services
         private ServiceFactory()
         {
         }
+
 
         public ISymbolDataService CreateConnected(ICredentialsProvider credentialsProvider)
         {
@@ -52,7 +59,7 @@ namespace Kucoin.NET.Services
 
         }
 
-        public ISymbolDataService AddOrChangeSymbol(string symbol, ISymbolDataService current, bool sharedConnection)
+        public ISymbolDataService EnableOrAddSymbol(string symbol, ISymbolDataService current, bool sharedConnection)
         {
 
             if (current == null)
