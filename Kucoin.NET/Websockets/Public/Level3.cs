@@ -183,7 +183,6 @@ namespace Kucoin.NET.Websockets.Public
                 sb.Append(sym);
 
                 var obs = new Level3Observation(this, sym);
-
                 activeFeeds.Add(sym, obs);
 
                 if (!lnew.ContainsKey(sym))

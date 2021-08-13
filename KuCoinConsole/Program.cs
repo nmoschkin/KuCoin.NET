@@ -195,7 +195,7 @@ namespace KuCoinConsole
 
                                 curr.Level3Feed.UpdateInterval = 0;
                                 curr.Level3Feed.MonitorThroughput = true;
-
+                                curr.Level3Observation.DiagnosticsEnabled = true;
                                 observers.Add(sym, curr);
 
                             }
@@ -331,7 +331,7 @@ namespace KuCoinConsole
 
                     curr = market.Currencies[market.Symbols[obs.Value.Symbol].BaseCurrency].FullName;
 
-                    var text = $"{MinChars(obs.Value.Symbol, 12)} - Best Ask: {MinChars(ba.ToString("#,##0.00######"), 12)} Best Bid: {MinChars(bb.ToString("#,##0.00######"), 12)} - {MinChars(curr, 16)} Efficiency: {MinChars(l3.AcquisitionPct.ToString("##0") + "%", 6)} Total: {MinChars(l3.GrandTotal.ToString("#,##0"), 14)} ({MinChars(mpcts[z].ToString("##0") + "%", 4)}) ({MinChars(pcts[z++].ToString("##0") + "%", 4)})";
+                    var text = $"{MinChars(obs.Value.Symbol, 12)} - Best Ask: {MinChars(ba.ToString("#,##0.00######"), 12)} Best Bid: {MinChars(bb.ToString("#,##0.00######"), 12)} - {MinChars(curr, 16)} Efficiency: {MinChars(l3.Effeciency.ToString("##0") + "%", 6)} Total: {MinChars(l3.GrandTotal.ToString("#,##0"), 14)} ({MinChars(mpcts[z].ToString("##0") + "%", 4)}) ({MinChars(pcts[z++].ToString("##0") + "%", 4)})";
 
                     readOut.AppendLine(text);
                 }

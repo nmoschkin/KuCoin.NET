@@ -208,42 +208,40 @@ namespace Kucoin.NET.Websockets.Observations
             }
         }
 
-        Level3Update[] updates = new Level3Update[1024];
-        
+        #region Diagnostics
+
         int maxIdles = 10;
         int idleCount = 0;
 
-        double pctacq = 0d;
+        double effeciency = 0d;
 
-        double lofty = 0d;
-        double trendy = 0d;
-        int domhiminy = 0;
-        int greebles = 1000;
+        long idleMisses = 0;
         long grandTotal = 0;
+        long totalCalls = 0;
         long matchTotal = 0;
 
-        long sectotalcount = 0;
-        long secmatchcount = 0;
+        long secTotalCount = 0;
+        long secMatchCount = 0;
         
-        long matchpersec = 0;
-        long totalpersec = 0;
+        long matchesPerSec = 0;
+        long totalPerSec = 0;
 
-        DateTime tts = DateTime.UtcNow;
+        bool diagEngable;
+
+        DateTime lastMeasureTime = DateTime.UtcNow;
 
         public long MatchTotal => matchTotal;
         public long GrandTotal => grandTotal;
 
-        public int Domhiminy
+        /// <summary>
+        /// Enable collecting diagnostic information such as total transactions, matches, efficiency.
+        /// </summary>
+        public bool DiagnosticsEnabled
         {
-            get => domhiminy;
-        }
-
-        public int Greebles
-        {
-            get => greebles;
+            get => diagEngable;
             set
             {
-                SetProperty(ref greebles, value);
+                SetProperty(ref diagEngable, value);
             }
         }
 
@@ -268,11 +266,25 @@ namespace Kucoin.NET.Websockets.Observations
             get => idleCount;
         }
 
-        public long MatchesPerSecond => matchpersec;
+        /// <summary>
+        /// Total matches per second (instant)
+        /// </summary>
+        public long MatchesPerSecond => matchesPerSec;
 
-        public long TransactionsPerSecond => totalpersec;
+        /// <summary>
+        /// Total transactions per second (instant)
+        /// </summary>
+        public long TransactionsPerSecond => totalPerSec;
 
-        public double AcquisitionPct => pctacq;
+
+        /// <summary>
+        /// Efficiency (computed as the number of lock acquisition failures by the work thread on the order book)
+        /// </summary>
+        public double Effeciency => effeciency;
+
+        #endregion Diagnostics
+
+        private Level3Update[] updates = new Level3Update[1024];
 
         public override bool DoWork()
         {
@@ -282,12 +294,13 @@ namespace Kucoin.NET.Websockets.Observations
             }
             else
             {
+                totalCalls++;
 
                 if (!Monitor.TryEnter(lockObj))
                 {
                     if (idleCount >= maxIdles) return false;
-
                     idleCount++;
+                    idleMisses++;
 
                     if (idleCount < maxIdles)
                     {
@@ -296,32 +309,21 @@ namespace Kucoin.NET.Websockets.Observations
                     else
                     {
                         Monitor.Enter(lockObj);
-
-                        trendy += 10;
                         idleCount = 0;
                     }
                 }
                 else
                 {
-                    trendy += idleCount;
                     idleCount = 0;
                 }
 
             }
 
-            lofty += 10d;
-            pctacq = 100 - ((trendy / lofty) * 100);
-            domhiminy += 1;
-
-            if (domhiminy >= greebles)
-            {
-                domhiminy = 0;
-                lofty = 0d;
-                trendy = 0d;
-            }
-
-
+            if (diagEngable)
+                effeciency = 100 - (((double)totalCalls / idleMisses) * 100);
+        
             var c = orderBuffer.Count;
+
             if (c == 0)
             {
                 Monitor.Exit(lockObj);
@@ -336,27 +338,36 @@ namespace Kucoin.NET.Websockets.Observations
             orderBuffer.CopyTo(updates);
             orderBuffer.Clear();
 
-            for(int i = 0; i < c; i++)
+            for (int i = 0; i < c; i++)
             {
                 DoNext(updates[i]);
-                grandTotal++;
-                sectotalcount++;
-
-                if (updates[i].Subject == "match")
+                
+                if (diagEngable)
                 {
-                    matchTotal++;
-                    secmatchcount++;
+                    grandTotal++;
+                    secTotalCount++;
+
+                    if (updates[i].Subject == "match")
+                    {
+                        matchTotal++;
+                        secMatchCount++;
+                    }
                 }
             }
 
-            if ((DateTime.UtcNow - tts).TotalSeconds >= 1)
+            if (diagEngable)
             {
-                tts = DateTime.UtcNow;
+                if ((DateTime.UtcNow - lastMeasureTime).TotalSeconds >= 1)
+                {
+                    lastMeasureTime = DateTime.UtcNow;
 
-                matchpersec = secmatchcount;
-                totalpersec = sectotalcount;
+                    matchesPerSec = secMatchCount;
+                    totalPerSec = secTotalCount;
 
-                secmatchcount = sectotalcount = 0;
+                    secMatchCount = secTotalCount = 0;
+                }
+
+
             }
 
             Monitor.Exit(lockObj);
