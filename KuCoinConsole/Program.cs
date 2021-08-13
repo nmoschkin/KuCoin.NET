@@ -19,6 +19,7 @@ using Microsoft.AppCenter.Analytics;
 using Microsoft.AppCenter.Crashes;
 using System.Runtime.InteropServices;
 using Kucoin.NET;
+using System.Security.Cryptography.X509Certificates;
 
 namespace KuCoinConsole
 {
@@ -81,10 +82,12 @@ namespace KuCoinConsole
         
         [DllImport("kernel32.dll")]
         static extern bool AllocConsole();
+        static DateTime start = DateTime.Now;
 
         static void Main(string[] args)
         {
             AllocConsole();
+            Console.WindowWidth = 144;
 
             // Analytics and crash reporting.
             AppCenter.Start("d364ea69-c1fa-4d0d-8c37-debaa05f91bc",
@@ -269,6 +272,10 @@ namespace KuCoinConsole
         {
             Console.WriteLine(e.Json);
         }
+        
+        static DateTime resetCounter = DateTime.UtcNow;
+        static long tps = 0;
+        static long mps = 0;
 
         /// <summary>
         /// Write the current status of the feed to a <see cref="StringBuilder"/> object.
@@ -276,7 +283,10 @@ namespace KuCoinConsole
         /// <param name="timestamp">The current feed timestamp, or null for local now.</param>
         private static void WriteOut(DateTime? timestamp = null)
         {
+            Console.CursorVisible = false;
             if (timestamp == null) timestamp = DateTime.Now;
+            List<double> pcts = new List<double>();
+            List<double> mpcts = new List<double>();
 
             lock (lockObj)
             {
@@ -284,7 +294,29 @@ namespace KuCoinConsole
                 
                 readOut.Clear();
                 readOut.AppendLine($"Feed Time Stamp: {timestamp:G}                 ");
+                readOut.AppendLine($"Up Time:         {(DateTime.Now - start):G}                 ");
                 readOut.AppendLine($"                                   ");
+
+                long biggrand = 0;
+                long matchgrand = 0;
+
+                foreach (var obs in observers)
+                {
+                    var l3 = obs.Value.Level3Observation;
+                    biggrand += l3.GrandTotal;
+                    matchgrand += l3.MatchTotal;
+                }
+
+                pcts.Clear();
+
+                foreach (var obs in observers)
+                {
+                    var l3 = obs.Value.Level3Observation;
+                    pcts.Add(((double)l3.GrandTotal / (double)biggrand) * 100d);
+                    mpcts.Add(((double)l3.MatchTotal / (double)matchgrand) * 100d);
+                }
+
+                int z = 0;
 
                 foreach (var obs in observers)
                 {
@@ -299,10 +331,35 @@ namespace KuCoinConsole
 
                     curr = market.Currencies[market.Symbols[obs.Value.Symbol].BaseCurrency].FullName;
 
-                    var text = $"{MinChars(obs.Value.Symbol, 12)} - Best Ask: {MinChars(ba.ToString("#,##0.00######"), 12)} Best Bid: {MinChars(bb.ToString("#,##0.00######"), 12)} - {curr}            ";
+                    var text = $"{MinChars(obs.Value.Symbol, 12)} - Best Ask: {MinChars(ba.ToString("#,##0.00######"), 12)} Best Bid: {MinChars(bb.ToString("#,##0.00######"), 12)} - {MinChars(curr, 16)} Efficiency: {MinChars(l3.AcquisitionPct.ToString("##0") + "%", 6)} Total: {MinChars(l3.GrandTotal.ToString("#,##0"), 14)} ({MinChars(mpcts[z].ToString("##0") + "%", 4)}) ({MinChars(pcts[z++].ToString("##0") + "%", 4)})";
 
                     readOut.AppendLine(text);
                 }
+
+                // trades per second:
+
+                if ((DateTime.UtcNow - resetCounter).TotalSeconds >= 1)
+                {
+                    mps = 0;
+                    tps = 0;
+                    
+                    resetCounter = DateTime.UtcNow;
+
+                    foreach (var obs in observers)
+                    {
+                        var l3 = obs.Value.Level3Observation;
+                        mps += l3.MatchesPerSecond;
+                        tps += l3.TransactionsPerSecond;
+
+                    }
+                }
+                
+                readOut.AppendLine($"                                                           ");
+                readOut.AppendLine($"Match Total: {matchgrand:#,##0}                            ");
+                readOut.AppendLine($"Grand Total: {biggrand:#,##0}                              ");
+                readOut.AppendLine($"                                                           ");
+                readOut.AppendLine($"Matches Per Second:      ~ {mps:#,###}                   ");
+                readOut.AppendLine($"Transactions Per Second: ~ {tps:#,###}                   ");
 
                 foreach (var f in feeds)
                 {
