@@ -77,7 +77,7 @@ namespace Kucoin.NET.Websockets
 
         private static readonly List<Distribution> distributors = new List<Distribution>();
                         
-        public static int MaxTenants { get; private set; } = 6;
+        public static int MaxTenants { get; private set; } = 1;
 
         public static int IdleSleepTime { get; set; } = 1;
 
@@ -116,17 +116,17 @@ namespace Kucoin.NET.Websockets
 
                 var allfeeds = from dist in distributors from feed in dist.Tenants select feed;
 
-                foreach (var feed in allfeeds)
-                {
-                    Monitor.Enter(feed.LockObject);
-                }
-
                 foreach (var dist in distributors)
                 {
                     dist.Dispose();
                 }
 
                 distributors.Clear();
+
+                foreach (var feed in allfeeds)
+                {
+                    Monitor.Enter(feed.LockObject);
+                }
 
                 int x = 0;
 
