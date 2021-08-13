@@ -210,11 +210,7 @@ namespace Kucoin.NET.Websockets.Observations
 
         #region Diagnostics
 
-        double effeciency = 0d;
-
-        long idleMisses = 0;
         long grandTotal = 0;
-        long totalCalls = 0;
         long matchTotal = 0;
 
         long secTotalCount = 0;
@@ -240,11 +236,7 @@ namespace Kucoin.NET.Websockets.Observations
             {
                 if (SetProperty(ref diagEnable, value))
                 {
-                    effeciency = 0d;
-
-                    idleMisses = 0;
                     grandTotal = 0;
-                    totalCalls = 0;
                     matchTotal = 0;
 
                     secTotalCount = 0;
@@ -288,12 +280,6 @@ namespace Kucoin.NET.Websockets.Observations
         /// </summary>
         public long TransactionsPerSecond => totalPerSec;
 
-
-        /// <summary>
-        /// Efficiency (computed as the number of lock acquisition failures by the work thread on the order book)
-        /// </summary>
-        public double Effeciency => effeciency;
-
         #endregion Diagnostics
 
         int maxIdles = 10;
@@ -314,7 +300,6 @@ namespace Kucoin.NET.Websockets.Observations
                     if (idleCount >= maxIdles) return false;
 
                     idleCount++;
-                    if (diagEnable) idleMisses++;
 
                     if (idleCount < maxIdles)
                     {
@@ -329,12 +314,6 @@ namespace Kucoin.NET.Websockets.Observations
                 else
                 {
                     idleCount = 0;
-                }
-
-                if (diagEnable)
-                {
-                    totalCalls++;
-                    effeciency = 100 - (double)(idleMisses / totalCalls) * 100;
                 }
 
             }
