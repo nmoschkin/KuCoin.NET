@@ -210,9 +210,6 @@ namespace Kucoin.NET.Websockets.Observations
 
         #region Diagnostics
 
-        int maxIdles = 10;
-        int idleCount = 0;
-
         double effeciency = 0d;
 
         long idleMisses = 0;
@@ -226,7 +223,7 @@ namespace Kucoin.NET.Websockets.Observations
         long matchesPerSec = 0;
         long totalPerSec = 0;
 
-        bool diagEngable;
+        bool diagEnable;
 
         DateTime lastMeasureTime = DateTime.UtcNow;
 
@@ -238,10 +235,25 @@ namespace Kucoin.NET.Websockets.Observations
         /// </summary>
         public bool DiagnosticsEnabled
         {
-            get => diagEngable;
+            get => diagEnable;
             set
             {
-                SetProperty(ref diagEngable, value);
+                if (SetProperty(ref diagEnable, value))
+                {
+                    effeciency = 0d;
+
+                    idleMisses = 0;
+                    grandTotal = 0;
+                    totalCalls = 0;
+                    matchTotal = 0;
+
+                    secTotalCount = 0;
+                    secMatchCount = 0;
+
+                    matchesPerSec = 0;
+                    totalPerSec = 0;
+
+                }
             }
         }
 
@@ -284,6 +296,9 @@ namespace Kucoin.NET.Websockets.Observations
 
         #endregion Diagnostics
 
+        int maxIdles = 10;
+        int idleCount = 0;
+
         private Level3Update[] updates = new Level3Update[1024];
 
         public override bool DoWork()
@@ -294,12 +309,12 @@ namespace Kucoin.NET.Websockets.Observations
             }
             else
             {
-
                 if (!Monitor.TryEnter(lockObj))
                 {
                     if (idleCount >= maxIdles) return false;
+
                     idleCount++;
-                    idleMisses++;
+                    if (diagEnable) idleMisses++;
 
                     if (idleCount < maxIdles)
                     {
@@ -316,13 +331,14 @@ namespace Kucoin.NET.Websockets.Observations
                     idleCount = 0;
                 }
 
+                if (diagEnable)
+                {
+                    effeciency = 100 - (double)(idleMisses / totalCalls) * 100;
+                }
+
             }
 
-            totalCalls++;
 
-            if (diagEngable)
-                effeciency = 100 - (((double)totalCalls / idleMisses) * 100);
-        
             var c = orderBuffer.Count;
 
             if (c == 0)
@@ -343,7 +359,7 @@ namespace Kucoin.NET.Websockets.Observations
             {
                 DoNext(updates[i]);
                 
-                if (diagEngable)
+                if (diagEnable)
                 {
                     grandTotal++;
                     secTotalCount++;
@@ -356,7 +372,7 @@ namespace Kucoin.NET.Websockets.Observations
                 }
             }
 
-            if (diagEngable)
+            if (diagEnable)
             {
                 if ((DateTime.UtcNow - lastMeasureTime).TotalSeconds >= 1)
                 {
