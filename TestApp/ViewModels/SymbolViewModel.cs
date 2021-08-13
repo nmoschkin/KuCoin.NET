@@ -33,6 +33,17 @@ namespace KuCoinApp.ViewModels
         public CurrencyViewModel BaseCurrency => basevm;
         public CurrencyViewModel QuoteCurrency => quotevm;
 
+        private bool sel;
+
+        public bool Selected
+        {
+            get => sel;
+            set
+            {
+                SetProperty(ref sel, value);
+            }
+        }
+
         public override string ToString()
         {
             return Symbol;
