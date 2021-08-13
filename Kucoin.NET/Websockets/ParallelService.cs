@@ -1,9 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Dynamic;
 using System.Linq;
+using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Threading;
+using System.Threading.Tasks;
 
 namespace Kucoin.NET.Websockets
 {
@@ -51,6 +54,9 @@ namespace Kucoin.NET.Websockets
 
             private void ThreadMethod()
             {
+                var actions = new List<Action>();
+                var x = new List<bool>();
+
                 while (!cts.IsCancellationRequested)
                 {
                     int i = 0;
@@ -59,11 +65,17 @@ namespace Kucoin.NET.Websockets
                     {
                         foreach (var t in Tenants)
                         {
-                            if (!t.DoWork()) i++;
+                            actions.Add(new Action(() =>
+                            {
+                                t.DoWork();
+                                i++;
+                            }));
                         }
                     }
 
-                    Thread.Sleep(i * IdleSleepTime);
+                    Parallel.Invoke(actions.ToArray());
+
+                    Thread.Sleep((i == 0 ? 1 : i) * IdleSleepTime);
                 }
             }
 
@@ -76,11 +88,34 @@ namespace Kucoin.NET.Websockets
         private static object lockObj = new object();
 
         private static readonly List<Distribution> distributors = new List<Distribution>();
-                        
-        public static int MaxTenants { get; private set; } = 1;
 
+        private static int maxTenants = 10;
+
+        
+        /// <summary>
+        /// Gets or sets the maximum number of feeds per thread.
+        /// </summary>
+        public static int MaxTenants
+        {
+            get => maxTenants;
+            set
+            {
+                RedistributeServices(value);
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the global idle sleep time in milliseconds.
+        /// </summary>
+        /// <remarks>
+        /// Setting this number to zero could deadlock your application.
+        /// </remarks>
         public static int IdleSleepTime { get; set; } = 1;
 
+        /// <summary>
+        /// Register an instance of a distributable service
+        /// </summary>
+        /// <param name="feed"></param>
         public static void RegisterService(IDistributable feed)
         {
             lock (lockObj)
@@ -122,6 +157,7 @@ namespace Kucoin.NET.Websockets
                 }
 
                 distributors.Clear();
+                maxTenants = distribution;
 
                 foreach (var feed in allfeeds)
                 {
