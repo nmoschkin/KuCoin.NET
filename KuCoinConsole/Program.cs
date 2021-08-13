@@ -20,6 +20,7 @@ using Microsoft.AppCenter.Crashes;
 using System.Runtime.InteropServices;
 using Kucoin.NET;
 using System.Security.Cryptography.X509Certificates;
+using Kucoin.NET.Websockets;
 
 namespace KuCoinConsole
 {
@@ -96,15 +97,13 @@ namespace KuCoinConsole
 
             Console.WriteLine("Loading Symbols and Currencies...");
 
-            market = new Kucoin.NET.Rest.Market();
-            market.RefreshSymbolsAsync().Wait();
-            market.RefreshCurrenciesAsync().Wait();
+            KuCoin.Initialize();
+            market = KuCoin.Market;
 
             ICredentialsProvider cred;
 
             // Use simple credentials:
             cred = SimpleCredentials.Instance;
-
 
             // If you want to run the WPF app, and set up your credentials from there, 
             // you can uncomment this code and use the same pin you use in the WPF app.
@@ -124,29 +123,12 @@ namespace KuCoinConsole
 
             /**/
 
+            KuCoin.Credentials.Add(cred);
 
-            /* Testing Futures Ticker */
-            /* Uncomment To Use */
-            /* (Can only be used with access pin) */
-            //ticker = new SymbolTradeOrderFeed(cred.AttachedAccount);
-
-            //ticker.Connect().Wait();
-
-            //ticker.DataReceived += Ticker_DataReceived;
-
-            //ticker.AddSymbol("XBTUSDM").Wait();
-
-            //while (ticker.Connected)
-            //{
-            //    Task.Delay(100).Wait();
-            //}
-
-            //return;
-            /* Uncomment To Use */
-            /* Testing Futures Ticker */
+            // This changes the number of feeds per distributor:
+            ParallelService.MaxTenants = 4;
 
             var serviceFactory = KuCoin.GetServiceFactory();
-
 
 #if DEBUG
             int delay = 100;
@@ -154,6 +136,8 @@ namespace KuCoinConsole
             int delay = 50;
 #endif
             service = serviceFactory.CreateConnected(cred);
+
+
             //var syms = new List<string>(new string[] { "BTC-USDT" });
             var syms = new List<string>(new string[] { "MATIC-USDT", "XRP-USDT", "DOGE-USDT", "KCS-USDT", "ETH-USDT", "XLM-USDT", "BTC-USDT", "ADA-USDT", "LTC-USDT" });
             
@@ -174,6 +158,11 @@ namespace KuCoinConsole
 
                 foreach (var sym in syms)
                 {
+                    if (!market.Symbols.Contains(sym))
+                    {
+                        throw new KeyNotFoundException($"The trading symbol '{sym}' does not exist on the KuCoin exchange.");
+                    }
+
                     Console.WriteLine($"Subscribing to {sym} ...");
 
                     try
@@ -185,6 +174,7 @@ namespace KuCoinConsole
                             if (curr == null) continue;
 
                             await curr.EnableLevel3();
+                            await Task.Delay(10);
 
                             if (curr.Level3Feed != null)
                             {
@@ -196,8 +186,8 @@ namespace KuCoinConsole
                                 curr.Level3Feed.UpdateInterval = 0;
                                 curr.Level3Feed.MonitorThroughput = true;
                                 curr.Level3Observation.DiagnosticsEnabled = true;
-                                observers.Add(sym, curr);
 
+                                observers.Add(sym, curr);
                             }
 
                         }
