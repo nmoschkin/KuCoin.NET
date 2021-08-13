@@ -214,7 +214,7 @@ namespace KuCoinConsole
 
             // loop until the connection is broken or the program is exited.
             while (service.Level3Feed.Connected)
-                {
+            {
                 
                 if (!ready)
                 {
