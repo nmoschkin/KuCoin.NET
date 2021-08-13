@@ -221,9 +221,23 @@ namespace Kucoin.NET.Websockets.Observations
 
         bool diagEnable;
 
+        DateTime startTime = DateTime.Now;
+
         DateTime lastMeasureTime = DateTime.UtcNow;
 
+        /// <summary>
+        /// The time that this feed was created.
+        /// </summary>
+        public DateTime StartTime => startTime;
+
+        /// <summary>
+        /// The total number of matches since this feed was created or diagnostics was enabled.
+        /// </summary>
         public long MatchTotal => matchTotal;
+
+        /// <summary>
+        /// The total number of transactions since this feed was created or diagnostics was enabled.
+        /// </summary>
         public long GrandTotal => grandTotal;
 
         /// <summary>
@@ -250,7 +264,7 @@ namespace Kucoin.NET.Websockets.Observations
         }
 
         /// <summary>
-        /// Maximum number of times to passively acquire a lock before actively acquiring it.
+        /// Maximum number of times to attempt to passively acquire a lock on the order book in order to updated it before actively acquiring a lock.
         /// </summary>
         public int MaxIdles
         {
@@ -287,6 +301,7 @@ namespace Kucoin.NET.Websockets.Observations
 
         private Level3Update[] updates = new Level3Update[1024];
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public override bool DoWork()
         {
             if (!calibrated)

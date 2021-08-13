@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Dynamic;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Threading;
@@ -52,6 +53,7 @@ namespace Kucoin.NET.Websockets
                 Thread.IsBackground = true;
             }
 
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             private void ThreadMethod()
             {
                 var actions = new List<Action>();
