@@ -49,7 +49,7 @@ namespace Kucoin.NET.Websockets
         where TBookOut : IAtomicOrderBook<TUnitOut>
         where TUnitOut : IAtomicOrderUnit
         where TBookIn : KeyedAtomicOrderBook<TUnitIn>
-        where TUnitIn : IAtomicOrderUnit
+        where TUnitIn : IAtomicOrderUnit, new()
         where TUpdate : new()
     {
         /// <summary>

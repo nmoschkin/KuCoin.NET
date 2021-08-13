@@ -29,7 +29,7 @@ namespace Kucoin.NET.Websockets.Observations
         where TBookOut : IAtomicOrderBook<TUnitOut>
         where TUnitOut : IAtomicOrderUnit
         where TBookIn : KeyedAtomicOrderBook<TUnitIn>
-        where TUnitIn : IAtomicOrderUnit
+        where TUnitIn : IAtomicOrderUnit, new()
         where TUpdate : new()
     {
         

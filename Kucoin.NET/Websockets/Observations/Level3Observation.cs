@@ -39,12 +39,15 @@ namespace Kucoin.NET.Websockets.Observations
         protected bool calibrated;
         protected bool initialized;
 
+        protected FeedState state;
+
         protected List<Level3Update> orderBuffer = new List<Level3Update>();
 
         public override event OnNextHandler<Level3Update> NextObject;
 
         public CustomLevel3Observation(KucoinBaseWebsocketFeed parent, string symbol, int pieces = 50) : base(parent, symbol, pieces)
         {
+            State = FeedState.Subscribed;
         }
 
         public override void RequestPush()
@@ -64,7 +67,11 @@ namespace Kucoin.NET.Websockets.Observations
             internal set
             {
                 if (disposed) throw new ObjectDisposedException(nameof(Level2Observation));
-                SetProperty(ref initialized, value);
+                if (SetProperty(ref initialized, value))
+                {
+                    //if (value) State = FeedState.Running;
+                    //else State = FeedState.Initializing;
+                }
             }
         }
 
@@ -77,7 +84,23 @@ namespace Kucoin.NET.Websockets.Observations
             protected set
             {
                 if (disposed) throw new ObjectDisposedException(nameof(Level2Observation));
-                SetProperty(ref calibrated, value);
+                if (SetProperty(ref calibrated, value))
+                {
+                    //if (value) State = FeedState.Running;
+                    //else State = FeedState.Initializing;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Inidicate the current state of the feed.
+        /// </summary>
+        public FeedState State
+        {
+            get => state;
+            set
+            {
+                SetProperty(ref state, value);
             }
         }
 
@@ -108,6 +131,12 @@ namespace Kucoin.NET.Websockets.Observations
                         OrderId = change.OrderId
                     };
 
+                    if (pieces.ContainsKey(u.OrderId))
+                    {
+                        Reset();
+                        return;
+                    }
+
                     pieces.Add(u);
 
                     return;
@@ -126,15 +155,18 @@ namespace Kucoin.NET.Websockets.Observations
                     }
                     else
                     {
-                        var u2 = new AtomicOrderStruct
-                        {
-                            Price = change.Price ?? 0,
-                            Size = change.Size ?? 0,
-                            Timestamp = change.Timestamp ?? DateTime.Now,
-                            OrderId = change.OrderId
-                        };
+                        Reset();
+                        return;
 
-                        pieces.Add(u2);
+                        //var u2 = new AtomicOrderStruct
+                        //{
+                        //    Price = change.Price ?? 0,
+                        //    Size = change.Size ?? 0,
+                        //    Timestamp = change.Timestamp ?? DateTime.Now,
+                        //    OrderId = change.OrderId
+                        //};
+
+                        //pieces.Add(u2);
                     }
 
                     return;
@@ -172,7 +204,6 @@ namespace Kucoin.NET.Websockets.Observations
                 Initialized = false;
                 Calibrated = false;
             }
-
         }
 
         bool bf = false;
@@ -389,7 +420,8 @@ namespace Kucoin.NET.Websockets.Observations
 
             if (!calibrated && !bf)
             {
-                _ = Task.Run(() => level3.State = FeedState.Initializing);
+                level3.State = FeedState.Initializing;
+                State = FeedState.Initializing;
 
                 lock (lockObj)
                 {
@@ -410,10 +442,8 @@ namespace Kucoin.NET.Websockets.Observations
                     Calibrate();
                     if (level3.UpdateInterval != 0) RequestPush();
 
-                    _ = Task.Run(() =>
-                    {
-                        level3.State = FeedState.Running;
-                    });
+                    level3.State = FeedState.Running;
+                    State = FeedState.Running;
 
                     af = false;
                 });
