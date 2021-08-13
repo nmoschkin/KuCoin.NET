@@ -318,11 +318,19 @@ namespace KuCoinConsole
                     ba = ((IList<AtomicOrderStruct>)l3.FullDepthOrderBook.Asks)[0].Price;
                     bb = ((IList<AtomicOrderStruct>)l3.FullDepthOrderBook.Bids)[0].Price;
 
-                    var curr = "";
+                    var currname = "";
+                    var bc = market.Symbols[obs.Value.Symbol].BaseCurrency;
 
-                    curr = market.Currencies[market.Symbols[obs.Value.Symbol].BaseCurrency].FullName;
+                    if (market.Currencies.Contains(bc))
+                    {
+                        currname = market.Currencies[bc].FullName;
+                    }
+                    else
+                    {
+                        currname = bc;
+                    }
 
-                    var text = $"{MinChars(obs.Value.Symbol, 12)} - Best Ask: {MinChars(ba.ToString("#,##0.00######"), 12)} Best Bid: {MinChars(bb.ToString("#,##0.00######"), 12)} - {MinChars(curr, 16)} Total: {MinChars(l3.GrandTotal.ToString("#,##0"), 14)} ({MinChars(mpcts[z].ToString("##0") + "%", 4)}) ({MinChars(pcts[z++].ToString("##0") + "%", 4)})";
+                    var text = $"{MinChars(obs.Value.Symbol, 12)} - Best Ask: {MinChars(ba.ToString("#,##0.00######"), 12)} Best Bid: {MinChars(bb.ToString("#,##0.00######"), 12)} - {MinChars(currname, 16)} Total: {MinChars(l3.GrandTotal.ToString("#,##0"), 14)} ({MinChars(mpcts[z].ToString("##0") + "%", 4)}) ({MinChars(pcts[z++].ToString("##0") + "%", 4)})";
 
                     readOut.AppendLine(text);
                 }
