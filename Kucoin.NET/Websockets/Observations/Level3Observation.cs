@@ -333,6 +333,7 @@ namespace Kucoin.NET.Websockets.Observations
 
                 if (diagEnable)
                 {
+                    totalCalls++;
                     effeciency = 100 - (double)(idleMisses / totalCalls) * 100;
                 }
 
