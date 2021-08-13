@@ -338,18 +338,7 @@ namespace Kucoin.NET.Websockets.Observations
             for (int i = 0; i < c; i++)
             {
                 DoNext(updates[i]);
-                
-                if (diagEnable)
-                {
-                    grandTotal++;
-                    secTotalCount++;
-
-                    if (updates[i].Subject == "match")
-                    {
-                        matchTotal++;
-                        secMatchCount++;
-                    }
-                }
+           
             }
 
             if (diagEnable)
@@ -425,6 +414,17 @@ namespace Kucoin.NET.Websockets.Observations
                 return;
             }
 
+            if (diagEnable)
+            {
+                grandTotal++;
+                secTotalCount++;
+
+                if (value.Subject == "match")
+                {
+                    matchTotal++;
+                    secMatchCount++;
+                }
+            }
             lock (lockObj)
             {
                 if (!bf && value.Sequence - fullDepth.Sequence > 1)
