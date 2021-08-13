@@ -21,7 +21,7 @@ namespace Kucoin.NET.Websockets
         static PingService()
         {
         }
-
+        
         public static void RegisterService(KucoinBaseWebsocketFeed feed)
         {
             if (!feeds.Contains(feed))
