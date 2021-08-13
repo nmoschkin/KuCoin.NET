@@ -89,12 +89,16 @@ namespace Kucoin.NET.Websockets
 
         private static readonly List<Distribution> distributors = new List<Distribution>();
 
-        private static int maxTenants = 10;
+        private static int maxTenants = 2;
 
+        private static int idleSleepTime = 1;
         
         /// <summary>
         /// Gets or sets the maximum number of feeds per thread.
         /// </summary>
+        /// <remarks>
+        /// Must be a value between 1 and 255.
+        /// </remarks>
         public static int MaxTenants
         {
             get => maxTenants;
@@ -108,9 +112,17 @@ namespace Kucoin.NET.Websockets
         /// Gets or sets the global idle sleep time in milliseconds.
         /// </summary>
         /// <remarks>
-        /// Setting this number to zero could deadlock your application.
+        /// Must be a value between 1 and 100.
         /// </remarks>
-        public static int IdleSleepTime { get; set; } = 1;
+        public static int IdleSleepTime
+        {
+            get => idleSleepTime;
+            set
+            {
+                if (value < 1 || value > 100) throw new ArgumentOutOfRangeException();
+                idleSleepTime = value;
+            }
+        }
 
         /// <summary>
         /// Register an instance of a distributable service
