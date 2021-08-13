@@ -80,6 +80,8 @@ namespace KuCoinConsole
 
         static List<object> feeds = new List<object>();
 
+        static int maxSymbolLen = 0;
+        static int maxCurrencyLen = 0;
         
         [DllImport("kernel32.dll")]
         static extern bool AllocConsole();
@@ -99,6 +101,24 @@ namespace KuCoinConsole
 
             KuCoin.Initialize();
             market = KuCoin.Market;
+
+            foreach (var curr in market.Currencies)
+            {
+                if ((curr?.FullName ?? curr.Name).Length > maxCurrencyLen)
+                {
+                    maxCurrencyLen = (curr?.FullName ?? curr.Name).Length;
+                }
+            }
+
+            foreach (var sym in market.Symbols)
+            {
+                if (sym.Name.Length > maxSymbolLen)
+                {
+                    maxSymbolLen = sym.Name.Length;
+                }
+            }
+
+
 
             ICredentialsProvider cred;
 
@@ -330,7 +350,7 @@ namespace KuCoinConsole
                         currname = bc;
                     }
 
-                    var text = $"{MinChars(obs.Value.Symbol, 12)} - Best Ask: {MinChars(ba.ToString("#,##0.00######"), 12)} Best Bid: {MinChars(bb.ToString("#,##0.00######"), 12)} - {MinChars(currname, 16)} Total: {MinChars(l3.GrandTotal.ToString("#,##0"), 14)} ({MinChars(mpcts[z].ToString("##0") + "%", 4)}) ({MinChars(pcts[z++].ToString("##0") + "%", 4)})";
+                    var text = $"{MinChars(obs.Value.Symbol, maxSymbolLen)} - Best Ask: {MinChars(ba.ToString("#,##0.00######"), 12)} Best Bid: {MinChars(bb.ToString("#,##0.00######"), 12)} - {MinChars(currname, maxCurrencyLen)} Total: {MinChars(l3.GrandTotal.ToString("#,##0"), 14)} ({MinChars(mpcts[z].ToString("##0") + "%", 4)}) ({MinChars(pcts[z++].ToString("##0") + "%", 4)})";
 
                     readOut.AppendLine(text);
                 }
