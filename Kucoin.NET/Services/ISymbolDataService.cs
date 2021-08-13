@@ -1,6 +1,7 @@
 ﻿using Kucoin.NET.Data.Market;
 using Kucoin.NET.Data.Websockets;
 using Kucoin.NET.Helpers;
+using Kucoin.NET.Rest;
 using Kucoin.NET.Websockets.Observations;
 using Kucoin.NET.Websockets.Public;
 
@@ -15,11 +16,81 @@ using System.Threading.Tasks;
 namespace Kucoin.NET.Services
 {
 
+    public class SymbolDataServiceEventArgs : EventArgs
+    {
+        public TradingSymbol Symbol { get; }
+
+        public SymbolDataServiceEventArgs(TradingSymbol symbol)
+        {
+            Symbol = symbol;
+        }
+
+        public SymbolDataServiceEventArgs(string symbol)
+        {
+            if (!Market.Instance.Symbols.TryGetValue(symbol, out TradingSymbol found))
+            {
+                throw new KeyNotFoundException($"The market does not contain the trading symbol {symbol}.");
+            }
+            else
+            {
+                Symbol = found;
+            }
+
+        }
+    }
+
+    public class SymbolChangedEventArgs : SymbolDataServiceEventArgs
+    {
+
+        public TradingSymbol OldSymbol { get; }
+
+        public SymbolChangedEventArgs(TradingSymbol symbol, TradingSymbol oldSymbol) : base(symbol)
+        {
+            OldSymbol = OldSymbol;
+        }
+
+        public SymbolChangedEventArgs(string symbol, string oldSymbol) : base(symbol)
+        {
+            if (!Market.Instance.Symbols.TryGetValue(oldSymbol, out TradingSymbol found))
+            {
+                throw new KeyNotFoundException($"The market does not contain the trading symbol {symbol}.");
+            }
+            else
+            {
+                OldSymbol = found;
+            }
+
+        }
+    }
+
+    public class SymbolDataServiceEventArgs<T> : SymbolDataServiceEventArgs
+    {
+        
+        public T Data { get; }
+        
+        public SymbolDataServiceEventArgs(TradingSymbol symbol, T data) : base(symbol)
+        {
+            Data = data;
+        }
+
+        public SymbolDataServiceEventArgs(string symbol, T data) : base(symbol)
+        {
+            Data = data;
+        }
+
+    }
+
     /// <summary>
     /// Represents the data service for a trading symbol.
     /// </summary>
-    public interface ISymbolDataService : ISymbol, IDisposable, INotifyPropertyChanged
+    public interface ISymbolDataService : ISymbol, IDisposable, INotifyPropertyChanged, IReadOnlyFullySymbolicated
     {
+
+        event EventHandler<SymbolChangedEventArgs> SymbolChanged;
+
+        event EventHandler<SymbolDataServiceEventArgs<Ticker>> TickerCalled;
+
+        event EventHandler<SymbolDataServiceEventArgs<AllSymbolsTickerItem>> Stats24HrCalled;
 
         /// <summary>
         /// Gets detailed information about the trading symbol.
@@ -151,6 +222,27 @@ namespace Kucoin.NET.Services
         /// <param name="newSymbol">The new symbol to subscribe to.</param>
         /// <returns></returns>
         Task<string> ChangeSymbol(string newSymbol);
+
+        /// <summary>
+        /// Activate a new symbol. The resources for the previous symbol are released, and the same active services are restored for the new symbol.
+        /// </summary>
+        /// <param name="newSymbol">The new symbol to subscribe to.</param>
+        /// <returns></returns>
+        Task<string> ChangeSymbol(TradingSymbol newSymbol);
+
+        /// <summary>
+        /// Activate a new symbol. The resources for the previous symbol are released, and the same active services are restored for the new symbol.
+        /// </summary>
+        /// <param name="newSymbol">The new symbol to subscribe to.</param>
+        /// <returns></returns>
+        Task<string> ChangeSymbol(IReadOnlySymbol newSymbol);
+
+        /// <summary>
+        /// Activate a new symbol. The resources for the previous symbol are released, and the same active services are restored for the new symbol.
+        /// </summary>
+        /// <param name="newSymbol">The new symbol to subscribe to.</param>
+        /// <returns></returns>
+        Task<string> ChangeSymbol(ISymbolicated newSymbol);
 
         /// <summary>
         /// Clear the symbol and drop all external subscriptions (the connection does not get ended)

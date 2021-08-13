@@ -63,6 +63,36 @@ namespace Kucoin.NET.Data.Market
         new string QuoteCurrency { get; set; }
     }
 
+    public interface IReadOnlyFullySymbolicated : IReadOnlySymbolicated
+    {
 
+        /// <summary>
+        /// Get detailed information about the base currency
+        /// </summary>
+        new MarketCurrency BaseCurrency { get; }
+
+
+        /// <summary>
+        /// Gets detailed information about the quote currency
+        /// </summary>
+        new MarketCurrency QuoteCurrency { get; }
+
+    }
+
+    public interface IFullySymbolicated : IReadOnlyFullySymbolicated, ISymbol
+    {
+
+        /// <summary>
+        /// Get detailed information about the base currency
+        /// </summary>
+        new MarketCurrency BaseCurrency { get; set; }
+
+
+        /// <summary>
+        /// Gets detailed information about the quote currency
+        /// </summary>
+        new MarketCurrency QuoteCurrency { get; set; }
+
+    }
 
 }

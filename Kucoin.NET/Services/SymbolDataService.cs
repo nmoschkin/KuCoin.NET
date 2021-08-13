@@ -13,7 +13,7 @@ using System.Collections.ObjectModel;
 using System.Security.Authentication;
 using System.Text;
 using System.Threading.Tasks;
-
+using System.Xml;
 
 namespace Kucoin.NET.Services
 {
@@ -22,7 +22,16 @@ namespace Kucoin.NET.Services
     /// </summary>
     public class SymbolDataService : ObservableBase, ISymbolDataService
     {
+        public event EventHandler<SymbolChangedEventArgs> SymbolChanged;
+        public event EventHandler<SymbolDataServiceEventArgs<Ticker>> TickerCalled;
+        public event EventHandler<SymbolDataServiceEventArgs<AllSymbolsTickerItem>> Stats24HrCalled;
+
+
         protected TradingSymbol symbol;
+
+        protected MarketCurrency baseCurrency;
+
+        protected MarketCurrency quoteCurrency;
 
         protected Level2Observation level2obs;
 
@@ -90,12 +99,29 @@ namespace Kucoin.NET.Services
 
         public virtual Level3 Level3Feed => level3feed;
 
-        public virtual TradingSymbol TradingSymbolInfo
-        {
-            get => symbol;
-        }
+        public virtual TradingSymbol TradingSymbolInfo => symbol;
+
+        public virtual MarketCurrency BaseCurrency => baseCurrency;
+        
+        public virtual MarketCurrency QuoteCurrency => quoteCurrency;
+
+        string IReadOnlySymbolicated.BaseCurrency => baseCurrency?.Currency;
+
+        string IReadOnlySymbolicated.QuoteCurrency => quoteCurrency?.Currency;
 
         string IReadOnlySymbol.Symbol => (string)symbol;
+
+        public SymbolDataService()
+        {
+            try
+            {
+                _ = Market.Instance;
+            }
+            catch(Exception ex)
+            {
+                
+            }
+        }
 
         public virtual async Task<bool> Connect(ICredentialsProvider credentialsProvider)
         {
@@ -118,7 +144,6 @@ namespace Kucoin.NET.Services
             await Initialize();
             return tickerfeed.Connected;
         }
-
 
         protected virtual async Task Initialize(KucoinBaseWebsocketFeed connection = null)
         {
@@ -287,9 +312,22 @@ namespace Kucoin.NET.Services
                 await level2d50.RemoveAllSymbols();
                 level2d50enabled = false;
             }
+            var oldsymbol = symbol;
 
             symbol = null;
+            baseCurrency = quoteCurrency = null;
+
+            SymbolChanged?.Invoke(this, new SymbolChangedEventArgs(null, oldsymbol));
         }
+
+        public virtual async Task<string> ChangeSymbol(TradingSymbol newSymbol)
+            => await ChangeSymbol((string)newSymbol);
+
+        public virtual async Task<string> ChangeSymbol(IReadOnlySymbol newSymbol)
+            => await ChangeSymbol(newSymbol.Symbol);
+
+        public virtual async Task<string> ChangeSymbol(ISymbolicated newSymbol)
+            => await ChangeSymbol(newSymbol.Symbol);
 
         public virtual async Task<string> ChangeSymbol(string newSymbol)
         {
@@ -306,6 +344,33 @@ namespace Kucoin.NET.Services
             {
                 await ClearSymbol();
                 return null;
+            }
+
+            if (Market.Instance.Currencies.Contains(symbol.BaseCurrency))
+            {
+                baseCurrency = Market.Instance.Currencies[symbol.BaseCurrency];
+            }
+            else
+            {
+                baseCurrency = new MarketCurrency()
+                {
+                    Name = symbol.BaseCurrency,
+                    FullName = symbol.BaseCurrency
+                };
+            }
+
+
+            if (Market.Instance.Currencies.Contains(symbol.QuoteCurrency))
+            {
+                quoteCurrency = Market.Instance.Currencies[symbol.QuoteCurrency];
+            }
+            else
+            {
+                quoteCurrency = new MarketCurrency()
+                {
+                    Name = symbol.QuoteCurrency,
+                    FullName = symbol.QuoteCurrency
+                };
             }
 
             if (level2enabled)
@@ -355,6 +420,7 @@ namespace Kucoin.NET.Services
                 level2d50update = await level2d5.AddSymbol((string)symbol);
             }
 
+            SymbolChanged?.Invoke(this, new SymbolChangedEventArgs(symbol, oldSym));
             return (string)oldSym;
         }
 
@@ -427,7 +493,9 @@ namespace Kucoin.NET.Services
         public virtual async Task<AllSymbolsTickerItem> Get24HourStats()
         {
             if (disposed) throw new ObjectDisposedException(this.GetType().FullName);
-            return await Market.Instance.Get24HourStats(Symbol);
+            var results = await Market.Instance.Get24HourStats(Symbol);
+            Stats24HrCalled?.Invoke(this, new SymbolDataServiceEventArgs<AllSymbolsTickerItem>(symbol, results));
+            return results;
         }
 
         public async Task<TCol> GetKline<TCandle, TCustom, TCol>(KlineType klineType, int pieces)
@@ -441,7 +509,9 @@ namespace Kucoin.NET.Services
 
         public async Task<Ticker> GetTicker()
         {
-            return await Market.Instance.GetTicker((string)symbol);
+            var results = await Market.Instance.GetTicker((string)symbol);
+            TickerCalled?.Invoke(this, new SymbolDataServiceEventArgs<Ticker>(symbol, results));
+            return results;
         }
 
         public virtual async Task<ObservableStaticMarketDepthUpdate> SubscribeLevel2StaticDepth(Level2Depth depth, IObserver<StaticMarketDepthUpdate> observer)
