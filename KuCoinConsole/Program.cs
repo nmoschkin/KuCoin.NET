@@ -160,7 +160,8 @@ namespace KuCoinConsole
                 {
                     if (!market.Symbols.Contains(sym))
                     {
-                        throw new KeyNotFoundException($"The trading symbol '{sym}' does not exist on the KuCoin exchange.");
+                        continue;
+                        //throw new KeyNotFoundException($"The trading symbol '{sym}' does not exist on the KuCoin exchange.");
                     }
 
                     Console.WriteLine($"Subscribing to {sym} ...");
