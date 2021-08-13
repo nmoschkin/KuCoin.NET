@@ -90,7 +90,8 @@ namespace KuCoinConsole
         static void Main(string[] args)
         {
             AllocConsole();
-            Console.WindowWidth = 144;
+            Console.WindowWidth = 130;
+            Console.WindowHeight = 60;
 
             // Analytics and crash reporting.
             AppCenter.Start("d364ea69-c1fa-4d0d-8c37-debaa05f91bc",
@@ -158,7 +159,7 @@ namespace KuCoinConsole
             service = serviceFactory.CreateConnected(cred);
 
 
-            //var syms = new List<string>(new string[] { "BTC-USDT" });
+            //var syms = new List<string>(new string[] { "ETH-USDT" });
             var syms = new List<string>(new string[] { "MATIC-USDT", "XRP-USDT", "DOGE-USDT", "KCS-USDT", "ETH-USDT", "XLM-USDT", "BTC-USDT", "ADA-USDT", "LTC-USDT" });
             
             Task.Run(async () =>
@@ -350,7 +351,9 @@ namespace KuCoinConsole
                         currname = bc;
                     }
 
-                    var text = $"{MinChars(obs.Value.Symbol, maxSymbolLen)} - Best Ask: {MinChars(ba.ToString("#,##0.00######"), 12)} Best Bid: {MinChars(bb.ToString("#,##0.00######"), 12)} - {MinChars(currname, maxCurrencyLen)} Total: {MinChars(l3.GrandTotal.ToString("#,##0"), 14)} ({MinChars(mpcts[z].ToString("##0") + "%", 4)}) ({MinChars(pcts[z++].ToString("##0") + "%", 4)})";
+                    var text = $"{MinChars(obs.Value.Symbol, maxSymbolLen)} - Best Ask: {MinChars(ba.ToString("#,##0.00######"), 12)} Best Bid: {MinChars(bb.ToString("#,##0.00######"), 12)} - {MinChars(currname, maxCurrencyLen)}  Total: {MinChars(l3.GrandTotal.ToString("#,##0"), 14)}";
+                    text += $"\r\n{MinChars("", maxSymbolLen)} - Match Share: {MinChars(mpcts[z].ToString("##0") + "%", 4)}   Total Share: {MinChars(pcts[z++].ToString("##0") + "%", 4)}   State: " + MinChars(l3.State.ToString(), 14);
+                    text += "\r\n                                                      ";
 
                     readOut.AppendLine(text);
                 }
