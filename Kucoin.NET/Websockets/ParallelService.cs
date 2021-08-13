@@ -89,7 +89,7 @@ namespace Kucoin.NET.Websockets
 
         private static readonly List<Distribution> distributors = new List<Distribution>();
 
-        private static int maxTenants = 2;
+        private static int maxTenants = 4;
 
         private static int idleSleepTime = 1;
         

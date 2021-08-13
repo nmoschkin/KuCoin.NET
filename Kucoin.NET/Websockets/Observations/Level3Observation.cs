@@ -96,7 +96,7 @@ namespace Kucoin.NET.Websockets.Observations
 
                 case "open":
 
-                    //if (change.Price == null || change.Price == 0 || change.Size == null || change.Size == 0) return;
+                    if (change.Price == null || change.Price == 0 || change.Size == null || change.Size == 0) return;
 
                     var u = new AtomicOrderStruct
                     {
