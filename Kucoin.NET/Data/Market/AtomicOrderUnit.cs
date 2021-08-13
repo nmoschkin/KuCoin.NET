@@ -107,7 +107,7 @@ namespace Kucoin.NET.Data.Market
 
         public override int GetHashCode() => (price.ToString() + size.ToString() + time.ToString() + (orderId ?? "")).GetHashCode();
 
-        internal AtomicOrderUnit(object[] data)
+        public AtomicOrderUnit(object[] data)
         {
             orderId = (string)data[0];
             price = decimal.Parse((string)data[1]);
@@ -221,7 +221,7 @@ namespace Kucoin.NET.Data.Market
         /// Initialize the object with data.
         /// </summary>
         /// <param name="data">Data.</param>
-        internal ObservableAtomicOrderUnit(object[] data) : base(data)
+        public ObservableAtomicOrderUnit(object[] data) : base(data)
         {
         }
 
@@ -247,9 +247,9 @@ namespace Kucoin.NET.Data.Market
     public struct AtomicOrderStruct : IAtomicOrderUnit
     {
         internal string orderId;
-        internal DateTime timestamp;
         internal decimal price;
         internal decimal size;
+        internal DateTime timestamp;
 
         [JsonProperty("orderId")]
         public string OrderId
@@ -283,14 +283,17 @@ namespace Kucoin.NET.Data.Market
         /// Initialize the structure from data.
         /// </summary>
         /// <param name="data">The data.</param>
-        internal AtomicOrderStruct(object[] data)
+        public AtomicOrderStruct(object[] data)
         {
             orderId = (string)data[0];
             price = decimal.Parse((string)data[1]);
             size = decimal.Parse((string)data[2]);
             timestamp = EpochTime.NanosecondsToDate((long)data[3]);
         }
-
+        public object[] GetObjects()
+        {
+            return new object[] { orderId, price.ToString(), size.ToString(), EpochTime.DateToNanoseconds(timestamp) };
+        }
         /// <summary>
         /// Make an exact copy of this struct.
         /// </summary>

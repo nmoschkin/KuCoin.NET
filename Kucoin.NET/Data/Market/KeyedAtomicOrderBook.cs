@@ -18,7 +18,7 @@ namespace Kucoin.NET.Data.Market
     /// </summary>
     public class KeyedAtomicOrderBook<T> : 
         IKeyedAtomicOrderBook<KeyedBook<T>, T>
-        where T: IAtomicOrderUnit
+        where T: IAtomicOrderUnit, new()
     {
 
         /// <summary>

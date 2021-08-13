@@ -118,7 +118,7 @@ namespace Kucoin.NET.Data.Market
     public interface ILevel3OrderUnitList<TCol, TUnit>
         : IOrderUnitList<TUnit>
         where TCol : KeyedBook<TUnit>
-        where TUnit : IAtomicOrderUnit
+        where TUnit : IAtomicOrderUnit, new()
     {
         /// <summary>
         /// Asks (sell)
@@ -160,7 +160,7 @@ namespace Kucoin.NET.Data.Market
 
     public interface IKeyedAtomicOrderBook<TCol, TUnit> : IAtomicOrderBook<TUnit>, ILevel3OrderUnitList<TCol, TUnit>
         where TCol : KeyedBook<TUnit>
-        where TUnit : IAtomicOrderUnit
+        where TUnit : IAtomicOrderUnit, new()
     {
     }
 

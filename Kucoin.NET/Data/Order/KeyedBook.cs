@@ -1,8 +1,11 @@
 ﻿using Kucoin.NET.Data.Market;
+using Kucoin.NET.Helpers;
+using Kucoin.NET.Json;
 
 using Newtonsoft.Json;
 
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
@@ -11,8 +14,8 @@ using System.Text;
 
 namespace Kucoin.NET.Data.Order
 {
-
-    public class KeyedBook<TUnit> : Collection<TUnit>/*, IReadOnlyDictionary<string, TUnit>*/ where TUnit : IAtomicOrderUnit
+    [JsonConverter(typeof(KeyedBookConverter))]
+    public class KeyedBook<TUnit> : Collection<TUnit>, IReadOnlyDictionary<string, TUnit> where TUnit : IAtomicOrderUnit, new()
     {
         protected object lockObj = new object();
         internal Dictionary<string, TUnit> orderIds = new Dictionary<string, TUnit>();
@@ -163,6 +166,7 @@ namespace Kucoin.NET.Data.Order
             }
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool TryGetValue(string orderId, out TUnit value)
         {
             return orderIds.TryGetValue(orderId, out value);
@@ -349,10 +353,10 @@ namespace Kucoin.NET.Data.Order
             return output;
         }
 
-        //IEnumerator<KeyValuePair<string, TUnit>> IEnumerable<KeyValuePair<string, TUnit>>.GetEnumerator()
-        //{
-        //    return ((IEnumerable<KeyValuePair<string, TUnit>>)orderIds).GetEnumerator();
-        //}
+        IEnumerator<KeyValuePair<string, TUnit>> IEnumerable<KeyValuePair<string, TUnit>>.GetEnumerator()
+        {
+            return ((IEnumerable<KeyValuePair<string, TUnit>>)orderIds).GetEnumerator();
+        }
 
     }
 
