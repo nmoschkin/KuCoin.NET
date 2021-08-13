@@ -7,6 +7,8 @@ using Kucoin.NET.Websockets.Public;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Data;
+using System.Net.NetworkInformation;
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading;
@@ -207,8 +209,70 @@ namespace Kucoin.NET.Websockets.Observations
         }
 
         Level3Update[] updates = new Level3Update[1024];
-        int dinerTries = 10;
-        int myDiner = 0;
+        
+        int maxIdles = 10;
+        int idleCount = 0;
+
+        double pctacq = 0d;
+
+        double lofty = 0d;
+        double trendy = 0d;
+        int domhiminy = 0;
+        int greebles = 1000;
+        long grandTotal = 0;
+        long matchTotal = 0;
+
+        long sectotalcount = 0;
+        long secmatchcount = 0;
+        
+        long matchpersec = 0;
+        long totalpersec = 0;
+
+        DateTime tts = DateTime.UtcNow;
+
+        public long MatchTotal => matchTotal;
+        public long GrandTotal => grandTotal;
+
+        public int Domhiminy
+        {
+            get => domhiminy;
+        }
+
+        public int Greebles
+        {
+            get => greebles;
+            set
+            {
+                SetProperty(ref greebles, value);
+            }
+        }
+
+        /// <summary>
+        /// Maximum number of times to passively acquire a lock before actively acquiring it.
+        /// </summary>
+        public int MaxIdles
+        {
+            get => maxIdles;
+            set
+            {
+                if (value < 1) throw new ArgumentOutOfRangeException("Must be greater than 0");
+                SetProperty(ref maxIdles, value);
+            }
+        }
+
+        /// <summary>
+        /// Gets the number of times the doer has tried to get a lock but failed.
+        /// </summary>
+        public int IdleCount
+        {
+            get => idleCount;
+        }
+
+        public long MatchesPerSecond => matchpersec;
+
+        public long TransactionsPerSecond => totalpersec;
+
+        public double AcquisitionPct => pctacq;
 
         public override bool DoWork()
         {
@@ -218,23 +282,44 @@ namespace Kucoin.NET.Websockets.Observations
             }
             else
             {
+
                 if (!Monitor.TryEnter(lockObj))
                 {
-                    if (myDiner >= dinerTries) return false;
+                    if (idleCount >= maxIdles) return false;
 
-                    myDiner++;
+                    idleCount++;
 
-                    if (myDiner < dinerTries)
+                    if (idleCount < maxIdles)
                     {
                         return false;
                     }
                     else
                     {
                         Monitor.Enter(lockObj);
-                        myDiner = 0;
+
+                        trendy += 10;
+                        idleCount = 0;
                     }
                 }
+                else
+                {
+                    trendy += idleCount;
+                    idleCount = 0;
+                }
+
             }
+
+            lofty += 10d;
+            pctacq = 100 - ((trendy / lofty) * 100);
+            domhiminy += 1;
+
+            if (domhiminy >= greebles)
+            {
+                domhiminy = 0;
+                lofty = 0d;
+                trendy = 0d;
+            }
+
 
             var c = orderBuffer.Count;
             if (c == 0)
@@ -251,9 +336,27 @@ namespace Kucoin.NET.Websockets.Observations
             orderBuffer.CopyTo(updates);
             orderBuffer.Clear();
 
-            foreach (var order in updates)
+            for(int i = 0; i < c; i++)
             {
-                DoNext(order);
+                DoNext(updates[i]);
+                grandTotal++;
+                sectotalcount++;
+
+                if (updates[i].Subject == "match")
+                {
+                    matchTotal++;
+                    secmatchcount++;
+                }
+            }
+
+            if ((DateTime.UtcNow - tts).TotalSeconds >= 1)
+            {
+                tts = DateTime.UtcNow;
+
+                matchpersec = secmatchcount;
+                totalpersec = sectotalcount;
+
+                secmatchcount = sectotalcount = 0;
             }
 
             Monitor.Exit(lockObj);
@@ -286,6 +389,12 @@ namespace Kucoin.NET.Websockets.Observations
                 af = true;
                 level3.InitializeOrderBook(this.symbol).ContinueWith((t) =>
                 {
+                    if (FullDepthOrderBook == null)
+                    {
+                        af = false;
+                        return;
+                    }
+
                     Calibrate();
                     if (level3.UpdateInterval != 0) RequestPush();
 
