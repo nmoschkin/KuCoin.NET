@@ -294,7 +294,6 @@ namespace Kucoin.NET.Websockets.Observations
             }
             else
             {
-                totalCalls++;
 
                 if (!Monitor.TryEnter(lockObj))
                 {
@@ -318,6 +317,8 @@ namespace Kucoin.NET.Websockets.Observations
                 }
 
             }
+
+            totalCalls++;
 
             if (diagEngable)
                 effeciency = 100 - (((double)totalCalls / idleMisses) * 100);
