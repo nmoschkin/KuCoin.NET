@@ -303,8 +303,27 @@ namespace Kucoin.NET.Websockets.Public
             if (!activeFeeds.ContainsKey(symbol)) return;
 
             var af = activeFeeds[symbol];
+            KeyedAtomicOrderBook<AtomicOrderStruct> data = null;
 
-            var data = await GetAtomicOrderBook(af.Symbol);
+            for (int i = 0; i < 1; i++)
+            {
+
+                try
+                {
+                    data = await GetAtomicOrderBook(symbol);
+                    if (data != null) break;
+                }
+                catch
+                {
+
+                }
+
+            }
+
+            if (data == null)
+            {
+                return;
+            }
 
             af.FullDepthOrderBook = data;
             af.Initialized = true;
