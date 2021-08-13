@@ -389,7 +389,9 @@ namespace Kucoin.NET.Websockets
             socket?.Dispose();
             socket = null;
             token = null;
-        
+            
+            CancelAllThreads();
+
             OnPropertyChanged(nameof(Connected));
         }
 
@@ -465,30 +467,32 @@ namespace Kucoin.NET.Websockets
             {
                 // The Pinger:
 
-                keepAlive = new Thread(
-                    async () =>
-                    {
-                        try
-                        {
-                            int pi = server.PingInterval;
+                //keepAlive = new Thread(
+                //    async () =>
+                //    {
+                //        try
+                //        {
+                //            int pi = server.PingInterval;
 
-                            while (!ctsPing.IsCancellationRequested && socket?.State == WebSocketState.Open)
-                            {
-                                for (int i = 0; i < pi; i += 1000)
-                                {
-                                    await Task.Delay(1000);
-                                    if (ctsPing.IsCancellationRequested) return;
-                                }
+                //            while (!ctsPing.IsCancellationRequested && socket?.State == WebSocketState.Open)
+                //            {
+                //                for (int i = 0; i < pi; i += 1000)
+                //                {
+                //                    await Task.Delay(1000);
+                //                    if (ctsPing.IsCancellationRequested) return;
+                //                }
 
-                                await Ping();
-                            }
-                        }
-                        catch { }
-                    }
-                );
+                //                await Ping();
+                //            }
+                //        }
+                //        catch { }
+                //    }
+                //);
 
-                keepAlive.IsBackground = true;
-                keepAlive.Start();
+                //keepAlive.IsBackground = true;
+                //keepAlive.Start();
+
+                PingService.RegisterService(this);
                
                 // The Reader:
                 // -----------
@@ -1129,7 +1133,8 @@ namespace Kucoin.NET.Websockets
         /// </summary>
         protected void CancelPingThread()
         {
-            ctsPing?.Cancel();
+            PingService.UnregisterService(this);
+            //ctsPing?.Cancel();
         }
 
         #endregion Thread cancellation

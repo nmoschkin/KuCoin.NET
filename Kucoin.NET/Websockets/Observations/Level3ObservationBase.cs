@@ -29,7 +29,8 @@ namespace Kucoin.NET.Websockets.Observations
     /// </remarks>
     public abstract class Level3ObservationBase<TBookOut, TUnitOut, TBookIn, TUnitIn, TUpdate> :
         ObservableBase,
-        ILevel3OrderBookProvider<TBookOut, TUnitOut, TBookIn, TUnitIn, TUpdate>
+        ILevel3OrderBookProvider<TBookOut, TUnitOut, TBookIn, TUnitIn, TUpdate>, 
+        IDistributable
         where TBookOut : IAtomicOrderBook<TUnitOut>, new()
         where TUnitOut : IAtomicOrderUnit, new()
         where TBookIn : KeyedAtomicOrderBook<TUnitIn>, new()
@@ -128,6 +129,7 @@ namespace Kucoin.NET.Websockets.Observations
             PushThread.IsBackground = true;
             PushThread.Start();
 
+            ParallelService.RegisterService(this);
         }
 
         /// <summary>
@@ -303,6 +305,8 @@ namespace Kucoin.NET.Websockets.Observations
         /// </summary>
         public bool Disposed => disposed;
 
+        public object LockObject => lockObj;
+
         /// <summary>
         /// Performs all the necessary steps to dispose the object.
         /// </summary>
@@ -312,10 +316,13 @@ namespace Kucoin.NET.Websockets.Observations
             if (disposed) return;
 
             disposed = true;
+            ParallelService.UnregisterService(this);
 
             cts?.Cancel();
             PushThread = null;
         }
+
+        public abstract bool DoWork();
 
         ~Level3ObservationBase()
         {

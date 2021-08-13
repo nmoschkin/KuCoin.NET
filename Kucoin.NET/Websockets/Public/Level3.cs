@@ -298,7 +298,7 @@ namespace Kucoin.NET.Websockets.Public
         /// <remarks>
         /// This method is typically called after the feed has been buffered.
         /// </remarks>
-        protected virtual async Task InitializeOrderBook(string symbol)
+        internal virtual async Task InitializeOrderBook(string symbol)
         {
             if (!activeFeeds.ContainsKey(symbol)) return;
 
@@ -328,44 +328,8 @@ namespace Kucoin.NET.Websockets.Public
                     var update = msg.Data;
                     update.Subject = msg.Subject;
 
-                    if (!af.Calibrated)
-                    {
-                        _ = Task.Run(() => State = FeedState.Initializing);
+                    af.OnNext(update);
 
-                        lock (af.lockObj)
-                        {
-                            af.OnNext(update);
-
-                            InitializeOrderBook(af.Symbol).ConfigureAwait(false).GetAwaiter().GetResult();
-
-                            af.Calibrate();
-                            af.RequestPush();
-                        }
-
-                        cycle = DateTime.UtcNow.Ticks;
-
-                        _ = Task.Run(() =>
-                        {
-                            SymbolCalibrated?.Invoke(this, new EventArgs());
-                            State = FeedState.Running;
-                        });
-
-                    }
-                    else
-                    {
-                        lock (af.lockObj)
-                        {
-                            af.OnNext(update);
-
-                            if (updateInterval == 0) return;
-
-                            if ((DateTime.UtcNow.Ticks - cycle) >= updcalc)
-                            {
-                                af.RequestPush();
-                                cycle = DateTime.UtcNow.Ticks;
-                            }
-                        }
-                    }
                 }
             }
             else

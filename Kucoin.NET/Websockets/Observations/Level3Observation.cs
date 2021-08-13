@@ -9,6 +9,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Runtime.CompilerServices;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Kucoin.NET.Websockets.Observations
@@ -86,7 +87,7 @@ namespace Kucoin.NET.Websockets.Observations
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         protected void SequencePieces(string subj, Level3Update change, KeyedBook<AtomicOrderStruct> pieces, KeyedBook<AtomicOrderStruct> otherPieces)
         {
-            switch(subj)
+            switch (subj)
             {
                 case "done":
 
@@ -138,7 +139,7 @@ namespace Kucoin.NET.Websockets.Observations
 
                 case "match":
 
-                    if (change.Price is decimal p && change.Size is decimal csize 
+                    if (change.Price is decimal p && change.Size is decimal csize
                         && otherPieces.TryGetValue(change.MakerOrderId, out AtomicOrderStruct o))
                     {
                         o.Size -= csize;
@@ -162,12 +163,18 @@ namespace Kucoin.NET.Websockets.Observations
         /// </summary>
         public override void Reset()
         {
-            orderBuffer = new List<Level3Update>();
+            lock (lockObj)
+            {
+                orderBuffer = new List<Level3Update>();
 
-            Initialized = false;
-            Calibrated = false;
+                Initialized = false;
+                Calibrated = false;
+            }
+
         }
+
         bool bf = false;
+        bool af = false;
 
         /// <summary>
         /// Calibrate the order book from cached data.
@@ -175,17 +182,83 @@ namespace Kucoin.NET.Websockets.Observations
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public override void Calibrate()
         {
-            calibrated = true;
-
-            bf = true;
-            foreach (var q in orderBuffer)
+            lock (lockObj)
             {
-                if (q.Sequence > fullDepth.Sequence) OnNext(q);
+                calibrated = true;
+
+                bf = true;
+                foreach (var q in orderBuffer)
+                {
+                    if (q.Sequence > fullDepth.Sequence) DoNext(q);
+                }
+                bf = false;
+                orderBuffer.Clear();
             }
-            bf = false;
-            orderBuffer.Clear();
 
             OnPropertyChanged(nameof(Calibrated));
+        }
+
+        public override void OnNext(Level3Update value)
+        {
+            lock (lockObj)
+            {
+                orderBuffer.Add(value);
+            }
+        }
+
+        Level3Update[] updates = new Level3Update[1024];
+        int dinerTries = 10;
+        int myDiner = 0;
+
+        public override bool DoWork()
+        {
+            if (!calibrated)
+            {
+                Monitor.Enter(lockObj);
+            }
+            else
+            {
+                if (!Monitor.TryEnter(lockObj))
+                {
+                    if (myDiner >= dinerTries) return false;
+
+                    myDiner++;
+
+                    if (myDiner < dinerTries)
+                    {
+                        return false;
+                    }
+                    else
+                    {
+                        Monitor.Enter(lockObj);
+                        myDiner = 0;
+                    }
+                }
+            }
+
+            var c = orderBuffer.Count;
+            if (c == 0)
+            {
+                Monitor.Exit(lockObj);
+                return false;
+            }
+
+            if (updates.Length < c)
+            {
+                Array.Resize(ref updates, c * 2);
+            }
+
+            orderBuffer.CopyTo(updates);
+            orderBuffer.Clear();
+
+            foreach (var order in updates)
+            {
+                DoNext(order);
+            }
+
+            Monitor.Exit(lockObj);
+            return true;
+
         }
 
         /// <summary>
@@ -193,66 +266,90 @@ namespace Kucoin.NET.Websockets.Observations
         /// </summary>
         /// <param name="value"></param>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public override void OnNext(Level3Update value)
+        protected void DoNext(Level3Update value)
         {
             if (disposed) return;
 
+            var level3 = this.connectedFeed as Level3;
+
+            if (!calibrated && !bf)
+            {
+                _ = Task.Run(() => level3.State = FeedState.Initializing);
+
+                lock (lockObj)
+                {
+                    orderBuffer.Add(value);
+                }
+
+                if (af) return;
+
+                af = true;
+                level3.InitializeOrderBook(this.symbol).ContinueWith((t) =>
+                {
+                    Calibrate();
+                    if (level3.UpdateInterval != 0) RequestPush();
+
+                    _ = Task.Run(() =>
+                    {
+                        level3.State = FeedState.Running;
+                    });
+
+                    af = false;
+                });
+
+                return;
+            }
+            else if (value.Sequence <= fullDepth.Sequence)
+            {
+                return;
+            }
+            else if (fullDepth == null)
+            {
+                return;
+            }
+
             lock (lockObj)
             {
-                //try
-                //{
-                    if (!calibrated)
-                    {
-                        orderBuffer.Add(value);
-                        return;
-                    }
-                    else if (value.Sequence <= fullDepth.Sequence)
-                    {
-                        return;
-                    }
-                    else if (fullDepth == null)
-                    {
-                        return;
-                    }
+                if (!bf && value.Sequence - fullDepth.Sequence > 1)
+                {
+                    Reset();
+                    return;
+                }
 
-                    if (!bf && value.Sequence - fullDepth.Sequence > 1)
+                if (value.Side == null)
+                {
+                    if (value.Subject == "done")
                     {
-                        Reset();
-                        return;
-                    }
-
-                    if (value.Side == null)
-                    {
-                        if (value.Subject == "done")
+                        if (fullDepth.Asks.ContainsKey(value.OrderId))
                         {
-                            if (fullDepth.Asks.ContainsKey(value.OrderId))
-                            {
-                                fullDepth.Asks.Remove(value.OrderId);
-                            }
+                            fullDepth.Asks.Remove(value.OrderId);
+                        }
 
-                            if (fullDepth.Bids.ContainsKey(value.OrderId))
-                            {
-                                fullDepth.Bids.Remove(value.OrderId);
-                            }
+                        if (fullDepth.Bids.ContainsKey(value.OrderId))
+                        {
+                            fullDepth.Bids.Remove(value.OrderId);
                         }
                     }
-                    else if (value.Side == Side.Sell)
-                    {
-                        SequencePieces(value.Subject, value, fullDepth.Asks, fullDepth.Bids);
-                    }
-                    else if (value.Side == Side.Buy) 
-                    {
-                        SequencePieces(value.Subject, value, fullDepth.Bids, fullDepth.Asks);
-                    }
+                }
+                else if (value.Side == Side.Sell)
+                {
+                    SequencePieces(value.Subject, value, fullDepth.Asks, fullDepth.Bids);
+                }
+                else if (value.Side == Side.Buy)
+                {
+                    SequencePieces(value.Subject, value, fullDepth.Bids, fullDepth.Asks);
+                }
 
-                    fullDepth.Sequence = value.Sequence;
-                    fullDepth.Timestamp = value.Timestamp ?? DateTime.Now;
-                //}
-                //catch
-                //{
+                fullDepth.Sequence = value.Sequence;
+                fullDepth.Timestamp = value.Timestamp ?? DateTime.Now;
 
-                //}
             }
+
+            //}
+            //catch
+            //{
+
+            //}
 
             //NextObject?.Invoke(value);
         }
@@ -360,6 +457,8 @@ namespace Kucoin.NET.Websockets.Observations
             if (disposed) return;
 
             disposed = true;
+
+            ParallelService.UnregisterService(this);
 
             cts?.Cancel();
             PushThread = null;
