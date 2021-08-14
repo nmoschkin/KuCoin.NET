@@ -22,6 +22,11 @@ using Kucoin.NET;
 using System.Security.Cryptography.X509Certificates;
 using Kucoin.NET.Websockets;
 
+using KuCoinApp.Views;
+using System.Windows.Forms;
+using System.Reflection;
+using System.Threading;
+
 namespace KuCoinConsole
 {
 
@@ -85,11 +90,17 @@ namespace KuCoinConsole
         
         [DllImport("kernel32.dll")]
         static extern bool AllocConsole();
+
+        [DllImport("kernel32.dll")]
+        static extern IntPtr GetConsoleWindow();
+
         static DateTime start = DateTime.Now;
 
-        static void Main(string[] args)
+        [STAThread]
+        public static void Main(string[] args)
         {
             AllocConsole();
+
             Console.WindowWidth = 130;
             Console.WindowHeight = 60;
 
@@ -98,6 +109,11 @@ namespace KuCoinConsole
                    typeof(Analytics), typeof(Crashes));
             // Analytics and crash reporting.
 
+            RunProgram();
+        }
+
+        public static void RunProgram() 
+        { 
             Console.WriteLine("Loading Symbols and Currencies...");
 
             KuCoin.Initialize();
