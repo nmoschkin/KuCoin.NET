@@ -1,5 +1,10 @@
-﻿using System;
+using Kucoin.NET.Data.Market;
+using Kucoin.NET.Websockets.Public;
+
+using System;
+using System.Collections;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Dynamic;
 using System.Linq;
@@ -9,22 +14,11 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Kucoin.NET.Websockets
+namespace Kucoin.NET.Websockets.Distributable
 {
-
-
-    public interface IDistributable // : IComparable<IDistributable>
-    {
-        /// <summary>
-        /// Do the work for this tenant.
-        /// </summary>
-        /// <returns>True if work was done, otherwise false.</returns>
-        bool DoWork();
-
-        object LockObject { get; }
-
-    }
-
+    /// <summary>
+    /// Run tasks in parallel.
+    /// </summary>
     public static class ParallelService
     {
         private class Distribution : IDisposable
@@ -76,6 +70,7 @@ namespace Kucoin.NET.Websockets
                     }
 
                     Parallel.Invoke(actions.ToArray());
+                    actions.Clear();
 
                     Thread.Sleep((i == 0 ? 1 : i) * IdleSleepTime);
                 }
@@ -127,9 +122,9 @@ namespace Kucoin.NET.Websockets
         }
 
         /// <summary>
-        /// Register an instance of a distributable service
+        /// Register an instance of a distributable service.
         /// </summary>
-        /// <param name="feed"></param>
+        /// <param name="feed">The service to register.</param>
         public static void RegisterService(IDistributable feed)
         {
             lock (lockObj)
@@ -157,11 +152,15 @@ namespace Kucoin.NET.Websockets
             }
         }
 
-        public static void RedistributeServices(int distribution)
+        /// <summary>
+        /// Redistribute services so that each thread contains the specified number of <see cref="IDistributable"/> tenants.
+        /// </summary>
+        /// <param name="maxTenants">The maximum number of tenants per thread.</param>
+        public static void RedistributeServices(int maxTenants)
         {
             lock (lockObj)
             {
-                if (distribution < 1 || distribution > 255) throw new ArgumentOutOfRangeException(nameof(distribution) + " must be 1 to 255");
+                if (maxTenants < 1 || maxTenants > 255) throw new ArgumentOutOfRangeException(nameof(maxTenants) + " must be 1 to 255");
 
                 var allfeeds = from dist in distributors from feed in dist.Tenants select feed;
 
@@ -171,7 +170,7 @@ namespace Kucoin.NET.Websockets
                 }
 
                 distributors.Clear();
-                maxTenants = distribution;
+                ParallelService.maxTenants = maxTenants;
 
                 foreach (var feed in allfeeds)
                 {
@@ -194,7 +193,10 @@ namespace Kucoin.NET.Websockets
 
         }
 
-
+        /// <summary>
+        /// Unregister an instance of a distributable service.
+        /// </summary>
+        /// <param name="feed">The service to unregister.</param>
         public static void UnregisterService(IDistributable feed)
         {
             lock (lockObj)

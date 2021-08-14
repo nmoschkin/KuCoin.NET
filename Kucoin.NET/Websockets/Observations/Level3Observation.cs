@@ -2,6 +2,7 @@
 using Kucoin.NET.Data.Order;
 using Kucoin.NET.Data.Websockets;
 using Kucoin.NET.Helpers;
+using Kucoin.NET.Websockets.Distributable;
 using Kucoin.NET.Websockets.Public;
 
 using System;

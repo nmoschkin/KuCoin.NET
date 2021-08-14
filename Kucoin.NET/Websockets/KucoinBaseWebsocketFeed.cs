@@ -15,6 +15,7 @@
 using Kucoin.NET.Data.Websockets;
 using Kucoin.NET.Helpers;
 using Kucoin.NET.Rest;
+using Kucoin.NET.Websockets.Distributable;
 
 using Newtonsoft.Json;
 
@@ -83,6 +84,8 @@ namespace Kucoin.NET.Websockets
         protected int minQueueBuffer = 512;
 
         protected bool monitorThroughput;
+
+        protected bool wantMsgPumpThread = true;
 
         private long throughput;
 
@@ -466,32 +469,6 @@ namespace Kucoin.NET.Websockets
             if (socket?.State == WebSocketState.Open)
             {
                 // The Pinger:
-
-                //keepAlive = new Thread(
-                //    async () =>
-                //    {
-                //        try
-                //        {
-                //            int pi = server.PingInterval;
-
-                //            while (!ctsPing.IsCancellationRequested && socket?.State == WebSocketState.Open)
-                //            {
-                //                for (int i = 0; i < pi; i += 1000)
-                //                {
-                //                    await Task.Delay(1000);
-                //                    if (ctsPing.IsCancellationRequested) return;
-                //                }
-
-                //                await Ping();
-                //            }
-                //        }
-                //        catch { }
-                //    }
-                //);
-
-                //keepAlive.IsBackground = true;
-                //keepAlive.Start();
-
                 PingService.RegisterService(this);
                
                 // The Reader:
@@ -501,16 +478,18 @@ namespace Kucoin.NET.Websockets
                 msgQueue = new List<string>();
                 msgQueue.Capacity = minQueueBuffer;
 
+                if (wantMsgPumpThread)
+                {
+                    // observer notification pump
+                    msgPumpThread = new Thread(MessagePumpThread);
+                    msgPumpThread.IsBackground = true;
+                    msgPumpThread.Start();
+                }
+
                 // data receiver
                 inputReaderThread = new Thread(DataReceiveThread);
-
-                // observer notification pump
-                msgPumpThread = new Thread(MessagePumpThread);
-
                 inputReaderThread.IsBackground = true;
-                msgPumpThread.IsBackground = true;
 
-                msgPumpThread.Start();
                 inputReaderThread.Start();
 
                 if (initAsMultiplexHost)
@@ -865,12 +844,7 @@ namespace Kucoin.NET.Websockets
                             sb.Clear();
 
                             strlen = 0;
-
-                            // lock on message queue.
-                            lock (msgQueue)
-                            {
-                                msgQueue.Add(json);
-                            }
+                            AddPacket(json);
                         }
                     }
                 }
@@ -888,6 +862,24 @@ namespace Kucoin.NET.Websockets
             }
         }
         
+        /// <summary>
+        /// Add a packet to the message queue.
+        /// </summary>
+        /// <param name="json">The JSON object that was received.</param>
+        /// <remarks>
+        /// Override this method if you do not wish to use the default queue.<br/>
+        /// Additionally, you may wish to set <see cref="wantMsgPumpThread"/> to false before connecting if you will not be using the default queue.
+        /// (Modifying this field has no effect after a connection is established.)
+        /// </remarks>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]  
+        protected virtual void AddPacket(string json)
+        {
+            // lock on message queue.
+            lock (msgQueue)
+            {
+                msgQueue.Add(json); 
+            }
+        }
 
         /// <summary>
         /// Separate thread that runs to pump messages to the observers in
@@ -929,7 +921,7 @@ namespace Kucoin.NET.Websockets
                 if (c == 0)
                 {
                     // nothing in the queue, give up some time-slices.
-                    Task.Delay(5)
+                    Task.Delay(5, ctsReceive.Token)
                         .ConfigureAwait(false)
                         .GetAwaiter()
                         .GetResult();
@@ -956,7 +948,7 @@ namespace Kucoin.NET.Websockets
 
             if (e.Type == "pong")
             {
-                _ = Task.Run(() => OnPong(e));
+                _ = Task.Run(() => OnPong(e), ctsPing.Token);
             }
             else
             {
@@ -1346,7 +1338,7 @@ namespace Kucoin.NET.Websockets
 
                 Parallel.Invoke(actions.ToArray());
 
-            });
+            }, ctsReceive.Token);
         }
 
         #endregion IObservable<T> Pattern

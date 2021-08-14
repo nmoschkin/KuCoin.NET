@@ -1,9 +1,14 @@
-﻿using System;
+﻿using Kucoin.NET.Data.Market;
+
+using System;
 using System.Collections.Generic;
 using System.Text;
 
 namespace Kucoin.NET.Websockets
 {
+
+    
+
 
     /// <summary>
     /// Feed <see cref="IObserver{T}"/> observation provider.

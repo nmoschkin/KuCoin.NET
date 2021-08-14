@@ -14,6 +14,7 @@ using Kucoin.NET.Helpers;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Runtime.InteropServices;
+using Kucoin.NET.Websockets.Distributable;
 
 namespace Kucoin.NET.Websockets.Observations
 {
@@ -39,7 +40,7 @@ namespace Kucoin.NET.Websockets.Observations
     {
         public virtual event EventHandler<Level3OrderBookUpdatedEventArgs<TBookOut, TUnitOut>> OrderBookUpdated;
         public virtual event OnNextHandler<TUpdate> NextObject;
-
+        IDistributor IDistributable.Parent => throw new NotImplementedException();
         protected TBookIn fullDepth;
         protected TBookOut orderBook;
         protected string symbol;
@@ -57,7 +58,7 @@ namespace Kucoin.NET.Websockets.Observations
 
         protected bool autoPush = true;
         protected bool updVol = false;
-
+        
         /// <summary>
         /// Level 2 observation base class.
         /// </summary>

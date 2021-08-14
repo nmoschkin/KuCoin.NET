@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 
 
-namespace Kucoin.NET.Websockets
+namespace Kucoin.NET.Websockets.Distributable
 {
     public static class PingService
     {
