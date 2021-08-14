@@ -1,3 +1,6 @@
 [submodule "FancyCandles"]
 	path = FancyCandles
 	url = https://github.com/nmoschkin/FancyCandles.git
+[submodule "DataTools5"]
+	path = DataTools5
+	url = https://github.com/nmoschkin/DataTools5.git
