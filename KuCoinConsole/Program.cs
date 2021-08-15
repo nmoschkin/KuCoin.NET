@@ -27,6 +27,7 @@ using System.Windows.Forms;
 using System.Reflection;
 using System.Threading;
 using Kucoin.NET.Websockets.Distribution;
+using System.Linq;
 
 namespace KuCoinConsole
 {
@@ -79,7 +80,10 @@ namespace KuCoinConsole
         static ISymbolDataService service;
         static StringBuilder readOut = new StringBuilder();
         static object lockObj = new object();
-        
+
+
+        static ICredentialsProvider cred;
+
         static Kucoin.NET.Rest.Market market;
         
         static bool ready = false;
@@ -114,7 +118,8 @@ namespace KuCoinConsole
         }
 
         public static void RunProgram() 
-        { 
+        {
+            Console.Clear();
             Console.WriteLine("Loading Symbols and Currencies...");
 
             KuCoin.Initialize();
@@ -136,32 +141,34 @@ namespace KuCoinConsole
                 }
             }
 
+            cred = KuCoin.Credentials.FirstOrDefault();
 
-
-            ICredentialsProvider cred;
-
-            // Use simple credentials:
-            cred = SimpleCredentials.Instance;
-
-            // If you want to run the WPF app, and set up your credentials from there, 
-            // you can uncomment this code and use the same pin you use in the WPF app.
-            // You must configure your pin and credentials via the WPF app, first!
-
-            /**/
-
-            Console.WriteLine("Type your pin and press enter: ");
-
-            var pin = Console.ReadLine();
-            cred = CryptoCredentials.LoadFromStorage(Seed, pin);
-
-            if (cred == null || !((CryptoCredentials)cred).IsFilled)
+            if (cred == null)
             {
-                Console.WriteLine("Invalid credentials!");
+                // Use simple credentials:
+                cred = SimpleCredentials.Instance;
+
+                // If you want to run the WPF app, and set up your credentials from there, 
+                // you can uncomment this code and use the same pin you use in the WPF app.
+                // You must configure your pin and credentials via the WPF app, first!
+
+                /**/
+
+                Console.WriteLine("Type your pin and press enter: ");
+
+                var pin = Console.ReadLine();
+                cred = CryptoCredentials.LoadFromStorage(Seed, pin);
+
+                if (cred == null || !((CryptoCredentials)cred).IsFilled)
+                {
+                    Console.WriteLine("Invalid credentials!");
+                }
+
+                /**/
+
+                KuCoin.Credentials.Add(cred);
             }
 
-            /**/
-
-            KuCoin.Credentials.Add(cred);
 
             // This changes the number of feeds per distributor:
             ParallelService.MaxTenants = 4;
