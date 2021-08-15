@@ -130,6 +130,8 @@ namespace Kucoin.NET.Websockets.Distribution
                 parent?.Release(this);
                 parent = null;
 
+                ParallelService.UnregisterService(this);
+
                 // TODO: free unmanaged resources (unmanaged objects) and override finalizer
                 // TODO: set large fields to null
                 disposedValue = true;

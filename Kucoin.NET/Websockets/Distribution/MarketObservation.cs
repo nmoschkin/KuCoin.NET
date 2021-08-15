@@ -11,6 +11,7 @@ namespace Kucoin.NET.Websockets.Distribution
     {
         public MarketObservation(IDistributor parent, string symbol) : base(parent, symbol)
         {
+            ObserverService.RegisterService(this);
         }
 
         public abstract TInternal InternalData { get; }
@@ -30,5 +31,11 @@ namespace Kucoin.NET.Websockets.Distribution
         string IReadOnlySymbol.Symbol => key;
 
         public abstract void CopyToObservable();
+
+        protected override void Dispose(bool disposing)
+        {
+            ObserverService.UnregisterService(this);    
+            base.Dispose(disposing);
+        }
     }
 }
