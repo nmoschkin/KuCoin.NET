@@ -267,7 +267,7 @@ namespace KuCoinConsole
 
                 foreach (var obs in observers)
                 {
-                    if (obs.Value.Level3Observation.FullDepthOrderBook == null) continue;
+                    if (obs.Value?.Level3Observation?.FullDepthOrderBook == null) continue;
 
                     if (obs.Value.Level3Observation.FullDepthOrderBook.Timestamp > ts)
                     {
