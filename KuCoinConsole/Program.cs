@@ -242,18 +242,18 @@ namespace KuCoinConsole
             }).ConfigureAwait(false).GetAwaiter().GetResult();
 
             // loop until the connection is broken or the program is exited.
-            while (service.Level3Feed.Connected)
+            while (service?.Level3Feed?.Connected ?? false)
             {
                 
-                if (!ready)
-                {
-                    // wait til all the feeds are calibrated before displaying anything
+                //if (!ready)
+                //{
+                //    // wait til all the feeds are calibrated before displaying anything
 
-                    while (!ready)
-                    {
-                        Task.Delay(delay).ConfigureAwait(false).GetAwaiter().GetResult();
-                    }
-                }
+                //    while (!ready)
+                //    {
+                //        Task.Delay(delay).ConfigureAwait(false).GetAwaiter().GetResult();
+                //    }
+                //}
 
                 // loop forever to keep the program alive.
                 Task.Delay(delay).ConfigureAwait(false).GetAwaiter().GetResult();
