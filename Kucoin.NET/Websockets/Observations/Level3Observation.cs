@@ -15,7 +15,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Kucoin.NET.Websockets.Observations
+namespace Kucoin.NET.Websockets.Observations.Old
 {
 
     public class Level3Observation : CustomLevel3Observation<ObservableAtomicOrderBook<ObservableAtomicOrderUnit>, ObservableAtomicOrderUnit>, ILevel3OrderBookProvider
