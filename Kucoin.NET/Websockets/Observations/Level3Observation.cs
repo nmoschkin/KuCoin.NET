@@ -18,6 +18,9 @@ using System.Threading.Tasks;
 namespace Kucoin.NET.Websockets.Observations.Old
 {
 
+
+
+
     public class Level3Observation : CustomLevel3Observation<ObservableAtomicOrderBook<ObservableAtomicOrderUnit>, ObservableAtomicOrderUnit>, ILevel3OrderBookProvider
     {
         public Level3Observation(KucoinBaseWebsocketFeed parent, string symbol, int pieces = 50) : base(parent, symbol, pieces)

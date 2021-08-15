@@ -33,7 +33,7 @@ namespace Kucoin.NET.Websockets.Distribution
     /// <summary>
     /// Contains an observable version of internal information.
     /// </summary>
-    public interface IObservableCopy<TInternal, TObservable> : IObservableCopy where TObservable : INotifyPropertyChanged
+    public interface IObservableCopy<TInternal, TObservable> : IObservableCopy 
     {
         TInternal InternalData { get; }
 

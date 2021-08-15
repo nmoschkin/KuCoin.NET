@@ -18,8 +18,6 @@ namespace Kucoin.NET.Websockets.Distribution
 
         protected bool disposedValue;
 
-        protected string symbol;
-
         protected object lockObj = new object();
 
         protected IDistributor parent;
@@ -51,12 +49,12 @@ namespace Kucoin.NET.Websockets.Distribution
         /// <summary>
         /// Create a new active observation.
         /// </summary>
-        /// <param name="parent"></param>
-        /// <param name="symbol"></param>
-        public DistributableObject(IDistributor parent, string symbol)
+        /// <param name="parent">The parent distributor</param>
+        /// <param name="key"></param>
+        public DistributableObject(IDistributor parent, TKey key)
         {
             this.parent = parent;
-            this.symbol = symbol;
+            this.key = key;
 
             ParallelService.RegisterService(this);
             State = FeedState.Subscribed;
@@ -127,8 +125,10 @@ namespace Kucoin.NET.Websockets.Distribution
                 if (disposing)
                 {
                     // TODO: dispose managed state (managed objects)
-                    parent?.Release(this);
                 }
+
+                parent?.Release(this);
+                parent = null;
 
                 // TODO: free unmanaged resources (unmanaged objects) and override finalizer
                 // TODO: set large fields to null
@@ -137,11 +137,11 @@ namespace Kucoin.NET.Websockets.Distribution
         }
 
         // // TODO: override finalizer only if 'Dispose(bool disposing)' has code to free unmanaged resources
-        // ~FeedObservation()
-        // {
-        //     // Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method
-        //     Dispose(disposing: false);
-        // }
+        ~DistributableObject()
+        {
+            // Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method
+            Dispose(disposing: false);
+        }
 
         public void Dispose()
         {
