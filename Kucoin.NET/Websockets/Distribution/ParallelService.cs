@@ -59,9 +59,9 @@ namespace Kucoin.NET.Websockets.Distribution
                 {
                     int i = 0;
 
-                    lock (Tenants)
+                    if (ActionsChanged)
                     {
-                        if (ActionsChanged)
+                        lock (Tenants)
                         {
                             actions.Clear();
                             foreach (var t in Tenants)
