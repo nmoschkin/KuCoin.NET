@@ -302,6 +302,7 @@ namespace Kucoin.NET.Websockets.Observations
             }
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public override void CopyToObservable()
         {
             lock (lockObj)
@@ -373,6 +374,7 @@ namespace Kucoin.NET.Websockets.Observations
 
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public override async Task Calibrate()
         {
             await Task.Run(() =>
@@ -396,6 +398,7 @@ namespace Kucoin.NET.Websockets.Observations
             });
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public override async Task Initialize()
         {
             lock(lockObj)
@@ -425,6 +428,7 @@ namespace Kucoin.NET.Websockets.Observations
             }
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public override async Task Reset()
         {
             await Task.Run(() =>
@@ -453,8 +457,7 @@ namespace Kucoin.NET.Websockets.Observations
             });
         }
 
-
-
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         protected override bool DoWork()
         {
             int i, c;
@@ -488,6 +491,7 @@ namespace Kucoin.NET.Websockets.Observations
             }
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public override bool ProcessObject(Level3Update obj)
         {
             if (disposedValue) return false;
