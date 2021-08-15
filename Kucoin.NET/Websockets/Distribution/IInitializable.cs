@@ -31,6 +31,11 @@ namespace Kucoin.NET.Websockets.Distribution
         bool IsInitialized { get; }
 
         /// <summary>
+        /// True if initialization resulted in an error.
+        /// </summary>
+        bool Failure { get; }
+
+        /// <summary>
         /// Gets the number of times the object has been reset.
         /// </summary>
         int ResetCount { get; }

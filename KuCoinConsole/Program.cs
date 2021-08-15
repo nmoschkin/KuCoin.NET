@@ -22,7 +22,6 @@ using Kucoin.NET;
 using System.Security.Cryptography.X509Certificates;
 using Kucoin.NET.Websockets;
 
-using KuCoinApp.Views;
 using System.Windows.Forms;
 using System.Reflection;
 using System.Threading;
@@ -104,6 +103,8 @@ namespace KuCoinConsole
         [STAThread]
         public static void Main(string[] args)
         {
+
+            KuCoin.Initialize();
             AllocConsole();
 
             Console.WindowWidth = 130;
@@ -115,6 +116,7 @@ namespace KuCoinConsole
             // Analytics and crash reporting.
 
             RunProgram();
+
         }
 
         public static void RunProgram() 
@@ -122,7 +124,6 @@ namespace KuCoinConsole
             Console.Clear();
             Console.WriteLine("Loading Symbols and Currencies...");
 
-            KuCoin.Initialize();
             market = KuCoin.Market;
 
             foreach (var curr in market.Currencies)
@@ -162,6 +163,7 @@ namespace KuCoinConsole
                 if (cred == null || !((CryptoCredentials)cred).IsFilled)
                 {
                     Console.WriteLine("Invalid credentials!");
+                    Application.Exit();
                 }
 
                 /**/
@@ -169,33 +171,54 @@ namespace KuCoinConsole
                 KuCoin.Credentials.Add(cred);
             }
 
+            var ast = market.GetAllTickers().ConfigureAwait(false). GetAwaiter().GetResult();
+
+            var tickers = new List<AllSymbolsTickerItem>(ast.Ticker);
+            tickers.Sort((a, b) =>
+            {
+                if (a.VolumneValue > b.VolumneValue) return -1;
+                if (a.VolumneValue < b.VolumneValue) return 1;
+                return 0;
+
+            });
+
+            
 
             // This changes the number of feeds per distributor:
-            ParallelService.MaxTenants = 4;
+            ParallelService.MaxTenants = 10;
 
             var serviceFactory = KuCoin.GetServiceFactory();
-
+            List<ISymbolDataService> services = new List<ISymbolDataService>();
 #if DEBUG
             int delay = 100;
 #else
             int delay = 50;
 #endif
             service = serviceFactory.CreateConnected(cred);
-
+            services.Add(service);
 
             //var syms = new List<string>(new string[] { "XLM-ETH" });
-            var syms = new List<string>(new string[] { "MATIC-USDT", "XRP-USDT", "DOGE-USDT", "KCS-USDT", "ETH-USDT", "XLM-USDT", "BTC-USDT", "ADA-USDT", "LTC-USDT" });
-            
+            //var syms = new List<string>(new string[] { "DOT-USDT", "UNI-USDT", "SOL-USDT", "LINK-USDT", "ETC-USDT", "BCH-USDT", "WBTC-USDT", "FIL-USDT", "DAI-USDT", "AAVE-USDT", "ICP-USDT", "MATIC-USDT", "XRP-USDT", "DOGE-USDT", "KCS-USDT", "ETH-USDT", "XLM-USDT", "BTC-USDT", "ADA-USDT", "LTC-USDT" });
+
+            int tickerCount = 0;
+
+            var syms = new List<string>();
+            for (int h = 0; h < 50; h++)
+            {
+                syms.Add(tickers[h].Symbol);
+            }
+
+
             Task.Run(async () =>
             {
 
                 // 10 of the most popular trading symbols
 
-                syms.Sort((a, b) =>
-                {
-                    // sort symbols alphabetically
-                    return string.Compare(a, b);
-                });
+                //syms.Sort((a, b) =>
+                //{
+                //    // sort symbols alphabetically
+                //    return string.Compare(a, b);
+                //});
              
                 int c = 0;
               
@@ -215,12 +238,17 @@ namespace KuCoinConsole
                     {
                         if (!observers.ContainsKey(sym))
                         {
-                            curr = serviceFactory.EnableOrAddSymbol(sym, service, true);
+                            curr = serviceFactory.EnableOrAddSymbol(sym, service, (tickerCount == 0 || (tickerCount++ % 10 != 0)));
 
                             if (curr == null) continue;
 
                             await curr.EnableLevel3();
                             await Task.Delay(10);
+
+                            if (!services.Contains(curr))
+                            {
+                                services.Add(curr);
+                            }
 
                             if (curr.Level3Feed != null)
                             {
@@ -243,7 +271,7 @@ namespace KuCoinConsole
                 // clear console to display data.
                 Console.Clear();
                 Console.CursorVisible = false;
-                ready = true; 
+                ready = true;
 
             }).ConfigureAwait(false).GetAwaiter().GetResult();
 
@@ -267,7 +295,9 @@ namespace KuCoinConsole
 
                 // remember the cursor position on the screen
                 int lpos = Console.CursorTop;
-                
+                Console.CursorTop = 0;
+                Console.CursorLeft = 0;
+
                 // let's find the most current update date/time from all feeds
 
                 DateTime ts = DateTime.MinValue;
@@ -347,10 +377,32 @@ namespace KuCoinConsole
                 }
 
                 pcts.Clear();
+                
+                int resetting = 0;
+                int running = 0;
+                int failed = 0;
+                double minresettime = 0d;
 
                 foreach (var obs in observers)
                 {
                     var l3 = obs.Value.Level3Observation;
+                    if (l3.State == FeedState.Running)
+                    {
+                        running++;
+                    }
+                    else if (l3.Failure)
+                    {
+                        failed++;
+                        if (l3.TimeUntilNextRetry is double t)
+                        {
+                            if (t < minresettime || minresettime == 0)
+                                minresettime = t;
+                        }
+                    }
+                    else
+                    {
+                        resetting++;
+                    }
                     pcts.Add(((double)l3.GrandTotal / (double)biggrand) * 100d);
                     mpcts.Add(((double)l3.MatchTotal / (double)matchgrand) * 100d);
                 }
@@ -358,8 +410,21 @@ namespace KuCoinConsole
                 int z = 0;
 
                 readOut.Clear();
-                readOut.AppendLine($"Feed Time Stamp: {timestamp:G}                 ");
-                readOut.AppendLine($"Up Time:         {(DateTime.Now - start):G}                 ");
+                readOut.AppendLine($"Feed Time Stamp:    {timestamp:G}                 ");
+                readOut.AppendLine($"Up Time:            {(DateTime.Now - start):G}                 ");
+                readOut.AppendLine($"                                   ");
+                readOut.AppendLine($"Feeds Running:      {running}                 ");
+                readOut.AppendLine($"Feeds Initializing: {resetting}                 ");
+
+                var failtext = $"Feeds Failed:       {failed}  ";
+                if (resetting > 0 && minresettime > 0)
+                {
+                    failtext += $" (Next reset in {(minresettime/1000):#,##0} seconds)";
+                }
+                failtext += "                            ";
+
+                readOut.AppendLine(failtext);
+
                 readOut.AppendLine($"                                   ");
 
                 foreach (var f in feeds)
@@ -373,18 +438,30 @@ namespace KuCoinConsole
                 }
 
                 readOut.AppendLine($"                                   ");
+                
+                int count = 0;
+                var sortobs = new List<ISymbolDataService>(observers.Values);
 
-                foreach (var obs in observers)
+                sortobs.Sort((a, b) =>
                 {
-                    var l3 = obs.Value.Level3Observation;
+
+                    if (a.Level3Observation.GrandTotal > b.Level3Observation.GrandTotal) return -1;
+                    else if (a.Level3Observation.GrandTotal < b.Level3Observation.GrandTotal) return 1;
+                    else return 0;
+                });
+
+                foreach (var obs in sortobs)
+                {
+                    var l3 = obs.Level3Observation;
 
                     if (l3.FullDepthOrderBook is null) continue;
+                    if (++count > 10) break;
 
                     ba = ((IList<AtomicOrderStruct>)l3.FullDepthOrderBook.Asks)[0].Price;
                     bb = ((IList<AtomicOrderStruct>)l3.FullDepthOrderBook.Bids)[0].Price;
 
                     var currname = "";
-                    var bc = market.Symbols[obs.Value.Symbol].BaseCurrency;
+                    var bc = market.Symbols[obs.Symbol].BaseCurrency;
 
                     if (market.Currencies.Contains(bc))
                     {
@@ -395,7 +472,7 @@ namespace KuCoinConsole
                         currname = bc;
                     }
 
-                    var text = $"{MinChars(obs.Value.Symbol, maxSymbolLen)} - Best Ask: {MinChars(ba.ToString("#,##0.00######"), 12)} Best Bid: {MinChars(bb.ToString("#,##0.00######"), 12)} - {MinChars(currname, maxCurrencyLen)}  Total: {MinChars(l3.GrandTotal.ToString("#,##0"), 14)}";
+                    var text = $"{MinChars(obs.Symbol, maxSymbolLen)} - Best Ask: {MinChars(ba.ToString("#,##0.00######"), 12)} Best Bid: {MinChars(bb.ToString("#,##0.00######"), 12)} - {MinChars(currname, maxCurrencyLen)}  Total: {MinChars(l3.GrandTotal.ToString("#,##0"), 14)}";
                     text += $"\r\n{MinChars("", maxSymbolLen)} - Match Share: {MinChars(mpcts[z].ToString("##0") + "%", 4)}   Total Share: {MinChars(pcts[z++].ToString("##0") + "%", 4)}   State: " + MinChars(l3.State.ToString(), 14) + "  Queue Length: " + MinChars(l3.QueueLength.ToString(), 10);
                     text += "\r\n                                                      ";
 
@@ -418,6 +495,11 @@ namespace KuCoinConsole
                         tps += l3.TransactionsPerSecond;
 
                     }
+                }
+
+                if (observers.Count - count > 0)
+                {
+                    readOut.AppendLine($"Feeds Not Shown: {observers.Count - count}             ");
                 }
 
                 readOut.AppendLine($"                                                           ");

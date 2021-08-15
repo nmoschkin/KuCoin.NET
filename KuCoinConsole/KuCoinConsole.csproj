@@ -5,7 +5,6 @@
     <TargetFramework>net5.0-windows10.0.19041.0</TargetFramework>
     <Platforms>AnyCPU;x64</Platforms>
 	  <UseWindowsForms>true</UseWindowsForms>
-	  <UseWPF>true</UseWPF>
 	  <StartupObject>KuCoinConsole.Program</StartupObject>
   </PropertyGroup>
 
@@ -26,7 +25,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Kucoin.NET\Kucoin.NET.Std.csproj" />
-    <ProjectReference Include="..\TestApp\KuCoinApp.csproj" />
   </ItemGroup>
 
 </Project>

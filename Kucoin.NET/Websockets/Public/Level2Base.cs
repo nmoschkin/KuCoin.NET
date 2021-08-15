@@ -46,7 +46,12 @@ namespace Kucoin.NET.Websockets.Public
         /// <summary>
         /// The feed is running.
         /// </summary>
-        Running
+        Running,
+
+        /// <summary>
+        /// The feed is not operating normally.
+        /// </summary>
+        Failed
     }
 
     /// <summary>

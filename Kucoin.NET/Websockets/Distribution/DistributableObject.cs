@@ -62,49 +62,16 @@ namespace Kucoin.NET.Websockets.Distribution
 
         protected TValue[] processBuffer;
 
-        bool IDistributable.DoWork() => DoWork();
-
-        protected virtual bool DoWork()
+        bool IDistributable.DoWork()
         {
-            int i, c;
-
-            lock (lockObj)
-            {
-                lock (buffer)
-                {
-                    c = buffer.Count;
-                    if (c == 0) return false;
-
-                    if (processBuffer == null)
-                    {
-                        processBuffer = new TValue[c * 2];
-                    }
-
-                    lock (processBuffer)
-                    {
-                        if (processBuffer.Length < c)
-                        {
-                            Array.Resize(ref processBuffer, c * 2);
-                        }
-
-                        buffer.CopyTo(processBuffer, 0);
-                        buffer.Clear();
-
-                        for (i = 0; i < c; i++)
-                        {
-                            if (!ProcessObject(processBuffer[i]))
-                            {
-                                return i > 0;
-                            }
-                        }
-                    }
-
-                }
-
-                return true;
-            }
-
+            return DoWork();
         }
+
+        /// <summary>
+        /// Do work.
+        /// </summary>
+        /// <returns>True if work was done.</returns>
+        protected abstract bool DoWork();
 
         /// <summary>
         /// Process the object with internal data handling.

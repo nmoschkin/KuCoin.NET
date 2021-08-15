@@ -10,8 +10,8 @@
     xmlns:local="clr-namespace:KuCoinApp"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     Title="{i18n:Translate ResourceKey=MainTitle}"
-    Width="1200"
-    Height="750"
+    Width="800"
+    Height="550"
     mc:Ignorable="d">
 
     <Window.Resources>
@@ -101,7 +101,7 @@
                 Margin="8"
                 HorizontalAlignment="Center"
                 VerticalAlignment="Center"
-                Content="{i18n:Translate ResourceKey=MainTitle}"
+                Content="Ticker"
                 FontSize="20"
                 FontWeight="Bold"
                 Foreground="{StaticResource KuCoinForegroundWhite}" />
@@ -117,7 +117,96 @@
             BorderBrush="#30307f"
             BorderThickness="2">
 
-            <ListView x:Name="TickerList" ItemsSource="{Binding CurrentFeeds}" />
+            <ListView x:Name="TickerList" ItemsSource="{Binding CurrentFeeds}">
+
+                <ListView.ItemTemplate>
+                    <DataTemplate>
+                        <Grid>
+
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition />
+                            </Grid.ColumnDefinitions>
+
+                            <Grid.RowDefinitions>
+                                <RowDefinition />
+                                <RowDefinition />
+                            </Grid.RowDefinitions>
+
+
+                            <TextBlock
+                                Grid.Row="0"
+                                Grid.Column="0"
+                                Margin="8,4"
+                                HorizontalAlignment="Left"
+                                VerticalAlignment="Center"
+                                FontSize="12"
+                                FontWeight="Black"
+                                Text="{Binding Symbol}"
+                                TextAlignment="Left" />
+
+                            <TextBlock
+                                Grid.Row="1"
+                                Grid.Column="0"
+                                Margin="8,4"
+                                HorizontalAlignment="Left"
+                                VerticalAlignment="Center"
+                                FontSize="12"
+                                FontWeight="Normal"
+                                Text="{Binding BaseCurrency.FullName}"
+                                TextAlignment="Left" />
+
+
+                            <TextBlock
+                                Grid.Row="0"
+                                Grid.Column="1"
+                                Margin="8,4"
+                                HorizontalAlignment="Left"
+                                VerticalAlignment="Center"
+                                FontSize="10"
+                                FontWeight="Black">
+                                <Run Text="Best Ask: " />
+                                <Run FontWeight="Bold" Text="{Binding BestAsk, StringFormat='{}{0:#,##0.00########}'}" />
+
+                            </TextBlock>
+
+                            <TextBlock
+                                Grid.Row="0"
+                                Grid.Column="2"
+                                Margin="8,4"
+                                HorizontalAlignment="Left"
+                                VerticalAlignment="Center"
+                                FontSize="10"
+                                FontWeight="Black">
+                                <Run Text="Best Bid: " />
+                                <Run FontWeight="Bold" Text="{Binding BestAsk, StringFormat='{}{0:#,##0.00########}'}" />
+
+                            </TextBlock>
+
+                            <TextBlock
+                                Grid.Row="0"
+                                Grid.Column="3"
+                                Margin="8,4"
+                                HorizontalAlignment="Left"
+                                VerticalAlignment="Center"
+                                FontSize="10"
+                                FontWeight="Black">
+                                <Run Text="Queue Length: " />
+                                <Run FontWeight="Bold" Text="{Binding QueueLength}" />
+
+                            </TextBlock>
+
+
+                        </Grid>
+
+
+
+                    </DataTemplate>
+                </ListView.ItemTemplate>
+            </ListView>
 
         </Border>
 

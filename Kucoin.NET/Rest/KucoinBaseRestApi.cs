@@ -514,22 +514,26 @@ namespace Kucoin.NET.Rest
                 }
 
                 req.Content = new StringContent(json_data, Encoding.UTF8, "application/json");
-                
+
                 long nt = DateTime.UtcNow.Ticks;
 
-                if (nt - lastTime < 1_000_000)
+                lock (staticLockObj)
                 {
-                    await Task.Delay(100);
+                    if (nt - lastTime < 2_500_000)
+                    {
+                        Task.Delay(250).ConfigureAwait(false).GetAwaiter().GetResult();
+                    }
+
+                    lastTime = nt;
                 }
-                
-                lastTime = nt;
-                
+
                 var resp = await httpClient.SendAsync(req);
                 var result = await CheckResponseData(resp, wholeResponseJson);
 
                 return result;
             }
         }
+        static object staticLockObj = new object();
 
         /// <summary>
         /// Check if the response is good.

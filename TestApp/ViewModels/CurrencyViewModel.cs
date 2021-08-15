@@ -1,4 +1,5 @@
 ﻿using Kucoin.NET.Data.Market;
+using Kucoin.NET.Helpers;
 using Kucoin.NET.Observable;
 using Kucoin.NET.Rest;
 
@@ -37,12 +38,15 @@ namespace KuCoinApp
 
         public static IReadOnlyList<MarketCurrency> Currencies { get; private set; }
 
-        public static async Task UpdateCurrencies()
+        public static async Task UpdateCurrencies(bool refresh = false)
         {
             var market = Market.Instance;
 
-            await market.RefreshCurrenciesAsync();
-            await market.RefreshSymbolsAsync();
+            if (refresh) 
+            {
+                await market.RefreshCurrenciesAsync();
+                await market.RefreshSymbolsAsync();
+            }
 
             QuoteCurrencies = await market.GetAllQuoteCurrencies();
 
@@ -61,10 +65,17 @@ namespace KuCoinApp
                 })?.FirstOrDefault() != null;
             }).ToList();
 
-            App.Current?.Dispatcher?.Invoke(() =>
+            if (Dispatcher.Initialized)
+            {
+                Dispatcher.InvokeOnMainThread((o) =>
+                {
+                    Currencies = l;
+                });
+            }
+            else
             {
                 Currencies = l;
-            });
+            }
 
         }
 

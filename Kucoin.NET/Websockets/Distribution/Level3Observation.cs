@@ -10,6 +10,7 @@ using System.Runtime.CompilerServices;
 using System.Text;
 using Kucoin.NET.Websockets.Distribution;
 using System.Threading.Tasks;
+using System.Diagnostics.Contracts;
 
 namespace Kucoin.NET.Websockets.Observations
 {
@@ -17,13 +18,15 @@ namespace Kucoin.NET.Websockets.Observations
     {
         new private Level3 parent;
 
-        long matchTime = DateTime.UtcNow.Ticks;
+        private long matchTime = DateTime.UtcNow.Ticks;
 
-        long transactSec = 0;
+        private long transactSec = 0;
 
-        long matchSec = 0;
+        private long matchSec = 0;
 
-        IInitialDataProvider<string, KeyedAtomicOrderBook<AtomicOrderStruct>> dataProvider;
+        private IInitialDataProvider<string, KeyedAtomicOrderBook<AtomicOrderStruct>> dataProvider;
+
+        private DateTime? lastFailureTime = null;
 
         private KeyedAtomicOrderBook<AtomicOrderStruct> fullDepth;
 
@@ -37,6 +40,8 @@ namespace Kucoin.NET.Websockets.Observations
 
         private bool diagEnable;
 
+        private bool failure;
+
         private int interval = 100;
 
         private int marketDepth = 50;
@@ -49,7 +54,7 @@ namespace Kucoin.NET.Websockets.Observations
 
         private int maxResets = 3;
 
-        private int resetTimeout = 10000;
+        private int resetTimeout = 30000;
 
         private decimal marketVolume;
 
@@ -77,8 +82,14 @@ namespace Kucoin.NET.Websockets.Observations
         /// </summary>
         public KeyedAtomicOrderBook<AtomicOrderStruct> FullDepthOrderBook
         {
-            get => InternalData;
-            protected set => InternalData = value;    
+            get => fullDepth;
+            protected set
+            {
+                if (SetProperty(ref fullDepth, value))
+                {
+                    OnPropertyChanged(nameof(InternalData));
+                }
+            }
         }
 
         /// <summary>
@@ -95,7 +106,10 @@ namespace Kucoin.NET.Websockets.Observations
             get => fullDepth;
             protected set
             {
-                SetProperty(ref fullDepth, value);
+                if (SetProperty(ref fullDepth, value))
+                {
+                    OnPropertyChanged(nameof(FullDepthOrderBook));
+                }
             }
         }
 
@@ -235,6 +249,58 @@ namespace Kucoin.NET.Websockets.Observations
             }
         }
 
+        public override bool Failure
+        {
+            get => failure;
+            protected set
+            {
+                if (SetProperty(ref failure, value))
+                {
+                    if (value)
+                    {
+                        state = FeedState.Failed;
+                        lastFailureTime = DateTime.UtcNow;
+                    }
+
+                    OnPropertyChanged(nameof(State));
+                    OnPropertyChanged(nameof(TimeUntilNextRetry));
+                    OnPropertyChanged(nameof(LastFailureTime));
+                }
+            }
+        }
+
+        /// <summary>
+        /// The time of the last failure, or null if the feed is running normally.
+        /// </summary>
+        public DateTime? LastFailureTime
+        {
+            get => lastFailureTime;
+            protected set
+            {
+                if (SetProperty(ref lastFailureTime, value))
+                {
+                    OnPropertyChanged(nameof(TimeUntilNextRetry));
+                }
+            }
+        }
+
+        /// <summary>
+        /// The number of milliseconds remaining until the next retry, or null if the feed is running normally.
+        /// </summary>
+        public double? TimeUntilNextRetry
+        {
+            get
+            {
+                if (lastFailureTime is DateTime t)
+                {
+                    return (resetTimeout - (DateTime.UtcNow - t).TotalMilliseconds);
+                }
+                else
+                {
+                    return null;
+                }
+            }
+        }
 
         public override void CopyToObservable()
         {
@@ -313,6 +379,7 @@ namespace Kucoin.NET.Websockets.Observations
             {
                 lock (lockObj)
                 {
+                    if (failure || fullDepth == null) return;
                     calibrating = true;
 
                     foreach (var q in initBuffer)
@@ -320,32 +387,43 @@ namespace Kucoin.NET.Websockets.Observations
                         if (q.Sequence > fullDepth.Sequence) ProcessObject(q);
                     }
 
-                    calibrating = false;
-                    IsCalibrated = true;
-
                     initBuffer.Clear();
-                    State = FeedState.Running;
-                }
+                    calibrating = false;
 
+                    State = FeedState.Running;
+                    IsCalibrated = true;
+                }
             });
         }
 
         public override async Task Initialize()
         {
-            IsInitialized = false;
-            IsCalibrated = false;
+            lock(lockObj)
+            {
+                IsInitialized = false;
+                IsCalibrated = false;
 
-            initializing = true;
-            calibrating = false;
+                initializing = true;
+                calibrating = false;
 
-            State = FeedState.Initializing;
+                State = FeedState.Initializing;
+            }
 
-            FullDepthOrderBook = await DataProvider.ProvideInitialData(key);
+            var fd = await DataProvider.ProvideInitialData(key);
 
-            initializing = false;
-            IsInitialized = true;
+            lock (lockObj)
+            {
+                initializing = false;
+                IsInitialized = fd != null;
+
+                if (!initialized)
+                {
+                    Failure = true;
+                }
+
+                FullDepthOrderBook = fd;
+            }
         }
-
 
         public override async Task Reset()
         {
@@ -353,101 +431,178 @@ namespace Kucoin.NET.Websockets.Observations
             {
                 lock (lockObj)
                 {
-                    lock (processBuffer)
-                    {
-                        buffer = new List<Level3Update>();
-                        processBuffer = new Level3Update[0];
+                    initialized = calibrated = failure = false;
+                    lastFailureTime = null;
 
-                        IsInitialized = false;
-                        IsCalibrated = false;
-                    }
+                    _ = Task.Run(() =>
+                    {
+                        OnPropertyChanged(nameof(IsInitialized));
+                        OnPropertyChanged(nameof(IsCalibrated));
+                        OnPropertyChanged(nameof(Failure));
+                        OnPropertyChanged(nameof(TimeUntilNextRetry));
+                        OnPropertyChanged(nameof(LastFailureTime));
+                    });
+
+                    FullDepthOrderBook = null;
+
+                    buffer = new List<Level3Update>();
+                    initBuffer = new List<Level3Update>();
+                    processBuffer = new Level3Update[0];
+
                 }
             });
         }
 
 
-        public override bool ProcessObject(Level3Update obj)
+
+        protected override bool DoWork()
         {
+            int i, c;
 
-            if (disposedValue) return false;
-
-            if (!calibrated && !calibrating)
+            lock (lockObj)
             {
-                initBuffer.Add(obj);
-                if (initializing) return true;
+                c = buffer.Count;
+                if (c == 0) return false;
 
-                Initialize().ContinueWith(async (t) =>
+                if (processBuffer == null)
                 {
-                    await Calibrate();
-                });
+                    processBuffer = new Level3Update[c * 2];
+                }
+                if (processBuffer.Length < c)
+                {
+                    Array.Resize(ref processBuffer, c * 2);
+                }
+
+                buffer.CopyTo(processBuffer, 0);
+                buffer.Clear();
+
+                for (i = 0; i < c; i++)
+                {
+                    if (!ProcessObject(processBuffer[i]))
+                    {
+                        return i > 0;
+                    }
+                }
 
                 return true;
             }
-            else if (!calibrating && obj.Sequence <= fullDepth.Sequence)
-            {
-                return false;
-            }
-            else if (calibrated && obj.Sequence - fullDepth.Sequence > 1)
-            {
-                Reset();
-                return false;
-            }
-            else if (fullDepth == null)
-            {
-                return false;
-            }
+        }
 
-            if (diagEnable)
+        public override bool ProcessObject(Level3Update obj)
+        {
+            if (disposedValue) return false;
+
+            if (failure)
             {
-                var tt = DateTime.UtcNow.Ticks;
-                if (tt - matchTime >= 10_000_000)
+                if (lastFailureTime != null && lastFailureTime is DateTime t)
                 {
-                    matchTime = tt;
-
-                    TransactionsPerSecond = transactSec;
-                    MatchesPerSecond = matchSec;
-                    transactSec = 0;
-                    matchSec = 0;
+                    if ((DateTime.UtcNow - t).TotalMilliseconds > resetTimeout)
+                    {
+                        LastFailureTime = null;
+                        _ = Reset();
+                        return false;
+                    }
+                }
+                else
+                {
+                    OnPropertyChanged(nameof(TimeUntilNextRetry));
                 }
 
-                GrandTotal++;
-                transactSec++;
-
-                if (obj.Subject == "match")
-                {
-                    MatchTotal++;
-                    matchSec++;
-                }
+                return false;
             }
+
+            lock(lockObj)
+            {
+                if (!calibrated && !calibrating)
+                {
+                    initBuffer.Add(obj);
+
+                    if (initializing) return true;
+                    initializing = true;
+
+                    Initialize().ContinueWith((t) =>
+                    {
+                        if (failure) return;
+
+                        Task.Delay(100).ContinueWith(async (t2) =>
+                        {
+                            if (!failure)
+                            {
+                                await Calibrate();
+                            }
+                        });
+                    
+                    });
+
+                    return true;
+                }
+                else if (fullDepth == null)
+                {
+                    if (!failure) Failure = true;
+                    return false;
+                }
+                else if (calibrating && obj.Sequence <= fullDepth.Sequence)
+                {
+                    return false;
+                }
+                else if (calibrated && obj.Sequence - fullDepth.Sequence > 1)
+                {
+                    _ = Reset();
+                    return false;
+                }
+
+                if (diagEnable)
+                {
+                    var tt = DateTime.UtcNow.Ticks;
+                    if (tt - matchTime >= 10_000_000)
+                    {
+                        matchTime = tt;
+
+                        TransactionsPerSecond = transactSec;
+                        MatchesPerSecond = matchSec;
+                        transactSec = 0;
+                        matchSec = 0;
+                    }
+
+                    GrandTotal++;
+                    transactSec++;
+
+                    if (obj.Subject == "match")
+                    {
+                        MatchTotal++;
+                        matchSec++;
+                    }
+                }
             
-            if (obj.Side == null)
-            {
-                if (obj.Subject == "done")
+                if (obj.Side == null)
                 {
-                    if (fullDepth.Asks.ContainsKey(obj.OrderId))
+                    if (obj.Subject == "done")
                     {
-                        fullDepth.Asks.Remove(obj.OrderId);
-                    }
+                        if (fullDepth.Asks.ContainsKey(obj.OrderId))
+                        {
+                            fullDepth.Asks.Remove(obj.OrderId);
+                        }
 
-                    if (fullDepth.Bids.ContainsKey(obj.OrderId))
-                    {
-                        fullDepth.Bids.Remove(obj.OrderId);
+                        if (fullDepth.Bids.ContainsKey(obj.OrderId))
+                        {
+                            fullDepth.Bids.Remove(obj.OrderId);
+                        }
                     }
                 }
-            }
-            else if (obj.Side == Side.Sell)
-            {
-                SequencePieces(obj.Subject, obj, fullDepth.Asks, fullDepth.Bids);
-            }
-            else if (obj.Side == Side.Buy)
-            {
-                SequencePieces(obj.Subject, obj, fullDepth.Bids, fullDepth.Asks);
-            }
+                else if (obj.Side == Side.Sell)
+                {
+                    SequencePieces(obj.Subject, obj, fullDepth.Asks, fullDepth.Bids);
+                }
+                else if (obj.Side == Side.Buy)
+                {
+                    SequencePieces(obj.Subject, obj, fullDepth.Bids, fullDepth.Asks);
+                }
 
-            fullDepth.Sequence = obj.Sequence;
-            fullDepth.Timestamp = obj.Timestamp ?? DateTime.Now;
+                fullDepth.Sequence = obj.Sequence;
+                fullDepth.Timestamp = obj.Timestamp ?? DateTime.Now;
 
-            return true;
+                return true;
+            }
         }
 
         public override void SetInitialDataProvider(IInitialDataProvider<string, KeyedAtomicOrderBook<AtomicOrderStruct>> dataProvider)
@@ -484,8 +639,7 @@ namespace Kucoin.NET.Websockets.Observations
 
                     if (pieces.ContainsKey(u.OrderId))
                     {
-                        _ = Reset();
-                        return;
+                        pieces.Remove(u.OrderId);
                     }
 
                     pieces.Add(u);
@@ -506,18 +660,18 @@ namespace Kucoin.NET.Websockets.Observations
                     }
                     else
                     {
-                        Reset();
-                        return;
+                        //Reset();
+                        //return;
 
-                        //var u2 = new AtomicOrderStruct
-                        //{
-                        //    Price = change.Price ?? 0,
-                        //    Size = change.Size ?? 0,
-                        //    Timestamp = change.Timestamp ?? DateTime.Now,
-                        //    OrderId = change.OrderId
-                        //};
+                        var u2 = new AtomicOrderStruct
+                        {
+                            Price = change.Price ?? 0,
+                            Size = change.Size ?? 0,
+                            Timestamp = change.Timestamp ?? DateTime.Now,
+                            OrderId = change.OrderId
+                        };
 
-                        //pieces.Add(u2);
+                        pieces.Add(u2);
                     }
 
                     return;

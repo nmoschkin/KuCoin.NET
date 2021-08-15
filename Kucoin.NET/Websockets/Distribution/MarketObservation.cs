@@ -32,6 +32,8 @@ namespace Kucoin.NET.Websockets.Distribution
         public abstract TInternal InternalData { get; protected set; }
         public abstract TObservable ObservableData { get; protected set; }
         public abstract bool PreferDispatcher { get; }
+
+        public abstract bool Failure { get; protected set; }
         public abstract int Interval { get; set; }
         public abstract int MarketDepth { get; set; }
 

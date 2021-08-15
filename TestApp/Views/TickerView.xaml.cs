@@ -1,4 +1,5 @@
 ﻿using Kucoin.NET.Data.Market;
+using Kucoin.NET.Helpers;
 using Kucoin.NET.Services;
 
 using KuCoinApp.ViewModels;
@@ -27,13 +28,19 @@ namespace KuCoinApp.Views
     /// </summary>
     public partial class TickerView : Window
     {
-        WindowViewModelBase vm;
+        TickerViewModel vm;
         bool init = false;
 
+        public TickerViewModel ViewModel => vm;
 
-        public TickerView(WindowViewModelBase vm)
+        public TickerView() : this(new TickerViewModel())
+        {
+        }
+
+        public TickerView(TickerViewModel vm)
         {
             InitializeComponent();
+            Kucoin.NET.Helpers.Dispatcher.Initialize();
 
             var stream = new MemoryStream(CoinResources.kucoin);
             Icon = BitmapFrame.Create(stream);
@@ -65,9 +72,8 @@ namespace KuCoinApp.Views
             vm = null;
         }
 
-        public TickerView(IList<ISymbolDataService> activeServices) : this(new TickerViewViewModel(activeServices))
+        public TickerView(IList<ISymbolDataService> activeServices) : this(new TickerViewModel(activeServices))
         {
-
         }
 
         private void Vm_AskQuit(object sender, EventArgs e)
@@ -77,7 +83,7 @@ namespace KuCoinApp.Views
 
         private void TickerView_Activated(object sender, EventArgs e)
         {
-            if (vm is TickerViewViewModel mb)
+            if (vm is TickerViewModel mb)
                 mb.FocusCredWindow();
         }
 

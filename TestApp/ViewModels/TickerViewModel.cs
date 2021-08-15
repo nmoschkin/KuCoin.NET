@@ -32,20 +32,43 @@ using Kucoin.NET.Services;
 namespace KuCoinApp
 {
 
-    public class TickerViewViewModel : WindowViewModelBase
+    public class TickerViewModel : WindowViewModelBase
     {
 
         Credentials credWnd;
 
         private ObservableCollection<ISymbolDataService> activeServices;
 
+        private ObservableCollection<Level3TickerViewModel> level3Tickers = new ObservableCollection<Level3TickerViewModel>();
+
+
+        public ObservableCollection<Level3TickerViewModel> Level3Tickers
+        {
+            get => level3Tickers;
+            set
+            {
+                SetProperty(ref level3Tickers, value);
+            }
+        }
 
         public ObservableCollection<ISymbolDataService> ActiveServices
         {
             get => activeServices;
             set
             {
-                SetProperty(ref activeServices, value);
+                if (SetProperty(ref activeServices, value))
+                {
+                    Level3Tickers.Clear();
+                    if (value == null) return;
+
+                    foreach (var service in value)
+                    {
+                        foreach (var l3 in service.Level3Feed.ActiveFeeds)
+                        {
+                            Level3Tickers.Add(new Level3TickerViewModel(Market.Instance.Symbols[l3.Value.Symbol], l3.Value));
+                        }
+                    }
+                }
             }
         }
 
@@ -92,9 +115,14 @@ namespace KuCoinApp
 
         }
 
-        public TickerViewViewModel(IList<ISymbolDataService> activeServices)
+        public TickerViewModel(IList<ISymbolDataService> activeServices) : base()
         {
+
             ActiveServices = new ObservableCollection<ISymbolDataService>(activeServices);
+        }
+
+        public TickerViewModel()
+        {
 
             EditCredentialsCommand = new SimpleCommand(async (obj) =>
             {
