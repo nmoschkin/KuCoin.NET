@@ -399,6 +399,7 @@ namespace Kucoin.NET.Websockets.Observations
                     State = FeedState.Running;
 
                     IsCalibrated = true;
+                    ResetCount++;
                 }
             });
         }
