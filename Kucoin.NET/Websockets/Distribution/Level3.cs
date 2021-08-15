@@ -23,6 +23,8 @@ namespace Kucoin.NET.Websockets.Public
     public class Level3 : MarketFeed<Level3Observation, Level3Update, KeyedAtomicOrderBook<AtomicOrderStruct>, ObservableAtomicOrderBook<ObservableAtomicOrderUnit>>, ILevel3
     {
 
+        bool wmp;
+
         /// <summary>
         /// Instantiate a new market feed.
         /// </summary>
@@ -30,6 +32,17 @@ namespace Kucoin.NET.Websockets.Public
         /// <param name="distributionStrategy">Data distribution strategy.</param>
         public Level3(ICredentialsProvider credentialsProvider, DistributionStrategy distributionStrategy = DistributionStrategy.MessagePump) : base(credentialsProvider, distributionStrategy)
         {
+            if (distributionStrategy == DistributionStrategy.Link)
+            {
+                base.wantMsgPumpThread = false;
+            }
+
+            wmp = base.wantMsgPumpThread;
+
+            recvBufferSize = 131072;
+            minQueueBuffer = 10000;
+            chunkSize = 512;
+
         }
 
         /// <summary>
@@ -43,6 +56,17 @@ namespace Kucoin.NET.Websockets.Public
         /// <param name="distributionStrategy">Data distribution strategy.</param>
         public Level3(string key, string secret, string passphrase, bool isSandbox = false, bool futures = false, DistributionStrategy distributionStrategy = DistributionStrategy.MessagePump) : base(key, secret, passphrase, isSandbox: isSandbox, futures: futures, distributionStrategy)
         {
+            if (distributionStrategy == DistributionStrategy.Link)
+            {
+                base.wantMsgPumpThread = false;
+            }
+
+            wmp = base.wantMsgPumpThread;
+
+            recvBufferSize = 131072;
+            minQueueBuffer = 10000;
+            chunkSize = 512;
+
         }
 
         public override string Topic => "/spotMarket/level3";
@@ -179,6 +203,18 @@ namespace Kucoin.NET.Websockets.Public
             }
         }
 
+        protected override void AddPacket(string json)
+        {
+            if (wmp)
+            {
+                base.AddPacket(json);
+            }
+            else
+            {
+                RouteJsonPacket(json);
+            }
+        }
+
         protected override void RouteJsonPacket(string json, FeedMessage e = null)
         {
             var msg = JsonConvert.DeserializeObject<FeedMessage<Level3Update>>(json);
@@ -193,11 +229,11 @@ namespace Kucoin.NET.Websockets.Public
                     if (string.IsNullOrEmpty(symbol)) return;
 
                     var af = activeFeeds[symbol];
+
                     var update = msg.Data;
                     update.Subject = msg.Subject;
 
                     af.OnNext(update);
-
                 }
             }
             else

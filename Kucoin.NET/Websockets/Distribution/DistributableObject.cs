@@ -45,7 +45,7 @@ namespace Kucoin.NET.Websockets.Distribution
                 SetProperty(ref state, value);
             }
         }
-
+             
         /// <summary>
         /// Create a new active observation.
         /// </summary>
@@ -60,40 +60,43 @@ namespace Kucoin.NET.Websockets.Distribution
             State = FeedState.Subscribed;
         }
 
-        protected TValue[] processValues = new TValue[0];
+        protected TValue[] processBuffer;
 
-        bool IDistributable.DoWork()
+        bool IDistributable.DoWork() => DoWork();
+
+        protected virtual bool DoWork()
         {
             int i, c;
+
             lock (lockObj)
             {
                 lock (buffer)
                 {
                     c = buffer.Count;
                     if (c == 0) return false;
-                    if (c > processValues.Length)
+
+                    if (processBuffer == null)
                     {
-                        Array.Resize(ref processValues, c * 2);
+                        processBuffer = new TValue[c * 2];
                     }
 
-                    lock (processValues)
+                    if (processBuffer.Length < c)
                     {
-                        buffer.CopyTo(processValues, c);
+                        Array.Resize(ref processBuffer, c * 2);
                     }
 
+                    buffer.CopyTo(processBuffer, 0);
                     buffer.Clear();
                 }
 
-                lock (processValues)
+                for (i = 0; i < c; i++)
                 {
-                    for (i = 0; i < c; i++)
-                    {
-                        ProcessObject(processValues[i]);
-                    }
+                    ProcessObject(processBuffer[i]);
                 }
+
+                return true;
             }
 
-            return true;
         }
 
         /// <summary>
@@ -114,9 +117,12 @@ namespace Kucoin.NET.Websockets.Distribution
 
         public virtual void OnNext(TValue value)
         {
-            lock (buffer)
+            lock (lockObj)
             {
-                buffer.Add(value);
+                lock (buffer)
+                {
+                    buffer.Add(value);
+                }
             }
         }
 
@@ -155,6 +161,7 @@ namespace Kucoin.NET.Websockets.Distribution
             Dispose(disposing: true);
             GC.SuppressFinalize(this);
         }
+
         #endregion IDisposable Pattern
 
     }

@@ -9,12 +9,19 @@ using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using System.Text;
 using Kucoin.NET.Websockets.Distribution;
+using System.Threading.Tasks;
 
 namespace Kucoin.NET.Websockets.Observations
 {
     public class Level3Observation : MarketObservation<KeyedAtomicOrderBook<AtomicOrderStruct>, ObservableAtomicOrderBook<ObservableAtomicOrderUnit>, Level3Update>, IFeedDiagnostics, IMarketVolume
     {
         new private Level3 parent;
+
+        long matchTime = DateTime.UtcNow.Ticks;
+
+        long transactSec = 0;
+
+        long matchSec = 0;
 
         IInitialDataProvider<string, KeyedAtomicOrderBook<AtomicOrderStruct>> dataProvider;
 
@@ -44,13 +51,14 @@ namespace Kucoin.NET.Websockets.Observations
 
         private decimal marketVolume;
 
-        private bool af;
-        private bool bf;
+        private bool initializing;
+        private bool calibrating;
 
         public Level3Observation(Level3 parent, string symbol) : base(parent, symbol)
         {
             this.parent = parent;
             this.dataProvider = parent;
+            this.IsObservationDisabled = true;
         }
 
         public override bool IsObservationDisabled
@@ -225,83 +233,94 @@ namespace Kucoin.NET.Websockets.Observations
 
         public override void Calibrate()
         {
-            lock (lockObj)
+            lock (buffer)
             {
                 calibrated = true;
+                calibrating = true;
 
-                bf = true;
                 foreach (var q in buffer)
                 {
                     if (q.Sequence > fullDepth.Sequence) ProcessObject(q);
                 }
-                bf = false;
+
+                calibrating = false;
                 buffer.Clear();
             }
         }
 
+        protected override bool DoWork()
+        {
+            if (initializing) return false;
+            return base.DoWork();
+        }
+
         public override void CopyToObservable()
         {
-            if (orderBook == null)
+            lock (lockObj)
             {
-                orderBook = new ObservableAtomicOrderBook<ObservableAtomicOrderUnit>();
-                orderBook.Sequence = fullDepth.Sequence;
-                orderBook.Timestamp = fullDepth.Timestamp;
-            }
-            
-            int marketDepth = this.marketDepth;
-
-            if (fullDepth.Asks.Count < marketDepth) marketDepth = fullDepth.Asks.Count; 
-
-            if (orderBook.Asks.Count != marketDepth)
-            {
-                orderBook.Asks.Clear();
-                for (int i = 0; i < marketDepth; i++)
+                if (orderBook == null)
                 {
-                    orderBook.Asks.Add(fullDepth.Asks[i].Clone<ObservableAtomicOrderUnit>());
+                    orderBook = new ObservableAtomicOrderBook<ObservableAtomicOrderUnit>();
+                    orderBook.Sequence = fullDepth.Sequence;
+                    orderBook.Timestamp = fullDepth.Timestamp;
                 }
-            }
-            else
-            {
-                for (int i = 0; i < marketDepth; i++)
+
+                int marketDepth = this.marketDepth;
+
+                if (fullDepth.Asks.Count < marketDepth) marketDepth = fullDepth.Asks.Count;
+
+                if (orderBook.Asks.Count != marketDepth)
                 {
-                    if (orderBook.Asks[i].OrderId == fullDepth.Asks[i].OrderId)
+                    orderBook.Asks.Clear();
+                    for (int i = 0; i < marketDepth; i++)
                     {
-                        orderBook.Asks[i].Price = fullDepth.Asks[i].Price;
-                        orderBook.Asks[i].Size = fullDepth.Asks[i].Size;
-                        orderBook.Asks[i].Timestamp = fullDepth.Asks[i].Timestamp;
-                    }
-                    else
-                    {
-                        orderBook.Asks[i] = fullDepth.Asks[i].Clone<ObservableAtomicOrderUnit>();
+                        orderBook.Asks.Add(fullDepth.Asks[i].Clone<ObservableAtomicOrderUnit>());
                     }
                 }
-            }
-
-            if (fullDepth.Bids.Count < marketDepth) marketDepth = fullDepth.Bids.Count;
-
-            if (orderBook.Bids.Count != marketDepth)
-            {
-                orderBook.Bids.Clear();
-                for (int i = 0; i < marketDepth; i++)
+                else
                 {
-                    orderBook.Bids.Add(fullDepth.Bids[i].Clone<ObservableAtomicOrderUnit>());
-                }
-            }
-            else
-            {
-                for (int i = 0; i < marketDepth; i++)
-                {
-                    if (orderBook.Bids[i].OrderId == fullDepth.Bids[i].OrderId)
+                    for (int i = 0; i < marketDepth; i++)
                     {
-                        orderBook.Bids[i].Price = fullDepth.Bids[i].Price;
-                        orderBook.Bids[i].Size = fullDepth.Bids[i].Size;
-                        orderBook.Bids[i].Timestamp = fullDepth.Bids[i].Timestamp;
-                    }
-                    else
-                    {
-                        orderBook.Bids[i] = fullDepth.Bids[i].Clone<ObservableAtomicOrderUnit>();
+                        if (orderBook.Asks[i].OrderId == fullDepth.Asks[i].OrderId)
+                        {
+                            orderBook.Asks[i].Price = fullDepth.Asks[i].Price;
+                            orderBook.Asks[i].Size = fullDepth.Asks[i].Size;
+                            orderBook.Asks[i].Timestamp = fullDepth.Asks[i].Timestamp;
+                        }
+                        else
+                        {
+                            orderBook.Asks[i] = fullDepth.Asks[i].Clone<ObservableAtomicOrderUnit>();
+                        }
                     }
                 }
+
+                if (fullDepth.Bids.Count < marketDepth) marketDepth = fullDepth.Bids.Count;
+
+                if (orderBook.Bids.Count != marketDepth)
+                {
+                    orderBook.Bids.Clear();
+                    for (int i = 0; i < marketDepth; i++)
+                    {
+                        orderBook.Bids.Add(fullDepth.Bids[i].Clone<ObservableAtomicOrderUnit>());
+                    }
+                }
+                else
+                {
+                    for (int i = 0; i < marketDepth; i++)
+                    {
+                        if (orderBook.Bids[i].OrderId == fullDepth.Bids[i].OrderId)
+                        {
+                            orderBook.Bids[i].Price = fullDepth.Bids[i].Price;
+                            orderBook.Bids[i].Size = fullDepth.Bids[i].Size;
+                            orderBook.Bids[i].Timestamp = fullDepth.Bids[i].Timestamp;
+                        }
+                        else
+                        {
+                            orderBook.Bids[i] = fullDepth.Bids[i].Clone<ObservableAtomicOrderUnit>();
+                        }
+                    }
+                }
+
             }
 
         }
@@ -322,22 +341,46 @@ namespace Kucoin.NET.Websockets.Observations
 
         public override void ProcessObject(Level3Update obj)
         {
+
             if (disposedValue) return;
 
-            if (!calibrated && !bf)
+            if (!calibrated && !calibrating)
             {
+                if (initializing) return;
+                initializing = true;
                 State = FeedState.Initializing;
 
-                if (af) return;
+                Task.Delay(100).ConfigureAwait(false).GetAwaiter().GetResult();
 
-                af = true;
-                
                 Initialize();
                 Calibrate();
 
+                Task.Delay(100).ConfigureAwait(false).GetAwaiter().GetResult();
+
+                //DataProvider.ProvideInitialData(key).ContinueWith((t) =>
+                //{
+                //    lock (buffer)
+                //    {
+                //        FullDepthOrderBook = t.Result;
+                //        IsInitialized = true;
+
+                //        Calibrate();
+                //        calibrating = false;
+                //    }
+
+                //});
+
+                calibrating = false;
+                initializing = false;
+
+                IsInitialized = true;
+                IsCalibrated = true;
+
+                State = FeedState.Running;
+
                 return;
             }
-            else if (obj.Sequence <= fullDepth.Sequence)
+            else if (!calibrating && obj.Sequence <= fullDepth.Sequence)
             {
                 return;
             }
@@ -348,51 +391,70 @@ namespace Kucoin.NET.Websockets.Observations
 
             if (diagEnable)
             {
+                var tt = DateTime.UtcNow.Ticks;
+                if (tt - matchTime >= 10_000_000)
+                {
+                    matchTime = tt;
+
+                    TransactionsPerSecond = transactSec;
+                    MatchesPerSecond = matchSec;
+                    transactSec = 0;
+                    matchSec = 0;
+                }
+
                 GrandTotal++;
-                TransactionsPerSecond++;
+                transactSec++;
 
                 if (obj.Subject == "match")
                 {
                     MatchTotal++;
-                    MatchesPerSecond++;
+                    matchSec++;
                 }
             }
-            lock (lockObj)
+
+            if (!calibrating && obj.Sequence - fullDepth.Sequence > 1)
             {
-                if (!bf && obj.Sequence - fullDepth.Sequence > 1)
-                {
-                    Reset();
-                    return;
-                }
+                if (obj.Sequence <= fullDepth.Sequence) return;
 
-                if (obj.Side == null)
+                Reset();
+                return;
+            }
+            
+            if (calibrating && obj.Sequence - fullDepth.Sequence == 1)
+            {
+                IsInitialized = true;
+                IsCalibrated = true;
+                calibrating = false;
+                State = FeedState.Running;
+            }
+
+            if (obj.Side == null)
+            {
+                if (obj.Subject == "done")
                 {
-                    if (obj.Subject == "done")
+                    if (fullDepth.Asks.ContainsKey(obj.OrderId))
                     {
-                        if (fullDepth.Asks.ContainsKey(obj.OrderId))
-                        {
-                            fullDepth.Asks.Remove(obj.OrderId);
-                        }
+                        fullDepth.Asks.Remove(obj.OrderId);
+                    }
 
-                        if (fullDepth.Bids.ContainsKey(obj.OrderId))
-                        {
-                            fullDepth.Bids.Remove(obj.OrderId);
-                        }
+                    if (fullDepth.Bids.ContainsKey(obj.OrderId))
+                    {
+                        fullDepth.Bids.Remove(obj.OrderId);
                     }
                 }
-                else if (obj.Side == Side.Sell)
-                {
-                    SequencePieces(obj.Subject, obj, fullDepth.Asks, fullDepth.Bids);
-                }
-                else if (obj.Side == Side.Buy)
-                {
-                    SequencePieces(obj.Subject, obj, fullDepth.Bids, fullDepth.Asks);
-                }
-
-                fullDepth.Sequence = obj.Sequence;
-                fullDepth.Timestamp = obj.Timestamp ?? DateTime.Now;
-
             }
+            else if (obj.Side == Side.Sell)
+            {
+                SequencePieces(obj.Subject, obj, fullDepth.Asks, fullDepth.Bids);
+            }
+            else if (obj.Side == Side.Buy)
+            {
+                SequencePieces(obj.Subject, obj, fullDepth.Bids, fullDepth.Asks);
+            }
+
+            fullDepth.Sequence = obj.Sequence;
+            fullDepth.Timestamp = obj.Timestamp ?? DateTime.Now;
+
         }
 
         public override void Reset()
@@ -410,7 +472,7 @@ namespace Kucoin.NET.Websockets.Observations
         {
             DataProvider = dataProvider;
         }
-
+                
         /// <summary>
         /// Sequence the changes into the order book.
         /// </summary>

@@ -68,7 +68,10 @@ namespace Kucoin.NET.Websockets.Distribution
                             {
                                 actions.Add(new Action(() =>
                                 {
-                                    t.DoWork();
+                                    lock (t.LockObject)
+                                    {
+                                        t.DoWork();
+                                    }
                                     i++;
                                 }));
                             }

@@ -183,7 +183,7 @@ namespace KuCoinConsole
             service = serviceFactory.CreateConnected(cred);
 
 
-            //var syms = new List<string>(new string[] { "ETH-USDT" });
+            //var syms = new List<string>(new string[] { "XLM-ETH" });
             var syms = new List<string>(new string[] { "MATIC-USDT", "XRP-USDT", "DOGE-USDT", "KCS-USDT", "ETH-USDT", "XLM-USDT", "BTC-USDT", "ADA-USDT", "LTC-USDT" });
             
             Task.Run(async () =>

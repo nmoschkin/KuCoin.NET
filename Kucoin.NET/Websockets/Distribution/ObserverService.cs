@@ -133,6 +133,7 @@ namespace Kucoin.NET.Websockets.Distribution
                         foreach (var feed in feeds)
                         {
                             if (cts.IsCancellationRequested) return;
+                            if (feed.IsObservationDisabled) continue;
 
                             if (i == feed.Interval)
                             {
