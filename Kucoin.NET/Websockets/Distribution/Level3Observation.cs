@@ -29,6 +29,8 @@ namespace Kucoin.NET.Websockets.Observations
 
         private ObservableAtomicOrderBook<ObservableAtomicOrderUnit> orderBook;
 
+        private List<Level3Update> initBuffer = new List<Level3Update>();
+
         private bool disabled;
 
         private bool updVol;
@@ -233,28 +235,6 @@ namespace Kucoin.NET.Websockets.Observations
             }
         }
 
-        public override void Calibrate()
-        {
-            lock (buffer)
-            {
-                calibrated = true;
-                calibrating = true;
-
-                foreach (var q in buffer)
-                {
-                    if (q.Sequence > fullDepth.Sequence) ProcessObject(q);
-                }
-
-                calibrating = false;
-                buffer.Clear();
-            }
-        }
-
-        protected override bool DoWork()
-        {
-            if (initializing) return false;
-            return base.DoWork();
-        }
 
         public override void CopyToObservable()
         {
@@ -327,68 +307,94 @@ namespace Kucoin.NET.Websockets.Observations
 
         }
 
-        public override void Initialize()
+        public override async Task Calibrate()
         {
-            lock (lockObj)
+            await Task.Run(() =>
             {
-                IsInitialized = false;
-                IsCalibrated = false;
-                State = FeedState.Initializing;
+                lock (lockObj)
+                {
+                    calibrating = true;
 
-                FullDepthOrderBook = DataProvider.ProvideInitialData(key).ConfigureAwait(false).GetAwaiter().GetResult();
-            }
+                    foreach (var q in initBuffer)
+                    {
+                        if (q.Sequence > fullDepth.Sequence) ProcessObject(q);
+                    }
 
+                    calibrating = false;
+                    IsCalibrated = true;
+
+                    initBuffer.Clear();
+                    State = FeedState.Running;
+                }
+
+            });
+        }
+
+        public override async Task Initialize()
+        {
+            IsInitialized = false;
+            IsCalibrated = false;
+
+            initializing = true;
+            calibrating = false;
+
+            State = FeedState.Initializing;
+
+            FullDepthOrderBook = await DataProvider.ProvideInitialData(key);
+
+            initializing = false;
             IsInitialized = true;
         }
 
-        public override void ProcessObject(Level3Update obj)
+
+        public override async Task Reset()
+        {
+            await Task.Run(() =>
+            {
+                lock (lockObj)
+                {
+                    lock (processBuffer)
+                    {
+                        buffer = new List<Level3Update>();
+                        processBuffer = new Level3Update[0];
+
+                        IsInitialized = false;
+                        IsCalibrated = false;
+                    }
+                }
+            });
+        }
+
+
+        public override bool ProcessObject(Level3Update obj)
         {
 
-            if (disposedValue) return;
+            if (disposedValue) return false;
 
             if (!calibrated && !calibrating)
             {
-                if (initializing) return;
-                initializing = true;
-                State = FeedState.Initializing;
+                initBuffer.Add(obj);
+                if (initializing) return true;
 
-                Task.Delay(100).ConfigureAwait(false).GetAwaiter().GetResult();
+                Initialize().ContinueWith(async (t) =>
+                {
+                    await Calibrate();
+                });
 
-                Initialize();
-                Calibrate();
-
-                Task.Delay(100).ConfigureAwait(false).GetAwaiter().GetResult();
-
-                //DataProvider.ProvideInitialData(key).ContinueWith((t) =>
-                //{
-                //    lock (buffer)
-                //    {
-                //        FullDepthOrderBook = t.Result;
-                //        IsInitialized = true;
-
-                //        Calibrate();
-                //        calibrating = false;
-                //    }
-
-                //});
-
-                calibrating = false;
-                initializing = false;
-
-                IsInitialized = true;
-                IsCalibrated = true;
-
-                State = FeedState.Running;
-
-                return;
+                return true;
             }
             else if (!calibrating && obj.Sequence <= fullDepth.Sequence)
             {
-                return;
+                return false;
+            }
+            else if (calibrated && obj.Sequence - fullDepth.Sequence > 1)
+            {
+                Reset();
+                return false;
             }
             else if (fullDepth == null)
             {
-                return;
+                return false;
             }
 
             if (diagEnable)
@@ -413,23 +419,7 @@ namespace Kucoin.NET.Websockets.Observations
                     matchSec++;
                 }
             }
-
-            if (!calibrating && obj.Sequence - fullDepth.Sequence > 1)
-            {
-                if (obj.Sequence <= fullDepth.Sequence) return;
-
-                Reset();
-                return;
-            }
             
-            if (calibrating && obj.Sequence - fullDepth.Sequence == 1)
-            {
-                IsInitialized = true;
-                IsCalibrated = true;
-                calibrating = false;
-                State = FeedState.Running;
-            }
-
             if (obj.Side == null)
             {
                 if (obj.Subject == "done")
@@ -457,17 +447,7 @@ namespace Kucoin.NET.Websockets.Observations
             fullDepth.Sequence = obj.Sequence;
             fullDepth.Timestamp = obj.Timestamp ?? DateTime.Now;
 
-        }
-
-        public override void Reset()
-        {
-            lock (lockObj)
-            {
-                buffer = new List<Level3Update>();
-
-                IsInitialized = false;
-                IsCalibrated = false;
-            }
+            return true;
         }
 
         public override void SetInitialDataProvider(IInitialDataProvider<string, KeyedAtomicOrderBook<AtomicOrderStruct>> dataProvider)
@@ -504,7 +484,7 @@ namespace Kucoin.NET.Websockets.Observations
 
                     if (pieces.ContainsKey(u.OrderId))
                     {
-                        Reset();
+                        _ = Reset();
                         return;
                     }
 

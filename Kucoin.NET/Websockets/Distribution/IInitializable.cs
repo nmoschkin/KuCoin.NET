@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace Kucoin.NET.Websockets.Distribution
 {
@@ -50,17 +51,17 @@ namespace Kucoin.NET.Websockets.Distribution
         /// <summary>
         /// Calibrate the data.
         /// </summary>
-        void Calibrate();
+        Task Calibrate();
 
         /// <summary>
         /// Initialize the data.
         /// </summary>
-        void Initialize();
+        Task Initialize();
 
         /// <summary>
         /// Reset the data.
         /// </summary>
-        void Reset();
+        Task Reset();
 
     }
 }

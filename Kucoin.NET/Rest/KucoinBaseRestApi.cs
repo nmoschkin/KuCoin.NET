@@ -19,7 +19,7 @@ namespace Kucoin.NET.Rest
     /// <summary>
     /// The base class for all KuCoin communication, including KuCoin and KuCoin Futures, REST and websocket APIs.
     /// </summary>
-    public class KucoinBaseRestApi : ObservableBase
+    public abstract class KucoinBaseRestApi : ObservableBase
     {
         private static readonly JsonSerializerSettings defaultSettings;
 
@@ -29,6 +29,9 @@ namespace Kucoin.NET.Rest
         protected bool isSandbox;
         protected bool isFutures;
         protected bool isv1api;
+
+        protected static long lastTime = DateTime.UtcNow.Ticks;
+
 
         /// <summary>
         /// Gets credentials for access.  This may be null for classes implementing public APIs.
@@ -511,7 +514,16 @@ namespace Kucoin.NET.Rest
                 }
 
                 req.Content = new StringContent(json_data, Encoding.UTF8, "application/json");
+                
+                long nt = DateTime.UtcNow.Ticks;
 
+                if (nt - lastTime < 1_000_000)
+                {
+                    await Task.Delay(100);
+                }
+                
+                lastTime = nt;
+                
                 var resp = await httpClient.SendAsync(req);
                 var result = await CheckResponseData(resp, wholeResponseJson);
 

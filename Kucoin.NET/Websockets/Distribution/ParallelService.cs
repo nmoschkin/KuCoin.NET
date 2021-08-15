@@ -54,15 +54,18 @@ namespace Kucoin.NET.Websockets.Distribution
             {
                 var actions = new List<Action>();
                 var x = new List<bool>();
+                int i;
 
                 while (!cts.IsCancellationRequested)
                 {
-                    int i = 0;
+                    i = 0;
 
-                    if (ActionsChanged)
+                    lock (Tenants)
                     {
-                        lock (Tenants)
+                        if (ActionsChanged)
                         {
+                            ActionsChanged = false;
+
                             actions.Clear();
                             foreach (var t in Tenants)
                             {
@@ -70,11 +73,11 @@ namespace Kucoin.NET.Websockets.Distribution
                                 {
                                     lock (t.LockObject)
                                     {
-                                        t.DoWork();
+                                        if (!t.DoWork()) i++;
                                     }
-                                    i++;
                                 }));
                             }
+
                         }
                     }
 

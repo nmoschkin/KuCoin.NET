@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace Kucoin.NET.Websockets.Distribution
 {
@@ -51,10 +52,10 @@ namespace Kucoin.NET.Websockets.Distribution
         public abstract int ResetTimeout { get; set; }
         public abstract int MaxTimeoutRetries { get; set; }
 
-        public abstract void Calibrate();
+        public abstract Task Calibrate();
         public abstract void CopyToObservable();
-        public abstract void Initialize();
-        public abstract void Reset();
+        public abstract Task Initialize();
+        public abstract Task Reset();
         public abstract void SetInitialDataProvider(IInitialDataProvider<string, TInternal> dataProvider);
 
         protected override void Dispose(bool disposing)

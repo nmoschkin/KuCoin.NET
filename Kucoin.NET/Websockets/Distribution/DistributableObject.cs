@@ -80,18 +80,25 @@ namespace Kucoin.NET.Websockets.Distribution
                         processBuffer = new TValue[c * 2];
                     }
 
-                    if (processBuffer.Length < c)
+                    lock (processBuffer)
                     {
-                        Array.Resize(ref processBuffer, c * 2);
+                        if (processBuffer.Length < c)
+                        {
+                            Array.Resize(ref processBuffer, c * 2);
+                        }
+
+                        buffer.CopyTo(processBuffer, 0);
+                        buffer.Clear();
+
+                        for (i = 0; i < c; i++)
+                        {
+                            if (!ProcessObject(processBuffer[i]))
+                            {
+                                return i > 0;
+                            }
+                        }
                     }
 
-                    buffer.CopyTo(processBuffer, 0);
-                    buffer.Clear();
-                }
-
-                for (i = 0; i < c; i++)
-                {
-                    ProcessObject(processBuffer[i]);
                 }
 
                 return true;
@@ -103,7 +110,7 @@ namespace Kucoin.NET.Websockets.Distribution
         /// Process the object with internal data handling.
         /// </summary>
         /// <param name="obj"></param>
-        public abstract void ProcessObject(TValue obj);
+        public abstract bool ProcessObject(TValue obj);
 
         public virtual void OnCompleted()
         {
