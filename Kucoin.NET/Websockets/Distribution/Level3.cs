@@ -40,9 +40,9 @@ namespace Kucoin.NET.Websockets.Public
 
             wmp = base.wantMsgPumpThread;
 
-            recvBufferSize = 131072;
-            minQueueBuffer = 10000;
-            chunkSize = 512;
+            //recvBufferSize = 262144;
+            //minQueueBuffer = 10000;
+            //chunkSize = 512;
 
         }
 
@@ -64,9 +64,9 @@ namespace Kucoin.NET.Websockets.Public
 
             wmp = base.wantMsgPumpThread;
 
-            recvBufferSize = 131072;
-            minQueueBuffer = 10000;
-            chunkSize = 512;
+            //recvBufferSize = 262144;
+            //minQueueBuffer = 10000;
+            //chunkSize = 512;
 
         }
 

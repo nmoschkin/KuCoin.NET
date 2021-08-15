@@ -11,6 +11,7 @@ using System.Text;
 using Kucoin.NET.Websockets.Distribution;
 using System.Threading.Tasks;
 using System.Diagnostics.Contracts;
+using System.Threading;
 
 namespace Kucoin.NET.Websockets.Observations
 {
@@ -384,15 +385,19 @@ namespace Kucoin.NET.Websockets.Observations
                     if (failure || fullDepth == null) return;
                     calibrating = true;
 
-                    foreach (var q in initBuffer)
+                    lock (initBuffer)
                     {
-                        if (q.Sequence > fullDepth.Sequence) ProcessObject(q);
+                        foreach (var q in initBuffer)
+                        {
+                            if (q.Sequence > fullDepth.Sequence) ProcessObject(q);
+                        }
+
+                        initBuffer.Clear();
                     }
 
-                    initBuffer.Clear();
                     calibrating = false;
-
                     State = FeedState.Running;
+
                     IsCalibrated = true;
                 }
             });
@@ -421,6 +426,7 @@ namespace Kucoin.NET.Websockets.Observations
 
                 if (!initialized)
                 {
+                    lastFailureTime = DateTime.Now;
                     Failure = true;
                 }
 
@@ -449,8 +455,10 @@ namespace Kucoin.NET.Websockets.Observations
 
                     FullDepthOrderBook = null;
 
+                    initBuffer.AddRange(processBuffer);
+                    initBuffer = new List<Level3Update>(buffer);
+
                     buffer = new List<Level3Update>();
-                    initBuffer = new List<Level3Update>();
                     processBuffer = new Level3Update[0];
 
                 }
@@ -496,45 +504,48 @@ namespace Kucoin.NET.Websockets.Observations
         {
             if (disposedValue) return false;
 
-            if (failure)
+            lock (lockObj)
             {
-                if (lastFailureTime != null && lastFailureTime is DateTime t)
+                if (failure)
                 {
-                    if ((DateTime.UtcNow - t).TotalMilliseconds > resetTimeout)
+                    if (lastFailureTime != null && lastFailureTime is DateTime t)
                     {
-                        LastFailureTime = null;
-                        _ = Reset();
-                        return false;
+                        if ((DateTime.UtcNow - t).TotalMilliseconds > resetTimeout)
+                        {
+                            LastFailureTime = null;
+                            _ = Reset();
+                            return false;
+                        }
                     }
-                }
-                else
-                {
-                    OnPropertyChanged(nameof(TimeUntilNextRetry));
+                    else
+                    {
+                        OnPropertyChanged(nameof(TimeUntilNextRetry));
+                    }
+
+                    return false;
                 }
 
-                return false;
-            }
-
-            lock(lockObj)
-            {
                 if (!calibrated && !calibrating)
                 {
-                    initBuffer.Add(obj);
+                    lock (initBuffer)
+                    {
+                        initBuffer.Add(obj);
 
-                    if (initializing) return true;
-                    initializing = true;
+                        if (initializing) return true;
+                        initializing = true;
+                    }
 
-                    Initialize().ContinueWith((t) =>
+                    Initialize().ContinueWith(async (t) =>
                     {
                         if (failure) return;
 
-                        Task.Delay(100).ContinueWith(async (t2) =>
-                        {
+                        //Task.Delay(100).ContinueWith(async (t2) =>
+                        //{
                             if (!failure)
                             {
                                 await Calibrate();
                             }
-                        });
+                        //});
                     
                     });
 
@@ -545,7 +556,7 @@ namespace Kucoin.NET.Websockets.Observations
                     if (!failure) Failure = true;
                     return false;
                 }
-                else if (calibrating && obj.Sequence <= fullDepth.Sequence)
+                else if (obj.Sequence <= fullDepth.Sequence)
                 {
                     return false;
                 }
@@ -620,18 +631,18 @@ namespace Kucoin.NET.Websockets.Observations
         /// <param name="changes">The changes to sequence.</param>
         /// <param name="pieces">The collection to change (either an ask or a bid collection)</param>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        protected void SequencePieces(string subj, Level3Update change, KeyedBook<AtomicOrderStruct> pieces, KeyedBook<AtomicOrderStruct> otherPieces)
+        protected bool SequencePieces(string subj, Level3Update change, KeyedBook<AtomicOrderStruct> pieces, KeyedBook<AtomicOrderStruct> otherPieces)
         {
             switch (subj)
             {
                 case "done":
 
                     pieces.Remove(change.OrderId);
-                    return;
+                    return true;
 
                 case "open":
 
-                    if (change.Price == null || change.Price == 0 || change.Size == null || change.Size == 0) return;
+                    if (change.Price == null || change.Price == 0 || change.Size == null || change.Size == 0) return true;
 
                     var u = new AtomicOrderStruct
                     {
@@ -643,12 +654,13 @@ namespace Kucoin.NET.Websockets.Observations
 
                     if (pieces.ContainsKey(u.OrderId))
                     {
-                        pieces.Remove(u.OrderId);
+                        return false;
+                        //pieces.Remove(u.OrderId);
                     }
 
                     pieces.Add(u);
 
-                    return;
+                    return true;
 
                 case "change":
 
@@ -665,20 +677,20 @@ namespace Kucoin.NET.Websockets.Observations
                     else
                     {
                         //Reset();
-                        //return;
+                        return false;
 
-                        var u2 = new AtomicOrderStruct
-                        {
-                            Price = change.Price ?? 0,
-                            Size = change.Size ?? 0,
-                            Timestamp = change.Timestamp ?? DateTime.Now,
-                            OrderId = change.OrderId
-                        };
+                        //var u2 = new AtomicOrderStruct
+                        //{
+                        //    Price = change.Price ?? 0,
+                        //    Size = change.Size ?? 0,
+                        //    Timestamp = change.Timestamp ?? DateTime.Now,
+                        //    OrderId = change.OrderId
+                        //};
 
-                        pieces.Add(u2);
+                        //pieces.Add(u2);
                     }
 
-                    return;
+                    return true;
 
                 case "match":
 
@@ -695,9 +707,11 @@ namespace Kucoin.NET.Websockets.Observations
                         if (updVol) marketVolume += (csize * p);
                     }
 
-                    return;
+                    return true;
 
             }
+
+            return false;
         }
 
     }

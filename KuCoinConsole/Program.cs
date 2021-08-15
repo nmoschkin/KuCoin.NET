@@ -73,7 +73,7 @@ namespace KuCoinConsole
 
     public static class Program
     {
-        static Dictionary<string, ISymbolDataService> observers = new Dictionary<string, ISymbolDataService>();
+        public static Dictionary<string, ISymbolDataService> Observers { get; set; } = new Dictionary<string, ISymbolDataService>();
 
         static Level2 l2conn;
         static ISymbolDataService service;
@@ -100,27 +100,36 @@ namespace KuCoinConsole
 
         static DateTime start = DateTime.Now;
 
+        static Form1 form1;
+        static Thread level3Thread;
+
         [STAThread]
         public static void Main(string[] args)
         {
-
             KuCoin.Initialize();
-            AllocConsole();
-
-            Console.WindowWidth = 130;
-            Console.WindowHeight = 60;
 
             // Analytics and crash reporting.
             AppCenter.Start("d364ea69-c1fa-4d0d-8c37-debaa05f91bc",
                    typeof(Analytics), typeof(Crashes));
             // Analytics and crash reporting.
 
-            RunProgram();
+            //level3Thread = new Thread(RunProgram);
+            //level3Thread.IsBackground = true;
+            //level3Thread.Start();
 
+            //form1 = new Form1();
+            //form1.ShowDialog();
+
+            RunProgram();
         }
 
         public static void RunProgram() 
         {
+            AllocConsole();
+
+            Console.WindowWidth = 130;
+            Console.WindowHeight = 60;
+
             Console.Clear();
             Console.WriteLine("Loading Symbols and Currencies...");
 
@@ -203,7 +212,7 @@ namespace KuCoinConsole
             int tickerCount = 0;
 
             var syms = new List<string>();
-            for (int h = 0; h < 100; h++)
+            for (int h = 0; h < 10; h++)
             {
                 syms.Add(tickers[h].Symbol);
             }
@@ -236,7 +245,7 @@ namespace KuCoinConsole
 
                     try
                     {
-                        if (!observers.ContainsKey(sym))
+                        if (!Observers.ContainsKey(sym))
                         {
                             curr = serviceFactory.EnableOrAddSymbol(sym, service, (tickerCount == 0 || (tickerCount++ % 10 != 0)));
 
@@ -260,7 +269,7 @@ namespace KuCoinConsole
                                 curr.Level3Feed.MonitorThroughput = true;
                                 curr.Level3Observation.DiagnosticsEnabled = true;
 
-                                observers.Add(sym, curr);
+                                Observers.Add(sym, curr);
                             }
 
                         }
@@ -273,7 +282,11 @@ namespace KuCoinConsole
                 Console.CursorVisible = false;
                 ready = true;
 
+                //form1.InitializeSymbols();
+
             }).ConfigureAwait(false).GetAwaiter().GetResult();
+
+            
 
             // loop until the connection is broken or the program is exited.
             while (service?.Level3Feed?.Connected ?? false)
@@ -302,7 +315,7 @@ namespace KuCoinConsole
 
                 DateTime ts = DateTime.MinValue;
 
-                foreach (var obs in observers)
+                foreach (var obs in Observers)
                 {
                     if (obs.Value?.Level3Observation?.FullDepthOrderBook == null) continue;
 
@@ -316,8 +329,10 @@ namespace KuCoinConsole
                 WriteOut(ts);
 
                 // write the text to the console.
-                Console.Write(readOut.ToString());
-                
+                var text = readOut.ToString();
+                Console.Write(text);
+
+
                 // restore the cursor position.
                 if (Console.CursorTop != lpos) Console.CursorTop = lpos;
                 if (Console.CursorLeft != 0) Console.CursorLeft = 0;
@@ -369,7 +384,7 @@ namespace KuCoinConsole
                 long biggrand = 0;
                 long matchgrand = 0;
 
-                foreach (var obs in observers)
+                foreach (var obs in Observers)
                 {
                     var l3 = obs.Value.Level3Observation;
                     biggrand += l3.GrandTotal;
@@ -383,7 +398,7 @@ namespace KuCoinConsole
                 int failed = 0;
                 double minresettime = 0d;
 
-                foreach (var obs in observers)
+                foreach (var obs in Observers)
                 {
                     var l3 = obs.Value.Level3Observation;
                     if (l3.State == FeedState.Running)
@@ -440,7 +455,7 @@ namespace KuCoinConsole
                 readOut.AppendLine($"                                   ");
                 
                 int count = 0;
-                var sortobs = new List<ISymbolDataService>(observers.Values);
+                var sortobs = new List<ISymbolDataService>(Observers.Values);
 
                 sortobs.Sort((a, b) =>
                 {
@@ -488,7 +503,7 @@ namespace KuCoinConsole
 
                     resetCounter = DateTime.UtcNow;
 
-                    foreach (var obs in observers)
+                    foreach (var obs in Observers)
                     {
                         var l3 = obs.Value.Level3Observation;
                         mps += l3.MatchesPerSecond;
@@ -497,9 +512,9 @@ namespace KuCoinConsole
                     }
                 }
 
-                if (observers.Count - count > 0)
+                if (Observers.Count - count > 0)
                 {
-                    readOut.AppendLine($"Feeds Not Shown: {observers.Count - count}             ");
+                    readOut.AppendLine($"Feeds Not Shown: {Observers.Count - count}             ");
                 }
 
                 readOut.AppendLine($"                                                           ");
