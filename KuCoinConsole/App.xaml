@@ -1,0 +1,36 @@
+﻿<Application
+    x:Class="KuCoinConsole.App"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="clr-namespace:KuCoinConsole"
+    StartupUri="Views\MainWindow.xaml">
+    <Application.Resources>
+        <ResourceDictionary>
+
+            <Color x:Key="KuCoinAqua">#58ccb6</Color>
+            <Color x:Key="KuCoinPink">#f48387</Color>
+            <Color x:Key="KuCoinWhite">#ffffff</Color>
+
+            <SolidColorBrush x:Key="KuCoinBackground" Color="{StaticResource KuCoinAqua}" />
+            <SolidColorBrush x:Key="KuCoinSellBackground" Color="{StaticResource KuCoinPink}" />
+            <SolidColorBrush x:Key="KuCoinForegroundWhite" Color="{StaticResource KuCoinWhite}" />
+
+            <Pen
+                x:Key="KuCoinBullishPen"
+                Brush="{StaticResource KuCoinBackground}"
+                Thickness="1" />
+            <Pen
+                x:Key="KuCoinBearishPen"
+                Brush="{StaticResource KuCoinSellBackground}"
+                Thickness="1" />
+
+            <Style TargetType="Button">
+                <Setter Property="Background" Value="{StaticResource KuCoinBackground}" />
+                <Setter Property="Foreground" Value="{StaticResource KuCoinForegroundWhite}" />
+                <Setter Property="FontFamily" Value="Calibri" />
+                <Setter Property="FontSize" Value="18" />
+            </Style>
+
+        </ResourceDictionary>
+    </Application.Resources>
+</Application>

@@ -29,14 +29,14 @@ namespace KuCoinConsole
         /// </summary>
         private void InitializeComponent()
         {
-            this.listView1 = new System.Windows.Forms.ListView();
+            this.listView1 = new ListViewNF();
             this.columnHeader1 = new System.Windows.Forms.ColumnHeader();
             this.columnHeader2 = new System.Windows.Forms.ColumnHeader();
             this.columnHeader3 = new System.Windows.Forms.ColumnHeader();
+            this.columnHeader7 = new System.Windows.Forms.ColumnHeader();
             this.columnHeader4 = new System.Windows.Forms.ColumnHeader();
             this.columnHeader6 = new System.Windows.Forms.ColumnHeader();
             this.columnHeader5 = new System.Windows.Forms.ColumnHeader();
-            this.columnHeader7 = new System.Windows.Forms.ColumnHeader();
             this.SuspendLayout();
             // 
             // listView1
@@ -78,9 +78,13 @@ namespace KuCoinConsole
             this.columnHeader3.Text = "Best Bid";
             this.columnHeader3.Width = 120;
             // 
+            // columnHeader7
+            // 
+            this.columnHeader7.Text = "Feed State";
+            this.columnHeader7.Width = 120;
+            // 
             // columnHeader4
             // 
-            this.columnHeader4.DisplayIndex = 3;
             this.columnHeader4.Text = "Symbol Full Name";
             this.columnHeader4.Width = 160;
             // 
@@ -91,15 +95,8 @@ namespace KuCoinConsole
             // 
             // columnHeader5
             // 
-            this.columnHeader5.DisplayIndex = 4;
             this.columnHeader5.Text = "Queue Length";
             this.columnHeader5.Width = 160;
-            // 
-            // columnHeader7
-            // 
-            this.columnHeader7.DisplayIndex = 6;
-            this.columnHeader7.Text = "Feed State";
-            this.columnHeader7.Width = 120;
             // 
             // Form1
             // 

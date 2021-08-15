@@ -113,14 +113,14 @@ namespace KuCoinConsole
                    typeof(Analytics), typeof(Crashes));
             // Analytics and crash reporting.
 
-            //level3Thread = new Thread(RunProgram);
-            //level3Thread.IsBackground = true;
-            //level3Thread.Start();
+            level3Thread = new Thread(RunProgram);
+            level3Thread.IsBackground = true;
+            level3Thread.Start();
 
-            //form1 = new Form1();
-            //form1.ShowDialog();
+            form1 = new Form1();
+            form1.ShowDialog();
 
-            RunProgram();
+            //RunProgram();
         }
 
         public static void RunProgram() 
@@ -212,7 +212,7 @@ namespace KuCoinConsole
             int tickerCount = 0;
 
             var syms = new List<string>();
-            for (int h = 0; h < 10; h++)
+            for (int h = 0; h < 100; h++)
             {
                 syms.Add(tickers[h].Symbol);
             }
@@ -282,12 +282,9 @@ namespace KuCoinConsole
                 Console.CursorVisible = false;
                 ready = true;
 
-                //form1.InitializeSymbols();
-
             }).ConfigureAwait(false).GetAwaiter().GetResult();
 
-            
-
+           
             // loop until the connection is broken or the program is exited.
             while (service?.Level3Feed?.Connected ?? false)
             {
