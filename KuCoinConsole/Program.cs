@@ -287,6 +287,14 @@ namespace KuCoinConsole
                 Console.CursorLeft = 0;
             }
 
+            _ = Task.Run(() =>
+            {
+                Dispatcher.BeginInvokeOnMainThread((o) =>
+                {
+                    RunProgram();
+                });
+            });
+
         }
 
         private static void Ticker_FeedDataReceived(object sender, Kucoin.NET.Websockets.FeedDataReceivedEventArgs<Kucoin.NET.Futures.Data.Websockets.ContractMarketSnapshot> e)
