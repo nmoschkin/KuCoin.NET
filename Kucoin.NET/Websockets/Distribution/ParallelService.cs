@@ -24,10 +24,12 @@ namespace Kucoin.NET.Websockets.Distribution
         private class Distribution : IDisposable
         {
             bool disposed;
-            
+                        
             private CancellationTokenSource cts = new CancellationTokenSource();
 
             public List<IDistributable> Tenants { get; } = new List<IDistributable>();
+
+            public bool ActionsChanged { get; set; } = true;
 
             public Thread Thread { get; private set; }
 
@@ -57,20 +59,23 @@ namespace Kucoin.NET.Websockets.Distribution
                 {
                     int i = 0;
 
-                    lock (Tenants)
+                    if (ActionsChanged)
                     {
-                        foreach (var t in Tenants)
+                        lock (Tenants)
                         {
-                            actions.Add(new Action(() =>
+                            actions.Clear();
+                            foreach (var t in Tenants)
                             {
-                                t.DoWork();
-                                i++;
-                            }));
+                                actions.Add(new Action(() =>
+                                {
+                                    t.DoWork();
+                                    i++;
+                                }));
+                            }
                         }
                     }
 
                     Parallel.Invoke(actions.ToArray());
-                    actions.Clear();
 
                     Thread.Sleep((i == 0 ? 1 : i) * IdleSleepTime);
                 }
@@ -145,6 +150,7 @@ namespace Kucoin.NET.Websockets.Distribution
                         lock(insertFeed.Tenants)
                         {
                             insertFeed.Tenants.Add(feed);
+                            insertFeed.ActionsChanged = true;
                         }
                     }
 
