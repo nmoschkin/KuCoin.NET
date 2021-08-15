@@ -38,6 +38,12 @@ namespace Kucoin.NET.Websockets.Distribution
     /// </summary>
     public interface IObservableCopy<TInternal, TObservable> : IObservableCopy 
     {
+
+        /// <summary>
+        /// Gets or sets a value indicating whether or not the observation is disabled, and pushes do not occur.
+        /// </summary>
+        bool IsObservationDisabled { get; set; }
+
         /// <summary>
         /// The internal copy of the data we observing.
         /// </summary>

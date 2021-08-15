@@ -136,6 +136,11 @@ namespace Kucoin.NET.Data.Market
         {
             if (s == null) return default;
 
+            if (Kucoin.NET.Rest.Market.Instance.Symbols != null && Kucoin.NET.Rest.Market.Instance.Symbols.Count != 0 && Kucoin.NET.Rest.Market.Instance.Symbols.TryGetValue(s, out TradingSymbol sym)) 
+            {
+                return sym;
+            }
+
             var parts = s.Split('-');
             var bc = "USDT";
             var sc = s;

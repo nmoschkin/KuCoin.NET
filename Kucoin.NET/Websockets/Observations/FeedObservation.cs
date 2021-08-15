@@ -39,7 +39,7 @@ namespace Kucoin.NET.Websockets
 
         protected virtual void Dispose(bool disposing)
         {
-            if (disposed) return; // throw new ObjectDisposedException(nameof(FeedObservation<T>));
+            if (disposed) return; // throw new ObjectDisposedException(GetType().FullName);
 
             feed?.RemoveObservation(this);
 

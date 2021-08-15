@@ -1,4 +1,5 @@
-﻿using Kucoin.NET.Websockets.Distribution;
+﻿using Kucoin.NET.Helpers;
+using Kucoin.NET.Websockets.Distribution;
 
 using System;
 using System.Collections.Generic;
@@ -11,12 +12,15 @@ using System.Threading.Tasks;
 
 namespace Kucoin.NET.Websockets.Distribution
 {
+    /// <summary>
+    /// Provides push services for objects that present an observable version of internal data at regular intervals.
+    /// </summary>
     public static class ObserverService
     {
 
         private static readonly List<IObservableCopy> feeds = new List<IObservableCopy>();
 
-        private static Thread PushThread;
+        private static Thread IntervalThread;
 
         private static CancellationTokenSource cts;
 
@@ -24,54 +28,83 @@ namespace Kucoin.NET.Websockets.Distribution
         {
         }
 
-        public static void RegisterService(IObservableCopy feed)
+        /// <summary>
+        /// Register a new <see cref="IObservableCopy"/> object.
+        /// </summary>
+        /// <param name="obj">The object to register.</param>
+        /// <returns>True if the object was successfully registered, false if the object was already registered.</returns>
+        public static bool RegisterService(IObservableCopy obj)
         {
-            if (!feeds.Contains(feed))
+            if (!feeds.Contains(obj))
             {
-                int x = feed.Interval;
+                int x = obj.Interval;
 
                 if (x % 10 != 0)
                 {
                     x = x - (x % 10);
                 }
 
-                feed.Interval = x;
+                obj.Interval = x;
                 if (x == 0) throw new ArgumentOutOfRangeException("Interval cannot be 0.");
-                feeds.Add(feed);
+
+                feeds.Add(obj);
+            }
+            else
+            {
+                return false;
             }
 
-            if (PushThread == null)
+            if (IntervalThread == null)
             {
                 cts = new CancellationTokenSource();
 
-                PushThread = new Thread(PushMethod);
-                PushThread.IsBackground = true;
-                PushThread.Start();
+                IntervalThread = new Thread(IntervalMethod);
+                IntervalThread.IsBackground = true;
+                IntervalThread.Start();
             }
+
+            return true;
         }
 
-        public static void CancelPushThread()
+        /// <summary>
+        /// Unregister an <see cref="IObservableCopy"/> object.
+        /// </summary>
+        /// <param name="obj">The object to unregister.</param>
+        /// <returns>True if the object was successfully unregistered, false if the object was not registered.</returns>
+        public static bool UnregisterService(IObservableCopy obj)
         {
-            cts?.Cancel();
-
-            PushThread = null;
-            cts = null;
-        }
-
-        public static void UnregisterService(IObservableCopy feed)
-        {
-            if (feeds.Contains(feed))
+            if (feeds.Contains(obj))
             {
-                feeds.Remove(feed);
+                feeds.Remove(obj);
+            }
+            else
+            {
+                return false;
             }
 
             if (feeds.Count == 0)
             {
-                CancelPushThread();
+                CancelIntervalThread();
             }
+
+            return true;
         }
 
-        private static void PushMethod()
+        /// <summary>
+        /// Cancel the pinger thread.
+        /// </summary>
+        private static void CancelIntervalThread()
+        {
+            cts?.Cancel();
+
+            IntervalThread = null;
+            cts = null;
+        }
+
+        /// <summary>
+        /// Pinger method.
+        /// </summary>
+        private static void IntervalMethod()
         {
             while (!cts.IsCancellationRequested)
             {
@@ -82,17 +115,17 @@ namespace Kucoin.NET.Websockets.Distribution
                         return;
                     }
 
-                    long pingMax = 0;
+                    long intervalMax = 0;
 
                     foreach (var feed in feeds)
                     {
-                        if (feed.Interval > pingMax)
+                        if (feed.Interval > intervalMax)
                         {
-                            pingMax = feed.Interval;
+                            intervalMax = feed.Interval;
                         }
                     }
 
-                    for (int i = 0; i < pingMax; i += 10)
+                    for (int i = 0; i < intervalMax; i += 10)
                     {
                         Task.Delay(10, cts.Token).ConfigureAwait(false).GetAwaiter().GetResult();
                         if (cts.IsCancellationRequested) return;
@@ -103,7 +136,17 @@ namespace Kucoin.NET.Websockets.Distribution
 
                             if (i == feed.Interval)
                             {
-                                feed.CopyToObservable();
+                                if (feed.PreferDispatcher && !Dispatcher.CurrentThreadIsDispatcher && Dispatcher.Initialized)
+                                {
+                                    Dispatcher.BeginInvokeOnMainThread((o) =>
+                                    {
+                                        feed.CopyToObservable();
+                                    });
+                                }
+                                else
+                                {
+                                    feed.CopyToObservable();
+                                }
                             }
                         }
                     }

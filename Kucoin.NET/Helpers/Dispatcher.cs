@@ -1,4 +1,5 @@
-﻿using System.Threading;
+﻿using System.Data;
+using System.Threading;
 
 namespace Kucoin.NET.Helpers
 {
@@ -10,6 +11,15 @@ namespace Kucoin.NET.Helpers
         private static bool init = false;
         private static bool nosend = false;
         private static bool nopost = false;
+        
+
+        /// <summary>
+        /// True if the current thread is the dispatcher thread.
+        /// </summary>
+        public static bool CurrentThreadIsDispatcher
+        {
+            get => SynchronizationContext.Current is object;
+        }
 
         /// <summary>
         /// The synchronization context for the current application.

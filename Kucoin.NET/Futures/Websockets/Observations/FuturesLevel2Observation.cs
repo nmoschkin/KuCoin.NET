@@ -38,10 +38,10 @@ namespace Kucoin.NET.Futures.Websockets.Observations
         /// </summary>
         public override bool Initialized
         {
-            get => !disposed ? initialized : throw new ObjectDisposedException(nameof(FuturesLevel2Observation));
+            get => !disposed ? initialized : throw new ObjectDisposedException(GetType().FullName);
             internal set
             {
-                if (disposed) throw new ObjectDisposedException(nameof(FuturesLevel2Observation));
+                if (disposed) throw new ObjectDisposedException(GetType().FullName);
                 SetProperty(ref initialized, value);
             }
         }
@@ -51,10 +51,10 @@ namespace Kucoin.NET.Futures.Websockets.Observations
         /// </summary>
         public override bool Calibrated
         {
-            get => !disposed ? calibrated : throw new ObjectDisposedException(nameof(FuturesLevel2Observation));
+            get => !disposed ? calibrated : throw new ObjectDisposedException(GetType().FullName);
             protected set
             {
-                if (disposed) throw new ObjectDisposedException(nameof(FuturesLevel2Observation));
+                if (disposed) throw new ObjectDisposedException(GetType().FullName);
                 SetProperty(ref calibrated, value);
             }
         }
@@ -338,10 +338,10 @@ namespace Kucoin.NET.Futures.Websockets.Observations
         /// </summary>
         public override bool Initialized
         {
-            get => !disposed ? initialized : throw new ObjectDisposedException(nameof(FuturesLevel2Observation));
+            get => !disposed ? initialized : throw new ObjectDisposedException(GetType().FullName);
             internal set
             {
-                if (disposed) throw new ObjectDisposedException(nameof(FuturesLevel2Observation));
+                if (disposed) throw new ObjectDisposedException(GetType().FullName);
                 SetProperty(ref initialized, value);
             }
         }
@@ -351,10 +351,10 @@ namespace Kucoin.NET.Futures.Websockets.Observations
         /// </summary>
         public override bool Calibrated
         {
-            get => !disposed ? calibrated : throw new ObjectDisposedException(nameof(FuturesLevel2Observation));
+            get => !disposed ? calibrated : throw new ObjectDisposedException(GetType().FullName);
             protected set
             {
-                if (disposed) throw new ObjectDisposedException(nameof(FuturesLevel2Observation));
+                if (disposed) throw new ObjectDisposedException(GetType().FullName);
                 SetProperty(ref calibrated, value);
             }
         }

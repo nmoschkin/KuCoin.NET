@@ -118,7 +118,7 @@ namespace Kucoin.NET.Websockets.Public
         /// <returns></returns>
         public virtual async Task AddSymbol(string symbol, KlineType type)
         {
-            if (disposed) throw new ObjectDisposedException(nameof(KlineFeed<TCandle>));
+            if (disposedValue) throw new ObjectDisposedException(GetType().FullName);
             if (!Connected)
             {
                 await Connect();
@@ -167,7 +167,7 @@ namespace Kucoin.NET.Websockets.Public
         /// <param name="type">The <see cref="KlineType"/> of the ticker to remove.</param>
         public virtual async Task RemoveSymbol(string symbol, KlineType type)
         {
-            if (disposed) throw new ObjectDisposedException(nameof(KlineFeed<TCandle>));
+            if (disposedValue) throw new ObjectDisposedException(GetType().FullName);
             if (!Connected) return;
 
             SymbolKline sk = null;

@@ -95,7 +95,7 @@ namespace Kucoin.NET.Websockets
                 feedStarted = true;
             }
 
-            if (disposed) throw new ObjectDisposedException(nameof(TopicFeedBase<T>));
+            if (disposedValue) throw new ObjectDisposedException(GetType().FullName);
             if (!Connected)
             {
                 await Connect();
@@ -126,7 +126,7 @@ namespace Kucoin.NET.Websockets
                 feedStarted = false;
             }
 
-            if (disposed) throw new ObjectDisposedException(nameof(TopicFeedBase<T>));
+            if (disposedValue) throw new ObjectDisposedException(GetType().FullName);
             if (!Connected) return;
 
             var topic = Topic;

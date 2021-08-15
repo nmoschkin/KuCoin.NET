@@ -10,68 +10,99 @@ using System.Threading.Tasks;
 
 namespace Kucoin.NET.Websockets.Distribution
 {
-
+    /// <summary>
+    /// Provides automatic pinging services for objects that must ping servers at regular intervals.
+    /// </summary>
     public static class PingService
     {
 
         private static readonly List<IPingable> feeds = new List<IPingable>();
 
-        private static Thread PingerThread;
+        private static Thread IntervalThread;
 
         private static CancellationTokenSource cts;
 
         static PingService()
         {
         }
-        
-        public static void RegisterService(IPingable feed)
+
+        /// <summary>
+        /// Register a new pingable object.
+        /// </summary>
+        /// <param name="obj">The object to register.</param>
+        /// <returns>True if the object was successfully registered, false if the object was already registered.</returns>
+        public static bool RegisterService(IPingable obj)
         {
-            if (!feeds.Contains(feed))
+            if (!feeds.Contains(obj))
             {
-                int x = feed.Interval;
+                int x = obj.Interval;
 
                 if (x % 10 != 0)
                 {
                     x = x - (x % 10);
                 }
 
-                feed.Interval = x;
+                obj.Interval = x;
                 if (x == 0) throw new ArgumentOutOfRangeException("Interval cannot be 0.");
-                feeds.Add(feed);    
+                
+                feeds.Add(obj);    
+            }
+            else
+            {
+                return false;
             }
 
-            if (PingerThread == null)
+            if (IntervalThread == null)
             {
                 cts = new CancellationTokenSource();    
 
-                PingerThread = new Thread(PingerMethod);
-                PingerThread.IsBackground = true;   
-                PingerThread.Start();   
+                IntervalThread = new Thread(IntervalMethod);
+                IntervalThread.IsBackground = true;   
+                IntervalThread.Start();   
             }
+
+            return true;
         }
 
-        public static void CancelPingerThread()
+        /// <summary>
+        /// Unregister a pingable object.
+        /// </summary>
+        /// <param name="obj">The object to unregister.</param>
+        /// <returns>True if the object was successfully unregistered, false if the object was not registered.</returns>
+        public static bool UnregisterService(IPingable obj)
         {
-            cts?.Cancel();
-
-            PingerThread = null;
-            cts = null;
-        }
-
-        public static void UnregisterService(IPingable feed)
-        {
-            if (feeds.Contains(feed))
+            if (feeds.Contains(obj))
             {
-                feeds.Remove(feed); 
+                feeds.Remove(obj);
+            }
+            else
+            {
+                return false;
             }
 
             if (feeds.Count == 0)
             {
-                CancelPingerThread();
+                CancelIntervalThread();
             }
+
+            return true;
         }
 
-        private static void PingerMethod()
+        /// <summary>
+        /// Cancel the pinger thread.
+        /// </summary>
+        private static void CancelIntervalThread()
+        {
+            cts?.Cancel();
+
+            IntervalThread = null;
+            cts = null;
+        }
+
+        /// <summary>
+        /// Pinger method.
+        /// </summary>
+        private static void IntervalMethod()
         {            
             while (!cts.IsCancellationRequested)
             {

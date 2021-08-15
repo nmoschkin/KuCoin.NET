@@ -93,7 +93,7 @@ namespace Kucoin.NET.Websockets
             if (subject == null) subject = Subject;
             if (this.topic == null) this.topic = Topic;
 
-            if (disposed) throw new ObjectDisposedException(nameof(SymbolTopicFeedBase<T>));
+            if (disposedValue) throw new ObjectDisposedException(GetType().FullName);
             if (!Connected)
             {
                 await Connect();
@@ -142,7 +142,7 @@ namespace Kucoin.NET.Websockets
         /// <returns></returns>
         public virtual async Task RemoveSymbols(IEnumerable<string> symbols)
         {
-            if (disposed) throw new ObjectDisposedException(nameof(SymbolTopicFeedBase<T>));
+            if (disposedValue) throw new ObjectDisposedException(GetType().FullName);
             if (!Connected) return;
 
             var sb = new StringBuilder();

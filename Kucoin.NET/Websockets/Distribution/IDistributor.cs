@@ -27,6 +27,10 @@ namespace Kucoin.NET.Websockets.Distribution
         /// <returns></returns>
         IEnumerable<IDistributable> GetActiveFeeds();
 
+        /// <summary>
+        /// Release an object from the distributor.
+        /// </summary>
+        /// <param name="obj">Object to release.</param>
         void Release(IDistributable obj);
     }
 
@@ -35,6 +39,7 @@ namespace Kucoin.NET.Websockets.Distribution
     /// </summary>
     public interface IDistributor<TDistribution, TValue> : IDistributor<string, TDistribution, TValue> where TDistribution : IDistributable<string, TValue>
     {
+        void Release(IDistributable<string, TValue> obj);
     }
 
     /// <summary>

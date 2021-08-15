@@ -229,7 +229,6 @@ namespace KuCoinConsole
                                     feeds.Add(curr.Level3Feed);
                                 }
 
-                                curr.Level3Feed.UpdateInterval = 0;
                                 curr.Level3Feed.MonitorThroughput = true;
                                 curr.Level3Observation.DiagnosticsEnabled = true;
 

@@ -108,13 +108,13 @@ namespace Kucoin.NET.Websockets.Observations
         /// <summary>
         /// Gets the parent feed.
         /// </summary>
-        public virtual KucoinBaseWebsocketFeed ConnectedFeed => !disposed ? connectedFeed : throw new ObjectDisposedException(nameof(Level2Observation));
+        public virtual KucoinBaseWebsocketFeed ConnectedFeed => !disposed ? connectedFeed : throw new ObjectDisposedException(GetType().FullName);
 
 
         /// <summary>
         /// Gets the trading symbol that is being observed.
         /// </summary>        
-        public string Symbol => !disposed ? symbol : throw new ObjectDisposedException(nameof(Level2Observation));
+        public string Symbol => !disposed ? symbol : throw new ObjectDisposedException(GetType().FullName);
 
         string ISymbol.Symbol
         {
@@ -130,7 +130,7 @@ namespace Kucoin.NET.Websockets.Observations
         /// </summary>
         public virtual int Pieces
         {
-            get => !disposed ? pieces : throw new ObjectDisposedException(nameof(Level2Observation));
+            get => !disposed ? pieces : throw new ObjectDisposedException(GetType().FullName);
             set
             {
                 SetProperty(ref pieces, value);

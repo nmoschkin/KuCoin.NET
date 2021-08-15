@@ -238,7 +238,7 @@ namespace Kucoin.NET.Websockets.Public
         /// <returns></returns>
         public virtual async Task<Dictionary<string, TObservation>> AddSymbols(IEnumerable<string> symbols)
         {
-            if (disposed) throw new ObjectDisposedException(nameof(Level2Base<TBookOut, TUnitOut, TBookIn, TUnitIn, TUpdate, TObservation>));
+            if (disposedValue) throw new ObjectDisposedException(GetType().FullName);
             if (!Connected)
             {
                 await Connect();
@@ -304,7 +304,7 @@ namespace Kucoin.NET.Websockets.Public
         /// <returns></returns>
         internal virtual async Task RemoveSymbols(IEnumerable<string> symbols)
         {
-            if (disposed) throw new ObjectDisposedException(nameof(Level2Base<TBookOut, TUnitOut, TBookIn, TUnitIn, TUpdate, TObservation>));
+            if (disposedValue) throw new ObjectDisposedException(GetType().FullName);
             if (!Connected) return;
 
             var sb = new StringBuilder();

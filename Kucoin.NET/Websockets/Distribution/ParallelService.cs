@@ -17,14 +17,14 @@ using System.Threading.Tasks;
 namespace Kucoin.NET.Websockets.Distribution
 {
     /// <summary>
-    /// Run tasks in parallel.
+    /// Organize distributable objects that do work in parallel.
     /// </summary>
     public static class ParallelService
     {
         private class Distribution : IDisposable
         {
             bool disposed;
-                        
+
             private CancellationTokenSource cts = new CancellationTokenSource();
 
             public List<IDistributable> Tenants { get; } = new List<IDistributable>();

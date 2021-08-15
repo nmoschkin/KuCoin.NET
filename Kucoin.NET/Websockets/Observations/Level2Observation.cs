@@ -62,10 +62,10 @@ namespace Kucoin.NET.Websockets.Observations
         /// </summary>
         public override bool Initialized
         {
-            get => !disposed ? initialized : throw new ObjectDisposedException(nameof(Level2Observation));
+            get => !disposed ? initialized : throw new ObjectDisposedException(GetType().FullName);
             internal set
             {
-                if (disposed) throw new ObjectDisposedException(nameof(Level2Observation));
+                if (disposed) throw new ObjectDisposedException(GetType().FullName);
                 SetProperty(ref initialized, value);
             }
         }
@@ -75,10 +75,10 @@ namespace Kucoin.NET.Websockets.Observations
         /// </summary>
         public override bool Calibrated
         {
-            get => !disposed ? calibrated : throw new ObjectDisposedException(nameof(Level2Observation));
+            get => !disposed ? calibrated : throw new ObjectDisposedException(GetType().FullName);
             protected set
             {
-                if (disposed) throw new ObjectDisposedException(nameof(Level2Observation));
+                if (disposed) throw new ObjectDisposedException(GetType().FullName);
                 SetProperty(ref calibrated, value);
             }
         }

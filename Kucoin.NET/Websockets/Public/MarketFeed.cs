@@ -55,7 +55,7 @@ namespace Kucoin.NET.Websockets.Public
         /// <returns></returns>
         public virtual async Task StartFeed(string market)
         {
-            if (disposed) throw new ObjectDisposedException(nameof(MarketFeed));
+            if (disposedValue) throw new ObjectDisposedException(GetType().FullName);
             if (!Connected)
             {
                 await Connect();

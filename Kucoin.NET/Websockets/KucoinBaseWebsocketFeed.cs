@@ -412,7 +412,7 @@ namespace Kucoin.NET.Websockets
         /// <returns>The token application response.</returns>
         protected async Task<TokenApplication> ApplyForToken()
         {
-            if (disposed) throw new ObjectDisposedException(nameof(KucoinBaseWebsocketFeed));
+            if (disposedValue) throw new ObjectDisposedException(GetType().FullName);
 
             string endPoint = "/api/v1/bullet-" + (IsPublic ? "public" : "private");
 
@@ -449,7 +449,7 @@ namespace Kucoin.NET.Websockets
 
             socket = new ClientWebSocket();
 
-            if (disposed) throw new ObjectDisposedException(nameof(KucoinBaseWebsocketFeed));
+            if (disposedValue) throw new ObjectDisposedException(GetType().FullName);
             if (Connected) return false;
 
             if (token == null)
@@ -1042,7 +1042,7 @@ namespace Kucoin.NET.Websockets
         /// <param name="data">Raw data bytes to send.</param>
         protected async Task Send(byte[] data)
         {
-            if (disposed) throw new ObjectDisposedException(nameof(KucoinBaseWebsocketFeed));
+            if (disposedValue) throw new ObjectDisposedException(GetType().FullName);
 
             if (multiplexHost != null)
             {
@@ -1063,7 +1063,7 @@ namespace Kucoin.NET.Websockets
         /// </param>
         protected async Task Send(string text, Encoding encoding = null)
         {
-            if (disposed) throw new ObjectDisposedException(nameof(KucoinBaseWebsocketFeed));
+            if (disposedValue) throw new ObjectDisposedException(GetType().FullName);
             if (!Connected) return;
 
             if (encoding == null) encoding = Encoding.UTF8;
@@ -1083,7 +1083,7 @@ namespace Kucoin.NET.Websockets
         /// <remarks>The data object is serialized to an encoded JSON string to be sent to the server.</remarks>
         protected async Task Send(FeedMessage data, Encoding encoding = null)
         {
-            if (disposed) throw new ObjectDisposedException(nameof(KucoinBaseWebsocketFeed));
+            if (disposedValue) throw new ObjectDisposedException(GetType().FullName);
 
             if (tunnelId != null && data.Type != "openTunnel")
             {
@@ -1106,7 +1106,7 @@ namespace Kucoin.NET.Websockets
         /// <returns>A reply will come from the server as a 'pong' message.</returns>
         public async Task Ping()
         {
-            if (disposed) throw new ObjectDisposedException(nameof(KucoinBaseWebsocketFeed));
+            if (disposedValue) throw new ObjectDisposedException(GetType().FullName);
             var e = new FeedMessage();
 
             e.Id = connectId.ToString("d");
@@ -1178,14 +1178,14 @@ namespace Kucoin.NET.Websockets
 
         #region IDisposable Pattern
 
-        protected bool disposed = false;
+        protected bool disposedValue = false;
 
         protected bool disposing = false;
 
         /// <summary>
         /// True if this object has been disposed.
         /// </summary>
-        public bool Disposed => disposed;
+        public bool Disposed => disposedValue;
 
         ~KucoinBaseWebsocketFeed()
         {
@@ -1209,7 +1209,7 @@ namespace Kucoin.NET.Websockets
         /// <param name="disposing">True if being called from the <see cref="Dispose"/> method, false if being called by the destructor.</param>
         protected virtual void Dispose(bool disposing)
         {
-            if (disposed) return;
+            if (disposedValue) return;
 
             if (this.disposing) return;
             this.disposing = true;
@@ -1233,7 +1233,7 @@ namespace Kucoin.NET.Websockets
             token = null;
             tunnelId = null;
 
-            disposed = true;
+            disposedValue = true;
 
             if (disposing)
             {

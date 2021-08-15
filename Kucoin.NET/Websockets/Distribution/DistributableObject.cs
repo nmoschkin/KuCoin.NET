@@ -55,7 +55,7 @@ namespace Kucoin.NET.Websockets.Distribution
         {
             this.parent = parent;
             this.key = key;
-
+            buffer = new List<TValue>();
             ParallelService.RegisterService(this);
             State = FeedState.Subscribed;
         }
@@ -96,7 +96,11 @@ namespace Kucoin.NET.Websockets.Distribution
             return true;
         }
 
-        public abstract bool ProcessObject(TValue obj);
+        /// <summary>
+        /// Process the object with internal data handling.
+        /// </summary>
+        /// <param name="obj"></param>
+        public abstract void ProcessObject(TValue obj);
 
         public virtual void OnCompleted()
         {
