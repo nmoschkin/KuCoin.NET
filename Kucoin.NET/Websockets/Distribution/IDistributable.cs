@@ -14,12 +14,12 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Kucoin.NET.Websockets.Distributable
+namespace Kucoin.NET.Websockets.Distribution
 {
     /// <summary>
     /// An object that can do distributed work (typically in parallel with other such objects.)
     /// </summary>
-    public interface IDistributable // : IComparable<IDistributable>
+    public interface IDistributable : IDisposable // : IComparable<IDistributable>
     {
         /// <summary>
         /// Do work.

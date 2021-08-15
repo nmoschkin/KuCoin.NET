@@ -15,7 +15,7 @@
 using Kucoin.NET.Data.Websockets;
 using Kucoin.NET.Helpers;
 using Kucoin.NET.Rest;
-using Kucoin.NET.Websockets.Distributable;
+using Kucoin.NET.Websockets.Distribution;
 
 using Newtonsoft.Json;
 
@@ -38,6 +38,7 @@ namespace Kucoin.NET.Websockets
     /// <typeparam name="T"></typeparam>
     public abstract class KucoinBaseWebsocketFeed :
         KucoinBaseRestApi,
+        IAsyncPingable,
         IDisposable
     {
 
@@ -715,8 +716,6 @@ namespace Kucoin.NET.Websockets
 
         private List<string> msgQueue;
 
-        private Thread keepAlive;
-
         private Thread inputReaderThread;
 
         private Thread msgPumpThread;
@@ -849,16 +848,6 @@ namespace Kucoin.NET.Websockets
                     }
                 }
 
-                //if (throttleEnabled)
-                //{
-                //    if (msgQueue.Count > throttleThreshold)
-                //    {
-                //        Task.Delay(throttleDelay)
-                //            .ConfigureAwait(false)
-                //            .GetAwaiter()
-                //            .GetResult();
-                //    }
-                //}
             }
         }
         
@@ -992,6 +981,7 @@ namespace Kucoin.NET.Websockets
         /// The default behavior of this method is to fire the <see cref="DataReceived"/> event.
         /// This method is only invoked on the destination tunnel.  The multiplex host will pass through.
         /// </remarks>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         protected virtual void OnJsonReceived(string json)
         {
             DataReceived?.Invoke(this, new DataReceivedEventArgs(json));
@@ -1074,6 +1064,8 @@ namespace Kucoin.NET.Websockets
             await Send(data.ToString(), encoding);
         }
 
+        #region IAsyncPingable
+
         /// <summary>
         /// Ping the remote connection.
         /// </summary>
@@ -1089,6 +1081,25 @@ namespace Kucoin.NET.Websockets
             lastPing = DateTime.Now;
             await Send(e);
         }
+
+        void IPingable.Ping()
+        {
+            Ping().ConfigureAwait(false).GetAwaiter().GetResult();
+        }
+
+        int IPingable.Interval
+        {
+            get => server?.PingInterval ?? 0;
+            set
+            {
+                if (server != null)
+                {
+                    server.PingInterval = value;    
+                }
+            }
+        }
+
+        #endregion IAsyncPingable
 
         #endregion Data Send and Receive
 

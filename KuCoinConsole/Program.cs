@@ -26,7 +26,7 @@ using KuCoinApp.Views;
 using System.Windows.Forms;
 using System.Reflection;
 using System.Threading;
-using Kucoin.NET.Websockets.Distributable;
+using Kucoin.NET.Websockets.Distribution;
 
 namespace KuCoinConsole
 {

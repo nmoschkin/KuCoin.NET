@@ -1,3 +1,4 @@
+﻿using Kucoin.NET.Websockets.Distribution;
 
 using System;
 using System.Collections.Generic;
@@ -10,21 +11,20 @@ using System.Threading.Tasks;
 
 namespace Kucoin.NET.Websockets.Distribution
 {
-
-    public static class PingService
+    public static class ObserverService
     {
 
-        private static readonly List<IPingable> feeds = new List<IPingable>();
+        private static readonly List<IObservableCopy> feeds = new List<IObservableCopy>();
 
-        private static Thread PingerThread;
+        private static Thread PushThread;
 
         private static CancellationTokenSource cts;
 
-        static PingService()
+        static ObserverService()
         {
         }
-        
-        public static void RegisterService(IPingable feed)
+
+        public static void RegisterService(IObservableCopy feed)
         {
             if (!feeds.Contains(feed))
             {
@@ -37,42 +37,42 @@ namespace Kucoin.NET.Websockets.Distribution
 
                 feed.Interval = x;
                 if (x == 0) throw new ArgumentOutOfRangeException("Interval cannot be 0.");
-                feeds.Add(feed);    
+                feeds.Add(feed);
             }
 
-            if (PingerThread == null)
+            if (PushThread == null)
             {
-                cts = new CancellationTokenSource();    
+                cts = new CancellationTokenSource();
 
-                PingerThread = new Thread(PingerMethod);
-                PingerThread.IsBackground = true;   
-                PingerThread.Start();   
+                PushThread = new Thread(PushMethod);
+                PushThread.IsBackground = true;
+                PushThread.Start();
             }
         }
 
-        public static void CancelPingerThread()
+        public static void CancelPushThread()
         {
             cts?.Cancel();
 
-            PingerThread = null;
+            PushThread = null;
             cts = null;
         }
 
-        public static void UnregisterService(IPingable feed)
+        public static void UnregisterService(IObservableCopy feed)
         {
             if (feeds.Contains(feed))
             {
-                feeds.Remove(feed); 
+                feeds.Remove(feed);
             }
 
             if (feeds.Count == 0)
             {
-                CancelPingerThread();
+                CancelPushThread();
             }
         }
 
-        private static void PingerMethod()
-        {            
+        private static void PushMethod()
+        {
             while (!cts.IsCancellationRequested)
             {
                 try
@@ -94,7 +94,7 @@ namespace Kucoin.NET.Websockets.Distribution
 
                     for (int i = 0; i < pingMax; i += 10)
                     {
-                        Task.Delay(10, cts.Token).ConfigureAwait(false).GetAwaiter().GetResult(); 
+                        Task.Delay(10, cts.Token).ConfigureAwait(false).GetAwaiter().GetResult();
                         if (cts.IsCancellationRequested) return;
 
                         foreach (var feed in feeds)
@@ -103,14 +103,7 @@ namespace Kucoin.NET.Websockets.Distribution
 
                             if (i == feed.Interval)
                             {
-                                if (feed is IAsyncPingable aping)
-                                {
-                                    _ = aping.Ping();
-                                }
-                                else
-                                {
-                                    feed.Ping();
-                                }
+                                feed.CopyToObservable();
                             }
                         }
                     }
@@ -125,7 +118,7 @@ namespace Kucoin.NET.Websockets.Distribution
 
             }
         }
-        
+
 
     }
 }

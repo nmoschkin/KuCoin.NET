@@ -6,13 +6,13 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace Kucoin.NET.Websockets.Distributable
+namespace Kucoin.NET.Websockets.Distribution
 {
     /// <summary>
     /// An observation that does regular work on the input feed data in a background thread.
     /// </summary>
     /// <typeparam name="TValue">The type of data being handled.</typeparam>
-    public abstract class DistributableObject<TKey, TValue> : ObservableBase, IDisposable, IDistributable<TKey, TValue>
+    public abstract class DistributableObject<TKey, TValue> : ObservableBase, IDistributable<TKey, TValue>
     {
         public virtual event EventHandler DistributionCompleted;
 

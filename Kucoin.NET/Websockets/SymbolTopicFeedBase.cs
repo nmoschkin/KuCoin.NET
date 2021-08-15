@@ -268,7 +268,7 @@ namespace Kucoin.NET.Websockets
         /// Create a multiplexed client of the specified type to share the connection of this <see cref="KucoinBaseWebsocketFeed"/>-derived instance.
         /// </summary>
         /// <typeparam name="TFeed">The feed type to create.</typeparam>
-        /// <typeparam name="TObj">The type of object that is pushed by the feed.</typeparam>
+        /// <typeparam name="TValue">The type of object that is pushed by the feed.</typeparam>
         /// <param name="inheritSymbols">True to initialize the child with all the active symbols of the current feed.</param>
         /// <returns>A new <see cref="SymbolTopicFeedBase{T}"/>.</returns>
         /// <remarks>
@@ -276,7 +276,7 @@ namespace Kucoin.NET.Websockets
         /// 
         /// An <see cref="InvalidOperationException"/> will be raised if an attempt is made to initialize a new feed on to a class instance that is already initialized as a multiplex client.
         /// </remarks>
-        public virtual async Task<TFeed> CreateMultiplexedClient<TFeed, TObj>(bool inheritSymbols) where TFeed : SymbolTopicFeedBase<TObj>, new() where TObj: class, ISymbol
+        public virtual async Task<TFeed> CreateMultiplexedClient<TFeed, TValue>(bool inheritSymbols) where TFeed : SymbolTopicFeedBase<TValue>, new() where TValue: class, ISymbol
         {
             if (tunnelId != null && !isMultiplexHost)
             {

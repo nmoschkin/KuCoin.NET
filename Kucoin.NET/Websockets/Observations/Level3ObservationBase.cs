@@ -14,7 +14,7 @@ using Kucoin.NET.Helpers;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Runtime.InteropServices;
-using Kucoin.NET.Websockets.Distributable;
+using Kucoin.NET.Websockets.Distribution;
 
 namespace Kucoin.NET.Websockets.Observations
 {

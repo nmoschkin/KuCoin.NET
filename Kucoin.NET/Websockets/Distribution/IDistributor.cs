@@ -14,7 +14,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Kucoin.NET.Websockets.Distributable
+namespace Kucoin.NET.Websockets.Distribution
 {
     /// <summary>
     /// An object that provides distributed objects with data.
@@ -33,19 +33,19 @@ namespace Kucoin.NET.Websockets.Distributable
     /// <summary>
     /// An object that provides distributed objects with data.
     /// </summary>
-    public interface IDistributor<T> : IDistributor<string, T> where T : IDistributable<string, T>
+    public interface IDistributor<TDistribution, TValue> : IDistributor<string, TDistribution, TValue> where TDistribution : IDistributable<string, TValue>
     {
     }
 
     /// <summary>
     /// An object that provides distributed objects with data.
     /// </summary>
-    public interface IDistributor<TKey, TValue> : IDistributor where TValue: IDistributable<TKey, TValue>
+    public interface IDistributor<TKey, TDistribution, TValue> : IDistributor where TDistribution: IDistributable<TKey, TValue>
     {
         /// <summary>
         /// Gets a dictionary of active feeds, keyed on a value of type <typeparamref name="TKey"/>.
         /// </summary>
-        IReadOnlyDictionary<TKey, TValue> ActiveFeeds { get; }
+        IReadOnlyDictionary<TKey, TDistribution> ActiveFeeds { get; }
 
     }
 }

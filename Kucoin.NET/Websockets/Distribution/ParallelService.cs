@@ -14,7 +14,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Kucoin.NET.Websockets.Distributable
+namespace Kucoin.NET.Websockets.Distribution
 {
     /// <summary>
     /// Run tasks in parallel.
