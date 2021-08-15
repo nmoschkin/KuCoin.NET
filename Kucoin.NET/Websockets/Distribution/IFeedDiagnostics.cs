@@ -6,6 +6,11 @@ namespace Kucoin.NET.Websockets.Distribution
     public interface IFeedDiagnostics
     {
         /// <summary>
+        /// Gets the current queue length.
+        /// </summary>
+        int QueueLength { get; }
+
+        /// <summary>
         /// Gets or sets a value indicating that diagnostics are enabled for this object.
         /// </summary>
         bool DiagnosticsEnabled { get; set; }

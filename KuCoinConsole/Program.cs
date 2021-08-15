@@ -396,7 +396,7 @@ namespace KuCoinConsole
                     }
 
                     var text = $"{MinChars(obs.Value.Symbol, maxSymbolLen)} - Best Ask: {MinChars(ba.ToString("#,##0.00######"), 12)} Best Bid: {MinChars(bb.ToString("#,##0.00######"), 12)} - {MinChars(currname, maxCurrencyLen)}  Total: {MinChars(l3.GrandTotal.ToString("#,##0"), 14)}";
-                    text += $"\r\n{MinChars("", maxSymbolLen)} - Match Share: {MinChars(mpcts[z].ToString("##0") + "%", 4)}   Total Share: {MinChars(pcts[z++].ToString("##0") + "%", 4)}   State: " + MinChars(l3.State.ToString(), 14);
+                    text += $"\r\n{MinChars("", maxSymbolLen)} - Match Share: {MinChars(mpcts[z].ToString("##0") + "%", 4)}   Total Share: {MinChars(pcts[z++].ToString("##0") + "%", 4)}   State: " + MinChars(l3.State.ToString(), 14) + "  Queue Length: " + MinChars(l3.QueueLength.ToString(), 10);
                     text += "\r\n                                                      ";
 
                     readOut.AppendLine(text);

@@ -160,7 +160,9 @@ namespace Kucoin.NET.Websockets.Observations
         public long MatchTotal {  get; protected set; }
 
         public long TransactionsPerSecond { get; protected set; }
-        
+
+        public int QueueLength => buffer?.Count ?? 0;
+
         public override IInitialDataProvider<string, KeyedAtomicOrderBook<AtomicOrderStruct>> DataProvider
         {
             get => dataProvider;
