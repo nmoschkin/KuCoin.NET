@@ -265,6 +265,7 @@ namespace KuCoinConsole
                 // loop forever to keep the program alive.
                 Task.Delay(delay).ConfigureAwait(false).GetAwaiter().GetResult();
 
+
                 // remember the cursor position on the screen
                 int lpos = Console.CursorTop;
                 
@@ -287,11 +288,11 @@ namespace KuCoinConsole
 
                 // write the text to the console.
                 Console.Write(readOut.ToString());
-
-
+                
                 // restore the cursor position.
-                Console.CursorTop = lpos;
-                Console.CursorLeft = 0;
+                if (Console.CursorTop != lpos) Console.CursorTop = lpos;
+                if (Console.CursorLeft != 0) Console.CursorLeft = 0;
+
             }
 
             _ = Task.Run(() =>
@@ -336,11 +337,6 @@ namespace KuCoinConsole
             {
                 decimal ba, bb;
                 
-                readOut.Clear();
-                readOut.AppendLine($"Feed Time Stamp: {timestamp:G}                 ");
-                readOut.AppendLine($"Up Time:         {(DateTime.Now - start):G}                 ");
-                readOut.AppendLine($"                                   ");
-
                 long biggrand = 0;
                 long matchgrand = 0;
 
@@ -361,6 +357,23 @@ namespace KuCoinConsole
                 }
 
                 int z = 0;
+
+                readOut.Clear();
+                readOut.AppendLine($"Feed Time Stamp: {timestamp:G}                 ");
+                readOut.AppendLine($"Up Time:         {(DateTime.Now - start):G}                 ");
+                readOut.AppendLine($"                                   ");
+
+                foreach (var f in feeds)
+                {
+                    if (f is Level3 l3a)
+                    {
+                        readOut.AppendLine($"Throughput:                         {PrintFriendlySpeed((ulong)l3a.Throughput)}                        ");
+                        readOut.AppendLine($"Queue Length:                       {l3a.QueueLength}                                                  ");
+                        readOut.AppendLine($"Max Queue Length (Last 60 Seconds): {l3a.MaxQueueLengthLast60Seconds}                                  ");
+                    }
+                }
+
+                readOut.AppendLine($"                                   ");
 
                 foreach (var obs in observers)
                 {
@@ -396,7 +409,7 @@ namespace KuCoinConsole
                 {
                     mps = 0;
                     tps = 0;
-                    
+
                     resetCounter = DateTime.UtcNow;
 
                     foreach (var obs in observers)
@@ -407,25 +420,13 @@ namespace KuCoinConsole
 
                     }
                 }
-                
+
                 readOut.AppendLine($"                                                           ");
                 readOut.AppendLine($"Match Total: {matchgrand:#,##0}                            ");
                 readOut.AppendLine($"Grand Total: {biggrand:#,##0}                              ");
                 readOut.AppendLine($"                                                           ");
                 readOut.AppendLine($"Matches Per Second:      ~ {mps:#,###}                   ");
                 readOut.AppendLine($"Transactions Per Second: ~ {tps:#,###}                   ");
-
-                foreach (var f in feeds)
-                {
-                    if (f is Level3 l3a)
-                    {
-                        readOut.AppendLine("                                                           ");
-                        readOut.AppendLine($"Throughput: {PrintFriendlySpeed((ulong)l3a.Throughput)}                           ");
-                        readOut.AppendLine("                                                           ");
-                        readOut.AppendLine($"Queue Length: {l3a.QueueLength}                                                           ");
-
-                    }
-                }
 
             }
         }
