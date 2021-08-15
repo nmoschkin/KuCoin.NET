@@ -203,7 +203,7 @@ namespace KuCoinConsole
             int tickerCount = 0;
 
             var syms = new List<string>();
-            for (int h = 0; h < 50; h++)
+            for (int h = 0; h < 100; h++)
             {
                 syms.Add(tickers[h].Symbol);
             }

@@ -72,7 +72,6 @@ namespace Kucoin.NET.Websockets.Distribution
                                 actions.Add(new Action(() =>
                                 {
                                     if (!t.DoWork()) i++;
-                                    else i++;
                                 }));
                             }
 
@@ -80,7 +79,7 @@ namespace Kucoin.NET.Websockets.Distribution
                     }
 
                     Parallel.Invoke(actions.ToArray());
-                    //Thread.Sleep((i == 0 ? 1 : i) * IdleSleepTime);
+                    Thread.Sleep(i * IdleSleepTime);
                 }
             }
 
@@ -117,14 +116,15 @@ namespace Kucoin.NET.Websockets.Distribution
         /// Gets or sets the global idle sleep time in milliseconds.
         /// </summary>
         /// <remarks>
-        /// Must be a value between 1 and 100.
+        /// Must be a value between 0 and 100.<br /><br />
+        /// The default value is 1.
         /// </remarks>
         public static int IdleSleepTime
         {
             get => idleSleepTime;
             set
             {
-                if (value < 1 || value > 100) throw new ArgumentOutOfRangeException();
+                if (value < 0 || value > 100) throw new ArgumentOutOfRangeException();
                 idleSleepTime = value;
             }
         }
