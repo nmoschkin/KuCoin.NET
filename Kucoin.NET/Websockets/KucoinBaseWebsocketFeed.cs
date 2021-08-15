@@ -90,6 +90,8 @@ namespace Kucoin.NET.Websockets
 
         private long throughput;
 
+        private long maxQueueLengthLast60Seconds;
+
         private TimeSpan pingTime = TimeSpan.Zero;
 
         private DateTime lastPing = DateTime.Now;
@@ -293,6 +295,11 @@ namespace Kucoin.NET.Websockets
                 SetProperty(ref throughput, value);
             }
         }
+
+        /// <summary>
+        /// Gets the maximum queue length for the last 60 seconds.
+        /// </summary>
+        public virtual long MaxQueueLengthLast60Seconds => maxQueueLengthLast60Seconds;
 
         /// <summary>
         /// Enable throughput monitoring via the <see cref="Throughput"/> observable property.
@@ -745,8 +752,14 @@ namespace Kucoin.NET.Websockets
             sb.EnsureCapacity(recvBufferSize);
 
             var arrSeg = new ArraySegment<byte>(inputChunk);
-            var tms = DateTime.UtcNow.Ticks;
+
+            DateTime xtime = DateTime.UtcNow;
+
+            xtime.AddSeconds(-1 * xtime.Second);
             
+            long tms = xtime.Ticks;
+            long tqms = tms;
+
             WebSocketReceiveResult result;
 
             // loop forever or until the connection is broken or canceled.
@@ -770,16 +783,29 @@ namespace Kucoin.NET.Websockets
 
                 if (monitorThroughput)
                 {
+                    xtime = DateTime.UtcNow;
+
                     if ((DateTime.UtcNow.Ticks - tms) >= 10_000_000)
                     {
                         Throughput = xlen * 8;
-                        tms = DateTime.UtcNow.Ticks;
+
+                        tms = xtime.Ticks;
+
                         xlen = 0;
                     }
                     else
                     {
                         xlen += c;
                     }
+
+                    if ((DateTime.UtcNow.Ticks - tqms) >= 600_000_000)
+                    {
+                        maxQueueLengthLast60Seconds = 0;
+
+                        xtime.AddSeconds(-1 * xtime.Second);
+                        tqms = xtime.Ticks;
+                    }
+
                 }
 
                 strlen += c;
@@ -901,7 +927,7 @@ namespace Kucoin.NET.Websockets
                         msgQueue.Clear();
                     }
                 }
-
+                
                 for (int i = 0; i < c; i++)
                 {
                     RouteJsonPacket(queue[i]);
@@ -914,6 +940,14 @@ namespace Kucoin.NET.Websockets
                         .ConfigureAwait(false)
                         .GetAwaiter()
                         .GetResult();
+                }
+
+                if (monitorThroughput)
+                {
+                    if (maxQueueLengthLast60Seconds < c)
+                    {
+                        maxQueueLengthLast60Seconds = c;
+                    }
                 }
             }
 
