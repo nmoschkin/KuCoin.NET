@@ -203,7 +203,7 @@ namespace KuCoinConsole
             int tickerCount = 0;
 
             var syms = new List<string>();
-            for (int h = 0; h < 100; h++)
+            for (int h = 0; h < 5; h++)
             {
                 syms.Add(tickers[h].Symbol);
             }
@@ -320,13 +320,59 @@ namespace KuCoinConsole
                     }
                 }
 
+                string headerText = null;
+                string footerText = null;
+                IEnumerable<string> itemStrings = null;
                 // create the text.
-                WriteOut(ts);
+                
+                WriteOut(ref headerText, ref itemStrings, ref footerText, ts);
+
+                Console.ResetColor();
+                Console.Write(headerText);
+
+                foreach (var sitem in itemStrings)
+                {
+                    var s = sitem.Split("\r\n");
+
+                    int i = s[0].IndexOf("Ask: ");
+                    int j = s[0].IndexOf(" ", i + 5);
+                    int k = s[0].IndexOf("Bid: ", j);
+                    int l = s[0].IndexOf(" ", k + 5);
+
+                    string s1 = s[0].Substring(0, i + 5);
+
+                    Console.Write(s1);
+
+                    Console.ForegroundColor = ConsoleColor.Green;
+                    string s2 = s[0].Substring(i + 5, (j - i) - 1);
+                    Console.Write(s2);
+                    Console.ResetColor();
+
+                    string s3 = s[0].Substring(j + 1, (k + 4) - j);
+
+                    Console.Write(s3);
+                    Console.ForegroundColor = ConsoleColor.Red;
+
+                    string s4 = s[0].Substring(k + 5, (l - k) - 1);
+
+                    Console.Write(s4);
+                    Console.ResetColor();
+
+                    string s5 = s[0].Substring(l + 1);
+
+                    Console.WriteLine(s5);
+                    Console.WriteLine(s[1]);
+                    Console.WriteLine(s[2]);
+
+
+                }
+
+                Console.Write(footerText);
 
                 // write the text to the console.
-                var text = readOut.ToString();
-                Console.Write(text);
+                //var text = readOut.ToString();
 
+                //Console.Write(text);
 
                 // restore the cursor position.
                 if (Console.CursorTop != lpos) Console.CursorTop = lpos;
@@ -365,7 +411,7 @@ namespace KuCoinConsole
         /// Write the current status of the feed to a <see cref="StringBuilder"/> object.
         /// </summary>
         /// <param name="timestamp">The current feed timestamp, or null for local now.</param>
-        private static void WriteOut(DateTime? timestamp = null)
+        private static void WriteOut(ref string headerText, ref IEnumerable<string> itemText, ref string footerText, DateTime? timestamp = null)
         {
             Console.CursorVisible = false;
             if (timestamp == null) timestamp = DateTime.Now;
@@ -448,9 +494,12 @@ namespace KuCoinConsole
                 }
 
                 readOut.AppendLine($"                                   ");
-                
+
+                headerText = readOut.ToString();
+
                 int count = 0;
                 var sortobs = new List<ISymbolDataService>(Observers.Values);
+                var itemTexts = new List<string>();
 
                 sortobs.Sort((a, b) =>
                 {
@@ -486,6 +535,7 @@ namespace KuCoinConsole
                     text += $"\r\n{MinChars("", maxSymbolLen)} - Match Share: {MinChars(mpcts[z].ToString("##0") + "%", 4)}   Total Share: {MinChars(pcts[z++].ToString("##0") + "%", 4)}   State: " + MinChars(l3.State.ToString(), 14) + "  Queue Length: " + MinChars(l3.QueueLength.ToString(), 10);
                     text += "\r\n                                                      ";
 
+                    itemTexts.Add(text);
                     readOut.AppendLine(text);
                 }
 
@@ -507,17 +557,24 @@ namespace KuCoinConsole
                     }
                 }
 
+                itemText = itemTexts;
+
+                var ft = new StringBuilder();
+
                 if (Observers.Count - count > 0)
                 {
-                    readOut.AppendLine($"Feeds Not Shown: {Observers.Count - count}             ");
+                    ft.AppendLine($"Feeds Not Shown: {Observers.Count - count}             ");
                 }
 
-                readOut.AppendLine($"                                                           ");
-                readOut.AppendLine($"Match Total: {matchgrand:#,##0}                            ");
-                readOut.AppendLine($"Grand Total: {biggrand:#,##0}                              ");
-                readOut.AppendLine($"                                                           ");
-                readOut.AppendLine($"Matches Per Second:      ~ {mps:#,###}                   ");
-                readOut.AppendLine($"Transactions Per Second: ~ {tps:#,###}                   ");
+                ft.AppendLine($"                                                           ");
+                ft.AppendLine($"Match Total: {matchgrand:#,##0}                            ");
+                ft.AppendLine($"Grand Total: {biggrand:#,##0}                              ");
+                ft.AppendLine($"                                                           ");
+                ft.AppendLine($"Matches Per Second:      ~ {mps:#,###}                   ");
+                ft.AppendLine($"Transactions Per Second: ~ {tps:#,###}                   ");
+
+                footerText = ft.ToString();
+                readOut.Append(ft);
 
             }
         }
