@@ -18,7 +18,7 @@ namespace Kucoin.NET.Websockets.Observations
     public class Level3Observation : MarketObservation<KeyedAtomicOrderBook<AtomicOrderStruct>, ObservableAtomicOrderBook<ObservableAtomicOrderUnit>, Level3Update>, IFeedDiagnostics, IMarketVolume
     {
         new private Level3 parent;
-
+        
         private long matchTime = DateTime.UtcNow.Ticks;
 
         private long transactSec = 0;
@@ -34,6 +34,12 @@ namespace Kucoin.NET.Websockets.Observations
         private ObservableAtomicOrderBook<ObservableAtomicOrderUnit> orderBook;
 
         private List<Level3Update> initBuffer = new List<Level3Update>();
+
+        private KlineType klineType = KlineType.Min1;
+
+        private DateTime klineTime;
+
+        private Candle candle = new Candle() { Type = KlineType.Min1, Timestamp = DateTime.Now.AddSeconds(-DateTime.Now.Second) };
 
         private bool disabled;
 
@@ -67,6 +73,37 @@ namespace Kucoin.NET.Websockets.Observations
             this.parent = parent;
             this.dataProvider = parent;
             this.IsObservationDisabled = true;
+        }
+
+        public Candle Candle
+        {
+            get => candle;
+            set
+            {
+                SetProperty(ref candle, value);
+            }
+        }
+
+        public KlineType KlineType
+        {
+            get => klineType;
+            set
+            {
+                if (SetProperty(ref klineType, value))
+                {
+                    KlineTime = klineType.GetCurrentKlineStartTime();
+                    Candle = new Candle() { Type = klineType };
+                }
+            }
+        }
+
+        public DateTime KlineTime
+        {
+            get => klineTime;
+            set
+            {
+                SetProperty(ref klineTime, value);  
+            }
         }
 
         public override bool IsObservationDisabled
@@ -617,6 +654,32 @@ namespace Kucoin.NET.Websockets.Observations
                 fullDepth.Sequence = obj.Sequence;
                 fullDepth.Timestamp = obj.Timestamp ?? DateTime.Now;
 
+                if (updVol)
+                {
+                    decimal price = (decimal)fullDepth.Bids[0].Price;
+
+                    if (!Candle.IsTimeInCandle(candle, fullDepth.Timestamp))
+                    {
+                        MarketVolume = 0;
+                        Candle.Volume = 0;
+                        Candle.OpenPrice = Candle.ClosePrice = Candle.HighPrice = Candle.LowPrice = price;
+                        Candle.Timestamp = fullDepth.Timestamp.AddSeconds(-fullDepth.Timestamp.Second);
+                    }
+                    else
+                    {
+                        Candle.ClosePrice = price;
+
+                        if (price > Candle.HighPrice)
+                        {
+                            Candle.HighPrice = price;
+                        }
+                        else if (price < Candle.LowPrice)
+                        {
+                            Candle.LowPrice = price;    
+                        }
+                    }
+                }
+
                 return true;
             }
         }
@@ -705,7 +768,11 @@ namespace Kucoin.NET.Websockets.Observations
 
                         // A match is a real component of volume.
                         // we can keep our own tally of the market volume per k-line.
-                        if (updVol) marketVolume += (csize * p);
+                        if (updVol)
+                        {
+                            MarketVolume += (csize * p);
+                            Candle.Volume = marketVolume;
+                        }
                     }
 
                     return true;

@@ -274,6 +274,7 @@ namespace KuCoinConsole
 
                                 curr.Level3Feed.MonitorThroughput = true;
                                 curr.Level3Observation.DiagnosticsEnabled = true;
+                                curr.Level3Observation.IsVolumeEnabled = true;
 
                                 Observers.Add(sym, curr);
                             }
@@ -487,8 +488,8 @@ namespace KuCoinConsole
                 sortobs.Sort((a, b) =>
                 {
 
-                    if (a.Level3Observation.GrandTotal > b.Level3Observation.GrandTotal) return -1;
-                    else if (a.Level3Observation.GrandTotal < b.Level3Observation.GrandTotal) return 1;
+                    if (a.Level3Observation.MarketVolume > b.Level3Observation.MarketVolume) return -1;
+                    else if (a.Level3Observation.MarketVolume < b.Level3Observation.MarketVolume) return 1;
                     else return 0;
                 });
 
@@ -514,7 +515,7 @@ namespace KuCoinConsole
                         currname = bc;
                     }
 
-                    var text = $"{MinChars(obs.Symbol, maxSymbolLen)} - Best Ask: {{Red}}{MinChars(ba.ToString("#,##0.00######"), 12)}{{Reset}} Best Bid: {{Green}}{MinChars(bb.ToString("#,##0.00######"), 12)}{{Reset}} - {{Yellow}}{MinChars(currname, maxCurrencyLen)}{{Reset}}  Total: {MinChars(l3.GrandTotal.ToString("#,##0"), 14)}";
+                    var text = $"{MinChars(obs.Symbol, maxSymbolLen)} - Best Ask: {{Red}}{MinChars(ba.ToString("#,##0.00######"), 12)}{{Reset}} Best Bid: {{Green}}{MinChars(bb.ToString("#,##0.00######"), 12)}{{Reset}} - {{Yellow}}{MinChars(currname, maxCurrencyLen)}{{Reset}}  Volume: {{Cyan}}{MinChars(l3.MarketVolume.ToString("#,##0.00"), 14)}{{Reset}}";
                     text += $"\r\n{MinChars("", maxSymbolLen)} - Match Share: {MinChars(mpcts[z].ToString("##0") + "%", 4)}   Total Share: {MinChars(pcts[z++].ToString("##0") + "%", 4)}   State: " + MinChars(l3.State.ToString(), 14) + "  Queue Length: " + MinChars(l3.QueueLength.ToString(), 10);
                     text += "\r\n                                                                                                         ";
 
