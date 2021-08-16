@@ -444,9 +444,11 @@ namespace Kucoin.NET.Services
                 await level2feed.Connect();
             }
 
+            OnPropertyChanged(nameof(Level2Feed));
             level2feed.FeedDisconnected += OnLevel2Disconnected;
 
-            level2obs = await level2feed.AddSymbol((string)symbol); 
+            level2obs = await level2feed.AddSymbol((string)symbol);
+            OnPropertyChanged(nameof(Level2Observation));
             level2enabled = true;
         }
 
@@ -476,10 +478,11 @@ namespace Kucoin.NET.Services
             {
                 await level3feed.Connect();
             }
-
+            OnPropertyChanged(nameof(Level3Feed));
             level3feed.FeedDisconnected += OnLevel3Disconnected;
 
             level3obs = await level3feed.AddSymbol((string)symbol);
+            OnPropertyChanged(nameof(Level3Observation));
             level3enabled = true;
         }
 

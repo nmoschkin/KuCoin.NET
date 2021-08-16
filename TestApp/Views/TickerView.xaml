@@ -21,12 +21,24 @@
             <conv:FriendlySpeedConverter x:Key="spConv" />
             <conv:TextVariablesConverter x:Key="txtConv" />
 
-            <DataTemplate x:Key="TickerPriceTemplate">
+
+            <DataTemplate x:Key="PriceTemplate">
                 <Grid>
                     <TextBlock
-                        FontFamily="Consolas"
-                        FontSize="12"
-                        Text="{Binding}" />
+                        Grid.Row="0"
+                        Grid.Column="2"
+                        Margin="8,4"
+                        HorizontalAlignment="Left"
+                        VerticalAlignment="Center"
+                        Background="Transparent"
+                        FontSize="10"
+                        FontWeight="Black"
+                        Foreground="White">
+                        <Run Text="Best Bid: " />
+                        <Run FontWeight="Bold" Text="{Binding ., StringFormat='{}{0:#,##0.00########}'}" />
+
+                    </TextBlock>
+
 
                 </Grid>
 
@@ -46,8 +58,10 @@
                         Margin="8,4"
                         HorizontalAlignment="Left"
                         VerticalAlignment="Center"
+                        Background="Transparent"
                         FontSize="12"
                         FontWeight="Black"
+                        Foreground="White"
                         Text="{Binding Symbol}"
                         TextAlignment="Left" />
 
@@ -65,6 +79,26 @@
                 </Grid>
             </DataTemplate>
 
+            <DataTemplate x:Key="OtherTemplate">
+                <Grid>
+
+                    <TextBlock
+                        Grid.Row="0"
+                        Grid.Column="3"
+                        Margin="8,4"
+                        HorizontalAlignment="Left"
+                        VerticalAlignment="Center"
+                        Background="Transparent"
+                        FontSize="10"
+                        FontWeight="Black"
+                        Foreground="White">
+                        <Run Text="Queue Length: " />
+                        <Run FontWeight="Bold" Text="{Binding}" />
+
+                    </TextBlock>
+
+                </Grid>
+            </DataTemplate>
         </ResourceDictionary>
     </Window.Resources>
 
@@ -134,107 +168,38 @@
                 x:Name="TickerList"
                 Background="Black"
                 Foreground="White"
-                ItemsSource="{Binding CurrentFeeds}">
+                ItemsSource="{Binding Level3Tickers}">
 
                 <ListView.View>
                     <GridView>
                         <GridView.Columns>
                             <GridViewColumn
                                 Width="120"
+                                CellTemplate="{StaticResource SymbolTemplate}"
                                 DisplayMemberBinding="{Binding Symbol}"
                                 Header="Symbol" />
+
+                            <GridViewColumn
+                                Width="120"
+                                CellTemplate="{StaticResource PriceTemplate}"
+                                DisplayMemberBinding="{Binding BestAsk}"
+                                Header="Best Ask" />
+
+                            <GridViewColumn
+                                Width="120"
+                                CellTemplate="{StaticResource PriceTemplate}"
+                                DisplayMemberBinding="{Binding BestBid}"
+                                Header="Best Bid" />
+
+                            <GridViewColumn
+                                Width="120"
+                                CellTemplate="{StaticResource OtherTemplate}"
+                                DisplayMemberBinding="{Binding QueueLength}"
+                                Header="Queue Length" />
 
                         </GridView.Columns>
                     </GridView>
                 </ListView.View>
-
-                <ListView.ItemTemplate>
-                    <DataTemplate>
-                        <Grid>
-
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="Auto" />
-                                <ColumnDefinition Width="Auto" />
-                                <ColumnDefinition Width="Auto" />
-                                <ColumnDefinition Width="Auto" />
-                                <ColumnDefinition />
-                            </Grid.ColumnDefinitions>
-
-                            <Grid.RowDefinitions>
-                                <RowDefinition />
-                                <RowDefinition />
-                            </Grid.RowDefinitions>
-
-
-                            <TextBlock
-                                Grid.Row="0"
-                                Grid.Column="0"
-                                Margin="8,4"
-                                HorizontalAlignment="Left"
-                                VerticalAlignment="Center"
-                                FontSize="12"
-                                FontWeight="Black"
-                                Text="{Binding Symbol}"
-                                TextAlignment="Left" />
-
-                            <TextBlock
-                                Grid.Row="1"
-                                Grid.Column="0"
-                                Margin="8,4"
-                                HorizontalAlignment="Left"
-                                VerticalAlignment="Center"
-                                FontSize="12"
-                                FontWeight="Normal"
-                                Text="{Binding BaseCurrency.FullName}"
-                                TextAlignment="Left" />
-
-
-                            <TextBlock
-                                Grid.Row="0"
-                                Grid.Column="1"
-                                Margin="8,4"
-                                HorizontalAlignment="Left"
-                                VerticalAlignment="Center"
-                                FontSize="10"
-                                FontWeight="Black">
-                                <Run Text="Best Ask: " />
-                                <Run FontWeight="Bold" Text="{Binding BestAsk, StringFormat='{}{0:#,##0.00########}'}" />
-
-                            </TextBlock>
-
-                            <TextBlock
-                                Grid.Row="0"
-                                Grid.Column="2"
-                                Margin="8,4"
-                                HorizontalAlignment="Left"
-                                VerticalAlignment="Center"
-                                FontSize="10"
-                                FontWeight="Black">
-                                <Run Text="Best Bid: " />
-                                <Run FontWeight="Bold" Text="{Binding BestAsk, StringFormat='{}{0:#,##0.00########}'}" />
-
-                            </TextBlock>
-
-                            <TextBlock
-                                Grid.Row="0"
-                                Grid.Column="3"
-                                Margin="8,4"
-                                HorizontalAlignment="Left"
-                                VerticalAlignment="Center"
-                                FontSize="10"
-                                FontWeight="Black">
-                                <Run Text="Queue Length: " />
-                                <Run FontWeight="Bold" Text="{Binding QueueLength}" />
-
-                            </TextBlock>
-
-
-                        </Grid>
-
-
-
-                    </DataTemplate>
-                </ListView.ItemTemplate>
             </ListView>
 
         </Border>

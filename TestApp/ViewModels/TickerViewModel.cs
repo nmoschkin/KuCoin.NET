@@ -146,6 +146,8 @@ namespace KuCoinApp
 
         protected override async Task Initialize()
         {
+            await CurrencyViewModel.UpdateCurrencies();
+
             await Task.Delay(1000);
             await App.Current.Dispatcher.Invoke(async () =>
             {
@@ -175,7 +177,17 @@ namespace KuCoinApp
 
                 _ = Task.Run(() => KuCoinConsole.Program.RunProgram());
 
+                KuCoinConsole.Program.TickersReady += Program_TickersReady;
+
             });
+        }
+
+        private void Program_TickersReady(object sender, EventArgs e)
+        {
+            if (sender is IList<ISymbolDataService> services)
+            {
+                ActiveServices = new ObservableCollection<ISymbolDataService>(services);
+            }
         }
 
         public override void Dispose()

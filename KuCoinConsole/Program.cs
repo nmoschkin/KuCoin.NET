@@ -99,6 +99,8 @@ namespace KuCoinConsole
         static extern IntPtr GetConsoleWindow();
 
         static DateTime start = DateTime.Now;
+        
+        public static event EventHandler TickersReady;
 
         public static void Main(string[] args)
         {
@@ -201,7 +203,7 @@ namespace KuCoinConsole
             int tickerCount = 0;
 
             var syms = new List<string>();
-            for (int h = 0; h < 10; h++)
+            for (int h = 0; h < 100; h++)
             {
                 syms.Add(tickers[h].Symbol);
             }
@@ -276,6 +278,8 @@ namespace KuCoinConsole
                 Console.CursorVisible = false;
                 ready = true;
 
+                TickersReady?.Invoke(services, new EventArgs());
+
             }).ConfigureAwait(false).GetAwaiter().GetResult();
 
            
@@ -330,13 +334,13 @@ namespace KuCoinConsole
 
             }
 
-            _ = Task.Run(() =>
-            {
-                Dispatcher.BeginInvokeOnMainThread((o) =>
-                {
-                    RunProgram();
-                });
-            });
+            //_ = Task.Run(() =>
+            //{
+            //    Dispatcher.BeginInvokeOnMainThread((o) =>
+            //    {
+            //        RunProgram();
+            //    });
+            //});
 
         }
 
