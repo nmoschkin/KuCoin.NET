@@ -353,7 +353,7 @@ namespace KuCoinConsole
 
                     Console.Write(s1);
 
-                    Console.ForegroundColor = ConsoleColor.Green;
+                    Console.ForegroundColor = ConsoleColor.Red;
                     string s2 = sitem.Substring(i + 5, (j - i) - 1);
                     Console.Write(s2);
                     Console.ResetColor();
@@ -361,7 +361,7 @@ namespace KuCoinConsole
                     string s3 = sitem.Substring(j + 1, (k + 4) - j);
 
                     Console.Write(s3);
-                    Console.ForegroundColor = ConsoleColor.Red;
+                    Console.ForegroundColor = ConsoleColor.Green;
 
                     string s4 = sitem.Substring(k + 5, (l - k) - 1);
 
