@@ -340,42 +340,14 @@ namespace KuCoinConsole
                 WriteOut(ref headerText, ref itemStrings, ref footerText, ts);
 
                 Console.ResetColor();
-                Console.Write(headerText);
+                ColorConsole.Write(headerText);
 
                 foreach (var sitem in itemStrings)
                 {
-                    int i = sitem.IndexOf("Ask: ");
-                    int j = sitem.IndexOf(" ", i + 5);
-                    int k = sitem.IndexOf("Bid: ", j);
-                    int l = sitem.IndexOf(" ", k + 5);
-
-                    string s1 = sitem.Substring(0, i + 5);
-
-                    Console.Write(s1);
-
-                    Console.ForegroundColor = ConsoleColor.Red;
-                    string s2 = sitem.Substring(i + 5, (j - i) - 1);
-                    Console.Write(s2);
-                    Console.ResetColor();
-
-                    string s3 = sitem.Substring(j + 1, (k + 4) - j);
-
-                    Console.Write(s3);
-                    Console.ForegroundColor = ConsoleColor.Green;
-
-                    string s4 = sitem.Substring(k + 5, (l - k) - 1);
-
-                    Console.Write(s4);
-                    Console.ResetColor();
-
-                    string s5 = sitem.Substring(l + 1);
-
-                    Console.WriteLine(s5);
-
-
+                    ColorConsole.WriteLine(sitem);
                 }
 
-                Console.Write(footerText);
+                ColorConsole.WriteLine(footerText);
 
                 // write the text to the console.
                 //var text = readOut.ToString();
@@ -474,13 +446,13 @@ namespace KuCoinConsole
                 int z = 0;
 
                 readOut.Clear();
-                readOut.AppendLine($"Feed Time Stamp:    {timestamp:G}                 ");
-                readOut.AppendLine($"Up Time:            {(DateTime.Now - start):G}                 ");
+                readOut.AppendLine($"Feed Time Stamp:    {{Green}}{timestamp:G}{{Reset}}                 ");
+                readOut.AppendLine($"Up Time:            {{Blue}}{(DateTime.Now - start):G}{{Reset}}                 ");
                 readOut.AppendLine($"                                   ");
-                readOut.AppendLine($"Feeds Running:      {running}                 ");
-                readOut.AppendLine($"Feeds Initializing: {resetting}                 ");
+                readOut.AppendLine($"Feeds Running:      {{Green}}{running}{{Reset}}                 ");
+                readOut.AppendLine($"Feeds Initializing: {{Yellow}}{resetting}{{Reset}}                 ");
 
-                var failtext = $"Feeds Failed:       {failed}  ";
+                var failtext = $"Feeds Failed:       {{Red}}{failed}{{Reset}}  ";
                 if (resetting > 0 && minresettime > 0)
                 {
                     failtext += $" (Next reset in {(minresettime/1000):#,##0} seconds)";
@@ -495,9 +467,9 @@ namespace KuCoinConsole
                 {
                     if (f is Level3 l3a)
                     {
-                        readOut.AppendLine($"Throughput:                         {PrintFriendlySpeed((ulong)l3a.Throughput)}                        ");
-                        readOut.AppendLine($"Queue Length:                       {l3a.QueueLength}                                                  ");
-                        readOut.AppendLine($"Max Queue Length (Last 60 Seconds): {l3a.MaxQueueLengthLast60Seconds}                                  ");
+                        readOut.AppendLine($"Throughput:                         {{Green}}{PrintFriendlySpeed((ulong)l3a.Throughput)}{{Reset}}                        ");
+                        readOut.AppendLine($"Queue Length:                       {{Yellow}}{l3a.QueueLength}{{Reset}}                                                  ");
+                        readOut.AppendLine($"Max Queue Length (Last 60 Seconds): {{Red}}{l3a.MaxQueueLengthLast60Seconds}{{Reset}}                                  ");
                     }
                 }
 
@@ -539,7 +511,7 @@ namespace KuCoinConsole
                         currname = bc;
                     }
 
-                    var text = $"{MinChars(obs.Symbol, maxSymbolLen)} - Best Ask: {MinChars(ba.ToString("#,##0.00######"), 12)} Best Bid: {MinChars(bb.ToString("#,##0.00######"), 12)} - {MinChars(currname, maxCurrencyLen)}  Total: {MinChars(l3.GrandTotal.ToString("#,##0"), 14)}";
+                    var text = $"{MinChars(obs.Symbol, maxSymbolLen)} - Best Ask: {{Red}}{MinChars(ba.ToString("#,##0.00######"), 12)}{{Reset}} Best Bid: {{Green}}{MinChars(bb.ToString("#,##0.00######"), 12)}{{Reset}} - {{Yellow}}{MinChars(currname, maxCurrencyLen)}{{Reset}}  Total: {MinChars(l3.GrandTotal.ToString("#,##0"), 14)}";
                     text += $"\r\n{MinChars("", maxSymbolLen)} - Match Share: {MinChars(mpcts[z].ToString("##0") + "%", 4)}   Total Share: {MinChars(pcts[z++].ToString("##0") + "%", 4)}   State: " + MinChars(l3.State.ToString(), 14) + "  Queue Length: " + MinChars(l3.QueueLength.ToString(), 10);
                     text += "\r\n                                                                                                         ";
 
@@ -571,15 +543,19 @@ namespace KuCoinConsole
 
                 if (Observers.Count - count > 0)
                 {
-                    ft.AppendLine($"Feeds Not Shown: {Observers.Count - count}             ");
+                    ft.AppendLine($"Feeds Not Shown: {{Magenta}}{Observers.Count - count}{{Reset}}             ");
                 }
+                
+                ft.AppendLine($"                                                           ");
+                ft.AppendLine($"Match Total: {{White}}{matchgrand:#,##0}{{Reset}}                            ");
+                ft.AppendLine($"Grand Total: {{White}}{biggrand:#,##0}{{Reset}}                              ");
+                ft.AppendLine($"                                                           ");
+                ft.AppendLine($"Matches Per Second:      ~ {{Cyan}}{mps:#,###}{{Reset}}                   ");
+                ft.AppendLine($"Transactions Per Second: ~ {{Cyan}}{tps:#,###}{{Reset}}                   ");
 
-                ft.AppendLine($"                                                           ");
-                ft.AppendLine($"Match Total: {matchgrand:#,##0}                            ");
-                ft.AppendLine($"Grand Total: {biggrand:#,##0}                              ");
-                ft.AppendLine($"                                                           ");
-                ft.AppendLine($"Matches Per Second:      ~ {mps:#,###}                   ");
-                ft.AppendLine($"Transactions Per Second: ~ {tps:#,###}                   ");
+                ft.AppendLine("                                                                                                                  ");
+                ft.AppendLine("                                                                                                                  ");
+                ft.AppendLine("                                                                                                                  ");
 
                 footerText = ft.ToString();
                 readOut.Append(ft);
@@ -738,4 +714,84 @@ namespace KuCoinConsole
 
         }
     }
+
+    public static class ColorConsole
+    {
+
+        public static void WriteColor(string text, ConsoleColor color)
+        {
+            var oldColor = Console.ForegroundColor;
+            Console.ForegroundColor = color;
+            Console.Write(text);
+            Console.ForegroundColor = oldColor;
+        }
+
+        public static void WriteColorLine(string text, ConsoleColor color)
+        {
+            var oldColor = Console.ForegroundColor;
+            Console.ForegroundColor = color;
+            Console.WriteLine(text);
+            Console.ForegroundColor = oldColor;
+        }
+
+
+        public static void Write(string text)
+        {
+
+            var stext = new StringBuilder();
+            var sb = new StringBuilder();
+
+            int i, c = text.Length;
+
+            var oldColor = Console.ForegroundColor;
+
+            for (i = 0; i < c; i++)
+            {
+                if (text[i] == '{')
+                {
+                    if (stext.Length != 0)
+                    {
+                        Console.Write(stext.ToString());
+                        stext.Clear();
+                    }
+
+                    i++;
+                    while (text[i] != '}')
+                    {
+                        sb.Append(text[i++]);
+                    }
+
+                    var color = sb.ToString();
+                    if (color == "Reset")
+                    {
+                        Console.ResetColor();
+                    }
+                    else
+                    {
+                        var val = (ConsoleColor?)typeof(ConsoleColor).GetField(color)?.GetValue(null);
+
+                        if (val is ConsoleColor cc)
+                        {
+                            Console.ForegroundColor = cc;
+                        }
+                    }
+                    sb.Clear();
+                }
+                else
+                {
+                    stext.Append(text[i]);
+                }
+            }
+
+            if (stext.Length > 0) Console.Write(stext);
+            Console.ForegroundColor = oldColor;
+        }
+
+        public static void WriteLine(string text)
+        {
+            Write(text + "\r\n");
+        }
+
+    }
+
 }
