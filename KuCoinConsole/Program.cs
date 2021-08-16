@@ -120,6 +120,9 @@ namespace KuCoinConsole
             Console.WindowWidth = 130;
             Console.WindowHeight = 60;
 
+
+            var em = new ConsoleEmulator();
+
             Console.Clear();
             Console.WriteLine("Initializing KuCoin Library (Loading Symbols and Currencies)...");
             KuCoin.Initialize();

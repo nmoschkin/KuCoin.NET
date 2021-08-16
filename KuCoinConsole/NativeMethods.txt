@@ -1,0 +1,10 @@
+﻿GetConsoleScreenBufferInfoEx
+SetConsoleScreenBufferInfoEx
+GetStdHandle
+AllocConsole
+FreeConsole
+CloseHandle
+
+
+
+
