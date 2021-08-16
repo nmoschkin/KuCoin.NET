@@ -13,6 +13,7 @@ using System.Threading.Tasks;
 using Kucoin.NET.Websockets.Distribution;
 using Kucoin.NET.Websockets.Observations;
 using System.Threading;
+using Kucoin.NET.Json;
 
 namespace Kucoin.NET.Websockets.Public
 {
@@ -249,10 +250,21 @@ namespace Kucoin.NET.Websockets.Public
                 RouteJsonPacket(json);
             }
         }
+        
+        static JsonSerializerSettings settings = new JsonSerializerSettings()
+        {
+            Converters = new JsonConverter[] 
+            { 
+                new StringToDecimalConverter(), 
+                new AutoTimeConverter(TimeTypes.InNanoseconds), 
+                new EnumToStringConverter<DoneReason>(), 
+                new EnumToStringConverter<Side>() 
+            }
+        };
 
         protected override void RouteJsonPacket(string json, FeedMessage e = null)
         {
-            var msg = JsonConvert.DeserializeObject<FeedMessage<Level3Update>>(json);
+            var msg = JsonConvert.DeserializeObject<FeedMessage<Level3Update>>(json, settings);
 
             if (msg.TunnelId == tunnelId && msg.Type == "message")
             {

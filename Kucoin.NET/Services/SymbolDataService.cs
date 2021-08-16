@@ -117,9 +117,8 @@ namespace Kucoin.NET.Services
             {
                 _ = Market.Instance;
             }
-            catch(Exception ex)
+            catch
             {
-                
             }
         }
 

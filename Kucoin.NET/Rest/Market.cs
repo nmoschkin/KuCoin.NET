@@ -33,17 +33,21 @@ namespace Kucoin.NET.Rest
 
         static Market inst;
 
+        static object lockObj = new object();
+
         internal static void CreateMarket(bool getMarket)
         {
-            if (inst == null)
-                inst = new Market();
-
-            if (getMarket)
+            lock(lockObj)
             {
-                inst.RefreshCurrenciesAsync().ConfigureAwait(false).GetAwaiter().GetResult();
-                inst.RefreshSymbolsAsync().ConfigureAwait(false).GetAwaiter().GetResult();
-            }
+                if (inst == null)
+                    inst = new Market();
 
+                if (getMarket)
+                {
+                    inst.RefreshCurrenciesAsync().ConfigureAwait(false).GetAwaiter().GetResult();
+                    inst.RefreshSymbolsAsync().ConfigureAwait(false).GetAwaiter().GetResult();
+                }
+            }
         }
        
         
@@ -51,12 +55,15 @@ namespace Kucoin.NET.Rest
         {
             get
             {
-                if (inst == null)
+                lock (lockObj)
                 {
-                    CreateMarket(true);
-                }
+                    if (inst == null)
+                    {
+                        CreateMarket(true);
+                    }
 
-                return inst;
+                    return inst;
+                }
             }
         }
 
