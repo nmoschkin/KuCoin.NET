@@ -171,6 +171,18 @@ namespace KuCoinConsole
                 KuCoin.Credentials.Add(cred);
             }
 
+            Console.WriteLine("Number of Feeds: ");
+
+            var txtfeednum = Console.ReadLine();
+
+            if (!int.TryParse(txtfeednum, out int feednum))
+            {
+                Console.WriteLine("That's not a number, defaulting to 10.");
+                feednum = 10;
+            }
+
+
+
             var ast = market.GetAllTickers().ConfigureAwait(false). GetAwaiter().GetResult();
 
             var tickers = new List<AllSymbolsTickerItem>(ast.Ticker);
@@ -203,7 +215,7 @@ namespace KuCoinConsole
             int tickerCount = 0;
 
             var syms = new List<string>();
-            for (int h = 0; h < 5; h++)
+            for (int h = 0; h < feednum; h++)
             {
                 syms.Add(tickers[h].Symbol);
             }
@@ -332,37 +344,33 @@ namespace KuCoinConsole
 
                 foreach (var sitem in itemStrings)
                 {
-                    var s = sitem.Split("\r\n");
+                    int i = sitem.IndexOf("Ask: ");
+                    int j = sitem.IndexOf(" ", i + 5);
+                    int k = sitem.IndexOf("Bid: ", j);
+                    int l = sitem.IndexOf(" ", k + 5);
 
-                    int i = s[0].IndexOf("Ask: ");
-                    int j = s[0].IndexOf(" ", i + 5);
-                    int k = s[0].IndexOf("Bid: ", j);
-                    int l = s[0].IndexOf(" ", k + 5);
-
-                    string s1 = s[0].Substring(0, i + 5);
+                    string s1 = sitem.Substring(0, i + 5);
 
                     Console.Write(s1);
 
                     Console.ForegroundColor = ConsoleColor.Green;
-                    string s2 = s[0].Substring(i + 5, (j - i) - 1);
+                    string s2 = sitem.Substring(i + 5, (j - i) - 1);
                     Console.Write(s2);
                     Console.ResetColor();
 
-                    string s3 = s[0].Substring(j + 1, (k + 4) - j);
+                    string s3 = sitem.Substring(j + 1, (k + 4) - j);
 
                     Console.Write(s3);
                     Console.ForegroundColor = ConsoleColor.Red;
 
-                    string s4 = s[0].Substring(k + 5, (l - k) - 1);
+                    string s4 = sitem.Substring(k + 5, (l - k) - 1);
 
                     Console.Write(s4);
                     Console.ResetColor();
 
-                    string s5 = s[0].Substring(l + 1);
+                    string s5 = sitem.Substring(l + 1);
 
-                    Console.WriteLine(s5);
-                    Console.WriteLine(s[1]);
-                    Console.WriteLine(s[2]);
+                    Console.Write(s5);
 
 
                 }
@@ -533,9 +541,9 @@ namespace KuCoinConsole
 
                     var text = $"{MinChars(obs.Symbol, maxSymbolLen)} - Best Ask: {MinChars(ba.ToString("#,##0.00######"), 12)} Best Bid: {MinChars(bb.ToString("#,##0.00######"), 12)} - {MinChars(currname, maxCurrencyLen)}  Total: {MinChars(l3.GrandTotal.ToString("#,##0"), 14)}";
                     text += $"\r\n{MinChars("", maxSymbolLen)} - Match Share: {MinChars(mpcts[z].ToString("##0") + "%", 4)}   Total Share: {MinChars(pcts[z++].ToString("##0") + "%", 4)}   State: " + MinChars(l3.State.ToString(), 14) + "  Queue Length: " + MinChars(l3.QueueLength.ToString(), 10);
-                    text += "\r\n                                                      ";
+                    text += "\r\n                                                                                                         ";
 
-                    itemTexts.Add(text);
+                    itemTexts.Add(text + "\r\n");
                     readOut.AppendLine(text);
                 }
 
