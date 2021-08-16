@@ -370,7 +370,7 @@ namespace KuCoinConsole
 
                     string s5 = sitem.Substring(l + 1);
 
-                    Console.Write(s5);
+                    Console.WriteLine(s5);
 
 
                 }
@@ -543,7 +543,7 @@ namespace KuCoinConsole
                     text += $"\r\n{MinChars("", maxSymbolLen)} - Match Share: {MinChars(mpcts[z].ToString("##0") + "%", 4)}   Total Share: {MinChars(pcts[z++].ToString("##0") + "%", 4)}   State: " + MinChars(l3.State.ToString(), 14) + "  Queue Length: " + MinChars(l3.QueueLength.ToString(), 10);
                     text += "\r\n                                                                                                         ";
 
-                    itemTexts.Add(text + "\r\n                                                                                                                                                   ");
+                    itemTexts.Add(text);
                     readOut.AppendLine(text);
                 }
 
