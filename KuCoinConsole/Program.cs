@@ -81,7 +81,7 @@ namespace KuCoinConsole
         static object lockObj = new object();
 
 
-        static ICredentialsProvider cred;
+        public static ICredentialsProvider cred;
 
         static Kucoin.NET.Rest.Market market;
         
@@ -100,27 +100,15 @@ namespace KuCoinConsole
 
         static DateTime start = DateTime.Now;
 
-        static Form1 form1;
-        static Thread level3Thread;
-
-        [STAThread]
         public static void Main(string[] args)
         {
-            KuCoin.Initialize();
 
             // Analytics and crash reporting.
             AppCenter.Start("d364ea69-c1fa-4d0d-8c37-debaa05f91bc",
                    typeof(Analytics), typeof(Crashes));
             // Analytics and crash reporting.
 
-            level3Thread = new Thread(RunProgram);
-            level3Thread.IsBackground = true;
-            level3Thread.Start();
-
-            form1 = new Form1();
-            form1.ShowDialog();
-
-            //RunProgram();
+            RunProgram();
         }
 
         public static void RunProgram() 
@@ -131,7 +119,8 @@ namespace KuCoinConsole
             Console.WindowHeight = 60;
 
             Console.Clear();
-            Console.WriteLine("Loading Symbols and Currencies...");
+            Console.WriteLine("Initializing KuCoin Library (Loading Symbols and Currencies)...");
+            KuCoin.Initialize();
 
             market = KuCoin.Market;
 
@@ -212,7 +201,7 @@ namespace KuCoinConsole
             int tickerCount = 0;
 
             var syms = new List<string>();
-            for (int h = 0; h < 100; h++)
+            for (int h = 0; h < 10; h++)
             {
                 syms.Add(tickers[h].Symbol);
             }
@@ -259,7 +248,7 @@ namespace KuCoinConsole
                                 services.Add(curr);
                             }
 
-                            if (curr.Level3Feed != null)
+                            if (curr.Level3Feed != null && curr.Level3Feed.Connected)
                             {
                                 if (!feeds.Contains(curr.Level3Feed))
                                 {
@@ -270,6 +259,11 @@ namespace KuCoinConsole
                                 curr.Level3Observation.DiagnosticsEnabled = true;
 
                                 Observers.Add(sym, curr);
+                            }
+                            else
+                            {
+                                Console.WriteLine("Something's wrong.  We seem to be unable to connect. Aborting...");
+                                return;
                             }
 
                         }

@@ -29,6 +29,7 @@
   <ItemGroup>
     <ProjectReference Include="..\FancyCandles\FancyCandles\FancyCandles.csproj" />
     <ProjectReference Include="..\Kucoin.NET\Kucoin.NET.Std.csproj" />
+    <ProjectReference Include="..\KuCoinConsole\KuCoinConsole.csproj" />
     <ProjectReference Include="..\PinEntry\PinEntry.csproj" />
   </ItemGroup>
 

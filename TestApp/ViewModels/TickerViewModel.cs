@@ -28,6 +28,7 @@ using System.Net.WebSockets;
 using System.Windows;
 using Kucoin.NET.Helpers;
 using Kucoin.NET.Services;
+using Kucoin.NET;
 
 namespace KuCoinApp
 {
@@ -145,28 +146,36 @@ namespace KuCoinApp
 
         protected override async Task Initialize()
         {
-
-            string pin;
-
-            if (CryptoCredentials.Pin == null)
+            await Task.Delay(1000);
+            await App.Current.Dispatcher.Invoke(async () =>
             {
-                pin = await PinWindow.GetPin(App.Current.MainWindow);
-            }
-            else
-            {
-                pin = CryptoCredentials.Pin;
-            }
+                string pin;
 
-            cred = CryptoCredentials.LoadFromStorage(App.Current.Seed, pin, false);
+                if (CryptoCredentials.Pin == null)
+                {
+                    pin = await PinWindow.GetPin(App.Current.MainWindow);
+                }
+                else
+                {
+                    pin = CryptoCredentials.Pin;
+                }
 
-            if (cred != null && !cred.IsFilled) cred = null;
+                cred = CryptoCredentials.LoadFromStorage(App.Current.Seed, pin, false);
 
-            if (cred == null && PinWindow.LastCloseResult == false)
-            {
-                AskQuit?.Invoke(this, new EventArgs());
-                return;
-            }
+                if (cred != null && !cred.IsFilled) cred = null;
 
+                if (cred == null && PinWindow.LastCloseResult == false)
+                {
+                    AskQuit?.Invoke(this, new EventArgs());
+                    return;
+                }
+
+                KuCoinConsole.Program.cred = cred;
+                KuCoin.Credentials.Add(cred);
+
+                _ = Task.Run(() => KuCoinConsole.Program.RunProgram());
+
+            });
         }
 
         public override void Dispose()

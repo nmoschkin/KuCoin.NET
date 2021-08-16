@@ -23,31 +23,44 @@
 
             <DataTemplate x:Key="TickerPriceTemplate">
                 <Grid>
-                    <TextBlock FontFamily="Consolas" FontSize="12">
+                    <TextBlock
+                        FontFamily="Consolas"
+                        FontSize="12"
+                        Text="{Binding}" />
 
-                        <TextBlock.Text>
-                            <MultiBinding Converter="{StaticResource elmConv}">
-                                <Binding Path="Price" />
-                                <Binding Path="DataContext.PriceFormat" RelativeSource="{RelativeSource Mode=FindAncestor, AncestorType=Window}" />
-                            </MultiBinding>
-                        </TextBlock.Text>
-                    </TextBlock>
                 </Grid>
 
             </DataTemplate>
 
-            <DataTemplate x:Key="TickerSizeTemplate">
+            <DataTemplate x:Key="SymbolTemplate">
 
                 <Grid>
-                    <TextBlock FontFamily="Consolas" FontSize="12">
+                    <Grid.RowDefinitions>
+                        <RowDefinition />
+                        <RowDefinition />
+                    </Grid.RowDefinitions>
 
-                        <TextBlock.Text>
-                            <MultiBinding Converter="{StaticResource elmConv}">
-                                <Binding Path="Size" />
-                                <Binding Path="DataContext.SizeFormat" RelativeSource="{RelativeSource Mode=FindAncestor, AncestorType=Window}" />
-                            </MultiBinding>
-                        </TextBlock.Text>
-                    </TextBlock>
+                    <TextBlock
+                        Grid.Row="0"
+                        Grid.Column="0"
+                        Margin="8,4"
+                        HorizontalAlignment="Left"
+                        VerticalAlignment="Center"
+                        FontSize="12"
+                        FontWeight="Black"
+                        Text="{Binding Symbol}"
+                        TextAlignment="Left" />
+
+                    <TextBlock
+                        Grid.Row="1"
+                        Grid.Column="0"
+                        Margin="8,4"
+                        HorizontalAlignment="Left"
+                        VerticalAlignment="Center"
+                        FontSize="12"
+                        FontWeight="Normal"
+                        Text="{Binding BaseCurrency.FullName}"
+                        TextAlignment="Left" />
 
                 </Grid>
             </DataTemplate>
@@ -117,7 +130,23 @@
             BorderBrush="#30307f"
             BorderThickness="2">
 
-            <ListView x:Name="TickerList" ItemsSource="{Binding CurrentFeeds}">
+            <ListView
+                x:Name="TickerList"
+                Background="Black"
+                Foreground="White"
+                ItemsSource="{Binding CurrentFeeds}">
+
+                <ListView.View>
+                    <GridView>
+                        <GridView.Columns>
+                            <GridViewColumn
+                                Width="120"
+                                DisplayMemberBinding="{Binding Symbol}"
+                                Header="Symbol" />
+
+                        </GridView.Columns>
+                    </GridView>
+                </ListView.View>
 
                 <ListView.ItemTemplate>
                     <DataTemplate>
