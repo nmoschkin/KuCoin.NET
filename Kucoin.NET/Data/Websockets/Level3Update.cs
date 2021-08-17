@@ -24,20 +24,21 @@ namespace Kucoin.NET.Data.Websockets
         /// <summary>
         /// The order was filled
         /// </summary>
-        [EnumMember(Value="filled")]
-        Filled,
-
+        [EnumMember(Value = "filled")]
+        Filled = -1725622140,
+    
         /// <summary>
         /// The order was canceled
         /// </summary>
         [EnumMember(Value = "canceled")]
-        Canceled
+        Canceled = -443854079
     }
 
 
     /// <summary>
     /// Level 3 Match Engine Update
     /// </summary>
+    [JsonConverter(typeof(Level3UpdateConverter))]
     public struct Level3Update : ILevel3Update
     {
 
@@ -142,5 +143,6 @@ namespace Kucoin.NET.Data.Websockets
         public string Subject { get; set; }
 
     }
+
 
 }

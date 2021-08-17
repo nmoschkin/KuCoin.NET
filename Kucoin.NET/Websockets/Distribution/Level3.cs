@@ -14,6 +14,8 @@ using Kucoin.NET.Websockets.Distribution;
 using Kucoin.NET.Websockets.Observations;
 using System.Threading;
 using Kucoin.NET.Json;
+using System.Diagnostics;
+using System.Linq;
 
 namespace Kucoin.NET.Websockets.Public
 {
@@ -44,7 +46,6 @@ namespace Kucoin.NET.Websockets.Public
             recvBufferSize = 262144;
             minQueueBuffer = 10000;
             chunkSize = 512;
-
         }
 
         /// <summary>
@@ -107,7 +108,7 @@ namespace Kucoin.NET.Websockets.Public
             }, cts.Token);
 
             DateTime start = DateTime.UtcNow;
-            
+
             while ((DateTime.UtcNow - start).TotalSeconds < 60)
             {
                 await Task.Delay(10);
@@ -133,15 +134,12 @@ namespace Kucoin.NET.Websockets.Public
             {
                 try
                 {
-                    obj.OnCompleted();
-                    obj.Dispose();
+                    UnsubscribeOne(obj.Key).ConfigureAwait(false).GetAwaiter().GetResult();
                 }
                 catch
                 {
 
                 }
-
-                activeFeeds.Remove(obj.Symbol);
             }
         }
 
@@ -250,24 +248,23 @@ namespace Kucoin.NET.Websockets.Public
                 RouteJsonPacket(json);
             }
         }
-        
-        static JsonSerializerSettings settings = new JsonSerializerSettings()
+
+        JsonSerializerSettings settings = new JsonSerializerSettings()
         {
-            Converters = new JsonConverter[] 
-            { 
-                new StringToDecimalConverter(), 
-                new AutoTimeConverter(TimeTypes.InNanoseconds), 
-                new EnumToStringConverter<DoneReason>(), 
-                new EnumToStringConverter<Side>() 
+            Converters = new JsonConverter[]
+            {
+                new Level3UpdateConverter()
             }
         };
 
         protected override void RouteJsonPacket(string json, FeedMessage e = null)
         {
             var msg = JsonConvert.DeserializeObject<FeedMessage<Level3Update>>(json, settings);
+            
 
             if (msg.TunnelId == tunnelId && msg.Type == "message")
             {
+                
                 var i = msg.Topic.IndexOf(":");
 
                 if (i != -1)
@@ -288,15 +285,7 @@ namespace Kucoin.NET.Websockets.Public
                 base.RouteJsonPacket(json, e);
             }
         }
-
-        public async Task<Level3Observation> AddSymbol(string symbol) => await SubscribeOne(symbol);
-
-        public async Task<IDictionary<string, Level3Observation>> AddSymbols(IEnumerable<string> symbols) => await SubscribeMany(symbols);
-
-        public async Task RemoveSymbol(string symbol) => await UnsubscribeOne(symbol);
-
-        public async Task RemoveSymbols(IEnumerable<string> symbols) => await UnsubscribeMany(symbols);
-
+              
         protected override Task HandleMessage(FeedMessage msg)
         {
             throw new NotImplementedException();

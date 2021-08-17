@@ -17,12 +17,12 @@ namespace Kucoin.NET.Data.Market
         /// Buy (bid)
         /// </summary>
         [EnumMember(Value = "buy")]
-        Buy,
+        Buy = -813464969,
 
         /// <summary>
         /// Sell (ask)
         /// </summary>
         [EnumMember(Value = "sell")]
-        Sell
+        Sell = -1684090755
     }
 }

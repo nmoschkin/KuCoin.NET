@@ -12,6 +12,7 @@ using Kucoin.NET.Websockets.Distribution;
 using System.Threading.Tasks;
 using System.Diagnostics.Contracts;
 using System.Threading;
+using System.Linq;
 
 namespace Kucoin.NET.Websockets.Observations
 {
@@ -37,11 +38,19 @@ namespace Kucoin.NET.Websockets.Observations
 
         private KlineType klineType = KlineType.Min1;
 
-        private DateTime klineTime;
+        private DateTime klineTime = KlineType.Min1.GetCurrentKlineStartTime();
 
         private Candle candle = new Candle() { Type = KlineType.Min1, Timestamp = DateTime.Now.AddSeconds(-DateTime.Now.Second) };
 
-        private bool disabled;
+        private KlineType sortingKlineType = KlineType.Min15;
+
+        private DateTime sortingKlineTime = KlineType.Min15.GetCurrentKlineStartTime();
+
+        private Candle sortingCandle = new Candle() { Type = KlineType.Min15, Timestamp = DateTime.Now.AddSeconds(-DateTime.Now.Second) };
+
+        private List<Candle> lastCandles = new List<Candle>();
+
+        private bool disabled = true;
 
         private bool updVol;
 
@@ -65,8 +74,12 @@ namespace Kucoin.NET.Websockets.Observations
 
         private decimal marketVolume;
 
+        private decimal sortingVolume;
+        
         private bool initializing;
         private bool calibrating;
+
+        public override event EventHandler Initialized;
 
         public Level3Observation(Level3 parent, string symbol) : base(parent, symbol)
         {
@@ -84,6 +97,34 @@ namespace Kucoin.NET.Websockets.Observations
             }
         }
 
+
+        public Candle SortingCandle
+        {
+            get => sortingCandle;
+            set
+            {
+                SetProperty(ref sortingCandle, value);
+            }
+        }
+
+        public List<Candle> LastCandles
+        {
+            get => lastCandles;
+            set
+            {
+                SetProperty(ref lastCandles, value);
+            }
+        }
+
+        public Candle LastCandle
+        {
+            get
+            {
+                if (lastCandles == null) return null;
+                else return lastCandles.LastOrDefault();
+            }
+        }
+
         public KlineType KlineType
         {
             get => klineType;
@@ -92,8 +133,31 @@ namespace Kucoin.NET.Websockets.Observations
                 if (SetProperty(ref klineType, value))
                 {
                     KlineTime = klineType.GetCurrentKlineStartTime();
-                    Candle = new Candle() { Type = klineType };
+                    Candle = new Candle() { Type = klineType, Timestamp = sortingKlineTime };
                 }
+            }
+        }
+
+        public KlineType SortingKlineType
+        {
+            get => sortingKlineType;
+            set
+            {
+                if (SetProperty(ref sortingKlineType, value))
+                {
+                    sortingKlineTime = klineType.GetCurrentKlineStartTime();
+                    SortingCandle = new Candle() { Type = klineType, Timestamp = sortingKlineTime };
+                }
+            }
+        }
+
+
+        public DateTime SortingKlineTime
+        {
+            get => sortingKlineTime;
+            set
+            {
+                SetProperty(ref sortingKlineTime, value);
             }
         }
 
@@ -186,6 +250,15 @@ namespace Kucoin.NET.Websockets.Observations
             set
             {
                 SetProperty(ref marketVolume, value);
+            }
+        }
+
+        public decimal SortingVolume
+        {
+            get => sortingVolume == 0M ? marketVolume : sortingVolume;
+            set
+            {
+                SetProperty(ref sortingVolume, value);  
             }
         }
 
@@ -437,6 +510,14 @@ namespace Kucoin.NET.Websockets.Observations
 
                     IsCalibrated = true;
                     ResetCount++;
+
+                    if (Initialized != null)
+                    {
+                        _ = Task.Run(() =>
+                        {
+                            Initialized.Invoke(this, new EventArgs());
+                        });
+                    }
                 }
             });
         }
@@ -658,12 +739,18 @@ namespace Kucoin.NET.Websockets.Observations
                 {
                     decimal price = (decimal)fullDepth.Bids[0].Price;
 
-                    if (!Candle.IsTimeInCandle(candle, fullDepth.Timestamp))
+                    if (!Candle.IsTimeInCandle(candle, fullDepth.Timestamp.ToUniversalTime()))
                     {
+                        candle.ClosePrice = price;
+                        LastCandles.Add(candle);
+
+                        Candle = new Candle();
+
                         MarketVolume = 0;
                         Candle.Volume = 0;
+
                         Candle.OpenPrice = Candle.ClosePrice = Candle.HighPrice = Candle.LowPrice = price;
-                        Candle.Timestamp = fullDepth.Timestamp.AddSeconds(-fullDepth.Timestamp.Second);
+                        KlineTime = Candle.Timestamp = klineType.GetCurrentKlineStartTime();
                     }
                     else
                     {
@@ -678,6 +765,32 @@ namespace Kucoin.NET.Websockets.Observations
                             Candle.LowPrice = price;    
                         }
                     }
+
+                    if (!Candle.IsTimeInCandle(sortingCandle, fullDepth.Timestamp.ToUniversalTime()))
+                    {
+                        sortingCandle.ClosePrice = price;
+                        SortingCandle = new Candle();
+
+                        MarketVolume = 0;
+                        SortingCandle.Volume = 0;
+
+                        SortingCandle.OpenPrice = Candle.ClosePrice = Candle.HighPrice = Candle.LowPrice = price;
+                        SortingKlineTime = SortingCandle.Timestamp = sortingKlineType.GetCurrentKlineStartTime();
+                    }
+                    else
+                    {
+                        SortingCandle.ClosePrice = price;
+
+                        if (price > SortingCandle.HighPrice)
+                        {
+                            SortingCandle.HighPrice = price;
+                        }
+                        else if (price < Candle.LowPrice)
+                        {
+                            SortingCandle.LowPrice = price;
+                        }
+                    }
+
                 }
 
                 return true;
@@ -771,7 +884,10 @@ namespace Kucoin.NET.Websockets.Observations
                         if (updVol)
                         {
                             MarketVolume += (csize * p);
+                            SortingVolume += (csize * p);
+
                             Candle.Volume = marketVolume;
+                            SortingCandle.Volume = sortingVolume;
                         }
                     }
 
