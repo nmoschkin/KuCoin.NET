@@ -40,7 +40,7 @@ namespace Kucoin.NET.Json
 
             do
             {
-                var hash = Crc32.Hash(reader.Value as string);
+                var hash = Crc32.Hash(reader.Value as string ?? "");
                 
                 reader.Read();
 
@@ -64,7 +64,7 @@ namespace Kucoin.NET.Json
                         break;
 
                     case side:
-                        update.Side = (Side)Crc32.Hash(reader.Value as string);
+                        update.Side = (Side)Crc32.Hash(reader.Value as string ?? "");
                         break;
 
                     case price:
