@@ -22,6 +22,13 @@ namespace Kucoin.NET.Data.Market
         /// The size of the order in applicable units.
         /// </summary>
         decimal Size { get; set; }
+
+        ///// <summary>
+        ///// Clone to another order unit.
+        ///// </summary>
+        ///// <typeparam name="T">The type to clone to.</typeparam>
+        ///// <returns></returns>
+        //T Clone<T>() where T : IOrderUnit, new();
     }
 
     /// <summary>
