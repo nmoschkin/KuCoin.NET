@@ -785,9 +785,9 @@ namespace Kucoin.NET.Websockets
                 {
                     xtime = DateTime.UtcNow;
 
-                    if ((DateTime.UtcNow.Ticks - tms) >= 10_000_000)
+                    if ((DateTime.UtcNow.Ticks - tms) >= 2_500_000)
                     {
-                        Throughput = xlen * 8;
+                        Throughput = xlen * 8 * 4;
 
                         tms = xtime.Ticks;
 

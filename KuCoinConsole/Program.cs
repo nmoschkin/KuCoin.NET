@@ -27,6 +27,7 @@ using System.Reflection;
 using System.Threading;
 using Kucoin.NET.Websockets.Distribution;
 using System.Linq;
+using System.Security.AccessControl;
 
 namespace KuCoinConsole
 {
@@ -80,6 +81,7 @@ namespace KuCoinConsole
         static StringBuilder readOut = new StringBuilder();
         static object lockObj = new object();
 
+        static int maxRows;
 
         public static ICredentialsProvider cred;
 
@@ -102,9 +104,14 @@ namespace KuCoinConsole
         
         public static event EventHandler TickersReady;
 
+        static int scrollIndex = 0;
+
+        static int maxScrollIndex = 0;
+
+        [STAThread]
         public static void Main(string[] args)
         {
-
+           
             // Analytics and crash reporting.
             AppCenter.Start("d364ea69-c1fa-4d0d-8c37-debaa05f91bc",
                    typeof(Analytics), typeof(Crashes));
@@ -119,8 +126,7 @@ namespace KuCoinConsole
 
             Console.WindowWidth = 130;
             Console.WindowHeight = 60;
-
-
+            
             var em = new ConsoleEmulator();
 
             Console.Clear();
@@ -174,16 +180,38 @@ namespace KuCoinConsole
                 KuCoin.Credentials.Add(cred);
             }
 
-            Console.WriteLine("Number of Feeds: ");
+            Console.WriteLine("Number of feeds, or list of feeds separated by commas: ");
 
             var txtfeednum = Console.ReadLine();
+            List<string> usersymbols = null;
 
             if (!int.TryParse(txtfeednum, out int feednum))
             {
-                Console.WriteLine("That's not a number, defaulting to 10.");
-                feednum = 10;
-            }
+                string[] switches = txtfeednum.Split(',');
 
+                usersymbols = new List<string>();
+
+                foreach (var us in switches)
+                {
+                    var z = us.Trim().ToUpper();
+                    if (market.Symbols.Contains(z))
+                    {
+                        usersymbols.Add(z);
+                    }
+                    else if (market.Symbols.Contains(z + "-USDT"))
+                    {
+                        usersymbols.Add(z + "-USDT");
+                    }
+
+                }
+
+                if (usersymbols.Count == 0) 
+                {
+                    usersymbols = null;
+                    Console.WriteLine("Couldn't figure that out, defaulting to 10.");
+                    feednum = 10;
+                }
+            }
 
 
             var ast = market.GetAllTickers().ConfigureAwait(false). GetAwaiter().GetResult();
@@ -218,11 +246,20 @@ namespace KuCoinConsole
             int tickerCount = 0;
 
             var syms = new List<string>();
-            for (int h = 0; h < feednum; h++)
+
+            if (usersymbols != null)
             {
-                syms.Add(tickers[h].Symbol);
+                syms = usersymbols;
+            }
+            else
+            {
+                for (int h = 0; h < feednum; h++)
+                {
+                    syms.Add(tickers[h].Symbol);
+                }
             }
 
+            maxScrollIndex = syms.Count - maxRows;
 
             Task.Run(async () =>
             {
@@ -298,22 +335,64 @@ namespace KuCoinConsole
 
             }).ConfigureAwait(false).GetAwaiter().GetResult();
 
-           
             // loop until the connection is broken or the program is exited.
             while (service?.Level3Feed?.Connected ?? false)
             {
-                
-                //if (!ready)
-                //{
-                //    // wait til all the feeds are calibrated before displaying anything
+                if (Console.BufferHeight != Console.WindowHeight)
+                    Console.BufferHeight = Console.WindowHeight;
 
-                //    while (!ready)
-                //    {
-                //        Task.Delay(delay).ConfigureAwait(false).GetAwaiter().GetResult();
-                //    }
-                //}
+                if (Console.BufferWidth != Console.WindowWidth)
+                    Console.BufferWidth = Console.WindowWidth;
 
-                // loop forever to keep the program alive.
+                if (Console.KeyAvailable)
+                {
+                    while(Console.KeyAvailable)
+                    {
+
+                        var key = Console.ReadKey();
+                        if (key.Key == ConsoleKey.DownArrow)
+                        {
+                            if (scrollIndex < maxScrollIndex)
+                            {
+                                ++scrollIndex;
+                            }
+                        }
+                        else if (key.Key == ConsoleKey.UpArrow)
+                        {
+                            if (scrollIndex > 0)
+                            {
+                                --scrollIndex;
+                            }
+                        }
+                        else if (key.Key == ConsoleKey.PageDown)
+                        {
+                            if (scrollIndex < maxScrollIndex)
+                            {
+                                scrollIndex += 10;
+                                if (scrollIndex > maxScrollIndex) scrollIndex = maxScrollIndex;
+                            }
+                        }
+                        else if (key.Key == ConsoleKey.PageUp)
+                        {
+                            if (scrollIndex > 0)
+                            {
+                                scrollIndex -= 10;
+                                if (scrollIndex < 0) scrollIndex = 0;
+                            }
+                        }
+                        else if (key.Key == ConsoleKey.Home)
+                        {
+                            scrollIndex = 0;
+                        }
+                        else if (key.Key == ConsoleKey.End)
+                        {
+                            scrollIndex = maxScrollIndex;
+                        }
+
+                    }
+
+                }
+
                 Task.Delay(delay).ConfigureAwait(false).GetAwaiter().GetResult();
 
 
@@ -340,8 +419,29 @@ namespace KuCoinConsole
                 string footerText = null;
                 IEnumerable<string> itemStrings = null;
                 // create the text.
-                
+
+                if (maxRows == 0) maxRows = 1;
+
                 WriteOut(ref headerText, ref itemStrings, ref footerText, ts);
+
+                var headlines = headerText.Split("\r\n").Length;
+                var footerlines = footerText.Split("\r\n").Length;
+
+                var itemlines = itemStrings.First().Split("\r\n").Length;
+
+                int conh = Console.WindowHeight - (headlines + footerlines + 2);
+                int maxitems = conh / itemlines;
+                if (maxitems > Observers.Count) maxitems = Observers.Count;
+
+                if (maxRows != maxitems)
+                {
+                    maxRows = maxitems;
+                    maxScrollIndex = Observers.Count - maxRows;
+
+                    if (scrollIndex > maxScrollIndex) scrollIndex = maxScrollIndex;
+                    
+                    WriteOut(ref headerText, ref itemStrings, ref footerText, ts);
+                }
 
                 Console.ResetColor();
                 ColorConsole.Write(headerText);
@@ -352,7 +452,14 @@ namespace KuCoinConsole
                 }
 
                 ColorConsole.WriteLine(footerText);
-
+                conh = (maxitems * itemlines) + headlines + footerlines;
+                if (conh < Console.WindowHeight)
+                {
+                    for (int jz = conh; jz < Console.WindowHeight; jz++)
+                    {
+                        Console.WriteLine(MinChars("", Console.WindowWidth - 1));
+                    }
+                }
                 // write the text to the console.
                 //var text = readOut.ToString();
 
@@ -401,6 +508,8 @@ namespace KuCoinConsole
             if (timestamp == null) timestamp = DateTime.Now;
             List<double> pcts = new List<double>();
             List<double> mpcts = new List<double>();
+            var itsb = new StringBuilder();
+            int cwid = Console.WindowWidth;
 
             lock (lockObj)
             {
@@ -422,9 +531,11 @@ namespace KuCoinConsole
                 int running = 0;
                 int failed = 0;
                 double minresettime = 0d;
+                int obscount = Observers.Count;
 
                 foreach (var obs in Observers)
                 {
+                    
                     var l3 = obs.Value.Level3Observation;
                     if (l3.State == FeedState.Running)
                     {
@@ -450,34 +561,35 @@ namespace KuCoinConsole
                 int z = 0;
 
                 readOut.Clear();
-                readOut.AppendLine($"Feed Time Stamp:    {{Green}}{timestamp:G}{{Reset}}                 ");
-                readOut.AppendLine($"Up Time:            {{Blue}}{(DateTime.Now - start):G}{{Reset}}                 ");
-                readOut.AppendLine($"                                   ");
-                readOut.AppendLine($"Feeds Running:      {{Green}}{running}{{Reset}}                 ");
-                readOut.AppendLine($"Feeds Initializing: {{Yellow}}{resetting}{{Reset}}                 ");
+                readOut.WriteToEdgeLine($"Feed Time Stamp:    {{Green}}{timestamp:G}{{Reset}}");
+                readOut.WriteToEdgeLine($"Up Time:            {{Blue}}{(DateTime.Now - start):G}{{Reset}}");
+                readOut.WriteToEdgeLine($"");
+                readOut.WriteToEdgeLine($"Feeds Running:      {{Green}}{running}{{Reset}}");
+                readOut.WriteToEdgeLine($"Feeds Initializing: {{Yellow}}{resetting}{{Reset}}");
 
-                var failtext = $"Feeds Failed:       {{Red}}{failed}{{Reset}}  ";
+                var failtext = $"Feeds Failed:       {{Red}}{failed}{{Reset}}";
                 if (resetting > 0 && minresettime > 0)
                 {
                     failtext += $" (Next reset in {(minresettime/1000):#,##0} seconds)";
                 }
-                failtext += "                            ";
+                failtext += "";
 
-                readOut.AppendLine(failtext);
+                readOut.WriteToEdgeLine(failtext);
 
-                readOut.AppendLine($"                                   ");
+                readOut.WriteToEdgeLine($"");
 
                 foreach (var f in feeds)
                 {
                     if (f is Level3 l3a)
                     {
-                        readOut.AppendLine($"Throughput:                         {{Green}}{PrintFriendlySpeed((ulong)l3a.Throughput)}{{Reset}}                        ");
-                        readOut.AppendLine($"Queue Length:                       {{Yellow}}{l3a.QueueLength}{{Reset}}                                                  ");
-                        readOut.AppendLine($"Max Queue Length (Last 60 Seconds): {{Red}}{l3a.MaxQueueLengthLast60Seconds}{{Reset}}                                  ");
+                        readOut.WriteToEdgeLine($"Throughput:                         {{Green}}{PrintFriendlySpeed((ulong)l3a.Throughput)}{{Reset}}");
+                        readOut.WriteToEdgeLine($"Queue Length:                       {{Yellow}}{MinChars(l3a.QueueLength.ToString(), 8)}{{Reset}}");
+                        readOut.WriteToEdgeLine($"Max Queue Length (Last 60 Seconds): {{Red}}{l3a.MaxQueueLengthLast60Seconds}{{Reset}}");
                     }
                 }
 
-                readOut.AppendLine($"                                   ");
+                readOut.WriteToEdgeLine($"");
+                readOut.WriteToEdgeLine($"");
 
                 headerText = readOut.ToString();
 
@@ -487,21 +599,30 @@ namespace KuCoinConsole
 
                 sortobs.Sort((a, b) =>
                 {
-
-                    if (a.Level3Observation.MarketVolume > b.Level3Observation.MarketVolume) return -1;
-                    else if (a.Level3Observation.MarketVolume < b.Level3Observation.MarketVolume) return 1;
+                    if (a.Level3Observation.SortingVolume > b.Level3Observation.SortingVolume) return -1;
+                    else if (a.Level3Observation.SortingVolume < b.Level3Observation.SortingVolume) return 1;
                     else return 0;
                 });
 
-                foreach (var obs in sortobs)
+                int idx = scrollIndex;
+                
+                if (idx > obscount - maxRows) idx = obscount - maxRows;
+                if (idx < 0) idx = 0;
+
+                for (int vc = idx; vc < idx + maxRows; vc++)
                 {
+                    var obs = sortobs[vc];
                     var l3 = obs.Level3Observation;
 
-                    if (l3.FullDepthOrderBook is null) continue;
-                    if (++count > 10) break;
-
-                    ba = ((IList<AtomicOrderStruct>)l3.FullDepthOrderBook.Asks)[0].Price;
-                    bb = ((IList<AtomicOrderStruct>)l3.FullDepthOrderBook.Bids)[0].Price;
+                    if (l3.FullDepthOrderBook is object)
+                    {
+                        ba = ((IList<AtomicOrderStruct>)l3.FullDepthOrderBook.Asks)[0].Price;
+                        bb = ((IList<AtomicOrderStruct>)l3.FullDepthOrderBook.Bids)[0].Price;
+                    }
+                    else
+                    {
+                        ba = bb = 0;
+                    }
 
                     var currname = "";
                     var bc = market.Symbols[obs.Symbol].BaseCurrency;
@@ -515,12 +636,25 @@ namespace KuCoinConsole
                         currname = bc;
                     }
 
-                    var text = $"{MinChars(obs.Symbol, maxSymbolLen)} - Best Ask: {{Red}}{MinChars(ba.ToString("#,##0.00######"), 12)}{{Reset}} Best Bid: {{Green}}{MinChars(bb.ToString("#,##0.00######"), 12)}{{Reset}} - {{Yellow}}{MinChars(currname, maxCurrencyLen)}{{Reset}}  Volume: {{Cyan}}{MinChars(l3.MarketVolume.ToString("#,##0.00"), 14)}{{Reset}}";
-                    text += $"\r\n{MinChars("", maxSymbolLen)} - Match Share: {MinChars(mpcts[z].ToString("##0") + "%", 4)}   Total Share: {MinChars(pcts[z++].ToString("##0") + "%", 4)}   State: " + MinChars(l3.State.ToString(), 14) + "  Queue Length: " + MinChars(l3.QueueLength.ToString(), 10);
-                    text += "\r\n                                                                                                         ";
+                    itsb.Clear();
 
-                    itemTexts.Add(text);
-                    readOut.AppendLine(text);
+
+                    itsb.WriteToEdgeLine($"{MinChars(obs.Symbol, maxSymbolLen)} - Best Ask: {{Red}}{MinChars(ba.ToString("#,##0.00######"), 12)}{{Reset}} Best Bid: {{Green}}{MinChars(bb.ToString("#,##0.00######"), 12)}{{Reset}} - {{Yellow}}{MinChars(currname, maxCurrencyLen)}{{Reset}}  Volume: {{Cyan}}{MinChars(l3.SortingVolume.ToString("#,##0.00"), 14)}{{Reset}}");
+
+                    if (ba == 0)
+                    {
+                        itsb.WriteToEdgeLine($"\r\n{MinChars($"{{White}}{vc + 1} {{Yellow}}Initializing{{Reset}}", maxSymbolLen + 22)} - Match Share: {MinChars(mpcts[z].ToString("##0") + "%", 4)}   Total Share: {MinChars(pcts[z++].ToString("##0") + "%", 4)}   State: " + MinChars(l3.State.ToString(), 14) + "  Queue Length: " + MinChars(l3.QueueLength.ToString(), 10));
+                    }
+                    else
+                    {
+                        itsb.WriteToEdgeLine($"\r\n{MinChars($"{{White}}{vc + 1} ", maxSymbolLen + 7)} - Match Share: {MinChars(mpcts[z].ToString("##0") + "%", 4)}   Total Share: {MinChars(pcts[z++].ToString("##0") + "%", 4)}   State: " + MinChars(l3.State.ToString(), 14) + "  Queue Length: " + MinChars(l3.QueueLength.ToString(), 10));
+                    }
+
+
+                    itsb.WriteToEdge("");
+
+                    itemTexts.Add(itsb.ToString());
+                    readOut.WriteToEdge(itsb.ToString());
                 }
 
                 // trades per second:
@@ -545,21 +679,20 @@ namespace KuCoinConsole
 
                 var ft = new StringBuilder();
 
+                ft.WriteToEdgeLine("");
+
                 if (Observers.Count - count > 0)
                 {
-                    ft.AppendLine($"Feeds Not Shown: {{Magenta}}{Observers.Count - count}{{Reset}}             ");
+                    ft.WriteToEdgeLine($"Feeds Not Shown: {{Magenta}}{Observers.Count - count}{{Reset}}");
                 }
                 
-                ft.AppendLine($"                                                           ");
-                ft.AppendLine($"Match Total: {{White}}{matchgrand:#,##0}{{Reset}}                            ");
-                ft.AppendLine($"Grand Total: {{White}}{biggrand:#,##0}{{Reset}}                              ");
-                ft.AppendLine($"                                                           ");
-                ft.AppendLine($"Matches Per Second:      ~ {{Cyan}}{mps:#,###}{{Reset}}                   ");
-                ft.AppendLine($"Transactions Per Second: ~ {{Cyan}}{tps:#,###}{{Reset}}                   ");
-
-                ft.AppendLine("                                                                                                                  ");
-                ft.AppendLine("                                                                                                                  ");
-                ft.AppendLine("                                                                                                                  ");
+                ft.WriteToEdgeLine($"");
+                ft.WriteToEdgeLine($"Match Total: {{White}}{matchgrand:#,##0}{{Reset}}");
+                ft.WriteToEdgeLine($"Grand Total: {{White}}{biggrand:#,##0}{{Reset}}");
+                ft.WriteToEdgeLine($"");
+                ft.WriteToEdgeLine($"Matches Per Second:      ~ {{Cyan}}{mps:#,###}{{Reset}}");
+                ft.WriteToEdgeLine($"Transactions Per Second: ~ {{Cyan}}{tps:#,###}{{Reset}}");
+                ft.WriteToEdgeLine($"");
 
                 footerText = ft.ToString();
                 readOut.Append(ft);
@@ -794,6 +927,41 @@ namespace KuCoinConsole
         public static void WriteLine(string text)
         {
             Write(text + "\r\n");
+        }
+
+
+        public static void WriteToEdge(this StringBuilder sb, string text)
+        {
+            int c = text.Length;
+            int d = Console.WindowWidth - 1;
+
+            if (c >= d)
+            {
+                if (c > d) text = text.Substring(0, d);
+                sb.Append(text);
+
+                return;
+            }
+
+            sb.Append(text);
+            sb.Append(new string(' ', d - c));
+        }
+
+        public static void WriteToEdgeLine(this StringBuilder sb, string text)
+        {
+            int c = text.Length;
+            int d = Console.WindowWidth - 1;
+
+            if (c >= d)
+            {
+                if (c > d) text = text.Substring(0, d);
+                sb.Append(text);
+
+                return;
+            }
+
+            sb.Append(text);
+            sb.AppendLine(new string(' ', d - c));
         }
 
     }
