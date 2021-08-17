@@ -126,7 +126,8 @@ namespace KuCoinConsole
 
             Console.WindowWidth = 130;
             Console.WindowHeight = 60;
-            
+            maxRows = 11;
+
             var em = new ConsoleEmulator();
 
             Console.Clear();
@@ -338,11 +339,11 @@ namespace KuCoinConsole
             // loop until the connection is broken or the program is exited.
             while (service?.Level3Feed?.Connected ?? false)
             {
-                if (Console.BufferHeight != Console.WindowHeight)
-                    Console.BufferHeight = Console.WindowHeight;
+                //if (Console.BufferHeight != Console.WindowHeight)
+                //    Console.BufferHeight = Console.WindowHeight;
 
-                if (Console.BufferWidth != Console.WindowWidth)
-                    Console.BufferWidth = Console.WindowWidth;
+                //if (Console.BufferWidth != Console.WindowWidth)
+                //    Console.BufferWidth = Console.WindowWidth;
 
                 if (Console.KeyAvailable)
                 {
@@ -420,8 +421,6 @@ namespace KuCoinConsole
                 IEnumerable<string> itemStrings = null;
                 // create the text.
 
-                if (maxRows == 0) maxRows = 1;
-
                 WriteOut(ref headerText, ref itemStrings, ref footerText, ts);
 
                 var headlines = headerText.Split("\r\n").Length;
@@ -452,12 +451,15 @@ namespace KuCoinConsole
                 }
 
                 ColorConsole.WriteLine(footerText);
-                conh = (maxitems * itemlines) + headlines + footerlines;
+                conh = Console.CursorTop;
                 if (conh < Console.WindowHeight)
                 {
                     for (int jz = conh; jz < Console.WindowHeight; jz++)
                     {
-                        Console.WriteLine(MinChars("", Console.WindowWidth - 1));
+                        if (jz < Console.WindowHeight - 1) 
+                            Console.WriteLine(MinChars("", Console.WindowWidth - 2));
+                        else
+                            Console.Write(MinChars("", Console.WindowWidth - 2));
                     }
                 }
                 // write the text to the console.
@@ -498,6 +500,9 @@ namespace KuCoinConsole
         static long tps = 0;
         static long mps = 0;
 
+        static int lwidth = 0;
+        static int lheight = 0;
+
         /// <summary>
         /// Write the current status of the feed to a <see cref="StringBuilder"/> object.
         /// </summary>
@@ -505,6 +510,13 @@ namespace KuCoinConsole
         private static void WriteOut(ref string headerText, ref IEnumerable<string> itemText, ref string footerText, DateTime? timestamp = null)
         {
             Console.CursorVisible = false;
+
+            if (lwidth != Console.WindowWidth || lheight != Console.WindowHeight)
+            {
+                lwidth = Console.WindowWidth;
+                lheight = Console.WindowHeight;
+            }
+
             if (timestamp == null) timestamp = DateTime.Now;
             List<double> pcts = new List<double>();
             List<double> mpcts = new List<double>();
@@ -575,7 +587,6 @@ namespace KuCoinConsole
                 failtext += "";
 
                 readOut.WriteToEdgeLine(failtext);
-
                 readOut.WriteToEdgeLine($"");
 
                 foreach (var f in feeds)
@@ -640,7 +651,7 @@ namespace KuCoinConsole
 
 
                     itsb.WriteToEdgeLine($"{MinChars(obs.Symbol, maxSymbolLen)} - Best Ask: {{Red}}{MinChars(ba.ToString("#,##0.00######"), 12)}{{Reset}} Best Bid: {{Green}}{MinChars(bb.ToString("#,##0.00######"), 12)}{{Reset}} - {{Yellow}}{MinChars(currname, maxCurrencyLen)}{{Reset}}  Volume: {{Cyan}}{MinChars(l3.SortingVolume.ToString("#,##0.00"), 14)}{{Reset}}");
-
+                    
                     if (ba == 0)
                     {
                         itsb.WriteToEdgeLine($"\r\n{MinChars($"{{White}}{vc + 1} {{Yellow}}Initializing{{Reset}}", maxSymbolLen + 22)} - Match Share: {MinChars(mpcts[z].ToString("##0") + "%", 4)}   Total Share: {MinChars(pcts[z++].ToString("##0") + "%", 4)}   State: " + MinChars(l3.State.ToString(), 14) + "  Queue Length: " + MinChars(l3.QueueLength.ToString(), 10));
@@ -652,9 +663,7 @@ namespace KuCoinConsole
 
 
                     itsb.WriteToEdge("");
-
                     itemTexts.Add(itsb.ToString());
-                    readOut.WriteToEdge(itsb.ToString());
                 }
 
                 // trades per second:
@@ -695,7 +704,6 @@ namespace KuCoinConsole
                 ft.WriteToEdgeLine($"");
 
                 footerText = ft.ToString();
-                readOut.Append(ft);
 
             }
         }
@@ -932,8 +940,8 @@ namespace KuCoinConsole
 
         public static void WriteToEdge(this StringBuilder sb, string text)
         {
-            int c = text.Length;
-            int d = Console.WindowWidth - 1;
+            int c = RealCount(text);
+            int d = Console.WindowWidth - 2;
 
             if (c >= d)
             {
@@ -949,8 +957,8 @@ namespace KuCoinConsole
 
         public static void WriteToEdgeLine(this StringBuilder sb, string text)
         {
-            int c = text.Length;
-            int d = Console.WindowWidth - 1;
+            int c = RealCount(text);
+            int d = Console.WindowWidth - 2;
 
             if (c >= d)
             {
@@ -964,6 +972,30 @@ namespace KuCoinConsole
             sb.AppendLine(new string(' ', d - c));
         }
 
+        private static int RealCount(string str)
+        {
+            int i, c = str.Length;
+            int d = 0;
+
+            for (i = 0; i < c; i++)
+            {
+                if (str[i] == '{')
+                {
+                    while (str[i] != '}')
+                    {
+                        i++;
+                    }
+                }
+                else
+                {
+                    d++;
+                }
+
+                
+            }
+
+            return d;
+        }
     }
 
 }
