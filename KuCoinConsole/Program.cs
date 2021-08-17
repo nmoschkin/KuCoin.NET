@@ -22,7 +22,6 @@ using Kucoin.NET;
 using System.Security.Cryptography.X509Certificates;
 using Kucoin.NET.Websockets;
 
-using System.Windows.Forms;
 using System.Reflection;
 using System.Threading;
 using Kucoin.NET.Websockets.Distribution;
@@ -111,13 +110,13 @@ namespace KuCoinConsole
 
         static int maxScrollIndex = 0;
 
-        [STAThread]
+        //[STAThread]
         public static void Main(string[] args)
         {
            
             // Analytics and crash reporting.
-            AppCenter.Start("d364ea69-c1fa-4d0d-8c37-debaa05f91bc",
-                   typeof(Analytics), typeof(Crashes));
+            //AppCenter.Start("d364ea69-c1fa-4d0d-8c37-debaa05f91bc",
+            //       typeof(Analytics), typeof(Crashes));
             // Analytics and crash reporting.
 
             RunProgram();
@@ -125,7 +124,10 @@ namespace KuCoinConsole
 
         public static void RunProgram() 
         {
-            AllocConsole();
+            //if (GetConsoleWindow() == IntPtr.Zero)
+            //{
+            //    AllocConsole();
+            //}
 
             Console.WindowWidth = 130;
             Console.WindowHeight = 60;
@@ -176,7 +178,7 @@ namespace KuCoinConsole
                 if (cred == null || !((CryptoCredentials)cred).IsFilled)
                 {
                     Console.WriteLine("Invalid credentials!");
-                    Application.Exit();
+                    return;
                 }
 
                 /**/
