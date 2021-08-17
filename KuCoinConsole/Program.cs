@@ -683,7 +683,7 @@ namespace KuCoinConsole
 
                 if (Observers.Count - count > 0)
                 {
-                    ft.WriteToEdgeLine($"Feeds Not Shown: {{Magenta}}{Observers.Count - count}{{Reset}}");
+                    ft.WriteToEdgeLine($"Feeds Not Shown: {{Magenta}}{Observers.Count - maxRows}{{Reset}}");
                 }
                 
                 ft.WriteToEdgeLine($"");
