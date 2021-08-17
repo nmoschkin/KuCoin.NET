@@ -515,6 +515,7 @@ namespace KuCoinConsole
             {
                 lwidth = Console.WindowWidth;
                 lheight = Console.WindowHeight;
+                Console.BufferHeight = Console.WindowHeight;
                 Console.Clear();
             }
 
@@ -703,6 +704,7 @@ namespace KuCoinConsole
                 ft.WriteToEdgeLine($"Matches Per Second:      ~ {{Cyan}}{mps:#,###}{{Reset}}");
                 ft.WriteToEdgeLine($"Transactions Per Second: ~ {{Cyan}}{tps:#,###}{{Reset}}");
                 ft.WriteToEdgeLine($"");
+                ft.WriteToEdgeLine($"{{White}}Use Arrow Up/Arrow Down, Page Up/Page Down, Home/End to navigate the feed list.{{Reset}}");
 
                 footerText = ft.ToString();
 
