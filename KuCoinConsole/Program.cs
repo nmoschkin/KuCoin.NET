@@ -268,14 +268,6 @@ namespace KuCoinConsole
             Task.Run(async () =>
             {
 
-                // 10 of the most popular trading symbols
-
-                //syms.Sort((a, b) =>
-                //{
-                //    // sort symbols alphabetically
-                //    return string.Compare(a, b);
-                //});
-             
                 int c = 0;
               
                 ISymbolDataService curr = service;
@@ -342,11 +334,18 @@ namespace KuCoinConsole
             // loop until the connection is broken or the program is exited.
             while (service?.Level3Feed?.Connected ?? false)
             {
-                //if (Console.BufferHeight != Console.WindowHeight)
-                //    Console.BufferHeight = Console.WindowHeight;
+                Console.CursorVisible = false;
 
-                //if (Console.BufferWidth != Console.WindowWidth)
-                //    Console.BufferWidth = Console.WindowWidth;
+                if (lwidth != Console.WindowWidth || lheight != Console.WindowHeight)
+                {
+                    lwidth = Console.WindowWidth;
+                    lheight = Console.WindowHeight;
+
+                    Console.BufferHeight = Console.WindowHeight;
+                    Console.Clear();
+
+                    continue;
+                }
 
                 if (Console.KeyAvailable)
                 {
@@ -527,16 +526,7 @@ namespace KuCoinConsole
         /// <param name="timestamp">The current feed timestamp, or null for local now.</param>
         private static void WriteOut(ref string headerText, ref IEnumerable<string> itemText, ref string footerText, DateTime? timestamp = null)
         {
-            Console.CursorVisible = false;
-
-            if (lwidth != Console.WindowWidth || lheight != Console.WindowHeight)
-            {
-                lwidth = Console.WindowWidth;
-                lheight = Console.WindowHeight;
-                Console.BufferHeight = Console.WindowHeight;
-                Console.Clear();
-            }
-
+          
             if (timestamp == null) timestamp = DateTime.Now;
             List<double> pcts = new List<double>();
             List<double> mpcts = new List<double>();
