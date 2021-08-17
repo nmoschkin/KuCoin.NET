@@ -441,10 +441,10 @@ namespace KuCoinConsole
 
                 WriteOut(ref headerText, ref itemStrings, ref footerText, ts);
 
-                var headlines = headerText.Split("\r\n").Length;
-                var footerlines = footerText.Split("\r\n").Length;
+                var headlines = headerText?.Split("\r\n")?.Length ?? 0;
+                var footerlines = footerText?.Split("\r\n")?.Length ?? 0;
 
-                var itemlines = itemStrings.First().Split("\r\n").Length;
+                var itemlines = itemStrings?.FirstOrDefault()?.Split("\r\n")?.Length ?? 3;
 
                 int conh = Console.WindowHeight - (headlines + footerlines + 2);
                 int maxitems = conh / itemlines;
