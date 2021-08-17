@@ -515,6 +515,7 @@ namespace KuCoinConsole
             {
                 lwidth = Console.WindowWidth;
                 lheight = Console.WindowHeight;
+                Console.Clear();
             }
 
             if (timestamp == null) timestamp = DateTime.Now;
