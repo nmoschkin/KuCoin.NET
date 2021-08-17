@@ -5,15 +5,10 @@ using System.Threading.Tasks;
 
 namespace Kucoin.NET.Websockets.Distribution
 {
-    public interface IInitializable<TKey, TValue>
+    public interface IInitializable
     {
-        /// <summary>
-        /// Sets the data provider for the initial data.
-        /// </summary>
-        /// <param name="dataProvider">An object that provides initial data.</param>
-        void SetInitialDataProvider(IInitialDataProvider<TKey, TValue> dataProvider);
 
-        IInitialDataProvider<TKey, TValue> DataProvider { get; }
+        event EventHandler Initialized;
 
         /// <summary>
         /// Returns true if the data provider is available.
@@ -69,4 +64,24 @@ namespace Kucoin.NET.Websockets.Distribution
         Task Reset();
 
     }
+
+    public interface IInitializable<TKey, TValue> : IInitializable
+    {
+
+        event EventHandler Initialized;
+
+        /// <summary>
+        /// Sets the data provider for the initial data.
+        /// </summary>
+        /// <param name="dataProvider">An object that provides initial data.</param>
+        void SetInitialDataProvider(IInitialDataProvider<TKey, TValue> dataProvider);
+
+        /// <summary>
+        /// Gets the attached data provider.
+        /// </summary>
+        IInitialDataProvider<TKey, TValue> DataProvider { get; }
+
+
+    }
+
 }

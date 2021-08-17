@@ -39,7 +39,7 @@ namespace Kucoin.NET.Websockets.Distribution
     public abstract class DistributionFeed<TDistributable, TValue, TInitial> : 
         KucoinBaseWebsocketFeed, 
         IInitialDataProvider<string, TInitial>, 
-        IAsyncUnsubscribableSubscriptionProvider<string, TDistributable, TValue>, 
+        IAsyncUnsubscribableSubscriptionProvider<string, TDistributable>, 
         IDistributor<TDistributable, TValue> 
         where TDistributable : DistributableObject<string, TValue> 
         where TValue : ISymbol
@@ -122,6 +122,26 @@ namespace Kucoin.NET.Websockets.Distribution
         public abstract Task<IDictionary<string, TDistributable>> SubscribeMany(IEnumerable<string> keys);
         public abstract Task<TInitial> ProvideInitialData(string key);
         public abstract void Release(IDistributable<string, TValue> obj);
+
+        async Task IAsyncUnsubscribableSubscriptionProvider.UnsubscribeOne(object key)
+        {
+            await UnsubscribeOne((string)key);
+        }
+
+        async Task IAsyncUnsubscribableSubscriptionProvider.UnsubscribeMany(System.Collections.IEnumerable keys)
+        {
+            await UnsubscribeMany((IEnumerable<string>)keys);
+        }
+
+        async Task<IDisposable> IAsyncSubscriptionProvider.SubscribeOne(object key)
+        {
+            return await SubscribeOne((string)key);
+        }
+
+        async Task<System.Collections.IEnumerable> IAsyncSubscriptionProvider.SubscribeMany(System.Collections.IEnumerable keys)
+        {
+            return await SubscribeMany((IEnumerable<string>)keys);
+        }
     }
 
 }

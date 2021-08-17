@@ -54,6 +54,8 @@ namespace Kucoin.NET.Websockets.Distribution
         public abstract int ResetTimeout { get; set; }
         public abstract int MaxTimeoutRetries { get; set; }
 
+        public abstract event EventHandler Initialized;
+
         public abstract Task Calibrate();
         public abstract void CopyToObservable();
         public abstract Task Initialize();

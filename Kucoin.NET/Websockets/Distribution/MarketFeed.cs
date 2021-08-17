@@ -5,6 +5,7 @@ using Kucoin.NET.Websockets.Public;
 using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace Kucoin.NET.Websockets.Distribution
 {
@@ -53,6 +54,36 @@ namespace Kucoin.NET.Websockets.Distribution
                 SetProperty(ref state, value);
             }
         }
+
+        /// <summary>
+        /// Add the specified symbol to the feed.
+        /// </summary>
+        /// <param name="symbol">The trading symbol to add.</param>
+        /// <returns></returns>
+        public virtual async Task<TDistributable> AddSymbol(string symbol) => await SubscribeOne(symbol);
+
+        /// <summary>
+        /// Add the specified trading symbols to the feed.
+        /// </summary>
+        /// <param name="symbols">The symbols to add.</param>
+        /// <returns></returns>
+        public virtual async Task<IDictionary<string, TDistributable>> AddSymbols(IEnumerable<string> symbols) => await SubscribeMany(symbols);
+
+        /// <summary>
+        /// Remove the specified trading symbol from the feed.
+        /// </summary>
+        /// <param name="symbol">The symbol to remove.</param>
+        /// <returns></returns>
+        public virtual async Task RemoveSymbol(string symbol) => await UnsubscribeOne(symbol);
+
+        /// <summary>
+        /// Remove the specified trading symbols from the feed.
+        /// </summary>
+        /// <param name="symbols">The symbols to remove.</param>
+        /// <returns></returns>
+        public virtual async Task RemoveSymbols(IEnumerable<string> symbols) => await UnsubscribeMany(symbols);
+
+
 
     }
 }
