@@ -580,7 +580,7 @@ namespace KuCoinConsole
                     mpcts.Add(((double)l3.MatchTotal / (double)matchgrand) * 100d);
                 }
 
-                int z = 0;
+                int z = scrollIndex;
 
                 readOut.Clear();
                 readOut.WriteToEdgeLine($"Feed Time Stamp:    {{Green}}{timestamp:G}{{Reset}}");
@@ -697,7 +697,7 @@ namespace KuCoinConsole
                     
                     if (ba == 0)
                     {
-                        itsb.WriteToEdgeLine($"\r\n{MinChars($"{{White}}{vc + 1} {{Yellow}}Initializing{{Reset}}", maxSymbolLen + 22)} - Match Share: {MinChars(mpcts[z].ToString("##0") + "%", 4)}   Total Share: {MinChars(pcts[z++].ToString("##0") + "%", 4)}   State: " + MinChars(l3.State.ToString(), 14) + "  Queue Length: " + MinChars(l3.QueueLength.ToString(), 10));
+                        itsb.WriteToEdgeLine($"\r\n{MinChars($"{{White}}{vc + 1} {{Yellow}}Initializing{{Reset}}", maxSymbolLen + 22)}");
                     }
                     else
                     {
