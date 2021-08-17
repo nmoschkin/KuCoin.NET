@@ -88,6 +88,9 @@ namespace KuCoinConsole
         static Kucoin.NET.Rest.Market market;
         
         static bool ready = false;
+        
+        static int sortmode = 0;
+        static int sortorder = -1;
 
         static List<object> feeds = new List<object>();
 
@@ -389,6 +392,21 @@ namespace KuCoinConsole
                         {
                             scrollIndex = maxScrollIndex;
                         }
+                        else if (key.Key == ConsoleKey.V)
+                        {
+                            if (sortmode == 0) sortorder = sortorder * -1;
+                            else sortmode = 0;
+                        }
+                        else if (key.Key == ConsoleKey.P)
+                        {
+                            if (sortmode == 1) sortorder = sortorder * -1;
+                            else sortmode = 1;
+                        }
+                        else if (key.Key == ConsoleKey.A)
+                        {
+                            if (sortmode == 2) sortorder = sortorder * -1;
+                            else sortmode = 2;
+                        }
 
                     }
 
@@ -602,6 +620,25 @@ namespace KuCoinConsole
                 }
 
                 readOut.WriteToEdgeLine($"");
+                readOut.Append("Sort Order: ");
+                switch (sortmode)
+                {
+                    case 0:
+                        readOut.Append($"Volume ");
+                        break;
+                    case 1:
+                        readOut.Append($"Price ");
+                        break;
+                    case 2:
+                        readOut.Append($"Alphabetically ");
+                        break;
+                }
+
+                if (sortorder > 0) 
+                    readOut.WriteToEdgeLine($"Ascending");
+                else
+                    readOut.WriteToEdgeLine($"Descending");
+
                 readOut.WriteToEdgeLine($"");
 
                 headerText = readOut.ToString();
@@ -612,9 +649,23 @@ namespace KuCoinConsole
 
                 sortobs.Sort((a, b) =>
                 {
-                    if (a.Level3Observation.SortingVolume > b.Level3Observation.SortingVolume) return -1;
-                    else if (a.Level3Observation.SortingVolume < b.Level3Observation.SortingVolume) return 1;
-                    else return 0;
+                    switch(sortmode)
+                    {
+                        case 0:
+
+                            if (a.Level3Observation.SortingVolume > b.Level3Observation.SortingVolume) return 1 * sortorder;
+                            else if (a.Level3Observation.SortingVolume < b.Level3Observation.SortingVolume) return -1 * sortorder;
+                            else break;
+
+                        case 1:
+
+                            if (a.Level3Observation.FullDepthOrderBook.Bids[0].Price > b.Level3Observation.FullDepthOrderBook.Bids[0].Price) return 1 * sortorder;
+                            else if (a.Level3Observation.FullDepthOrderBook.Bids[0].Price < b.Level3Observation.FullDepthOrderBook.Bids[0].Price) return -1 * sortorder;
+                            else break;
+                    }
+
+                    return string.Compare(a.Symbol, b.Symbol) * sortorder;
+
                 });
 
                 int idx = scrollIndex;
@@ -705,6 +756,7 @@ namespace KuCoinConsole
                 ft.WriteToEdgeLine($"Transactions Per Second: ~ {{Cyan}}{tps:#,###}{{Reset}}");
                 ft.WriteToEdgeLine($"");
                 ft.WriteToEdgeLine($"{{White}}Use Arrow Up/Arrow Down, Page Up/Page Down, Home/End to navigate the feed list.{{Reset}}");
+                ft.WriteToEdgeLine($"{{White}}Press: (A) Sort Alphabetically, (P) Price, (V) Volume. Press again to reverse order.");
 
                 footerText = ft.ToString();
 
