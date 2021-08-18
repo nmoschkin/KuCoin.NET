@@ -48,7 +48,6 @@ namespace Kucoin.NET.Websockets.Distribution
 
         public abstract IInitialDataProvider<string, TInternal> DataProvider { get; protected set; }
         public abstract bool IsDataProviderAvailable { get; protected set; }
-        public abstract bool IsCalibrated { get; protected set; }
         public abstract bool IsInitialized { get; protected set; }
         public abstract int ResetCount { get; protected set; }
         public abstract int ResetTimeout { get; set; }

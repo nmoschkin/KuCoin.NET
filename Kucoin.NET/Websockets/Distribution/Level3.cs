@@ -26,7 +26,7 @@ namespace Kucoin.NET.Websockets.Public
 
     public class Level3 : MarketFeed<Level3Observation, Level3Update, KeyedAtomicOrderBook<AtomicOrderStruct>, ObservableAtomicOrderBook<ObservableAtomicOrderUnit>>, ILevel3
     {
-
+        object lockObj = new object();
         bool wmp;
 
         /// <summary>
@@ -154,26 +154,29 @@ namespace Kucoin.NET.Websockets.Public
             var sb = new StringBuilder();
             var lnew = new Dictionary<string, Level3Observation>();
 
-            foreach (var sym in keys)
+            lock (lockObj)
             {
-                if (activeFeeds.ContainsKey(sym))
+                foreach (var sym in keys)
                 {
+                    if (activeFeeds.ContainsKey(sym))
+                    {
+                        if (!lnew.ContainsKey(sym))
+                        {
+                            lnew.Add(sym, activeFeeds[sym]);
+                        }
+                        continue;
+                    }
+
+                    if (sb.Length > 0) sb.Append(',');
+                    sb.Append(sym);
+
+                    var obs = new Level3Observation(this, sym);
+                    activeFeeds.Add(sym, obs);
+
                     if (!lnew.ContainsKey(sym))
                     {
                         lnew.Add(sym, activeFeeds[sym]);
                     }
-                    continue;
-                }
-
-                if (sb.Length > 0) sb.Append(',');
-                sb.Append(sym);
-
-                var obs = new Level3Observation(this, sym);
-                activeFeeds.Add(sym, obs);
-
-                if (!lnew.ContainsKey(sym))
-                {
-                    lnew.Add(sym, activeFeeds[sym]);
                 }
             }
 
@@ -201,21 +204,24 @@ namespace Kucoin.NET.Websockets.Public
 
             var sb = new StringBuilder();
 
-            foreach (var sym in keys)
+            lock (lockObj)
             {
-                if (activeFeeds.ContainsKey(sym))
+                foreach (var sym in keys)
                 {
-                    try
+                    if (activeFeeds.ContainsKey(sym))
                     {
-                        activeFeeds[sym].Dispose();
+                        try
+                        {
+                            activeFeeds[sym].Dispose();
+                        }
+                        catch { }
+
+                        activeFeeds.Remove(sym);
                     }
-                    catch { }
 
-                    activeFeeds.Remove(sym);
+                    if (sb.Length > 0) sb.Append(',');
+                    sb.Append(sym);
                 }
-
-                if (sb.Length > 0) sb.Append(',');
-                sb.Append(sym);
             }
 
             var topic = $"{Topic}:{sb}";
@@ -272,7 +278,12 @@ namespace Kucoin.NET.Websockets.Public
                     var symbol = msg.Topic.Substring(i + 1);
                     if (string.IsNullOrEmpty(symbol)) return;
 
-                    var af = activeFeeds[symbol];
+                    Level3Observation af;
+                    
+                    lock(lockObj)
+                    {
+                        af = activeFeeds[symbol];
+                    }
 
                     var update = msg.Data;
                     update.Subject = msg.Subject;

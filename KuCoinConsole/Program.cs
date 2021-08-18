@@ -109,6 +109,8 @@ namespace KuCoinConsole
         static int scrollIndex = 0;
 
         static int maxScrollIndex = 0;
+        static List<string> usersymbols = null;
+        static int feednum;
 
         //[STAThread]
         public static void Main(string[] args)
@@ -189,9 +191,8 @@ namespace KuCoinConsole
             Console.WriteLine("Number of feeds, or list of feeds separated by commas: ");
 
             var txtfeednum = Console.ReadLine();
-            List<string> usersymbols = null;
 
-            if (!int.TryParse(txtfeednum, out int feednum))
+            if (!int.TryParse(txtfeednum, out feednum))
             {
                 string[] switches = txtfeednum.Split(',');
 
@@ -220,6 +221,11 @@ namespace KuCoinConsole
             }
 
 
+            RunTickers();
+        }
+
+        private static void RunTickers()
+        {
             var ast = market.GetAllTickers().ConfigureAwait(false). GetAwaiter().GetResult();
 
             var tickers = new List<AllSymbolsTickerItem>(ast.Ticker);
@@ -229,9 +235,7 @@ namespace KuCoinConsole
                 if (a.VolumneValue < b.VolumneValue) return 1;
                 return 0;
 
-            });
-
-            
+            });            
 
             // This changes the number of feeds per distributor:
             ParallelService.MaxTenants = 10;
@@ -442,6 +446,8 @@ namespace KuCoinConsole
 
                 WriteOut(ref headerText, ref itemStrings, ref footerText, ts);
 
+                if (headerText == "DISCONNECTED") break;
+
                 var headlines = headerText?.Split("\r\n")?.Length ?? 0;
                 var footerlines = footerText?.Split("\r\n")?.Length ?? 0;
 
@@ -492,13 +498,13 @@ namespace KuCoinConsole
 
             }
 
-            //_ = Task.Run(() =>
-            //{
-            //    Dispatcher.BeginInvokeOnMainThread((o) =>
-            //    {
-            //        RunProgram();
-            //    });
-            //});
+            _ = Task.Run(() =>
+            {
+                Dispatcher.BeginInvokeOnMainThread((o) =>
+                {
+                    RunTickers();
+                });
+            });
 
         }
 
@@ -600,7 +606,7 @@ namespace KuCoinConsole
                 readOut.WriteToEdgeLine($"Feeds Initializing: {{Yellow}}{resetting}{{Reset}}");
 
                 var failtext = $"Feeds Failed:       {{Red}}{failed}{{Reset}}";
-                if (resetting > 0 && minresettime > 0)
+                if (minresettime > 0)
                 {
                     failtext += $" (Next reset in {(minresettime/1000):#,##0} seconds)";
                 }
@@ -613,6 +619,19 @@ namespace KuCoinConsole
                 {
                     if (f is Level3 l3a)
                     {
+                        if (!l3a.Connected)
+                        {
+                            foreach (var f2 in feeds)
+                            {
+                                if (f2 is Level3 l3b)
+                                {
+                                    l3b.Dispose();
+                                }
+                            }
+                            headerText = "DISCONNECTED";
+                            return;
+                        }
+
                         readOut.WriteToEdgeLine($"Throughput:                         {{Green}}{PrintFriendlySpeed((ulong)l3a.Throughput)}{{Reset}}");
                         readOut.WriteToEdgeLine($"Queue Length:                       {{Yellow}}{MinChars(l3a.QueueLength.ToString(), 8)}{{Reset}}");
                         readOut.WriteToEdgeLine($"Max Queue Length (Last 60 Seconds): {{Red}}{l3a.MaxQueueLengthLast60Seconds}{{Reset}}");

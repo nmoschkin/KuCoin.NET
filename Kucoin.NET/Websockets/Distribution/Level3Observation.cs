@@ -60,8 +60,6 @@ namespace Kucoin.NET.Websockets.Observations
 
         private int marketDepth = 50;
 
-        private bool calibrated;
-
         private bool initialized;
 
         private int resets = 0;
@@ -75,7 +73,6 @@ namespace Kucoin.NET.Websockets.Observations
         private decimal sortingVolume;
         
         private bool initializing;
-        private bool calibrating;
 
         public override event EventHandler Initialized;
 
@@ -316,22 +313,6 @@ namespace Kucoin.NET.Websockets.Observations
             }
         }
 
-        /// <summary>
-        /// Gets a value indicating that this observation has been calibrated.
-        /// </summary>
-        public override bool IsCalibrated
-        {
-            get => !disposedValue ? calibrated : throw new ObjectDisposedException(GetType().FullName);
-            protected set
-            {
-                if (disposedValue) throw new ObjectDisposedException(GetType().FullName);
-                if (SetProperty(ref calibrated, value))
-                {
-                    //if (value) State = FeedState.Running;
-                    //else State = FeedState.Initializing;
-                }
-            }
-        }
         public override int ResetCount 
         {
             get => resets;
@@ -489,22 +470,29 @@ namespace Kucoin.NET.Websockets.Observations
             lock(lockObj)
             {
                 IsInitialized = false;
-                IsCalibrated = false;
-
                 initializing = true;
-                calibrating = false;
 
                 State = FeedState.Initializing;
             }
 
-            var fd = await DataProvider.ProvideInitialData(key);
+            KeyedAtomicOrderBook<AtomicOrderStruct> fd = null;
+            int maxtries = 3;
+
+            for (int tries = 0; tries < maxtries; tries++)
+            {
+                await Task.Delay(100);
+                fd = await DataProvider.ProvideInitialData(key);
+                if (fd != null) break;
+            }
 
             lock (lockObj)
             {
                 if (fd == null)
                 {
-                    lastFailureTime = DateTime.Now;
+                    State = FeedState.Failed;
+                    LastFailureTime = DateTime.Now;
                     Failure = true;
+                    OnPropertyChanged(nameof(TimeUntilNextRetry));
                 }
 
                 FullDepthOrderBook = fd;
@@ -521,17 +509,16 @@ namespace Kucoin.NET.Websockets.Observations
         {
             await Task.Run(() =>
             {
-                if (initializing || calibrating) return;
-
                 lock (lockObj)
                 {
-                    initialized = calibrated = failure = false;
+                    if (initializing) return;
+
+                    initialized = failure = false;
                     LastFailureTime = null;
 
                     _ = Task.Run(() =>
                     {
                         OnPropertyChanged(nameof(IsInitialized));
-                        OnPropertyChanged(nameof(IsCalibrated));
                         OnPropertyChanged(nameof(Failure));
                         OnPropertyChanged(nameof(TimeUntilNextRetry));
                         OnPropertyChanged(nameof(LastFailureTime));
@@ -542,6 +529,9 @@ namespace Kucoin.NET.Websockets.Observations
                 }
             });
         }
+        
+        CancellationTokenSource cts;
+        DateTime? startFetch;
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         protected override bool DoWork()
@@ -550,17 +540,57 @@ namespace Kucoin.NET.Websockets.Observations
 
             lock (lockObj)
             {
-                if (!initialized)
+                if (!initialized || failure)
                 {
+                    if (failure)
+                    {
+                        buffer.Clear();
+
+                        if (lastFailureTime is DateTime t && (DateTime.UtcNow - t).TotalMilliseconds >= resetTimeout)
+                        {
+                            initializing = false;
+                            LastFailureTime = null;
+                            Failure = false;
+                            State = FeedState.Initializing;
+
+                            _ = Reset();
+                        }
+                        else
+                        {
+                            OnPropertyChanged(nameof(TimeUntilNextRetry));
+                        }
+
+                        return false;
+                    }
+
                     if (!initializing)
                     {
                         initializing = true;
+                        startFetch = DateTime.Now;  
+                        cts = new CancellationTokenSource();
 
                         Initialize().ContinueWith((t) =>
                         {
-                            State = FeedState.Running;
-                            IsCalibrated = true;
-                        });
+                            if (t.Result)
+                            {
+                                State = FeedState.Running;
+                            }
+
+                            cts = null;
+                            startFetch = null;
+                        }, cts.Token);
+                    }
+                    else if (startFetch != null && (DateTime.Now - (DateTime)startFetch).TotalMilliseconds >= (resetTimeout * 2))
+                    {
+                        cts?.Cancel();
+                        startFetch = null;
+                        cts = null;
+                        State = FeedState.Failed;
+                        LastFailureTime = DateTime.Now;
+                        Failure = true;
+                        OnPropertyChanged(nameof(TimeUntilNextRetry));
+
+                        return false;
                     }
 
                     return true;
@@ -583,21 +613,6 @@ namespace Kucoin.NET.Websockets.Observations
 
             lock (lockObj)
             {
-                if (failure)
-                {
-                    if (lastFailureTime is DateTime t && (DateTime.UtcNow - t).TotalMilliseconds >= resetTimeout)
-                    {
-                        LastFailureTime = null;
-                        _ = Reset();
-                    }
-                    else
-                    {
-                        OnPropertyChanged(nameof(TimeUntilNextRetry));
-                    }
-
-                    return false;
-                }
-
                 if (fullDepth == null)
                 {
                     if (!failure) Failure = true;
@@ -607,7 +622,7 @@ namespace Kucoin.NET.Websockets.Observations
                 {
                     return false;
                 }
-                else if (calibrated && obj.Sequence - fullDepth.Sequence > 1)
+                else if (obj.Sequence - fullDepth.Sequence > 1)
                 {
                     _ = Reset();
                     return false;

@@ -14,11 +14,6 @@ namespace Kucoin.NET.Websockets.Distribution
         /// Returns true if the data provider is available.
         /// </summary>
         bool IsDataProviderAvailable { get; }
-
-        /// <summary>
-        /// True if the object is calibrated.
-        /// </summary>
-        bool IsCalibrated { get; }
         
         /// <summary>
         /// True if the object is initialized.
