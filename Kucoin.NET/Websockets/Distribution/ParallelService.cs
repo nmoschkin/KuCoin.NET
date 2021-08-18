@@ -82,8 +82,7 @@ namespace Kucoin.NET.Websockets.Distribution
                     }
 
                     Parallel.Invoke(actions.ToArray());
-                    //Thread.Sleep(i == 0 ? 1 : i * IdleSleepTime);
-                    Thread.Sleep(i * IdleSleepTime);
+                    Thread.Sleep(i == 0 ? idleSleepTime : i * idleSleepTime);
                 }
             }
 
