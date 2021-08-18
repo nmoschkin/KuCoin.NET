@@ -60,8 +60,6 @@ namespace Kucoin.NET.Websockets.Distribution
             State = FeedState.Subscribed;
         }
 
-        protected TValue[] processBuffer;
-
         bool IDistributable.DoWork()
         {
             return DoWork();

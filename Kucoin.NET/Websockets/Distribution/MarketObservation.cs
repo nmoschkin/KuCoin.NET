@@ -56,9 +56,8 @@ namespace Kucoin.NET.Websockets.Distribution
 
         public abstract event EventHandler Initialized;
 
-        public abstract Task Calibrate();
         public abstract void CopyToObservable();
-        public abstract Task Initialize();
+        public abstract Task<bool> Initialize();
         public abstract Task Reset();
         public abstract void SetInitialDataProvider(IInitialDataProvider<string, TInternal> dataProvider);
 

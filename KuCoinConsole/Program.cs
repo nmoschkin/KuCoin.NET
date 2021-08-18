@@ -545,8 +545,11 @@ namespace KuCoinConsole
                 foreach (var obs in Observers)
                 {
                     var l3 = obs.Value.Level3Observation;
-                    biggrand += l3.GrandTotal;
-                    matchgrand += l3.MatchTotal;
+                    if (l3 != null)
+                    {
+                        biggrand += l3.GrandTotal;
+                        matchgrand += l3.MatchTotal;
+                    }
                 }
 
                 pcts.Clear();
@@ -561,6 +564,11 @@ namespace KuCoinConsole
                 {
                     
                     var l3 = obs.Value.Level3Observation;
+
+                    if (l3 == null)
+                    {
+                        continue;
+                    }
                     if (l3.State == FeedState.Running)
                     {
                         running++;
@@ -667,6 +675,8 @@ namespace KuCoinConsole
 
                 for (int vc = idx; vc < idx + maxRows; vc++)
                 {
+                    if (vc >= obscount) break;
+
                     var obs = sortobs[vc];
                     var l3 = obs.Level3Observation;
 

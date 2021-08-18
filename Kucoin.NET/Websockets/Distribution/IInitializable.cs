@@ -49,14 +49,10 @@ namespace Kucoin.NET.Websockets.Distribution
         int MaxTimeoutRetries { get; set; }
 
         /// <summary>
-        /// Calibrate the data.
-        /// </summary>
-        Task Calibrate();
-
-        /// <summary>
         /// Initialize the data.
         /// </summary>
-        Task Initialize();
+        /// <returns>True if successful.</returns>
+        Task<bool> Initialize();
 
         /// <summary>
         /// Reset the data.
@@ -67,9 +63,7 @@ namespace Kucoin.NET.Websockets.Distribution
 
     public interface IInitializable<TKey, TValue> : IInitializable
     {
-
-        event EventHandler Initialized;
-
+                
         /// <summary>
         /// Sets the data provider for the initial data.
         /// </summary>

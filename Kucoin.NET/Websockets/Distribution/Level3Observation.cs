@@ -34,8 +34,6 @@ namespace Kucoin.NET.Websockets.Observations
 
         private ObservableAtomicOrderBook<ObservableAtomicOrderUnit> orderBook;
 
-        private List<Level3Update> initBuffer = new List<Level3Update>();
-
         private KlineType klineType = KlineType.Min1;
 
         private DateTime klineTime = KlineType.Min1.GetCurrentKlineStartTime();
@@ -484,46 +482,9 @@ namespace Kucoin.NET.Websockets.Observations
             }
 
         }
-
+                
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public override async Task Calibrate()
-        {
-            await Task.Run(() =>
-            {
-                lock (lockObj)
-                {
-                    if (failure || fullDepth == null) return;
-                    calibrating = true;
-
-                    lock (initBuffer)
-                    {
-                        foreach (var q in initBuffer)
-                        {
-                            if (q.Sequence > fullDepth.Sequence) ProcessObject(q);
-                        }
-
-                        initBuffer.Clear();
-                    }
-
-                    calibrating = false;
-                    State = FeedState.Running;
-
-                    IsCalibrated = true;
-                    ResetCount++;
-
-                    if (Initialized != null)
-                    {
-                        _ = Task.Run(() =>
-                        {
-                            Initialized.Invoke(this, new EventArgs());
-                        });
-                    }
-                }
-            });
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public override async Task Initialize()
+        public override async Task<bool> Initialize()
         {
             lock(lockObj)
             {
@@ -540,16 +501,18 @@ namespace Kucoin.NET.Websockets.Observations
 
             lock (lockObj)
             {
-                initializing = false;
-                IsInitialized = fd != null;
-
-                if (!initialized)
+                if (fd == null)
                 {
                     lastFailureTime = DateTime.Now;
                     Failure = true;
                 }
 
                 FullDepthOrderBook = fd;
+
+                initializing = false;
+                IsInitialized = fd != null;
+
+                return IsInitialized;
             }
         }
 
@@ -558,10 +521,12 @@ namespace Kucoin.NET.Websockets.Observations
         {
             await Task.Run(() =>
             {
+                if (initializing || calibrating) return;
+
                 lock (lockObj)
                 {
                     initialized = calibrated = failure = false;
-                    lastFailureTime = null;
+                    LastFailureTime = null;
 
                     _ = Task.Run(() =>
                     {
@@ -573,13 +538,7 @@ namespace Kucoin.NET.Websockets.Observations
                     });
 
                     FullDepthOrderBook = null;
-
-                    initBuffer.AddRange(processBuffer);
-                    initBuffer = new List<Level3Update>(buffer);
-
-                    buffer = new List<Level3Update>();
-                    processBuffer = new Level3Update[0];
-
+                    buffer.Clear();
                 }
             });
         }
@@ -591,29 +550,28 @@ namespace Kucoin.NET.Websockets.Observations
 
             lock (lockObj)
             {
-                c = buffer.Count;
-                if (c == 0) return false;
-
-                if (processBuffer == null)
+                if (!initialized)
                 {
-                    processBuffer = new Level3Update[c * 2];
-                }
-                if (processBuffer.Length < c)
-                {
-                    Array.Resize(ref processBuffer, c * 2);
-                }
-
-                buffer.CopyTo(processBuffer, 0);
-                buffer.Clear();
-
-                for (i = 0; i < c; i++)
-                {
-                    if (!ProcessObject(processBuffer[i]))
+                    if (!initializing)
                     {
-                        return i > 0;
+                        initializing = true;
+
+                        Initialize().ContinueWith((t) =>
+                        {
+                            State = FeedState.Running;
+                            IsCalibrated = true;
+                        });
                     }
+
+                    return true;
                 }
 
+                foreach (var obj in buffer)
+                {
+                    ProcessObject(obj);
+                }
+
+                buffer.Clear();
                 return true;
             }
         }
@@ -627,14 +585,10 @@ namespace Kucoin.NET.Websockets.Observations
             {
                 if (failure)
                 {
-                    if (lastFailureTime != null && lastFailureTime is DateTime t)
+                    if (lastFailureTime is DateTime t && (DateTime.UtcNow - t).TotalMilliseconds >= resetTimeout)
                     {
-                        if ((DateTime.UtcNow - t).TotalMilliseconds > resetTimeout)
-                        {
-                            LastFailureTime = null;
-                            _ = Reset();
-                            return false;
-                        }
+                        LastFailureTime = null;
+                        _ = Reset();
                     }
                     else
                     {
@@ -644,33 +598,7 @@ namespace Kucoin.NET.Websockets.Observations
                     return false;
                 }
 
-                if (!calibrated && !calibrating)
-                {
-                    lock (initBuffer)
-                    {
-                        initBuffer.Add(obj);
-
-                        if (initializing) return true;
-                        initializing = true;
-                    }
-
-                    Initialize().ContinueWith(async (t) =>
-                    {
-                        if (failure) return;
-
-                        //Task.Delay(100).ContinueWith(async (t2) =>
-                        //{
-                            if (!failure)
-                            {
-                                await Calibrate();
-                            }
-                        //});
-                    
-                    });
-
-                    return true;
-                }
-                else if (fullDepth == null)
+                if (fullDepth == null)
                 {
                     if (!failure) Failure = true;
                     return false;
