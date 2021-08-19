@@ -245,7 +245,7 @@ namespace KuCoinConsole
             List<List<AllSymbolsTickerItem>> buckets = new List<List<AllSymbolsTickerItem>>();
 
             // This changes the number of feeds per distributor:
-            ParallelService.MaxTenants = 10;
+            ParallelService.MaxTenants = Environment.ProcessorCount;
             List<AllSymbolsTickerItem> l2;
 
             for (int xx = 0; xx < tickers.Count; xx += ParallelService.MaxTenants)
@@ -333,7 +333,7 @@ namespace KuCoinConsole
                     {
                         if (!Observers.ContainsKey(sym))
                         {
-                            curr = serviceFactory.EnableOrAddSymbol(sym, service, (tickerCount == 0 || (tickerCount % 10 != 0)));
+                            curr = serviceFactory.EnableOrAddSymbol(sym, service, (tickerCount == 0 || (tickerCount % ParallelService.MaxTenants != 0)));
                             tickerCount++;
                             if (curr == null) continue;
 
