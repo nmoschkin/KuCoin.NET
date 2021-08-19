@@ -2,11 +2,12 @@
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-	  <TargetFramework>net5.0-windows10.0.19041.0</TargetFramework>
+	  <TargetFramework>net6.0-windows</TargetFramework>
 	  <UseWPF>true</UseWPF>
 	  <UseWinForms>true</UseWinForms>
 	  <Platforms>AnyCPU;x64</Platforms>
 	  <ApplicationIcon></ApplicationIcon>
+	  <LangVersion>preview</LangVersion>
   </PropertyGroup>
 
   <ItemGroup>
@@ -28,7 +29,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\FancyCandles\FancyCandles\FancyCandles.csproj" />
-    <ProjectReference Include="..\Kucoin.NET\Kucoin.NET.Std.csproj" />
+    <ProjectReference Include="..\Kucoin.NET\Kucoin.NET.csproj" />
     <ProjectReference Include="..\KuCoinConsole\KuCoinConsole.csproj" />
     <ProjectReference Include="..\PinEntry\PinEntry.csproj" />
   </ItemGroup>

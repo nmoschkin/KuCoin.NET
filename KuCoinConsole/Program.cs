@@ -375,7 +375,7 @@ namespace KuCoinConsole
                                 {
                                     curr.Level3Feed.DataReceived += Level3Feed_DataReceived;
 
-                                    curr.Level3Feed.DistributionStrategy = DistributionStrategy.Link;
+                                    //curr.Level3Feed.DistributionStrategy = DistributionStrategy.Link;
                                     curr.Level3Feed.MonitorThroughput = true;
              
                                     feeds.Add(curr.Level3Feed);
@@ -852,11 +852,13 @@ namespace KuCoinConsole
 
                     var obs = sortobs[vc];
                     var l3 = obs.Level3Observation;
+                    var ts = DateTime.MinValue;
 
                     if (l3.FullDepthOrderBook is object)
                     {
                         ba = ((IList<AtomicOrderStruct>)l3.FullDepthOrderBook.Asks)[0].Price;
                         bb = ((IList<AtomicOrderStruct>)l3.FullDepthOrderBook.Bids)[0].Price;
+                        ts = l3.FullDepthOrderBook.Timestamp;
                     }
                     else
                     {
@@ -900,7 +902,7 @@ namespace KuCoinConsole
                     }
                     else
                     {
-                        itsb.WriteToEdgeLine($"{MinChars($"{{White}}{vc + 1} ", maxSymbolLen + 7)} - Match Share: {MinChars(mpcts[z].ToString("##0") + "%", 4)}   Total Share: {MinChars(pcts[z++].ToString("##0") + "%", 4)}   State: " + MinChars(l3.State.ToString(), 14) + "  Queue Length: " + MinChars(l3.QueueLength.ToString(), 10) + $" {{Reset}}");
+                        itsb.WriteToEdgeLine($"{MinChars($"{{White}}{vc + 1} ", maxSymbolLen + 7)} - Match Share: {MinChars(mpcts[z].ToString("##0") + "%", 4)}   Total Share: {MinChars(pcts[z++].ToString("##0") + "%", 4)}   State: " + MinChars(l3.State.ToString(), 14) + "  Queue Length: " + MinChars(l3.QueueLength.ToString(), 10) + $"{{Reset}} Timestamp: {{Blue}}{ts:G}{{Reset}}");
                         //itsb.WriteToEdgeLine($"{MinChars($"{{White}}{vc + 1} ", maxSymbolLen + 7)} - Match Share: {MinChars(mpcts[z].ToString("##0") + "%", 4)}   Total Share: {MinChars(pcts[z++].ToString("##0") + "%", 4)}   State: " + MinChars(l3.State.ToString(), 14) + "  Queue Length: " + MinChars(l3.QueueLength.ToString(), 10) + $" {{Reset}}Feed: {{White}}{MinChars((fidx == 0) ? "N/A" : fidx.ToString(), 4)}");
                     }
 
