@@ -235,9 +235,9 @@ namespace KuCoinConsole
         private static void RunTickers()
         {
 
-            int maxTenants = Environment.ProcessorCount;
+            int maxTenants = Environment.ProcessorCount / 2;
             int maxSubscriptions = 0;
-            int maxSharedConn = maxTenants * 2;
+            int maxSharedConn = maxTenants * 4;
 
             var ast = market.GetAllTickers().ConfigureAwait(false). GetAwaiter().GetResult();
 
@@ -259,6 +259,7 @@ namespace KuCoinConsole
 
             // This changes the number of feeds per distributor:
             ParallelService.MaxTenants = maxTenants;
+            ParallelService.SleepDivisor = 50;
 
             List<AllSymbolsTickerItem> l2;
 
@@ -374,20 +375,23 @@ namespace KuCoinConsole
 
                             if (curr.Level3Feed != null)
                             {
-                                if (!feeds.Contains(curr.Level3Feed))
+                                lock (lockObj)
                                 {
-                                    curr.Level3Feed.DataReceived += Level3Feed_DataReceived;
+                                    if (!feeds.Contains(curr.Level3Feed))
+                                    {
+                                        curr.Level3Feed.DataReceived += Level3Feed_DataReceived;
 
-                                    //curr.Level3Feed.DistributionStrategy = DistributionStrategy.Link;
-                                    curr.Level3Feed.MonitorThroughput = true;
+                                        //curr.Level3Feed.DistributionStrategy = DistributionStrategy.Link;
+                                        curr.Level3Feed.MonitorThroughput = true;
              
-                                    feeds.Add(curr.Level3Feed);
+                                        feeds.Add(curr.Level3Feed);
+                                    }
+
+                                    curr.Level3Observation.DiagnosticsEnabled = true;
+                                    curr.Level3Observation.IsVolumeEnabled = true;
+
+                                    Observers.Add(sym, curr);
                                 }
-
-                                curr.Level3Observation.DiagnosticsEnabled = true;
-                                curr.Level3Observation.IsVolumeEnabled = true;
-
-                                Observers.Add(sym, curr);
                             }
                             else
                             {
@@ -529,14 +533,21 @@ namespace KuCoinConsole
 
                 DateTime ts = DateTime.MinValue;
 
-                foreach (var obs in Observers)
+                try
                 {
-                    if (obs.Value?.Level3Observation?.FullDepthOrderBook == null) continue;
-
-                    if (obs.Value.Level3Observation.FullDepthOrderBook.Timestamp > ts)
+                    foreach (var obs in Observers)
                     {
-                        ts = obs.Value.Level3Observation.FullDepthOrderBook.Timestamp;
+                        if (obs.Value?.Level3Observation?.FullDepthOrderBook == null) continue;
+
+                        if (obs.Value.Level3Observation.FullDepthOrderBook.Timestamp > ts)
+                        {
+                            ts = obs.Value.Level3Observation.FullDepthOrderBook.Timestamp;
+                        }
                     }
+                }
+                catch
+                {
+                    continue;
                 }
 
                 string headerText = null;
@@ -674,15 +685,19 @@ namespace KuCoinConsole
                 long biggrand = 0;
                 long matchgrand = 0;
 
-                foreach (var obs in Observers)
+                try
                 {
-                    var l3 = obs.Value.Level3Observation;
-                    if (l3 != null)
+                    foreach (var obs in Observers)
                     {
-                        biggrand += l3.GrandTotal;
-                        matchgrand += l3.MatchTotal;
+                        var l3 = obs.Value.Level3Observation;
+                        if (l3 != null)
+                        {
+                            biggrand += l3.GrandTotal;
+                            matchgrand += l3.MatchTotal;
+                        }
                     }
                 }
+                catch { }
 
                 pcts.Clear();
                 

@@ -53,13 +53,11 @@ namespace Kucoin.NET.Websockets.Distribution
             private void ThreadMethod()
             {
                 var actions = new List<Action>();
-                int x = 0;
-                int i;
+                Action[] arrActions = new Action[0];
+                int x = 0, f = 0;
 
                 while (!cts.IsCancellationRequested)
                 {
-                    i = 0;
-
                     lock (Tenants)
                     {
                         if (ActionsChanged)
@@ -73,32 +71,31 @@ namespace Kucoin.NET.Websockets.Distribution
                                 {
                                     try
                                     {
-                                        if (!t.DoWork()) i++;
+                                        if (!t.DoWork()) x++;
                                     }
                                     catch { }
 
                                 }));
                             }
 
+                            arrActions = actions.ToArray();
                         }
                     }
 
+                    x = 0;
+
                     try
                     {
-                        Parallel.Invoke(actions.ToArray());
+                        Parallel.Invoke(arrActions);
                     }
                     catch { }
 
-                    if (++x == 10)
+                    if (f++ == sleepDivisor)
                     {
-                        x = 0;
                         Thread.Sleep(idleSleepTime);
+                        f = 0;
                     }
 
-                    //else
-                    //{
-                    //    Thread.Sleep(0);
-                    //}
                 }
             }
 
@@ -115,7 +112,11 @@ namespace Kucoin.NET.Websockets.Distribution
         private static int maxTenants = 4;
 
         private static int idleSleepTime = 1;
-        
+
+        private static int sleepDivisor = 1;
+
+        private static ThreadPriority distributorPriority = ThreadPriority.AboveNormal;
+
         /// <summary>
         /// Gets or sets the maximum number of feeds per thread.
         /// </summary>
@@ -128,6 +129,40 @@ namespace Kucoin.NET.Websockets.Distribution
             set
             {
                 RedistributeServices(value);
+            }
+        }
+
+        public static ThreadPriority DistributorPriority
+        {
+            get => distributorPriority;
+            set
+            {
+                if (value != distributorPriority)
+                {
+                    distributorPriority = value;
+
+                    lock (lockObj)
+                    {
+                        foreach (var dist in distributors)
+                        {
+                            dist.Thread.Priority = value;
+                        }
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// The thread will sleep for <see cref="IdleSleepTime"/> every <see cref="SleepDivisor"/> cycles.
+        /// </summary>
+        public static int SleepDivisor
+        {
+            get => sleepDivisor;
+            set
+            {
+                if (value < 0 || value > 10000) throw new ArgumentOutOfRangeException();
+                sleepDivisor = value;
+
             }
         }
 
@@ -163,6 +198,7 @@ namespace Kucoin.NET.Websockets.Distribution
                     if (insertFeed == default)
                     {
                         insertFeed = new Distribution(feed);
+                        insertFeed.Thread.Priority = distributorPriority;
                         insertFeed.Thread.Start();
 
                         distributors.Add(insertFeed);

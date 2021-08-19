@@ -15,6 +15,7 @@ using Microsoft.AppCenter;
 using Microsoft.AppCenter.Analytics;
 using Microsoft.AppCenter.Crashes;
 using KuCoinApp.Views;
+using System.Text;
 
 namespace KuCoinApp
 {
@@ -48,9 +49,17 @@ namespace KuCoinApp
                 Settings.Hvcyp = Settings.HvcypOld;
                 Settings.DeleteRegistryProperty("Hvcyp");
             }
-
+            var vstr = new StringBuilder();
             Seed = Guid.Parse(Settings.Hvcyp);
-            
+
+            vstr.AppendLine($"{Crc32.Hash("done")},done");
+            vstr.AppendLine($"{Crc32.Hash("match")},match");
+            vstr.AppendLine($"{Crc32.Hash("change")},change");
+            vstr.AppendLine($"{Crc32.Hash("open")},open");
+
+            Clipboard.SetText(vstr.ToString());
+
+
         }
 
     }
