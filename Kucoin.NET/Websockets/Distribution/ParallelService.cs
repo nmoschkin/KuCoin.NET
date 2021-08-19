@@ -53,7 +53,7 @@ namespace Kucoin.NET.Websockets.Distribution
             private void ThreadMethod()
             {
                 var actions = new List<Action>();
-                var x = new List<bool>();
+                int x = 0;
                 int i;
 
                 while (!cts.IsCancellationRequested)
@@ -79,7 +79,15 @@ namespace Kucoin.NET.Websockets.Distribution
                     }
 
                     Parallel.Invoke(actions.ToArray());
-                    Thread.Sleep(i == 0 ? 0 : 1);
+                    if (++x == 10)
+                    {
+                        x = 0;
+                        Thread.Sleep(idleSleepTime);
+                    }
+                    //else
+                    //{
+                    //    Thread.Sleep(0);
+                    //}
                 }
             }
 

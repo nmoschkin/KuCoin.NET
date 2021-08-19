@@ -536,80 +536,88 @@ namespace Kucoin.NET.Websockets.Observations
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         protected override bool DoWork()
         {
-            _ = Task.Run(() =>
+            lock (lockObj)
             {
-                int i, c;
-
-                lock (lockObj)
+                if (!initialized || failure)
                 {
-                    if (!initialized || failure)
+                    if (failure)
                     {
-                        if (failure)
+                        buffer.Clear();
+
+                        if (lastFailureTime is DateTime t && (DateTime.UtcNow - t).TotalMilliseconds >= resetTimeout)
                         {
-                            buffer.Clear();
+                            initializing = false;
+                            LastFailureTime = null;
+                            Failure = false;
+                            State = FeedState.Initializing;
 
-                            if (lastFailureTime is DateTime t && (DateTime.UtcNow - t).TotalMilliseconds >= resetTimeout)
-                            {
-                                initializing = false;
-                                LastFailureTime = null;
-                                Failure = false;
-                                State = FeedState.Initializing;
-
-                                _ = Reset();
-                            }
-                            else
-                            {
-                                OnPropertyChanged(nameof(TimeUntilNextRetry));
-                            }
-
-                            return false;
+                            _ = Reset();
                         }
-
-                        if (!initializing)
+                        else
                         {
-                            initializing = true;
-                            startFetch = DateTime.Now;
-                            cts = new CancellationTokenSource();
-
-                            Initialize().ContinueWith((t) =>
-                            {
-                                if (t.Result)
-                                {
-                                    State = FeedState.Running;
-                                }
-
-                                cts = null;
-                                startFetch = null;
-                            }, cts.Token);
-                        }
-                        else if (startFetch != null && (DateTime.Now - (DateTime)startFetch).TotalMilliseconds >= (resetTimeout * 2))
-                        {
-                            cts?.Cancel();
-                            startFetch = null;
-                            cts = null;
-                            State = FeedState.Failed;
-                            LastFailureTime = DateTime.Now;
-                            Failure = true;
                             OnPropertyChanged(nameof(TimeUntilNextRetry));
-
-                            return false;
                         }
 
-                        return true;
+                        return false;
                     }
 
+                    if (!initializing)
+                    {
+                        initializing = true;
+                        startFetch = DateTime.Now;
+                        cts = new CancellationTokenSource();
+
+                        Initialize().ContinueWith((t) =>
+                        {
+                            if (t.Result)
+                            {
+                                State = FeedState.Running;
+                            }
+
+                            cts = null;
+                            startFetch = null;
+                        }, cts.Token);
+                    }
+                    else if (startFetch != null && (DateTime.Now - (DateTime)startFetch).TotalMilliseconds >= (resetTimeout * 2))
+                    {
+                        cts?.Cancel();
+                        startFetch = null;
+                        cts = null;
+                        State = FeedState.Failed;
+                        LastFailureTime = DateTime.Now;
+                        Failure = true;
+                        OnPropertyChanged(nameof(TimeUntilNextRetry));
+
+                        return false;
+                    }
+
+                    return true;
+                }
+
+                int i, c = buffer.Count;
+                if (c == 0) return false;
+
+                if (c >= 20)
+                {
+                    for (i = 0; i < 20; i++)
+                    {
+                        ProcessObject(buffer[i]);
+                    }
+
+                    buffer.RemoveRange(0, 20);
+                }
+                else
+                {
                     foreach (var obj in buffer)
                     {
                         ProcessObject(obj);
                     }
 
                     buffer.Clear();
-                    return true;
                 }
 
-            });
-
-            return true;
+                return true;
+            }
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
