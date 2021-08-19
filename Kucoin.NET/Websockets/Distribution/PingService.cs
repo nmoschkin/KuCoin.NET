@@ -1,4 +1,6 @@
 
+using Kucoin.NET.Data.User;
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -15,12 +17,17 @@ namespace Kucoin.NET.Websockets.Distribution
     /// </summary>
     public static class PingService
     {
+        private static object lockObj = new object();
 
         private static readonly List<IPingable> feeds = new List<IPingable>();
 
         private static Thread IntervalThread;
 
         private static CancellationTokenSource cts;
+
+        private static bool changed = false;
+
+        public const int Wait = 10;
 
         static PingService()
         {
@@ -33,35 +40,39 @@ namespace Kucoin.NET.Websockets.Distribution
         /// <returns>True if the object was successfully registered, false if the object was already registered.</returns>
         public static bool RegisterService(IPingable obj)
         {
-            if (!feeds.Contains(obj))
+            lock(lockObj)
             {
-                int x = obj.Interval;
-
-                if (x % 10 != 0)
+                if (!feeds.Contains(obj))
                 {
-                    x = x - (x % 10);
+                    int x = obj.Interval;
+
+                    if (x % Wait != 0)
+                    {
+                        x = x - (x % Wait);
+                    }
+
+                    obj.Interval = x;
+                    if (x == 0) throw new ArgumentOutOfRangeException("Interval cannot be 0.");
+
+                    feeds.Add(obj);
+                    changed = true;
+                }
+                else
+                {
+                    return false;
                 }
 
-                obj.Interval = x;
-                if (x == 0) throw new ArgumentOutOfRangeException("Interval cannot be 0.");
-                
-                feeds.Add(obj);    
-            }
-            else
-            {
-                return false;
-            }
+                if (IntervalThread == null)
+                {
+                    cts = new CancellationTokenSource();
 
-            if (IntervalThread == null)
-            {
-                cts = new CancellationTokenSource();    
+                    IntervalThread = new Thread(IntervalMethod);
+                    IntervalThread.IsBackground = true;
+                    IntervalThread.Start();
+                }
 
-                IntervalThread = new Thread(IntervalMethod);
-                IntervalThread.IsBackground = true;   
-                IntervalThread.Start();   
+                return true;
             }
-
-            return true;
         }
 
         /// <summary>
@@ -71,21 +82,25 @@ namespace Kucoin.NET.Websockets.Distribution
         /// <returns>True if the object was successfully unregistered, false if the object was not registered.</returns>
         public static bool UnregisterService(IPingable obj)
         {
-            if (feeds.Contains(obj))
+            lock (lockObj)
             {
-                feeds.Remove(obj);
-            }
-            else
-            {
-                return false;
-            }
+                if (feeds.Contains(obj))
+                {
+                    feeds.Remove(obj);
+                    changed = true;
+                }
+                else
+                {
+                    return false;
+                }
 
-            if (feeds.Count == 0)
-            {
-                CancelIntervalThread();
-            }
+                if (feeds.Count == 0)
+                {
+                    CancelIntervalThread();
+                }
 
-            return true;
+                return true;
+            }
         }
 
         /// <summary>
@@ -103,55 +118,61 @@ namespace Kucoin.NET.Websockets.Distribution
         /// Pinger method.
         /// </summary>
         private static void IntervalMethod()
-        {            
-            while (!cts.IsCancellationRequested)
+        {
+            List<IPingable> stash = new List<IPingable>();
+            List<int> counts = new List<int>();
+            int c = 0, i;
+            IPingable feed;
+            int wait = Wait;
+
+            while (!cts?.IsCancellationRequested ?? false)
             {
                 try
                 {
-                    if (feeds.Count == 0)
+                    if (changed)
                     {
-                        return;
-                    }
-
-                    long pingMax = 0;
-
-                    foreach (var feed in feeds)
-                    {
-                        if (feed.Interval > pingMax)
+                        lock (lockObj)
                         {
-                            pingMax = feed.Interval;
+                            changed = false;
+
+                            stash.Clear();
+                            counts.Clear();
+
+                            stash.AddRange(feeds);
+                            stash.ForEach((a) => counts.Add(0));
+
+                            c = feeds.Count;
                         }
                     }
 
-                    for (int i = 0; i < pingMax; i += 10)
+                    for (i = 0; i < c; i++)
                     {
-                        Task.Delay(10, cts.Token).ConfigureAwait(false).GetAwaiter().GetResult(); 
-                        if (cts.IsCancellationRequested) return;
+                        feed = feeds[i];
+                        counts[i] += wait;
 
-                        foreach (var feed in feeds)
+                        if (counts[i] == feed.Interval)
                         {
-                            if (cts.IsCancellationRequested) return;
+                            counts[i] = 0;
 
-                            if (i == feed.Interval)
+                            if (feed is IAsyncPingable aping)
                             {
-                                if (feed is IAsyncPingable aping)
-                                {
-                                    _ = aping.Ping();
-                                }
-                                else
-                                {
-                                    feed.Ping();
-                                }
+                                _ = aping.Ping();
+                            }
+                            else
+                            {
+                                feed.Ping();
                             }
                         }
+
                     }
 
-                    if (cts.IsCancellationRequested) return;
+                    Thread.Sleep(wait);
+
+                    if (cts?.IsCancellationRequested ?? true) return;
                 }
                 catch //(Exception ex)
                 {
-
-                    return;
+                    
                 }
 
             }
