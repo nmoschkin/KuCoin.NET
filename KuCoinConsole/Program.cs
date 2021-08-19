@@ -27,6 +27,9 @@ using System.Threading;
 using Kucoin.NET.Websockets.Distribution;
 using System.Linq;
 using System.Security.AccessControl;
+using Newtonsoft.Json;
+using Kucoin.NET.Data.Websockets;
+using System.IO;
 
 namespace KuCoinConsole
 {
@@ -75,6 +78,8 @@ namespace KuCoinConsole
     {
         public static Dictionary<string, ISymbolDataService> Observers { get; set; } = new Dictionary<string, ISymbolDataService>();
 
+        private static FileStream fslog;
+
         static Level2 l2conn;
         static ISymbolDataService service;
         static StringBuilder readOut = new StringBuilder();
@@ -84,10 +89,12 @@ namespace KuCoinConsole
 
         public static ICredentialsProvider cred;
 
+        static List<string> messages = new List<string>();
+
         static Kucoin.NET.Rest.Market market;
         
         static bool ready = false;
-        
+        static int msgidx = 0;
         static int sortmode = 0;
         static int sortorder = -1;
 
@@ -226,6 +233,11 @@ namespace KuCoinConsole
 
         private static void RunTickers()
         {
+
+            int maxTenants = Environment.ProcessorCount;
+            int maxSubscriptions = 0;
+            int maxSharedConn = maxTenants * 2;
+
             var ast = market.GetAllTickers().ConfigureAwait(false). GetAwaiter().GetResult();
 
             var tickers = new List<AllSymbolsTickerItem>(ast.Ticker);
@@ -245,13 +257,16 @@ namespace KuCoinConsole
             List<List<AllSymbolsTickerItem>> buckets = new List<List<AllSymbolsTickerItem>>();
 
             // This changes the number of feeds per distributor:
-            ParallelService.MaxTenants = feednum > Environment.ProcessorCount ? feednum / Environment.ProcessorCount : feednum;
+            ParallelService.MaxTenants = maxTenants;
+
             List<AllSymbolsTickerItem> l2;
 
-            for (int xx = 0; xx < tickers.Count; xx += ParallelService.MaxTenants)
-            {
+            // 
+            maxSubscriptions = (int)Math.Ceiling((double)tickers.Count / maxSharedConn);
 
-                for (int xy = 0; xy < ParallelService.MaxTenants; xy++)
+            for (int xx = 0; xx < tickers.Count; xx += maxSubscriptions)
+            {
+                for (int xy = 0; xy < maxSubscriptions; xy++)
                 {
                     if (tickers.Count < (xy + xx + 1)) break;
 
@@ -312,10 +327,13 @@ namespace KuCoinConsole
 
             maxScrollIndex = syms.Count - maxRows;
 
+            if (fslog != null)
+            {
+                fslog.Dispose();
+                fslog = null;
+            }
 
-
-
-
+            fslog = new FileStream(".\\message_log.txt", FileMode.Append, FileAccess.Write);
 
             Task.Run(async () =>
             {
@@ -333,14 +351,15 @@ namespace KuCoinConsole
                     }
 
                     Console.WriteLine($"Subscribing to {sym} ...");
-
+                    fslog?.Write(Encoding.UTF8.GetBytes($"Subscribing to {sym} ... {DateTime.Now:G}"));
                     try
                     {
                         if (!Observers.ContainsKey(sym))
                         {
-                            curr = serviceFactory.EnableOrAddSymbol(sym, service, (tickerCount == 0 || (tickerCount % ParallelService.MaxTenants != 0)));
-                            tickerCount++;
+                            curr = serviceFactory.EnableOrAddSymbol(sym, service, (tickerCount == 0 || (tickerCount % maxSharedConn != 0)));
+
                             if (curr == null) continue;
+                            tickerCount++;
 
                             await curr.EnableLevel3();
                             await Task.Delay(10);
@@ -352,14 +371,16 @@ namespace KuCoinConsole
 
                             if (curr.Level3Feed != null)
                             {
-                                curr.Level3Feed.DistributionStrategy = DistributionStrategy.Link;
-
                                 if (!feeds.Contains(curr.Level3Feed))
                                 {
+                                    curr.Level3Feed.DataReceived += Level3Feed_DataReceived;
+
+                                    curr.Level3Feed.DistributionStrategy = DistributionStrategy.Link;
+                                    curr.Level3Feed.MonitorThroughput = true;
+             
                                     feeds.Add(curr.Level3Feed);
                                 }
 
-                                curr.Level3Feed.MonitorThroughput = true;
                                 curr.Level3Observation.DiagnosticsEnabled = true;
                                 curr.Level3Observation.IsVolumeEnabled = true;
 
@@ -368,6 +389,9 @@ namespace KuCoinConsole
                             else
                             {
                                 Console.WriteLine("Something's wrong.  We seem to be unable to connect. Aborting...");
+                                fslog?.Write(Encoding.UTF8.GetBytes($"Something's wrong.  We seem to be unable to connect. Aborting... {DateTime.Now:G}"));
+                                fslog.Dispose();
+                                fslog = null;
                                 return;
                             }
 
@@ -407,58 +431,82 @@ namespace KuCoinConsole
                     {
 
                         var key = Console.ReadKey();
-                        if (key.Key == ConsoleKey.DownArrow)
+
+                        if (key.Modifiers == ConsoleModifiers.Control)
                         {
-                            if (scrollIndex < maxScrollIndex)
+                            if (key.Key == ConsoleKey.DownArrow)
                             {
-                                ++scrollIndex;
+                                if (msgidx < messages.Count - 5)
+                                {
+                                    ++msgidx;
+                                }
                             }
-                        }
-                        else if (key.Key == ConsoleKey.UpArrow)
-                        {
-                            if (scrollIndex > 0)
+                            else if (key.Key == ConsoleKey.UpArrow)
                             {
-                                --scrollIndex;
+                                if (msgidx > 0)
+                                {
+                                    --msgidx;
+                                }
                             }
+
                         }
-                        else if (key.Key == ConsoleKey.PageDown)
+                        else
                         {
-                            if (scrollIndex < maxScrollIndex)
+
+                            if (key.Key == ConsoleKey.DownArrow)
                             {
-                                scrollIndex += 10;
-                                if (scrollIndex > maxScrollIndex) scrollIndex = maxScrollIndex;
+                                if (scrollIndex < maxScrollIndex)
+                                {
+                                    ++scrollIndex;
+                                }
                             }
-                        }
-                        else if (key.Key == ConsoleKey.PageUp)
-                        {
-                            if (scrollIndex > 0)
+                            else if (key.Key == ConsoleKey.UpArrow)
                             {
-                                scrollIndex -= 10;
-                                if (scrollIndex < 0) scrollIndex = 0;
+                                if (scrollIndex > 0)
+                                {
+                                    --scrollIndex;
+                                }
                             }
-                        }
-                        else if (key.Key == ConsoleKey.Home)
-                        {
-                            scrollIndex = 0;
-                        }
-                        else if (key.Key == ConsoleKey.End)
-                        {
-                            scrollIndex = maxScrollIndex;
-                        }
-                        else if (key.Key == ConsoleKey.V)
-                        {
-                            if (sortmode == 0) sortorder = sortorder * -1;
-                            else sortmode = 0;
-                        }
-                        else if (key.Key == ConsoleKey.P)
-                        {
-                            if (sortmode == 1) sortorder = sortorder * -1;
-                            else sortmode = 1;
-                        }
-                        else if (key.Key == ConsoleKey.A)
-                        {
-                            if (sortmode == 2) sortorder = sortorder * -1;
-                            else sortmode = 2;
+                            else if (key.Key == ConsoleKey.PageDown)
+                            {
+                                if (scrollIndex < maxScrollIndex)
+                                {
+                                    scrollIndex += 10;
+                                    if (scrollIndex > maxScrollIndex) scrollIndex = maxScrollIndex;
+                                }
+                            }
+                            else if (key.Key == ConsoleKey.PageUp)
+                            {
+                                if (scrollIndex > 0)
+                                {
+                                    scrollIndex -= 10;
+                                    if (scrollIndex < 0) scrollIndex = 0;
+                                }
+                            }
+                            else if (key.Key == ConsoleKey.Home)
+                            {
+                                scrollIndex = 0;
+                            }
+                            else if (key.Key == ConsoleKey.End)
+                            {
+                                scrollIndex = maxScrollIndex;
+                            }
+                            else if (key.Key == ConsoleKey.V)
+                            {
+                                if (sortmode == 0) sortorder = sortorder * -1;
+                                else sortmode = 0;
+                            }
+                            else if (key.Key == ConsoleKey.P)
+                            {
+                                if (sortmode == 1) sortorder = sortorder * -1;
+                                else sortmode = 1;
+                            }
+                            else if (key.Key == ConsoleKey.A)
+                            {
+                                if (sortmode == 2) sortorder = sortorder * -1;
+                                else sortmode = 2;
+                            }
+
                         }
 
                     }
@@ -546,6 +594,9 @@ namespace KuCoinConsole
 
             }
 
+            fslog?.Dispose();
+            fslog = null;
+            
             _ = Task.Run(() =>
             {
                 Dispatcher.BeginInvokeOnMainThread((o) =>
@@ -553,6 +604,28 @@ namespace KuCoinConsole
                     RunTickers();
                 });
             });
+
+        }
+
+        private static void Level3Feed_DataReceived(object sender, DataReceivedEventArgs e)
+        {
+            var msg = JsonConvert.DeserializeObject<FeedMessage>(e.Json);
+            int x = 1;
+
+            foreach (var feed in feeds)
+            {
+                if (sender == feed && feed is Level3 l3a)
+                {
+                    messages.Add($"{{Reset}}Feed {{White}}{x}{{Reset}}: {{Yellow}}{msg.Type} {{Cyan}}{msg.Subject} {msg.Topic} {{Blue}}({DateTime.Now:G}){{Reset}}");
+
+                    msgidx = messages.Count >= 4 ? messages.Count - 5 : messages.Count - 1;
+
+                    var tstr = ($"Feed {x}: {msg.Type} {msg.Subject} {msg.Topic} ({DateTime.Now:G})\r\n");
+                    fslog?.Write(Encoding.UTF8.GetBytes(tstr));
+                }
+
+                x++;
+            }
 
         }
 
@@ -566,7 +639,6 @@ namespace KuCoinConsole
 
         private static void Ticker_DataReceived(object sender, Kucoin.NET.Websockets.DataReceivedEventArgs e)
         {
-            Console.WriteLine(e.Json);
         }
         
         static DateTime resetCounter = DateTime.UtcNow;
@@ -700,6 +772,7 @@ namespace KuCoinConsole
 
                 if (through != 0d)
                 {
+                    readOut.WriteToEdgeLine($"Total Connections:                  {{White}}{MinChars(feeds.Count.ToString(), 4)}{{Reset}}");
                     readOut.WriteToEdgeLine($"Throughput:                         {{Green}}{PrintFriendlySpeed((ulong)through)}{{Reset}}");
                  
                     if (linkstr == 0)
@@ -803,17 +876,22 @@ namespace KuCoinConsole
                     }
 
                     itsb.Clear();
-
+                    int? fidx = null;
+                    
+                    if (feeds.Contains(l3.Parent))
+                    {
+                        fidx = feeds.IndexOf(l3.Parent) + 1;
+                    }
 
                     itsb.WriteToEdgeLine($"{MinChars(obs.Symbol, maxSymbolLen)} - Best Ask: {{Red}}{MinChars(ba.ToString("#,##0.00######"), 12)}{{Reset}} Best Bid: {{Green}}{MinChars(bb.ToString("#,##0.00######"), 12)}{{Reset}} - {{Yellow}}{MinChars(currname, maxCurrencyLen)}{{Reset}}  Volume: {{Cyan}}{MinChars(l3.SortingVolume.ToString("#,##0.00"), 14)}{{Reset}}");
                     
                     if (ba == 0)
                     {
-                        itsb.WriteToEdgeLine($"\r\n{MinChars($"{{White}}{vc + 1} {{Yellow}}Initializing{{Reset}}", maxSymbolLen + 22)}");
+                        itsb.WriteToEdgeLine($"{MinChars($"{{White}}{vc + 1} {{Yellow}}Initializing{{Reset}}", maxSymbolLen + 22)}");
                     }
                     else
                     {
-                        itsb.WriteToEdgeLine($"\r\n{MinChars($"{{White}}{vc + 1} ", maxSymbolLen + 7)} - Match Share: {MinChars(mpcts[z].ToString("##0") + "%", 4)}   Total Share: {MinChars(pcts[z++].ToString("##0") + "%", 4)}   State: " + MinChars(l3.State.ToString(), 14) + "  Queue Length: " + MinChars(l3.QueueLength.ToString(), 10));
+                        itsb.WriteToEdgeLine($"{MinChars($"{{White}}{vc + 1} ", maxSymbolLen + 7)} - Match Share: {MinChars(mpcts[z].ToString("##0") + "%", 4)}   Total Share: {MinChars(pcts[z++].ToString("##0") + "%", 4)}   State: " + MinChars(l3.State.ToString(), 14) + "  Queue Length: " + MinChars(l3.QueueLength.ToString(), 10) + $" {{Reset}}Feed: {{White}}{fidx?.ToString() ?? "N/A"}");
                     }
 
 
@@ -857,8 +935,22 @@ namespace KuCoinConsole
                 ft.WriteToEdgeLine($"Matches Per Second:      ~ {{Cyan}}{mps:#,###}{{Reset}}");
                 ft.WriteToEdgeLine($"Transactions Per Second: ~ {{Cyan}}{tps:#,###}{{Reset}}");
                 ft.WriteToEdgeLine($"");
-                ft.WriteToEdgeLine($"{{White}}Use Arrow Up/Arrow Down, Page Up/Page Down, Home/End to navigate the feed list.{{Reset}}");
+                ft.WriteToEdgeLine($"{{White}}Use Arrow Up/Arrow Down, Page Up/Page Down, Home/End to navigate the feed list. Ctrl+Arrow Up/Down scrolls the message log, below.{{Reset}}");
                 ft.WriteToEdgeLine($"{{White}}Press: (A) Sort Alphabetically, (P) Price, (V) Volume. Press again to reverse order.");
+
+                if (messages.Count > 0)
+                {
+                    int mc = messages.Count, mi, mg;
+                    mg = msgidx;
+
+                    ft.WriteToEdgeLine("");
+
+                    for (mi = mg; mi < mc; mi++)
+                    {
+                        ft.WriteToEdgeLine(messages[mi]);
+                        if (mi - mg >= 4) break;
+                    }
+                }
 
                 footerText = ft.ToString();
 

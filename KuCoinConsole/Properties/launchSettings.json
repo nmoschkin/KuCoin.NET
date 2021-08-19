@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "KuCoinConsole": {
+      "commandName": "Project",
+      "commandLineArgs": "\"C:\\Users\\theim\\Desktop\\Projects\\Personal Projects\\Repos\\Kucoin.NET\\KuCoinConsole\\bin\\x64\\Release\\net5.0\\KuCoinConsole.exe\""
+    }
+  }
+}

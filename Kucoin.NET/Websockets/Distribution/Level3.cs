@@ -40,9 +40,9 @@ namespace Kucoin.NET.Websockets.Public
                 base.wantMsgPumpThread = false;
             }
 
-            recvBufferSize = 262144;
+            recvBufferSize = 1048576;
             minQueueBuffer = 10000;
-            chunkSize = 512;
+            chunkSize = 1024;
         }
 
         /// <summary>
@@ -61,9 +61,9 @@ namespace Kucoin.NET.Websockets.Public
                 base.wantMsgPumpThread = false;
             }
 
-            recvBufferSize = 262144;
+            recvBufferSize = 1048576;
             minQueueBuffer = 10000;
-            chunkSize = 512;
+            chunkSize = 1024;
 
         }
 

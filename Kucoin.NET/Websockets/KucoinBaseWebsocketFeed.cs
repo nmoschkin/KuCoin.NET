@@ -991,6 +991,7 @@ namespace Kucoin.NET.Websockets
             if (e.Type == "pong")
             {
                 _ = Task.Run(() => OnPong(e), ctsReceive?.Token ?? default);
+                OnJsonReceived(json);
             }
             else
             {
