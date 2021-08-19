@@ -85,7 +85,7 @@ namespace Kucoin.NET.Data.Market
         /// 24h total, the trading volume in quote currency of last 24 hours
         /// </summary>
         [JsonProperty("volValue")]
-        public decimal? VolumneValue { get; set; }
+        public decimal? VolumeValue { get; set; }
 
         /// <summary>
         /// last price

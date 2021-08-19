@@ -229,16 +229,57 @@ namespace KuCoinConsole
             var ast = market.GetAllTickers().ConfigureAwait(false). GetAwaiter().GetResult();
 
             var tickers = new List<AllSymbolsTickerItem>(ast.Ticker);
+            Dictionary<string, AllSymbolsTickerItem> tickerdict = new Dictionary<string, AllSymbolsTickerItem>();
+            
             tickers.Sort((a, b) =>
             {
-                if (a.VolumneValue > b.VolumneValue) return -1;
-                if (a.VolumneValue < b.VolumneValue) return 1;
+                if (a.VolumeValue > b.VolumeValue) return -1;
+                if (a.VolumeValue < b.VolumeValue) return 1;
                 return 0;
 
-            });            
+            });
+            if (feednum > tickers.Count) feednum = tickers.Count;
+
+            tickers.RemoveRange(feednum, tickers.Count - feednum);
+
+            List<List<AllSymbolsTickerItem>> buckets = new List<List<AllSymbolsTickerItem>>();
 
             // This changes the number of feeds per distributor:
             ParallelService.MaxTenants = 10;
+            List<AllSymbolsTickerItem> l2;
+
+            for (int xx = 0; xx < tickers.Count; xx += ParallelService.MaxTenants)
+            {
+
+                for (int xy = 0; xy < ParallelService.MaxTenants; xy++)
+                {
+                    if (tickers.Count < (xy + xx + 1)) break;
+
+                    if (buckets.Count < xy + 1)
+                    {
+                        l2 = new List<AllSymbolsTickerItem>();
+                        buckets.Add(l2);
+
+                    }
+                    else
+                    {
+                        l2 = buckets[xy];
+                    }
+
+                    l2.Add(tickers[xx + xy]);
+                }
+            }
+
+            tickers.Clear();
+            foreach (var bucket in buckets)
+            {
+                foreach (var item in bucket)
+                {
+                    tickerdict.Add(item.Symbol, item);
+                }
+            }
+
+            tickers.AddRange(tickerdict.Values);
 
             var serviceFactory = KuCoin.GetServiceFactory();
             List<ISymbolDataService> services = new List<ISymbolDataService>();
@@ -292,8 +333,8 @@ namespace KuCoinConsole
                     {
                         if (!Observers.ContainsKey(sym))
                         {
-                            curr = serviceFactory.EnableOrAddSymbol(sym, service, (tickerCount == 0 || (tickerCount++ % 10 != 0)));
-
+                            curr = serviceFactory.EnableOrAddSymbol(sym, service, (tickerCount == 0 || (tickerCount % 10 != 0)));
+                            tickerCount++;
                             if (curr == null) continue;
 
                             await curr.EnableLevel3();
@@ -304,8 +345,10 @@ namespace KuCoinConsole
                                 services.Add(curr);
                             }
 
-                            if (curr.Level3Feed != null && curr.Level3Feed.Connected)
+                            if (curr.Level3Feed != null)
                             {
+                                curr.Level3Feed.DistributionStrategy = DistributionStrategy.Link;
+
                                 if (!feeds.Contains(curr.Level3Feed))
                                 {
                                     feeds.Add(curr.Level3Feed);
@@ -614,6 +657,10 @@ namespace KuCoinConsole
 
                 readOut.WriteToEdgeLine(failtext);
                 readOut.WriteToEdgeLine($"");
+                double through = 0d;
+                int queue = 0;
+                long maxqueue = 0;
+                int linkstr = 0;
 
                 foreach (var f in feeds)
                 {
@@ -632,9 +679,38 @@ namespace KuCoinConsole
                             return;
                         }
 
-                        readOut.WriteToEdgeLine($"Throughput:                         {{Green}}{PrintFriendlySpeed((ulong)l3a.Throughput)}{{Reset}}");
-                        readOut.WriteToEdgeLine($"Queue Length:                       {{Yellow}}{MinChars(l3a.QueueLength.ToString(), 8)}{{Reset}}");
-                        readOut.WriteToEdgeLine($"Max Queue Length (Last 60 Seconds): {{Red}}{l3a.MaxQueueLengthLast60Seconds}{{Reset}}");
+                        through += l3a.Throughput;
+                        queue += l3a.QueueLength;
+                    
+                        if (l3a.DistributionStrategy == DistributionStrategy.Link)
+                        {
+                            linkstr++;
+                        }
+
+                        if (l3a.MaxQueueLengthLast60Seconds > maxqueue)
+                            maxqueue += l3a.MaxQueueLengthLast60Seconds;
+
+                    }
+                }
+
+                if (through != 0d)
+                {
+                    readOut.WriteToEdgeLine($"Throughput:                         {{Green}}{PrintFriendlySpeed((ulong)through)}{{Reset}}");
+                 
+                    if (linkstr == 0)
+                    {
+                        readOut.WriteToEdgeLine($"Combined Queue Length:              {{Yellow}}{MinChars(queue.ToString(), 8)}{{Reset}}");
+                        readOut.WriteToEdgeLine($"Max Queue Length (Last 60 Seconds): {{Red}}{maxqueue}{{Reset}}");
+                    }
+                    else if (linkstr == feeds.Count)
+                    {
+                        readOut.WriteToEdgeLine($"Combined Queue Length:              {{Green}}Link Distribution Strategy (No Main Queue){{Reset}}");
+                        readOut.WriteToEdgeLine($"Max Queue Length (Last 60 Seconds): {{Red}}{maxqueue}{{Reset}}");
+                    }
+                    else
+                    {
+                        readOut.WriteToEdgeLine($"Combined Queue Length:              {{Yellow}}{MinChars(queue.ToString(), 8)} {{Green}}({linkstr} using Link Dist.) {{Reset}}");
+                        readOut.WriteToEdgeLine($"Max Queue Length (Last 60 Seconds): {{Red}}{maxqueue}{{Reset}}");
                     }
                 }
 

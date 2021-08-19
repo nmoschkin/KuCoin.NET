@@ -26,6 +26,7 @@ using System.Linq;
 using System.Net.Http;
 using System.Net.WebSockets;
 using System.Runtime.CompilerServices;
+using System.Runtime.Serialization;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -64,7 +65,7 @@ namespace Kucoin.NET.Websockets
 
         protected CancellationTokenSource ctsSend;
 
-        protected CancellationTokenSource ctsPing;
+        protected CancellationTokenSource ctsPump;
 
         protected Guid connectId = Guid.NewGuid();
 
@@ -466,7 +467,7 @@ namespace Kucoin.NET.Websockets
 
             ctsReceive = new CancellationTokenSource();
             ctsSend = new CancellationTokenSource();
-            ctsPing = new CancellationTokenSource();
+            ctsPump = new CancellationTokenSource();
 
             var uri = $"{server.EndPoint}?token={token.Data.Token}&connectId={connectId:d}";
 
@@ -488,10 +489,7 @@ namespace Kucoin.NET.Websockets
 
                 if (wantMsgPumpThread)
                 {
-                    // observer notification pump
-                    msgPumpThread = new Thread(MessagePumpThread);
-                    msgPumpThread.IsBackground = true;
-                    msgPumpThread.Start();
+                    EnableMessagePumpThread();
                 }
 
                 // data receiver
@@ -896,6 +894,22 @@ namespace Kucoin.NET.Websockets
             }
         }
 
+        protected void EnableMessagePumpThread()
+        {
+            // observer notification pump
+            ctsPump = new CancellationTokenSource();
+            msgPumpThread = new Thread(MessagePumpThread);
+            msgPumpThread.IsBackground = true;
+            msgPumpThread.Start();
+        }
+
+        protected void DisableMessagePumpThread()
+        {
+            ctsPump?.Cancel();
+            msgPumpThread = null;
+            ctsPump = null;
+        }
+
         /// <summary>
         /// Separate thread that runs to pump messages to the observers in
         /// the order in which they were received without delaying the data
@@ -909,7 +923,7 @@ namespace Kucoin.NET.Websockets
             Thread.CurrentThread.Priority = recvPriority;
 
             // loop forever
-            while (!ctsReceive.IsCancellationRequested && socket?.State == WebSocketState.Open)
+            while (!(ctsPump?.IsCancellationRequested ?? true) && socket?.State == WebSocketState.Open)
             {
                 // lock on msgQueue.
                 lock (msgQueue)
@@ -936,10 +950,14 @@ namespace Kucoin.NET.Websockets
                 if (c == 0)
                 {
                     // nothing in the queue, give up some time-slices.
-                    Task.Delay(5, ctsReceive.Token)
-                        .ConfigureAwait(false)
-                        .GetAwaiter()
-                        .GetResult();
+                    try
+                    {
+                        Task.Delay(5, ctsPump.Token)
+                            .ConfigureAwait(false)
+                            .GetAwaiter()
+                            .GetResult();
+                    }
+                    catch { }
                 }
 
                 if (monitorThroughput)
@@ -951,7 +969,8 @@ namespace Kucoin.NET.Websockets
                 }
             }
 
-            OnDisconnected();
+            msgQueue?.Clear();
+            if (wantMsgPumpThread) OnDisconnected();
         }
 
         /// <summary>
@@ -971,7 +990,7 @@ namespace Kucoin.NET.Websockets
 
             if (e.Type == "pong")
             {
-                _ = Task.Run(() => OnPong(e), ctsPing.Token);
+                _ = Task.Run(() => OnPong(e), ctsPump.Token);
             }
             else
             {
@@ -1145,8 +1164,8 @@ namespace Kucoin.NET.Websockets
         protected void CancelAllThreads()
         {
             CancelReceiveThread();
+            CancelPumpThread();
             CancelSendThread();
-            CancelPingThread();
         }
 
         /// <summary>
@@ -1168,10 +1187,9 @@ namespace Kucoin.NET.Websockets
         /// <summary>
         /// Cancel the ping thread.
         /// </summary>
-        protected void CancelPingThread()
+        protected void CancelPumpThread()
         {
-            PingService.UnregisterService(this);
-            //ctsPing?.Cancel();
+            ctsPump?.Cancel();
         }
 
         #endregion Thread cancellation
@@ -1201,6 +1219,7 @@ namespace Kucoin.NET.Websockets
         public void Dispose()
         {
             Dispose(true);
+            GC.SuppressFinalize(this);
         }
 
         /// <summary>
@@ -1214,8 +1233,9 @@ namespace Kucoin.NET.Websockets
             if (this.disposing) return;
             this.disposing = true;
 
-            Disconnect();
+            PingService.UnregisterService(this);
 
+            Disconnect();
             CancelAllThreads();
             
             if (isMultiplexHost && multiplexClients != null && multiplexClients.Count > 0)
@@ -1239,6 +1259,8 @@ namespace Kucoin.NET.Websockets
             {
                 OnPropertyChanged(nameof(Connected));
             }
+
+            this.disposing = false;
         }
 
         #endregion IDisposable Pattern

@@ -27,7 +27,6 @@ namespace Kucoin.NET.Websockets.Public
     public class Level3 : MarketFeed<Level3Observation, Level3Update, KeyedAtomicOrderBook<AtomicOrderStruct>, ObservableAtomicOrderBook<ObservableAtomicOrderUnit>>, ILevel3
     {
         object lockObj = new object();
-        bool wmp;
 
         /// <summary>
         /// Instantiate a new market feed.
@@ -40,8 +39,6 @@ namespace Kucoin.NET.Websockets.Public
             {
                 base.wantMsgPumpThread = false;
             }
-
-            wmp = base.wantMsgPumpThread;
 
             recvBufferSize = 262144;
             minQueueBuffer = 10000;
@@ -63,8 +60,6 @@ namespace Kucoin.NET.Websockets.Public
             {
                 base.wantMsgPumpThread = false;
             }
-
-            wmp = base.wantMsgPumpThread;
 
             recvBufferSize = 262144;
             minQueueBuffer = 10000;
@@ -126,6 +121,26 @@ namespace Kucoin.NET.Websockets.Public
             return null;
         }
 
+
+        public override DistributionStrategy DistributionStrategy
+        {
+            get => strategy;
+            set
+            {
+                if (SetProperty(ref strategy, value))
+                {
+                    wantMsgPumpThread = (strategy == DistributionStrategy.MessagePump);
+                    if (wantMsgPumpThread)
+                    {
+                        EnableMessagePumpThread();
+                    }
+                    else
+                    {
+                        DisableMessagePumpThread();
+                    }
+                }
+            }
+        }
         public override void Release(IDistributable<string, Level3Update> obj) => Release((Level3Observation)obj);
 
         public void Release(Level3Observation obj)
@@ -245,7 +260,7 @@ namespace Kucoin.NET.Websockets.Public
 
         protected override void AddPacket(string json)
         {
-            if (wmp)
+            if (wantMsgPumpThread)
             {
                 base.AddPacket(json);
             }

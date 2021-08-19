@@ -46,6 +46,7 @@ namespace Kucoin.NET.Websockets.Distribution
     {
 
         protected Dictionary<string, TDistributable> activeFeeds = new Dictionary<string, TDistributable>();
+        protected DistributionStrategy strategy = DistributionStrategy.MessagePump;
 
         /// <summary>
         /// Instantiate a new distribution feed.
@@ -86,7 +87,14 @@ namespace Kucoin.NET.Websockets.Distribution
         /// <summary>
         /// Gets the distribution strategy for deserializing and distributing data.
         /// </summary>
-        public virtual DistributionStrategy DistributionStrategy { get; protected set; } = DistributionStrategy.MessagePump;
+        public virtual DistributionStrategy DistributionStrategy
+        {
+            get => strategy;
+            set
+            {
+                SetProperty(ref strategy, value);
+            }
+        }
 
        
         public virtual IReadOnlyDictionary<string, TDistributable> ActiveFeeds { get => activeFeeds; }

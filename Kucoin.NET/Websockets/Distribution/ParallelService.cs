@@ -71,10 +71,7 @@ namespace Kucoin.NET.Websockets.Distribution
                             {
                                 actions.Add(new Action(() =>
                                 {
-                                    lock (t.LockObject)
-                                    {
-                                        if (!t.DoWork()) i++;
-                                    }
+                                    if (!t.DoWork()) i++;
                                 }));
                             }
 
@@ -82,7 +79,7 @@ namespace Kucoin.NET.Websockets.Distribution
                     }
 
                     Parallel.Invoke(actions.ToArray());
-                    Thread.Sleep(i == 0 ? idleSleepTime : i * idleSleepTime);
+                    Thread.Sleep(i == 0 ? 0 : 1);
                 }
             }
 
