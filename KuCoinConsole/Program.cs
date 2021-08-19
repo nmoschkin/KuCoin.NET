@@ -138,7 +138,7 @@ namespace KuCoinConsole
             //    AllocConsole();
             //}
 
-            Console.WindowWidth = 130;
+            Console.WindowWidth = 150;
             Console.WindowHeight = 60;
             maxRows = 11;
 
