@@ -245,7 +245,7 @@ namespace KuCoinConsole
             List<List<AllSymbolsTickerItem>> buckets = new List<List<AllSymbolsTickerItem>>();
 
             // This changes the number of feeds per distributor:
-            ParallelService.MaxTenants = Environment.ProcessorCount;
+            ParallelService.MaxTenants = feednum > Environment.ProcessorCount ? feednum / Environment.ProcessorCount : feednum;
             List<AllSymbolsTickerItem> l2;
 
             for (int xx = 0; xx < tickers.Count; xx += ParallelService.MaxTenants)
@@ -311,6 +311,11 @@ namespace KuCoinConsole
             }
 
             maxScrollIndex = syms.Count - maxRows;
+
+
+
+
+
 
             Task.Run(async () =>
             {
