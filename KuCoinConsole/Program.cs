@@ -876,12 +876,21 @@ namespace KuCoinConsole
                     }
 
                     itsb.Clear();
-                    int? fidx = null;
-                    
-                    if (feeds.Contains(l3.Parent))
-                    {
-                        fidx = feeds.IndexOf(l3.Parent) + 1;
-                    }
+                    //int fidx = 0;
+                    //int cidx = 0;
+
+                    //foreach (var feed in feeds)
+                    //{
+                    //    if (feed is Level3 l3b)
+                    //    {
+                    //        if (l3b.ActiveFeeds.ContainsKey(obs.Symbol))
+                    //        {
+                    //            fidx = cidx + 1;
+                    //            break;
+                    //        }
+                    //    }
+                    //    cidx++;
+                    //}
 
                     itsb.WriteToEdgeLine($"{MinChars(obs.Symbol, maxSymbolLen)} - Best Ask: {{Red}}{MinChars(ba.ToString("#,##0.00######"), 12)}{{Reset}} Best Bid: {{Green}}{MinChars(bb.ToString("#,##0.00######"), 12)}{{Reset}} - {{Yellow}}{MinChars(currname, maxCurrencyLen)}{{Reset}}  Volume: {{Cyan}}{MinChars(l3.SortingVolume.ToString("#,##0.00"), 14)}{{Reset}}");
                     
@@ -891,7 +900,8 @@ namespace KuCoinConsole
                     }
                     else
                     {
-                        itsb.WriteToEdgeLine($"{MinChars($"{{White}}{vc + 1} ", maxSymbolLen + 7)} - Match Share: {MinChars(mpcts[z].ToString("##0") + "%", 4)}   Total Share: {MinChars(pcts[z++].ToString("##0") + "%", 4)}   State: " + MinChars(l3.State.ToString(), 14) + "  Queue Length: " + MinChars(l3.QueueLength.ToString(), 10) + $" {{Reset}}Feed: {{White}}{fidx?.ToString() ?? "N/A"}");
+                        itsb.WriteToEdgeLine($"{MinChars($"{{White}}{vc + 1} ", maxSymbolLen + 7)} - Match Share: {MinChars(mpcts[z].ToString("##0") + "%", 4)}   Total Share: {MinChars(pcts[z++].ToString("##0") + "%", 4)}   State: " + MinChars(l3.State.ToString(), 14) + "  Queue Length: " + MinChars(l3.QueueLength.ToString(), 10) + $" {{Reset}}");
+                        //itsb.WriteToEdgeLine($"{MinChars($"{{White}}{vc + 1} ", maxSymbolLen + 7)} - Match Share: {MinChars(mpcts[z].ToString("##0") + "%", 4)}   Total Share: {MinChars(pcts[z++].ToString("##0") + "%", 4)}   State: " + MinChars(l3.State.ToString(), 14) + "  Queue Length: " + MinChars(l3.QueueLength.ToString(), 10) + $" {{Reset}}Feed: {{White}}{MinChars((fidx == 0) ? "N/A" : fidx.ToString(), 4)}");
                     }
 
 
