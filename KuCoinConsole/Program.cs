@@ -86,7 +86,7 @@ namespace KuCoinConsole
         static object lockObj = new object();
 
         static int maxRows;
-
+        static string subscribing = null;
         public static ICredentialsProvider cred;
 
         static List<string> messages = new List<string>();
@@ -118,6 +118,7 @@ namespace KuCoinConsole
         static int maxScrollIndex = 0;
         static List<string> usersymbols = null;
         static int feednum;
+        static List<string> activeSymbols = new List<string>();
 
         //[STAThread]
         public static void Main(string[] args)
@@ -310,22 +311,20 @@ namespace KuCoinConsole
             //var syms = new List<string>(new string[] { "DOT-USDT", "UNI-USDT", "SOL-USDT", "LINK-USDT", "ETC-USDT", "BCH-USDT", "WBTC-USDT", "FIL-USDT", "DAI-USDT", "AAVE-USDT", "ICP-USDT", "MATIC-USDT", "XRP-USDT", "DOGE-USDT", "KCS-USDT", "ETH-USDT", "XLM-USDT", "BTC-USDT", "ADA-USDT", "LTC-USDT" });
 
             int tickerCount = 0;
-
-            var syms = new List<string>();
-
+                        
             if (usersymbols != null)
             {
-                syms = usersymbols;
+                activeSymbols = usersymbols;
             }
             else
             {
                 for (int h = 0; h < feednum; h++)
                 {
-                    syms.Add(tickers[h].Symbol);
+                    activeSymbols.Add(tickers[h].Symbol);
                 }
             }
 
-            maxScrollIndex = syms.Count - maxRows;
+            maxScrollIndex = activeSymbols.Count - maxRows;
 
             if (fslog != null)
             {
@@ -342,7 +341,7 @@ namespace KuCoinConsole
               
                 ISymbolDataService curr = service;
 
-                foreach (var sym in syms)
+                foreach (var sym in activeSymbols)
                 {
                     if (!market.Symbols.Contains(sym))
                     {
@@ -350,13 +349,17 @@ namespace KuCoinConsole
                         //throw new KeyNotFoundException($"The trading symbol '{sym}' does not exist on the KuCoin exchange.");
                     }
 
-                    Console.WriteLine($"Subscribing to {sym} ...");
-                    fslog?.Write(Encoding.UTF8.GetBytes($"Subscribing to {sym} ... {DateTime.Now:G}"));
+                    lock (lockObj)
+                    {
+                        subscribing = ($"{sym}");
+                    }
+
+                    fslog?.Write(Encoding.UTF8.GetBytes($"Subscribing to {sym} ... {DateTime.Now:G}\r\n"));
                     try
                     {
                         if (!Observers.ContainsKey(sym))
                         {
-                            curr = serviceFactory.EnableOrAddSymbol(sym, service, (tickerCount == 0 || (tickerCount % maxSharedConn != 0)));
+                            curr = serviceFactory.EnableOrAddSymbol(sym, curr, (tickerCount == 0 || (tickerCount % maxSharedConn != 0)));
 
                             if (curr == null) continue;
                             tickerCount++;
@@ -400,6 +403,7 @@ namespace KuCoinConsole
                     catch { }
                 }
 
+                subscribing = null;
                 // clear console to display data.
                 Console.Clear();
                 Console.CursorVisible = false;
@@ -407,10 +411,10 @@ namespace KuCoinConsole
 
                 TickersReady?.Invoke(services, new EventArgs());
 
-            }).ConfigureAwait(false).GetAwaiter().GetResult();
+            }).ConfigureAwait(false);
 
             // loop until the connection is broken or the program is exited.
-            while (service?.Level3Feed?.Connected ?? false)
+            while (true)
             {
                 Console.CursorVisible = false;
 
@@ -616,9 +620,11 @@ namespace KuCoinConsole
             {
                 if (sender == feed && feed is Level3 l3a)
                 {
-                    messages.Add($"{{Reset}}Feed {{White}}{x}{{Reset}}: {{Yellow}}{msg.Type} {{Cyan}}{msg.Subject} {msg.Topic} {{Blue}}({DateTime.Now:G}){{Reset}}");
-
-                    msgidx = messages.Count >= 4 ? messages.Count - 5 : messages.Count - 1;
+                    lock (messages)
+                    {
+                        messages.Add($"{{Reset}}Feed {{White}}{x}{{Reset}}: {{Yellow}}{msg.Type} {{Cyan}}{msg.Subject} {msg.Topic} {{Blue}}({DateTime.Now:G}){{Reset}}");
+                        msgidx = messages.Count >= 4 ? messages.Count - 5 : messages.Count - 1;
+                    }
 
                     var tstr = ($"Feed {x}: {msg.Type} {msg.Subject} {msg.Topic} ({DateTime.Now:G})\r\n");
                     fslog?.Write(Encoding.UTF8.GetBytes(tstr));
@@ -745,15 +751,15 @@ namespace KuCoinConsole
                     {
                         if (!l3a.Connected)
                         {
-                            foreach (var f2 in feeds)
-                            {
-                                if (f2 is Level3 l3b)
-                                {
-                                    l3b.Dispose();
-                                }
-                            }
-                            headerText = "DISCONNECTED";
-                            return;
+                            //foreach (var f2 in feeds)
+                            //{
+                            //    if (f2 is Level3 l3b)
+                            //    {
+                            //        l3b.Dispose();
+                            //    }
+                            //}
+                            //headerText = "DISCONNECTED";
+                            continue;
                         }
 
                         through += l3a.Throughput;
@@ -770,11 +776,19 @@ namespace KuCoinConsole
                     }
                 }
 
+                lock (lockObj)
+                {
+                    if (subscribing != null)
+                    {
+                        readOut.WriteToEdgeLine($"Subscribing:                        {{White}}{subscribing} ({activeSymbols.IndexOf(subscribing)} / {activeSymbols.Count}){{Reset}}");
+                    }
+                }
+
                 if (through != 0d)
                 {
                     readOut.WriteToEdgeLine($"Total Connections:                  {{White}}{MinChars(feeds.Count.ToString(), 4)}{{Reset}}");
                     readOut.WriteToEdgeLine($"Throughput:                         {{Green}}{PrintFriendlySpeed((ulong)through)}{{Reset}}");
-                 
+
                     if (linkstr == 0)
                     {
                         readOut.WriteToEdgeLine($"Combined Queue Length:              {{Yellow}}{MinChars(queue.ToString(), 8)}{{Reset}}");
@@ -878,21 +892,21 @@ namespace KuCoinConsole
                     }
 
                     itsb.Clear();
-                    //int fidx = 0;
-                    //int cidx = 0;
+                    int fidx = 0;
+                    int cidx = 0;
 
-                    //foreach (var feed in feeds)
-                    //{
-                    //    if (feed is Level3 l3b)
-                    //    {
-                    //        if (l3b.ActiveFeeds.ContainsKey(obs.Symbol))
-                    //        {
-                    //            fidx = cidx + 1;
-                    //            break;
-                    //        }
-                    //    }
-                    //    cidx++;
-                    //}
+                    foreach (var feed in feeds)
+                    {
+                        if (feed is Level3 l3b)
+                        {
+                            if (l3b.ActiveFeeds.ContainsKey(obs.Symbol))
+                            {
+                                fidx = cidx + 1;
+                                break;
+                            }
+                        }
+                        cidx++;
+                    }
 
                     itsb.WriteToEdgeLine($"{MinChars(obs.Symbol, maxSymbolLen)} - Best Ask: {{Red}}{MinChars(ba.ToString("#,##0.00######"), 12)}{{Reset}} Best Bid: {{Green}}{MinChars(bb.ToString("#,##0.00######"), 12)}{{Reset}} - {{Yellow}}{MinChars(currname, maxCurrencyLen)}{{Reset}}  Volume: {{Cyan}}{MinChars(l3.SortingVolume.ToString("#,##0.00"), 14)}{{Reset}}");
                     
@@ -902,7 +916,7 @@ namespace KuCoinConsole
                     }
                     else
                     {
-                        itsb.WriteToEdgeLine($"{MinChars($"{{White}}{vc + 1} ", maxSymbolLen + 7)} - Match Share: {MinChars(mpcts[z].ToString("##0") + "%", 4)}   Total Share: {MinChars(pcts[z++].ToString("##0") + "%", 4)}   State: " + MinChars(l3.State.ToString(), 14) + "  Queue Length: " + MinChars(l3.QueueLength.ToString(), 10) + $"{{Reset}} Timestamp: {{Blue}}{ts:G}{{Reset}}");
+                        itsb.WriteToEdgeLine($"{MinChars($"{{White}}{vc + 1} {{Blue}}@{fidx}{{Reset}}", maxSymbolLen + 20)} - Match Share: {MinChars(mpcts[z].ToString("##0") + "%", 4)}   Total Share: {MinChars(pcts[z++].ToString("##0") + "%", 4)}   State: " + MinChars(l3.State.ToString(), 14) + "  Queue Length: " + MinChars(l3.QueueLength.ToString(), 10) + $"{{Reset}} Timestamp: {{Blue}}{ts:G}{{Reset}}");
                         //itsb.WriteToEdgeLine($"{MinChars($"{{White}}{vc + 1} ", maxSymbolLen + 7)} - Match Share: {MinChars(mpcts[z].ToString("##0") + "%", 4)}   Total Share: {MinChars(pcts[z++].ToString("##0") + "%", 4)}   State: " + MinChars(l3.State.ToString(), 14) + "  Queue Length: " + MinChars(l3.QueueLength.ToString(), 10) + $" {{Reset}}Feed: {{White}}{MinChars((fidx == 0) ? "N/A" : fidx.ToString(), 4)}");
                     }
 
@@ -949,17 +963,21 @@ namespace KuCoinConsole
                 ft.WriteToEdgeLine($"{{White}}Use Arrow Up/Arrow Down, Page Up/Page Down, Home/End to navigate the feed list. Ctrl+Arrow Up/Down scrolls the message log, below.{{Reset}}");
                 ft.WriteToEdgeLine($"{{White}}Press: (A) Sort Alphabetically, (P) Price, (V) Volume. Press again to reverse order.");
 
-                if (messages.Count > 0)
+                lock(messages)
                 {
-                    int mc = messages.Count, mi, mg;
-                    mg = msgidx;
-
-                    ft.WriteToEdgeLine("");
-
-                    for (mi = mg; mi < mc; mi++)
+                    if (messages.Count > 0)
                     {
-                        ft.WriteToEdgeLine(messages[mi]);
-                        if (mi - mg >= 4) break;
+                        if (msgidx < 0) msgidx = 0;
+                        int mc = messages.Count, mi, mg;
+                        mg = msgidx;
+
+                        ft.WriteToEdgeLine("");
+
+                        for (mi = mg; mi < mc; mi++)
+                        {
+                            ft.WriteToEdgeLine(messages[mi]);
+                            if (mi - mg >= 4) break;
+                        }
                     }
                 }
 
