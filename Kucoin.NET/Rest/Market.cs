@@ -16,6 +16,16 @@ using System.Threading;
 
 namespace Kucoin.NET.Rest
 {
+    public class MarketCreatedEventArgs : EventArgs
+    {
+        public Market Market { get; }
+
+        public MarketCreatedEventArgs(Market market)
+        {
+            Market = market;
+        }
+    }
+
 
     /// <summary>
     /// A class to retrieve public market data from KuCoin.
@@ -31,26 +41,66 @@ namespace Kucoin.NET.Rest
 
         protected ObservableDictionary<string, MarketCurrency> currencies;
 
-        static Market inst;
+        static Market inst = new Market();
+
+        static bool creating = false;
+        
+        public event EventHandler MarketLoaded;
+
+        public static event EventHandler MarketRefreshed;
+
+
+        public static event EventHandler<MarketCreatedEventArgs> MarketCreated;
 
         static object lockObj = new object();
 
-        internal static void CreateMarket(bool getMarket)
+        /// <summary>
+        /// Create the market instance if it doesn't already exist.
+        /// </summary>
+        /// <param name="getMarket">True to populate market data after creating.</param>
+        /// <returns></returns>
+        public static async Task CreateMarket(bool getMarket, bool forceRecreate = false)
         {
-            lock(lockObj)
-            {
-                if (inst == null)
-                    inst = new Market();
+            if (creating) return;
+            creating = true;
 
-                if (getMarket)
+            lock (lockObj)
+            {
+                if (inst == null || forceRecreate)
                 {
-                    inst.RefreshCurrenciesAsync().ConfigureAwait(false).GetAwaiter().GetResult();
-                    inst.RefreshSymbolsAsync().ConfigureAwait(false).GetAwaiter().GetResult();
+                    if (inst != null)
+                    {
+                        inst.MarketLoaded -= Inst_MarketLoaded;
+                    }
+
+                    inst = new Market();
+                    inst.MarketLoaded += Inst_MarketLoaded;
                 }
+
             }
+
+            if (getMarket)
+            {
+                await inst.RefreshMarket();
+            }
+
+            creating = false;
+            MarketCreated?.Invoke(inst, new MarketCreatedEventArgs(inst));
+        }
+
+        private static void Inst_MarketLoaded(object sender, EventArgs e)
+        {
+            MarketRefreshed?.Invoke(sender, e);
+        }
+
+        public bool IsMarketDataPopulated
+        {
+            get => symbols != null && symbols.Count > 0 && currencies != null && currencies.Count > 0;
         }
        
-        
+        /// <summary>
+        /// Gets the singleton instance of <see cref="Market"/>.
+        /// </summary>
         public static Market Instance
         {
             get
@@ -59,7 +109,7 @@ namespace Kucoin.NET.Rest
                 {
                     if (inst == null)
                     {
-                        CreateMarket(true);
+                        inst = new Market();
                     }
 
                     return inst;
@@ -70,7 +120,7 @@ namespace Kucoin.NET.Rest
         /// <summary>
         /// Create a new instance of the MarketData class.
         /// </summary>
-        public Market() : base(null, null, null)
+        internal Market() : base(null, null, null)
         {
         }
 
@@ -210,6 +260,18 @@ namespace Kucoin.NET.Rest
             {
             }
 
+        }
+
+        /// <summary>
+        /// Reload the market symbols and currencies lists from the server.
+        /// </summary>
+        /// <returns></returns>
+        public async Task RefreshMarket()
+        {
+            await RefreshSymbolsAsync();
+            await RefreshCurrenciesAsync();
+
+            MarketLoaded?.Invoke(this, new EventArgs());
         }
 
 

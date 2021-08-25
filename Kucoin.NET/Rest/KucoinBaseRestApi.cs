@@ -22,6 +22,7 @@ namespace Kucoin.NET.Rest
     public abstract class KucoinBaseRestApi : ObservableBase
     {
         private static readonly JsonSerializerSettings defaultSettings;
+        protected static object requestLockObject = new object();
 
         protected string url;
         protected MemoryEncryptedCredentialsProvider cred;
@@ -517,7 +518,7 @@ namespace Kucoin.NET.Rest
 
                 long nt = DateTime.UtcNow.Ticks;
 
-                lock (staticLockObj)
+                lock (requestLockObject)
                 {
                     if (nt - lastTime < 2_500_000)
                     {
@@ -533,7 +534,6 @@ namespace Kucoin.NET.Rest
                 return result;
             }
         }
-        static object staticLockObj = new object();
 
         /// <summary>
         /// Check if the response is good.

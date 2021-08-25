@@ -167,6 +167,36 @@ namespace Kucoin.NET
             return Dispatcher.Initialize();
         }
 
+        /// <summary>
+        /// Capture the dispatcher, and create and refresh market data.
+        /// </summary>
+        /// <returns>A new see <see cref="IServiceFactory"/> that can be used to retrieve symbol data and subscribe to tickers.</returns>
+        /// <remarks>
+        /// This method should be called from the primary (dispatcher or UI) thread of an application, most ideally on application startup.
+        /// </remarks>
+        public static async Task<IServiceFactory> InitializeAsync()
+        {
+            InitializeDispatcher();
+            await CreateMarket();
+
+            return ServiceFactory.Instance;
+        }
+
+        /// <summary>
+        /// Initialize the dispatcher with a <see cref="SynchronizationContext"/>, and create and refresh market data.
+        /// </summary>
+        /// <returns>A new see <see cref="IServiceFactory"/> that can be used to retrieve symbol data and subscribe to tickers.</returns>
+        /// <remarks>
+        /// This method must be called with a valid <see cref="SynchronizationContext"/> (usually acquired from the dispatch/UI thread).
+        /// </remarks>
+        public static async Task<IServiceFactory> InitializeAsync(SynchronizationContext context)
+        {
+            InitializeDispatcher(context);
+            await CreateMarket();
+
+            return ServiceFactory.Instance;
+        }
+
 
         /// <summary>
         /// Capture the dispatcher, and create and refresh market data.
@@ -178,7 +208,7 @@ namespace Kucoin.NET
         public static IServiceFactory Initialize()
         {
             InitializeDispatcher();
-            Market.CreateMarket(true);
+            _ = CreateMarket();
 
             return ServiceFactory.Instance;
         }
@@ -193,7 +223,7 @@ namespace Kucoin.NET
         public static IServiceFactory Initialize(SynchronizationContext context)
         {
             InitializeDispatcher(context);
-            Market.CreateMarket(true);
+            _ = CreateMarket();
 
             return ServiceFactory.Instance;
         }
@@ -216,6 +246,11 @@ namespace Kucoin.NET
         public static User CreateUserClass(ICredentialsProvider credentialsProvider)
         {
             return new User(credentialsProvider);
+        }
+
+        private static async Task CreateMarket()
+        {
+            await Market.CreateMarket(true);
         }
 
     }
