@@ -234,7 +234,28 @@ namespace Kucoin.NET.Websockets
 
             await Task.Run(() =>
             {
-                List<Action> actions = new List<Action>();
+                //List<Action> actions = new List<Action>();
+
+                //if (observations != null && observations.Count != 0)
+                //{
+                //    foreach (SymbolObservation<T> obs in observations)
+                //    {
+                //        if (obs.ActiveSymbols.Count == 0 || obs.ActiveSymbols.Contains(obj.Symbol))
+                //        {
+                //            actions.Add(() => obs.Observer.OnNext(obj));
+                //        }
+                //    }
+                //}
+
+                //if (FeedDataReceived != null)
+                //{
+                //    actions.Add(() =>
+                //    {
+                //        FeedDataReceived.Invoke(this, new FeedDataReceivedEventArgs<T>(obj));
+                //    });
+                //}
+
+                //if (actions.Count > 0) Parallel.Invoke(actions.ToArray());
 
                 if (observations != null && observations.Count != 0)
                 {
@@ -242,20 +263,16 @@ namespace Kucoin.NET.Websockets
                     {
                         if (obs.ActiveSymbols.Count == 0 || obs.ActiveSymbols.Contains(obj.Symbol))
                         {
-                            actions.Add(() => obs.Observer.OnNext(obj));
+                            obs.Observer.OnNext(obj);
                         }
                     }
                 }
 
                 if (FeedDataReceived != null)
                 {
-                    actions.Add(() =>
-                    {
-                        FeedDataReceived.Invoke(this, new FeedDataReceivedEventArgs<T>(obj));
-                    });
+                    FeedDataReceived.Invoke(this, new FeedDataReceivedEventArgs<T>(obj));
                 }
 
-                if (actions.Count > 0) Parallel.Invoke(actions.ToArray());
             });
         }
 
