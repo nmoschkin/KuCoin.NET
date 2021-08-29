@@ -14,7 +14,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Kucoin.NET.Websockets.Distribution
+namespace Kucoin.NET.Websockets.Distribution.Services
 {
     /// <summary>
     /// Organize distributable objects that do work in parallel.
@@ -205,7 +205,7 @@ namespace Kucoin.NET.Websockets.Distribution
                     }
                     else
                     {
-                        lock(insertFeed.Tenants)
+                        lock (insertFeed.Tenants)
                         {
                             insertFeed.Tenants.Add(feed);
                             insertFeed.ActionsChanged = true;
@@ -267,7 +267,7 @@ namespace Kucoin.NET.Websockets.Distribution
             {
                 var distributor = distributors.Where((a) => a.Tenants.Contains(feed)).FirstOrDefault();
 
-                lock(distributor.Tenants)
+                lock (distributor.Tenants)
                 {
                     distributor.Tenants.Remove(feed);
 

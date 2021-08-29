@@ -16,12 +16,14 @@ using Kucoin.NET.Data.Websockets;
 using Kucoin.NET.Helpers;
 using Kucoin.NET.Rest;
 using Kucoin.NET.Websockets.Distribution;
+using Kucoin.NET.Websockets.Distribution.Services;
 
 using Newtonsoft.Json;
 
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Net.Http;
 using System.Net.WebSockets;
@@ -71,6 +73,8 @@ namespace Kucoin.NET.Websockets
 
         protected Server server;
 
+        protected int throughputUpdateInterval = 1000;
+
         #region Connection Settings
 
         protected ThreadPriority recvPriority = ThreadPriority.Normal;
@@ -96,6 +100,8 @@ namespace Kucoin.NET.Websockets
         private TimeSpan pingTime = TimeSpan.Zero;
 
         private DateTime lastPing = DateTime.Now;
+
+        protected int? overridePingInterval = null;
 
         #endregion Connection Settings
 
@@ -298,6 +304,18 @@ namespace Kucoin.NET.Websockets
         }
 
         /// <summary>
+        /// Gets or sets the interval, in milliseconds, for the throughput to update. Default is 1000 (1 second.)
+        /// </summary>
+        public virtual int ThroughputUpdateInterval
+        {
+            get => throughputUpdateInterval;
+            set
+            {
+                SetProperty(ref throughputUpdateInterval, value);
+            }
+        }
+
+        /// <summary>
         /// Gets the maximum queue length for the last 60 seconds.
         /// </summary>
         public virtual long MaxQueueLengthLast60Seconds => maxQueueLengthLast60Seconds;
@@ -453,6 +471,10 @@ namespace Kucoin.NET.Websockets
             if (disposedValue) throw new ObjectDisposedException(GetType().FullName);
             if (Connected) return false;
 
+            ctsReceive = new CancellationTokenSource();
+            ctsSend = new CancellationTokenSource();
+            ctsPump = new CancellationTokenSource();
+
             if (token == null)
             {
                 try
@@ -464,10 +486,6 @@ namespace Kucoin.NET.Websockets
                     return false;
                 }
             }
-
-            ctsReceive = new CancellationTokenSource();
-            ctsSend = new CancellationTokenSource();
-            ctsPump = new CancellationTokenSource();
 
             var uri = $"{server.EndPoint}?token={token.Data.Token}&connectId={connectId:d}";
 
@@ -783,9 +801,9 @@ namespace Kucoin.NET.Websockets
                 {
                     xtime = DateTime.UtcNow;
 
-                    if ((DateTime.UtcNow.Ticks - tms) >= 2_500_000)
+                    if ((DateTime.UtcNow.Ticks - tms) >= throughputUpdateInterval * 10_000)
                     {
-                        Throughput = xlen * 8 * 4;
+                        Throughput = (long)(xlen * 8d * (1000d / throughputUpdateInterval));
 
                         tms = xtime.Ticks;
 
@@ -1141,14 +1159,29 @@ namespace Kucoin.NET.Websockets
             Ping().ConfigureAwait(false).GetAwaiter().GetResult();
         }
 
-        int IPingable.Interval
+        public int PingInterval
         {
-            get => server?.PingInterval ?? 0;
+            get => overridePingInterval ?? server?.PingInterval ?? 0;
             set
             {
+                // so, if the server hasn't been set, yet, we don't have a ping interval to override, yet.
+                // and, when the server is finally set, it will reset the override, anyway,
+                // and that is the rule we are going to enforce, here,
+                // so we only set the ping interval if a server exists.
                 if (server != null)
                 {
-                    server.PingInterval = value;    
+                    // It is not safe to have a ping interval greater than the server-recommended interval, as the server could drop the connection.
+                    if (value > server.PingInterval) throw new ArgumentOutOfRangeException("It is not safe to have a ping interval greater than the server-recommended interval, as the server could drop the connection.");
+
+                    // if the override is the same as the server interval, we do not set it.
+                    if (value != (overridePingInterval ?? server.PingInterval))
+                    {
+                        // if the override is the same as the server interval, we set it null.
+                        if (value == server.PingInterval) overridePingInterval = null;
+                        else overridePingInterval = value;
+
+                        OnPropertyChanged(nameof(PingInterval));
+                    }
                 }
             }
         }
@@ -1390,23 +1423,24 @@ namespace Kucoin.NET.Websockets
         /// <param name="obj"></param>
         protected virtual async Task PushNext(T obj)
         {
+            if (disposedValue) throw new ObjectDisposedException(GetType().Name);
             await Task.Run(() =>
             {
-                List<Action> actions = new List<Action>();
+                List<Action> parallelActions = new List<Action>();
 
                 foreach (var obs in observations)
                 {
-                    actions.Add(() => obs.Observer.OnNext(obj));
+                    parallelActions.Add(() => obs.Observer.OnNext(obj));
                 }
 
                 if (FeedDataReceived != null)
                 {
-                    actions.Add(() => FeedDataReceived.Invoke(this, new FeedDataReceivedEventArgs<T>(obj)));
+                    parallelActions.Add(() => FeedDataReceived.Invoke(this, new FeedDataReceivedEventArgs<T>(obj)));
                 }
 
-                Parallel.Invoke(actions.ToArray());
+                Parallel.Invoke(parallelActions.ToArray());
 
-            }, ctsReceive.Token);
+            });
         }
 
         #endregion IObservable<T> Pattern
@@ -1419,20 +1453,32 @@ namespace Kucoin.NET.Websockets
             {
                 if (Monitor.TryEnter(observations))
                 {
-                    var c = observations.Count;
-
-                    for (int i = 0; i < c; i++)
+                    try
                     {
-                        try
+                        var c = observations.Count;
+
+                        for (int i = 0; i < c; i++)
                         {
-                            if (i >= observations.Count) break;
-                            observations[i]?.Dispose();
+                            try
+                            {
+                                if (i >= observations.Count) break;
+                                observations[i]?.Dispose();
+                            }
+                            catch
+                            {
+
+                            }
                         }
-                        catch { }
+                    }
+                    catch
+                    {
 
                     }
+                    finally
+                    {
+                        Monitor.Exit(observations);
+                    }
 
-                    Monitor.Exit(observations);
                 }
             }
             catch { }

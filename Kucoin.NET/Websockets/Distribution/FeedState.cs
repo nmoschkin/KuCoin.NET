@@ -44,6 +44,12 @@ namespace Kucoin.NET.Websockets.Distribution
         /// <summary>
         /// The feed is not operating normally.
         /// </summary>
-        Failed
+        Failed,
+
+        /// <summary>
+        /// The feed is in multiple states.  Query each observation for the current state.
+        /// </summary>
+        Multiple
+
     }
 }

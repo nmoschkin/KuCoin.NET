@@ -1,4 +1,3 @@
-
 using Kucoin.NET.Data.User;
 
 using System;
@@ -8,10 +7,12 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
+using static Kucoin.NET.Helpers.GCFHelper;
 
 
-namespace Kucoin.NET.Websockets.Distribution
+namespace Kucoin.NET.Websockets.Distribution.Services
 {
+   
     /// <summary>
     /// Provides automatic pinging services for objects that must ping servers at regular intervals.
     /// </summary>
@@ -25,9 +26,64 @@ namespace Kucoin.NET.Websockets.Distribution
 
         private static CancellationTokenSource cts;
 
-        private static bool changed = false;
+        private static int maxwait;
 
-        public const int Wait = 10;
+        public static int Wait { get; private set; } = 10;
+
+        private static readonly Dictionary<int, Action[]> triggerGroups = new Dictionary<int, Action[]>();
+
+        private static void UpdateTriggerGroups()
+        {
+            lock (lockObj)
+            {
+                triggerGroups.Clear();
+                maxwait = 0;
+
+                var actions = new List<Action>();
+                Dictionary<int, List<Action>> tmpdict = new Dictionary<int, List<Action>>();
+
+                Action a;
+
+                foreach(var feed in feeds)
+                {
+                    int pi = feed.PingInterval;
+
+                    if (feed is IAsyncPingable aping)
+                    {
+                        a = () => _ = aping.Ping();
+                    }
+                    else
+                    {
+                        a = () => feed.Ping();
+                    }
+
+                    if (!tmpdict.ContainsKey(pi))
+                    {
+                        tmpdict.Add(feed.PingInterval, new List<Action>() { a });
+                    }
+                    else
+                    {
+                        tmpdict[pi].Add(a);
+                    }
+
+                    if (pi > maxwait) maxwait = pi;
+                }
+
+                if (tmpdict.Count > 1)
+                {
+                    Wait = FindGCF(tmpdict.Keys.ToArray());
+                }
+                else
+                {
+                    Wait = tmpdict.Keys.First();
+                }
+
+                foreach (var kv in tmpdict)
+                {
+                    triggerGroups.Add(kv.Key, kv.Value.ToArray());
+                }
+            }
+        }
 
         static PingService()
         {
@@ -40,28 +96,21 @@ namespace Kucoin.NET.Websockets.Distribution
         /// <returns>True if the object was successfully registered, false if the object was already registered.</returns>
         public static bool RegisterService(IPingable obj)
         {
-            lock(lockObj)
+            lock (lockObj)
             {
                 if (!feeds.Contains(obj))
                 {
-                    int x = obj.Interval;
-
-                    if (x % Wait != 0)
-                    {
-                        x = x - (x % Wait);
-                    }
-
-                    obj.Interval = x;
-                    if (x == 0) throw new ArgumentOutOfRangeException("Interval cannot be 0.");
+                    obj.PropertyChanged += OnFeedPropertyChanged;
 
                     feeds.Add(obj);
-                    changed = true;
                 }
                 else
                 {
                     return false;
                 }
 
+                UpdateTriggerGroups();
+            
                 if (IntervalThread == null)
                 {
                     cts = new CancellationTokenSource();
@@ -72,6 +121,14 @@ namespace Kucoin.NET.Websockets.Distribution
                 }
 
                 return true;
+            }
+        }
+
+        private static void OnFeedPropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
+        {
+            if (e.PropertyName == nameof(IPingable.PingInterval))
+            {
+                UpdateTriggerGroups();
             }
         }
 
@@ -87,7 +144,6 @@ namespace Kucoin.NET.Websockets.Distribution
                 if (feeds.Contains(obj))
                 {
                     feeds.Remove(obj);
-                    changed = true;
                 }
                 else
                 {
@@ -98,7 +154,10 @@ namespace Kucoin.NET.Websockets.Distribution
                 {
                     CancelIntervalThread();
                 }
-
+                else
+                {
+                    UpdateTriggerGroups();
+                }
                 return true;
             }
         }
@@ -111,73 +170,48 @@ namespace Kucoin.NET.Websockets.Distribution
             cts?.Cancel();
 
             IntervalThread = null;
+            triggerGroups.Clear();
             cts = null;
         }
 
         /// <summary>
-        /// Pinger method.
+        /// Observer method.
         /// </summary>
         private static void IntervalMethod()
         {
-            List<IPingable> stash = new List<IPingable>();
-            List<int> counts = new List<int>();
-            int c = 0, i;
-            IPingable feed;
             int wait = Wait;
 
             while (!cts?.IsCancellationRequested ?? false)
             {
                 try
                 {
-                    if (changed)
+                    for (int i = 0; i <= maxwait; i += wait)
                     {
+                        Task.Delay(wait, cts?.Token ?? default).ConfigureAwait(false).GetAwaiter().GetResult();
+
                         lock (lockObj)
                         {
-                            changed = false;
-
-                            stash.Clear();
-                            counts.Clear();
-
-                            stash.AddRange(feeds);
-                            stash.ForEach((a) => counts.Add(0));
-
-                            c = feeds.Count;
-                        }
-                    }
-
-                    for (i = 0; i < c; i++)
-                    {
-                        feed = feeds[i];
-                        counts[i] += wait;
-
-                        if (counts[i] == feed.Interval)
-                        {
-                            counts[i] = 0;
-
-                            if (feed is IAsyncPingable aping)
+                            if (triggerGroups.TryGetValue(i, out Action[] execs))
                             {
-                                _ = aping.Ping();
+                                Parallel.Invoke(execs);
                             }
-                            else
+                            if (wait != Wait)
                             {
-                                feed.Ping();
+                                wait = Wait;
+                                break;
                             }
                         }
-
                     }
-
-                    Thread.Sleep(wait);
 
                     if (cts?.IsCancellationRequested ?? true) return;
                 }
                 catch //(Exception ex)
                 {
-                    
+
                 }
 
             }
         }
-        
 
     }
 }

@@ -441,6 +441,9 @@ namespace KuCoinApp
                             App.Current?.Dispatcher?.Invoke(() =>
                             {
                                 FuturesLevel2 = t.Result;
+                                FuturesLevel2.Interval = 50;
+                                FuturesLevel2.IsObservationDisabled = false;
+
                             });
 
                         });
@@ -464,6 +467,8 @@ namespace KuCoinApp
                         App.Current?.Dispatcher?.Invoke(() =>
                         {
                             FuturesLevel2 = t.Result;
+                            FuturesLevel2.Interval = 50;
+                            FuturesLevel2.IsObservationDisabled = false;
                         });
 
                     });

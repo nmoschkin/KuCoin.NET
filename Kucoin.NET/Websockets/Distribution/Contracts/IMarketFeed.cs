@@ -15,10 +15,7 @@ namespace Kucoin.NET.Websockets.Distribution
                         where TDistributable : DistributableObject<string, TValue>
                         where TValue : ISymbol
     {
-        /// <summary>
-        /// Gets the current state of the feed.
-        /// </summary>
-        FeedState State { get; }
+     
     }
 
 }

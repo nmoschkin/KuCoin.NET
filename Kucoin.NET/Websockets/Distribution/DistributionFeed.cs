@@ -1,7 +1,7 @@
 ﻿using Kucoin.NET.Data.Market;
 using Kucoin.NET.Helpers;
 using Kucoin.NET.Observable;
-using Kucoin.NET.Websockets.Distribution;
+using Kucoin.NET.Websockets.Distribution.Services;
 
 using System;
 using System.Collections.Generic;
@@ -47,6 +47,39 @@ namespace Kucoin.NET.Websockets.Distribution
 
         protected Dictionary<string, TDistributable> activeFeeds = new Dictionary<string, TDistributable>();
         protected DistributionStrategy strategy = DistributionStrategy.MessagePump;
+        protected FeedState state;
+
+        public virtual FeedState State
+        {
+            get => state;
+            protected set
+            {
+                SetProperty(ref state, value);
+            }
+        }
+
+        public virtual void RefreshState()
+        {
+            FeedState newState = FeedState.Disconnected;
+            FeedState? lastState = null;
+
+            foreach (var feed in activeFeeds.Values)
+            {
+                if (lastState is FeedState fs)
+                {
+                    if (feed.State != fs)
+                    {
+                        newState = FeedState.Multiple;
+                        break;
+                    }
+                }
+
+                newState = feed.State;
+                lastState = feed.State;
+            }
+
+            State = newState;
+        }
 
         /// <summary>
         /// Instantiate a new distribution feed.

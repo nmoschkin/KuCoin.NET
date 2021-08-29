@@ -19,7 +19,7 @@ namespace Kucoin.NET.Websockets.Distribution
     /// <summary>
     /// An object that provides distributed objects with data.
     /// </summary>
-    public interface IDistributor
+    public interface IDistributor : IFeedState
     {
         /// <summary>
         /// Get an <see cref="IEnumerable{T}"/> of the active feeds.

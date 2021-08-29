@@ -2,13 +2,15 @@
 using System.Threading.Tasks;
 using System.Collections.Generic;
 using System.Text;
+using Kucoin.NET.Websockets.Distribution.Services;
+using System.ComponentModel;
 
 namespace Kucoin.NET.Websockets.Distribution
 {
     /// <summary>
     /// An object that can ping a remote server, and be registered with the <see cref="PingService"/>.
     /// </summary>
-    public interface IPingable
+    public interface IPingable : INotifyPropertyChanged
     {
         /// <summary>
         /// Ping the remote server.
@@ -21,7 +23,7 @@ namespace Kucoin.NET.Websockets.Distribution
         /// <remarks>
         /// This number should be evenly divisible by 10.
         /// </remarks>
-        int Interval { get; set; }
+        int PingInterval { get; set; }
 
     }
 

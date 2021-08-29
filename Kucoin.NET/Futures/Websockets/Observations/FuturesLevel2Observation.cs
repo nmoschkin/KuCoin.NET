@@ -167,7 +167,7 @@ namespace Kucoin.NET.Futures.Websockets.Observations
             get => disabled;
             set
             {
-                SetProperty(ref disabled, true);
+                SetProperty(ref disabled, value);
             }
         }
 
@@ -191,8 +191,14 @@ namespace Kucoin.NET.Futures.Websockets.Observations
         /// </summary>
         public ObservableOrderBook<ObservableOrderUnit> OrderBook
         {
-            get => ObservableData;
-            protected set => ObservableData = value;
+            get => orderBook;
+            protected set
+            {
+                if (SetProperty(ref orderBook, value))
+                {
+                    OnPropertyChanged(nameof(ObservableData));
+                }
+            }
         }
 
         public override KeyedOrderBook<OrderUnitStruct> InternalData
@@ -212,7 +218,10 @@ namespace Kucoin.NET.Futures.Websockets.Observations
             get => orderBook;
             protected set
             {
-                SetProperty(ref orderBook, value);
+                if (SetProperty(ref orderBook, value))
+                {
+                    OnPropertyChanged(nameof(OrderBook));
+                }
             }
         }
 
@@ -390,63 +399,69 @@ namespace Kucoin.NET.Futures.Websockets.Observations
         {
             lock (lockObj)
             {
+                if (fullDepth == null) return;
+                if (this.marketDepth <= 0) return;
+
+                var asks = fullDepth.Asks as IList<OrderUnitStruct>;
+                var bids = fullDepth.Asks as IList<OrderUnitStruct>;
+
                 if (orderBook == null)
                 {
-                    orderBook = new ObservableOrderBook<ObservableOrderUnit>();
+                    OrderBook = new ObservableOrderBook<ObservableOrderUnit>();
                     orderBook.Sequence = fullDepth.Sequence;
                     orderBook.Timestamp = fullDepth.Timestamp;
                 }
 
                 int marketDepth = this.marketDepth;
 
-                if (fullDepth.Asks.Count < marketDepth) marketDepth = fullDepth.Asks.Count;
+                if (asks.Count < marketDepth) marketDepth = asks.Count;
 
                 if (orderBook.Asks.Count != marketDepth)
                 {
                     orderBook.Asks.Clear();
                     for (int i = 0; i < marketDepth; i++)
                     {
-                        orderBook.Asks.Add(fullDepth.Asks[i].Clone<ObservableOrderUnit>());
+                        orderBook.Asks.Add(asks[i].Clone<ObservableOrderUnit>());
                     }
                 }
                 else
                 {
                     for (int i = 0; i < marketDepth; i++)
                     {
-                        if (orderBook.Asks[i].Price == fullDepth.Asks[i].Price)
+                        if (orderBook.Asks[i].Price == asks[i].Price)
                         {
-                            orderBook.Asks[i].Price = fullDepth.Asks[i].Price;
-                            orderBook.Asks[i].Size = fullDepth.Asks[i].Size;
+                            orderBook.Asks[i].Price = asks[i].Price;
+                            orderBook.Asks[i].Size = asks[i].Size;
                         }
                         else
                         {
-                            orderBook.Asks[i] = fullDepth.Asks[i].Clone<ObservableOrderUnit>();
+                            orderBook.Asks[i] = asks[i].Clone<ObservableOrderUnit>();
                         }
                     }
                 }
 
-                if (fullDepth.Bids.Count < marketDepth) marketDepth = fullDepth.Bids.Count;
+                if (bids.Count < marketDepth) marketDepth = bids.Count;
 
                 if (orderBook.Bids.Count != marketDepth)
                 {
                     orderBook.Bids.Clear();
                     for (int i = 0; i < marketDepth; i++)
                     {
-                        orderBook.Bids.Add(fullDepth.Bids[i].Clone<ObservableOrderUnit>());
+                        orderBook.Bids.Add(bids[i].Clone<ObservableOrderUnit>());
                     }
                 }
                 else
                 {
                     for (int i = 0; i < marketDepth; i++)
                     {
-                        if (orderBook.Bids[i].Price == fullDepth.Bids[i].Price)
+                        if (orderBook.Bids[i].Price == bids[i].Price)
                         {
-                            orderBook.Bids[i].Price = fullDepth.Bids[i].Price;
-                            orderBook.Bids[i].Size = fullDepth.Bids[i].Size;
+                            orderBook.Bids[i].Price = bids[i].Price;
+                            orderBook.Bids[i].Size = bids[i].Size;
                         }
                         else
                         {
-                            orderBook.Bids[i] = fullDepth.Bids[i].Clone<ObservableOrderUnit>();
+                            orderBook.Bids[i] = bids[i].Clone<ObservableOrderUnit>();
                         }
                     }
                 }

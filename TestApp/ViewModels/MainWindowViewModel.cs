@@ -33,15 +33,13 @@ namespace KuCoinApp
 
     public class MainWindowViewModel : WindowViewModelBase, IObserver<Ticker>, IObserver<KlineFeedMessage<KlineCandle>>
     {
-        protected Level2 level2Feed;
-
-        protected FuturesLevel2 futuresl2;
-
+        protected Level3 level2Feed;
+                
         protected Accounts accountWnd;
 
         protected FuturesWindow fwindow;
 
-        //protected Level2Depth50 level2Feed50;
+        //protected Level3Depth50 level2Feed50;
 
         protected TickerFeed tickerFeed;
 
@@ -87,7 +85,7 @@ namespace KuCoinApp
 
         protected ObservableCollection<CurrencyViewModel> currencies = new ObservableCollection<CurrencyViewModel>();
 
-        protected Level2Observation level2;
+        protected Level3Observation level2;
 
         protected List<SymbolViewModel> recentSymbols = new List<SymbolViewModel>();
 
@@ -98,6 +96,8 @@ namespace KuCoinApp
         protected string sizeFormat = "0.00";
 
         public override event EventHandler AskQuit;
+
+        int l2delay = 50;
 
         public ICommand RefreshSymbolsCommand { get; protected set; }
         public ICommand RefreshKlineCommand { get; protected set; }
@@ -138,7 +138,7 @@ namespace KuCoinApp
         }
 
 
-        public Level2Observation Level2
+        public Level3Observation Level3
         {
             get => level2;
             set
@@ -237,7 +237,7 @@ namespace KuCoinApp
         }
 
 
-        public Level2 Level2Feed
+        public Level3 Level3Feed
         {
             get => level2Feed;
             set
@@ -490,14 +490,15 @@ namespace KuCoinApp
                                 return;
                             }
 
-                            if (Level2 != null)
+                            if (Level3 != null)
                             {
-                                Level2.Dispose();
+                                Level3.Dispose();
                             }
 
                             if (level2Feed == null || level2Feed.Connected == false)
                             {
-                                level2Feed = new Level2(cred);
+                                level2Feed = new Level3(cred);
+                                level2Feed.MonitorThroughput = true;
                                 await level2Feed.Connect();
                             }
 
@@ -505,7 +506,9 @@ namespace KuCoinApp
                             {
                                 App.Current?.Dispatcher?.Invoke(() =>
                                 {
-                                    Level2 = t.Result;
+                                    Level3 = t.Result;
+                                    Level3.IsObservationDisabled = false;
+                                    Level3.Interval = l2delay;
                                 });
 
                             });
@@ -521,7 +524,8 @@ namespace KuCoinApp
                 {
                     if (level2Feed == null || level2Feed.Connected == false)
                     {
-                        level2Feed = new Level2(cred);
+                        level2Feed = new Level3(cred);
+                        level2Feed.MonitorThroughput = true;
                         await level2Feed.Connect();
                     }
 
@@ -529,7 +533,9 @@ namespace KuCoinApp
                     {
                         App.Current?.Dispatcher?.Invoke(() =>
                         {
-                            Level2 = t.Result;
+                            Level3 = t.Result;
+                            Level3.IsObservationDisabled = false;
+                            Level3.Interval = l2delay;
                         });
 
                     });
@@ -556,7 +562,7 @@ namespace KuCoinApp
             //{
             //    if (finit) return;
 
-            //    level2Feed = new Level2();
+            //    level2Feed = new Level3();
             //    await level2Feed.Connect();
 
             //    if (level2Feed.Connected == false)
@@ -763,7 +769,9 @@ namespace KuCoinApp
                         }
                         catch { }
 
-                        level2Feed = new Level2(cred);
+                        level2Feed = new Level3(cred);
+                        level2Feed.MonitorThroughput = true;
+
                         tickerFeed = new TickerFeed();
                         klineFeed = new KlineFeed<KlineCandle>();
 
@@ -954,10 +962,8 @@ namespace KuCoinApp
 
                     if (cred != null)
                     {
-                        Level2Feed = new Level2(cred);
-
+                        Level3Feed = new Level3(cred);
                         level2Feed.MonitorThroughput = true;
-                        level2Feed.ReceiveThreadPriority = System.Threading.ThreadPriority.Normal;
 
                         if (!cred.Sandbox)
                         {
@@ -1083,11 +1089,11 @@ namespace KuCoinApp
 
         }
 
-        private async void Level2Feed_FeedDisconnected(object sender, FeedDisconnectedEventArgs e)
+        private async void Level3Feed_FeedDisconnected(object sender, FeedDisconnectedEventArgs e)
         {
-            if (Level2Feed.Disposed == false)
+            if (Level3Feed.Disposed == false)
             {
-                await Level2Feed.Connect();
+                await Level3Feed.Connect();
                 UpdateSymbol((string)symbol, (string)symbol, true);
             }
 

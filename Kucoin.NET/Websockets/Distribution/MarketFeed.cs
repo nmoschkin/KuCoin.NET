@@ -1,5 +1,6 @@
 ﻿using Kucoin.NET.Data.Market;
 using Kucoin.NET.Helpers;
+using Kucoin.NET.Websockets.Distribution.Services;
 using Kucoin.NET.Websockets.Public;
 
 using System;
@@ -22,8 +23,6 @@ namespace Kucoin.NET.Websockets.Distribution
         where TValue : ISymbol
     {
 
-        protected FeedState state;
-
         /// <summary>
         /// Instantiate a new market feed.
         /// </summary>
@@ -45,16 +44,7 @@ namespace Kucoin.NET.Websockets.Distribution
         public MarketFeed(string key, string secret, string passphrase, bool isSandbox = false, bool futures = false, DistributionStrategy distributionStrategy = DistributionStrategy.MessagePump) : base(key, secret, passphrase, isSandbox: isSandbox, futures: futures, distributionStrategy)
         {
         }
-
-        public virtual FeedState State
-        {
-            get => state;
-            protected set
-            {
-                SetProperty(ref state, value);
-            }
-        }
-
+     
         /// <summary>
         /// Add the specified symbol to the feed.
         /// </summary>

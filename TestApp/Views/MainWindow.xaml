@@ -401,7 +401,7 @@
                         VerticalAlignment="Center"
                         FontFamily="Calibri"
                         FontSize="12">
-                        <Run Text="{Binding Level2Feed.State, Mode=OneWay}" />
+                        <Run Text="{Binding Level3Feed.State, Mode=OneWay}" />
                     </TextBlock>
 
                     <TextBlock
@@ -419,7 +419,7 @@
                         VerticalAlignment="Center"
                         FontFamily="Calibri"
                         FontSize="12">
-                        <Run Text="{Binding Level2Feed.Throughput, Mode=OneWay, Converter={StaticResource spConv}}" />
+                        <Run Text="{Binding Level3Feed.Throughput, Mode=OneWay, Converter={StaticResource spConv}}" />
                     </TextBlock>
 
                     <TextBlock
@@ -437,7 +437,7 @@
                         VerticalAlignment="Center"
                         FontFamily="Calibri"
                         FontSize="12">
-                        <Run Text="{Binding Level2Feed.PingTime.TotalMilliseconds, Mode=OneWay}" />
+                        <Run Text="{Binding Level3Feed.PingTime.TotalMilliseconds, Mode=OneWay}" />
                         <Run Text=" ms" />
                     </TextBlock>
 
@@ -447,7 +447,7 @@
                         VerticalAlignment="Center"
                         FontFamily="Calibri"
                         FontSize="12">
-                        <Run Text="{Binding Level2.OrderBook.Timestamp, StringFormat='{}{0:MMM dd, yyyy a\\t h:mm:ss tt}'}" />
+                        <Run Text="{Binding Level3.OrderBook.Timestamp, StringFormat='{}{0:MMM dd, yyyy a\\t h:mm:ss tt}'}" />
                     </TextBlock>
 
 
@@ -460,7 +460,7 @@
                         FontFamily="Calibri"
                         FontSize="12">
                         <Run Text="{i18n:Translate ResourceKey=Resets, AddColon=True}" />
-                        <Run Text="{Binding Level2Feed.Resets, Mode=OneWay}" />
+                        <Run Text="{Binding Level3Feed.Resets, Mode=OneWay}" />
                     </TextBlock>
 
 
@@ -481,7 +481,7 @@
                     <ListView
                         x:Name="Asks"
                         Grid.Column="0"
-                        ItemsSource="{Binding Level2.OrderBook.Asks}">
+                        ItemsSource="{Binding Level3.OrderBook.Asks}">
                         <ListView.View>
                             <GridView>
                                 <GridView.Columns>
@@ -513,14 +513,14 @@
                             Grid.Column="1"
                             Margin="0,0,4,0"
                             HorizontalAlignment="Right">
-                            <Run Text="{Binding Level2.FullDepthOrderBook.Asks.Count, Mode=OneWay, StringFormat='{}{0:#,##0}'}" />
+                            <Run Text="{Binding Level3.FullDepthOrderBook.Asks.Count, Mode=OneWay, StringFormat='{}{0:#,##0}'}" />
                         </TextBlock>
                     </Grid>
 
                     <ListView
                         x:Name="Bids"
                         Grid.Column="1"
-                        ItemsSource="{Binding Level2.OrderBook.Bids}">
+                        ItemsSource="{Binding Level3.OrderBook.Bids}">
                         <ListView.View>
                             <GridView>
                                 <GridView.Columns>
@@ -557,7 +557,7 @@
                             <Run Text="{i18n:Translate ResourceKey=MarketDepth, AddColon=True}" />
                         </TextBlock>
                         <TextBlock Grid.Column="1" HorizontalAlignment="Right">
-                            <Run Text="{Binding Level2.FullDepthOrderBook.Bids.Count, Mode=OneWay, StringFormat='{}{0:#,##0}'}" />
+                            <Run Text="{Binding Level3.FullDepthOrderBook.Bids.Count, Mode=OneWay, StringFormat='{}{0:#,##0}'}" />
                         </TextBlock>
 
                         <TextBlock

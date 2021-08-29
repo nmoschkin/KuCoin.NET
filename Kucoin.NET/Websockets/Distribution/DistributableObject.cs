@@ -1,5 +1,6 @@
 using Kucoin.NET.Data.Market;
 using Kucoin.NET.Observable;
+using Kucoin.NET.Websockets.Distribution.Services;
 using Kucoin.NET.Websockets.Public;
 
 using System;
@@ -42,7 +43,10 @@ namespace Kucoin.NET.Websockets.Distribution
             get => state;
             protected set
             {
-                SetProperty(ref state, value);
+                if (SetProperty(ref state, value))
+                {
+                    Parent?.RefreshState();
+                }
             }
         }
              

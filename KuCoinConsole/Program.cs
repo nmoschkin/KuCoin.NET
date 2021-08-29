@@ -30,6 +30,7 @@ using System.Security.AccessControl;
 using Newtonsoft.Json;
 using Kucoin.NET.Data.Websockets;
 using System.IO;
+using Kucoin.NET.Websockets.Distribution.Services;
 
 namespace KuCoinConsole
 {
@@ -123,13 +124,62 @@ namespace KuCoinConsole
         //[STAThread]
         public static void Main(string[] args)
         {
-           
+
             // Analytics and crash reporting.
             //AppCenter.Start("d364ea69-c1fa-4d0d-8c37-debaa05f91bc",
             //       typeof(Analytics), typeof(Crashes));
             // Analytics and crash reporting.
 
+            KuCoin.InitializeAsync().ConfigureAwait(false).GetAwaiter().GetResult();
+            int x, y, z;
+
+            x = 4;
+            y = 24;
+            z = 144;
+
+
+            var r = FindGCF(-156, 32);
+
             RunProgram();
+        }
+
+        public static int FindGCF(params int[] values)
+        {
+            if (values == null || values.Length == 1) throw new ArgumentOutOfRangeException("Function takes 2 or more numbers.");
+            int found = values[0];
+
+            int i, c = values.Length;
+            int min, max, mod;
+            
+            int lastfound = -1;
+
+            for (i = 1; i < c; i++)
+            {
+                min = found;
+                max = values[i];
+
+                if (min > max)
+                {
+                    min = max;
+                    max = values[i - 1];
+                }
+
+                mod = max % min;
+
+                while (mod != 0)
+                {
+                    max = min;
+                    min = mod;
+                    mod = max % min;
+                }
+
+                found = min;
+
+                if (lastfound == -1 || lastfound > found) lastfound = found;
+                if (found == 1) break;
+            }
+
+            return lastfound;
         }
 
         public static void RunProgram() 
@@ -404,7 +454,10 @@ namespace KuCoinConsole
 
                         }
                     }
-                    catch { }
+                    catch (Exception ex) 
+                    {
+                        var s = ex.Message;
+                    }
                 }
 
                 subscribing = null;

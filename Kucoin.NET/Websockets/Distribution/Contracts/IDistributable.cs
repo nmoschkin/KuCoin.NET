@@ -1,4 +1,5 @@
 using Kucoin.NET.Data.Market;
+
 using Kucoin.NET.Websockets.Public;
 
 using System;
@@ -19,7 +20,7 @@ namespace Kucoin.NET.Websockets.Distribution
     /// <summary>
     /// An object that can do distributed work (typically in parallel with other such objects.)
     /// </summary>
-    public interface IDistributable : INotifyPropertyChanged, IDisposable // : IComparable<IDistributable>
+    public interface IDistributable : IParent, INotifyPropertyChanged, IDisposable // : IComparable<IDistributable>
     {
         /// <summary>
         /// Do work.
@@ -32,21 +33,6 @@ namespace Kucoin.NET.Websockets.Distribution
         /// </summary>
         object LockObject { get; }
 
-        /// <summary>
-        /// Gets the parent distributor
-        /// </summary>
-        IDistributor Parent { get; }
-    }
-
-    /// <summary>
-    /// An object that can do distributed work when an object of type <typeparamref name="T"/> is received (typically in parallel with other such objects.)
-    /// </summary>
-    /// <typeparam name="T">The subscription object type.</typeparam>
-    /// <remarks>
-    /// A string key is used to uniquely identify a distributable object from other objects that handle identical workloads.
-    /// </remarks>
-    public interface IDistributable<T> : IDistributable<string, T>
-    {
     }
 
     /// <summary>
@@ -65,4 +51,16 @@ namespace Kucoin.NET.Websockets.Distribution
         TKey Key { get; }
 
     }
+
+    /// <summary>
+    /// An object that can do distributed work when an object of type <typeparamref name="T"/> is received (typically in parallel with other such objects.)
+    /// </summary>
+    /// <typeparam name="T">The subscription object type.</typeparam>
+    /// <remarks>
+    /// A string key is used to uniquely identify a distributable object from other objects that handle identical workloads.
+    /// </remarks>
+    public interface IDistributable<T> : IDistributable<string, T>
+    {
+    }
+
 }
