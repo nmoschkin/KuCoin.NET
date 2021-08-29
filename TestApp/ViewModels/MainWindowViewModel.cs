@@ -957,8 +957,6 @@ namespace KuCoinApp
                         Level2Feed = new Level2(cred);
 
                         level2Feed.MonitorThroughput = true;
-                        level2Feed.UpdateInterval = 100;
-                        level2Feed.DefaultPieces = 50;
                         level2Feed.ReceiveThreadPriority = System.Threading.ThreadPriority.Normal;
 
                         if (!cred.Sandbox)

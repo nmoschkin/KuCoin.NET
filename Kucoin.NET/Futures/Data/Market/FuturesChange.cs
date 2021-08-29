@@ -14,8 +14,11 @@ namespace Kucoin.NET.Futures.Data.Market
     /// <summary>
     /// Represents a change packet pushed from the Futures Level 2 feed.
     /// </summary>
-    public struct FuturesLevel2Update
+    public struct FuturesLevel2Update : ISymbol
     {
+        [JsonIgnore]
+        public string Symbol { get; set; }
+
         /// <summary>
         /// Sequence number which is used to judge the continuity of pushed messages
         /// </summary>

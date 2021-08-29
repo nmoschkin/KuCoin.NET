@@ -25,6 +25,7 @@ using KuCoinApp.Views;
 using Kucoin.NET.Futures.Rest;
 using Microsoft.AppCenter.Ingestion.Models;
 using Kucoin.NET.Futures.Data.User;
+using Kucoin.NET.Futures.Websockets.Observations;
 
 namespace KuCoinApp
 {
@@ -79,7 +80,7 @@ namespace KuCoinApp
 
         protected ObservableCollection<CurrencyViewModel> currencies = new ObservableCollection<CurrencyViewModel>();
 
-        protected ILevel2OrderBookProvider<FuturesOrderBook, ObservableOrderUnit, KeyedOrderBook<OrderUnitStruct>, OrderUnitStruct, FuturesLevel2Update> futureslevel2;
+        protected FuturesLevel2Observation futureslevel2;
         
         protected List<SymbolViewModel> recentSymbols = new List<SymbolViewModel>();
 
@@ -92,7 +93,7 @@ namespace KuCoinApp
 
         public override event EventHandler AskQuit;
 
-        public ILevel2OrderBookProvider<FuturesOrderBook, ObservableOrderUnit, KeyedOrderBook<OrderUnitStruct>, OrderUnitStruct, FuturesLevel2Update> FuturesLevel2
+        public FuturesLevel2Observation FuturesLevel2
         {
             get => futureslevel2;
             protected set
@@ -426,7 +427,7 @@ namespace KuCoinApp
 
                         if (cred != null && (futuresl2 == null || futuresl2.Connected == false))
                         {
-                            FuturesLevel2Feed = new FuturesLevel2();
+                            FuturesLevel2Feed = new FuturesLevel2(cred);
                             await futuresl2.Connect();
                         }
 
@@ -454,7 +455,7 @@ namespace KuCoinApp
                 {
                     if (cred != null && (futuresl2 == null || futuresl2.Connected == false))
                     {
-                        FuturesLevel2Feed = new FuturesLevel2();
+                        FuturesLevel2Feed = new FuturesLevel2(cred);
                         await futuresl2.Connect();
                     }
 
@@ -486,7 +487,7 @@ namespace KuCoinApp
             {
                 if (finit) return;
 
-                FuturesLevel2Feed = new FuturesLevel2();
+                FuturesLevel2Feed = new FuturesLevel2(cred);
                 await futuresl2.Connect();
 
                 if (futuresl2.Connected == false)
@@ -737,7 +738,7 @@ namespace KuCoinApp
                         }
                         catch { }
 
-                        FuturesLevel2Feed = new FuturesLevel2();
+                        FuturesLevel2Feed = new FuturesLevel2(cred);
 
                         tickerFeed = new FuturesTickerFeed();
                         tickerFeed.Subscribe(this);
@@ -922,10 +923,8 @@ namespace KuCoinApp
 
                     if (cred != null)
                     {
-                        FuturesLevel2Feed = new FuturesLevel2();
+                        FuturesLevel2Feed = new FuturesLevel2(cred);
                         futuresl2.MonitorThroughput = true;
-                        futuresl2.UpdateInterval = 250;
-                        futuresl2.DefaultPieces = 50;
 
                         // for testing futures
 

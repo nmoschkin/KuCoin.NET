@@ -749,7 +749,7 @@ namespace Kucoin.NET.Websockets
 
             sb.EnsureCapacity(recvBufferSize);
 
-            var arrSeg = new ArraySegment<byte>(inputChunk);
+            var arrSeg = new Memory<byte>(inputChunk);
 
             DateTime xtime = DateTime.UtcNow;
 
@@ -758,7 +758,7 @@ namespace Kucoin.NET.Websockets
             long tms = xtime.Ticks;
             long tqms = tms;
 
-            WebSocketReceiveResult result;
+            ValueWebSocketReceiveResult result;
 
             // loop forever or until the connection is broken or canceled.
             while (!ctsReceive.IsCancellationRequested && socket?.State == WebSocketState.Open)

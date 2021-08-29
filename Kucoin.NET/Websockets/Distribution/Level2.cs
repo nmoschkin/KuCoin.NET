@@ -1,30 +1,26 @@
 ﻿using Kucoin.NET.Data.Market;
 using Kucoin.NET.Data.Websockets;
 using Kucoin.NET.Helpers;
-using Kucoin.NET.Websockets.Public;
+using Kucoin.NET.Json;
+using Kucoin.NET.Websockets.Distribution;
+using Kucoin.NET.Websockets.Observations;
 
 using Newtonsoft.Json;
 
 using System;
 using System.Collections.Generic;
-using System.Net.Http;
+using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Kucoin.NET.Websockets.Distribution;
-using Kucoin.NET.Websockets.Observations;
-using System.Threading;
-using Kucoin.NET.Json;
-using System.Diagnostics;
-using System.Linq;
 
 namespace Kucoin.NET.Websockets.Public
 {
-    public interface ILevel3 : IMarketFeed<Level3Observation, Level3Update, KeyedAtomicOrderBook<AtomicOrderStruct>, ObservableAtomicOrderBook<ObservableAtomicOrderUnit>>
+    public interface ILevel2 : IMarketFeed<Level2Observation, Level2Update, KeyedOrderBook<OrderUnitStruct>, ObservableOrderBook<ObservableOrderUnit>>
     {
 
     }
 
-    public class Level3 : MarketFeed<Level3Observation, Level3Update, KeyedAtomicOrderBook<AtomicOrderStruct>, ObservableAtomicOrderBook<ObservableAtomicOrderUnit>>, ILevel3
+    public class Level2 : MarketFeed<Level2Observation, Level2Update, KeyedOrderBook<OrderUnitStruct>, ObservableOrderBook<ObservableOrderUnit>>, ILevel2
     {
         object lockObj = new object();
 
@@ -33,7 +29,7 @@ namespace Kucoin.NET.Websockets.Public
         /// </summary>
         /// <param name="credentialsProvider">API Credentials.</param>
         /// <param name="distributionStrategy">Data distribution strategy.</param>
-        public Level3(ICredentialsProvider credentialsProvider, DistributionStrategy distributionStrategy = DistributionStrategy.MessagePump) : base(credentialsProvider, distributionStrategy)
+        public Level2(ICredentialsProvider credentialsProvider, DistributionStrategy distributionStrategy = DistributionStrategy.MessagePump) : base(credentialsProvider, distributionStrategy)
         {
             if (distributionStrategy == DistributionStrategy.Link)
             {
@@ -56,7 +52,7 @@ namespace Kucoin.NET.Websockets.Public
         /// <param name="isSandbox">True if sandbox mode.</param>
         /// <param name="futures">True if KuCoin Futures.</param>
         /// <param name="distributionStrategy">Data distribution strategy.</param>
-        public Level3(string key, string secret, string passphrase, bool isSandbox = false, DistributionStrategy distributionStrategy = DistributionStrategy.MessagePump) : base(key, secret, passphrase, isSandbox: isSandbox, futures: false, distributionStrategy)
+        public Level2(string key, string secret, string passphrase, bool isSandbox = false, DistributionStrategy distributionStrategy = DistributionStrategy.MessagePump) : base(key, secret, passphrase, isSandbox: isSandbox, futures: false, distributionStrategy)
         {
             if (distributionStrategy == DistributionStrategy.Link)
             {
@@ -68,14 +64,15 @@ namespace Kucoin.NET.Websockets.Public
             chunkSize = 1024;
 
         }
+        public override string InitialDataUrl => "/api/v3/market/orderbook/level2";
 
-        public override string Topic => "/spotMarket/level3";
+        public string Subject => "trade.l2update";
 
-        public override string InitialDataUrl => "/api/v3/market/orderbook/level3";
+        public override string Topic => "/market/level2";
 
         public override bool IsPublic => false;
 
-        public override async Task<KeyedAtomicOrderBook<AtomicOrderStruct>> ProvideInitialData(string key)
+        public override async Task<KeyedOrderBook<OrderUnitStruct>> ProvideInitialData(string key)
         {
             Exception err = null;
 
@@ -91,7 +88,7 @@ namespace Kucoin.NET.Websockets.Public
                 try
                 {
                     var jobj = await MakeRequest(HttpMethod.Get, curl, auth: !IsPublic, reqParams: param);
-                    var result = jobj.ToObject<KeyedAtomicOrderBook<AtomicOrderStruct>>();
+                    var result = jobj.ToObject<KeyedOrderBook<OrderUnitStruct>>();
 
                     GC.Collect(2);
                     return result;
@@ -143,9 +140,9 @@ namespace Kucoin.NET.Websockets.Public
                 }
             }
         }
-        public override void Release(IDistributable<string, Level3Update> obj) => Release((Level3Observation)obj);
+        public override void Release(IDistributable<string, Level2Update> obj) => Release((Level2Observation)obj);
 
-        public void Release(Level3Observation obj)
+        public void Release(Level2Observation obj)
         {
             if (activeFeeds.ContainsValue(obj))
             {
@@ -160,7 +157,7 @@ namespace Kucoin.NET.Websockets.Public
             }
         }
 
-        public override async Task<IDictionary<string, Level3Observation>> SubscribeMany(IEnumerable<string> keys)
+        public override async Task<IDictionary<string, Level2Observation>> SubscribeMany(IEnumerable<string> keys)
         {
             if (disposedValue) throw new ObjectDisposedException(GetType().FullName);
             if (!Connected)
@@ -169,7 +166,7 @@ namespace Kucoin.NET.Websockets.Public
             }
 
             var sb = new StringBuilder();
-            var lnew = new Dictionary<string, Level3Observation>();
+            var lnew = new Dictionary<string, Level2Observation>();
 
             lock (lockObj)
             {
@@ -187,7 +184,7 @@ namespace Kucoin.NET.Websockets.Public
                     if (sb.Length > 0) sb.Append(',');
                     sb.Append(sym);
 
-                    var obs = new Level3Observation(this, sym);
+                    var obs = new Level2Observation(this, sym);
                     activeFeeds.Add(sym, obs);
 
                     if (!lnew.ContainsKey(sym))
@@ -276,18 +273,18 @@ namespace Kucoin.NET.Websockets.Public
         {
             Converters = new JsonConverter[]
             {
-                new Level3UpdateConverter()
+                new StringToDecimalConverter()
             }
         };
 
         protected override void RouteJsonPacket(string json, FeedMessage e = null)
         {
-            var msg = JsonConvert.DeserializeObject<FeedMessage<Level3Update>>(json, settings);
-            
+            var msg = JsonConvert.DeserializeObject<FeedMessage<Level2Update>>(json, settings);
+
 
             if (msg.TunnelId == tunnelId && msg.Type == "message")
             {
-                
+
                 var i = msg.Topic.IndexOf(":");
 
                 if (i != -1)
@@ -295,16 +292,14 @@ namespace Kucoin.NET.Websockets.Public
                     var symbol = msg.Topic.Substring(i + 1);
                     if (string.IsNullOrEmpty(symbol)) return;
 
-                    Level3Observation af;
-                    
-                    lock(lockObj)
+                    Level2Observation af;
+
+                    lock (lockObj)
                     {
                         af = activeFeeds[symbol];
                     }
 
                     var update = msg.Data;
-                    update.Subject = msg.Subject;
-
                     af.OnNext(update);
                 }
             }
@@ -313,7 +308,7 @@ namespace Kucoin.NET.Websockets.Public
                 base.RouteJsonPacket(json, e);
             }
         }
-              
+
         protected override Task HandleMessage(FeedMessage msg)
         {
             throw new NotImplementedException();

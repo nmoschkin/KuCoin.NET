@@ -1,5 +1,6 @@
 ﻿using Kucoin.NET.Data.Market;
 using Kucoin.NET.Rest;
+using Kucoin.NET.Websockets.Distribution;
 using Kucoin.NET.Websockets.Observations;
 using Kucoin.NET.Websockets.Public;
 
