@@ -21,6 +21,7 @@ namespace Kucoin.NET.Websockets
         protected string topic;
 
         public override event EventHandler<FeedDataReceivedEventArgs<T>> FeedDataReceived;
+        public override bool IsPublic => false;
 
         /// <summary>
         /// Default constructor

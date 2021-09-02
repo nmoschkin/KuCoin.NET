@@ -56,7 +56,7 @@ namespace Kucoin.NET.Websockets.Distribution.Services
                 Action[] arrActions = new Action[0];
                 int x = 0, f = 0;
 
-                while (!cts.IsCancellationRequested)
+                while (cts != null && !cts.IsCancellationRequested)
                 {
                     lock (Tenants)
                     {

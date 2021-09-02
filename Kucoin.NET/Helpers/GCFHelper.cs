@@ -8,6 +8,11 @@ namespace Kucoin.NET.Helpers
 {
     public static class GCFHelper
     {
+        /// <summary>
+        /// Find the greatest common factor from a set of integers.
+        /// </summary>
+        /// <param name="values">The values to perform the operation on.</param>
+        /// <returns>The greatest common factor.</returns>
         public static int FindGCF(params int[] values)
         {
             if (values == null || values.Length == 1) throw new ArgumentOutOfRangeException("Function takes 2 or more numbers.");

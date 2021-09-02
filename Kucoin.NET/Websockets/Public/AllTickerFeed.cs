@@ -95,17 +95,10 @@ namespace Kucoin.NET.Websockets.Public
         {
             await Task.Run(() =>
             {
-                List<Action> actions = new List<Action>();
-
                 foreach (SymbolObservation<Ticker> obs in observations)
                 {
-                    if (obs.ActiveSymbols.Count == 0 || obs.ActiveSymbols.Contains(obj.Symbol))
-                    {
-                        actions.Add(() => obs.Observer.OnNext(obj));
-                    }
+                        obs.Observer.OnNext(obj);
                 }
-
-                Parallel.Invoke(actions.ToArray());
             });
         }
 
