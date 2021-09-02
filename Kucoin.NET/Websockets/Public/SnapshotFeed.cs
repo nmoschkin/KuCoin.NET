@@ -5,6 +5,7 @@ using System.Text;
 using Kucoin.NET.Data.Market;
 using Kucoin.NET.Data.Websockets;
 using System.Threading.Tasks;
+using Kucoin.NET.Helpers;
 
 namespace Kucoin.NET.Websockets.Public
 {
@@ -19,8 +20,6 @@ namespace Kucoin.NET.Websockets.Public
         public SnapshotFeed() : base(null, null, null)
         {
         }
-
-        public override bool IsPublic => true;
 
         protected override string Subject => "trade.snapshot";
 
