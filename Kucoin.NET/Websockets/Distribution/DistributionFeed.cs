@@ -13,22 +13,6 @@ using System.Threading.Tasks;
 
 namespace Kucoin.NET.Websockets.Distribution
 {
-    /// <summary>
-    /// Strategies for distributing data.
-    /// </summary>
-    [DefaultValue(MessagePump)]
-    public enum DistributionStrategy 
-    {
-        /// <summary>
-        /// Deserialization and distribution occurs on the data link thread.
-        /// </summary>
-        Link,
-
-        /// <summary>
-        /// Deserialization and distribution occurs on the message pump thread (default.)
-        /// </summary>
-        MessagePump
-    }
 
     /// <summary>
     /// Base class for all websocket distribution feeds that use the <see cref="ParallelService"/>.
@@ -46,7 +30,6 @@ namespace Kucoin.NET.Websockets.Distribution
     {
 
         protected Dictionary<string, TDistributable> activeFeeds = new Dictionary<string, TDistributable>();
-        protected DistributionStrategy strategy = DistributionStrategy.MessagePump;
         protected FeedState state;
 
         public virtual FeedState State
@@ -85,10 +68,8 @@ namespace Kucoin.NET.Websockets.Distribution
         /// Instantiate a new distribution feed.
         /// </summary>
         /// <param name="credentialsProvider">API Credentials.</param>
-        /// <param name="distributionStrategy">Data distribution strategy.</param>
-        public DistributionFeed(ICredentialsProvider credentialsProvider, DistributionStrategy distributionStrategy = DistributionStrategy.MessagePump) : base(credentialsProvider)
+        public DistributionFeed(ICredentialsProvider credentialsProvider) : base(credentialsProvider)
         {
-            DistributionStrategy = distributionStrategy;
         }
 
         /// <summary>
@@ -99,35 +80,14 @@ namespace Kucoin.NET.Websockets.Distribution
         /// <param name="passphrase">API passphrase.</param>
         /// <param name="isSandbox">True if sandbox mode.</param>
         /// <param name="futures">True if KuCoin Futures.</param>
-        /// <param name="distributionStrategy">Data distribution strategy.</param>
-        public DistributionFeed(string key, string secret, string passphrase, bool isSandbox = false, bool futures = false, DistributionStrategy distributionStrategy = DistributionStrategy.MessagePump) : base(key, secret, passphrase, isSandbox: isSandbox, futures: futures)
+        public DistributionFeed(string key, string secret, string passphrase, bool isSandbox = false, bool futures = false) : base(key, secret, passphrase, isSandbox: isSandbox, futures: futures)
         {
-            DistributionStrategy = distributionStrategy;
         }
-
-
-        /// <summary>
-        /// Gets the subscription topic.
-        /// </summary>
-        public abstract string Topic { get; }
-
         
         /// <summary>
         /// Gets the relative URL used to acquire the initial data.
         /// </summary>
         public abstract string InitialDataUrl { get; }
-
-        /// <summary>
-        /// Gets the distribution strategy for deserializing and distributing data.
-        /// </summary>
-        public virtual DistributionStrategy DistributionStrategy
-        {
-            get => strategy;
-            set
-            {
-                SetProperty(ref strategy, value);
-            }
-        }
 
        
         public virtual IReadOnlyDictionary<string, TDistributable> ActiveFeeds { get => activeFeeds; }

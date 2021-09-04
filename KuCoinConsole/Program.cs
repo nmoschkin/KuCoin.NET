@@ -31,6 +31,7 @@ using Newtonsoft.Json;
 using Kucoin.NET.Data.Websockets;
 using System.IO;
 using Kucoin.NET.Websockets.Distribution.Services;
+using Kucoin.NET.Rest;
 
 namespace KuCoinConsole
 {
@@ -121,16 +122,20 @@ namespace KuCoinConsole
         static int feednum;
         static List<string> activeSymbols = new List<string>();
 
+        static SnapshotFeed sf;
+
         //[STAThread]
         public static void Main(string[] args)
         {
-
+            
             // Analytics and crash reporting.
             //AppCenter.Start("d364ea69-c1fa-4d0d-8c37-debaa05f91bc",
             //       typeof(Analytics), typeof(Crashes));
             // Analytics and crash reporting.
 
             KuCoin.InitializeAsync().ConfigureAwait(false).GetAwaiter().GetResult();
+
+
             int x, y, z;
 
             x = 4;
@@ -141,6 +146,11 @@ namespace KuCoinConsole
             var r = FindGCF(-156, 32);
 
             RunProgram();
+        }
+
+        private static void Sf_DataReceived(object sender, DataReceivedEventArgs e)
+        {
+            Console.WriteLine(e.Json);
         }
 
         public static int FindGCF(params int[] values)
@@ -255,6 +265,7 @@ namespace KuCoinConsole
 
                 KuCoin.Credentials.Add(cred);
             }
+
 
             Console.WriteLine("Number of feeds, or list of feeds separated by commas: ");
 
@@ -580,6 +591,7 @@ namespace KuCoinConsole
                             else if (key.Key == ConsoleKey.Q)
                             {
                                 Console.CursorTop = Console.WindowHeight - 1;
+                                Console.CursorVisible = true;
                                 Environment.Exit(0);
                             }
 
@@ -843,25 +855,12 @@ namespace KuCoinConsole
                     {
                         if (!l3a.Connected)
                         {
-                            //foreach (var f2 in feeds)
-                            //{
-                            //    if (f2 is Level3 l3b)
-                            //    {
-                            //        l3b.Dispose();
-                            //    }
-                            //}
-                            //headerText = "DISCONNECTED";
                             continue;
                         }
 
                         through += l3a.Throughput;
                         queue += l3a.QueueLength;
                     
-                        if (l3a.DistributionStrategy == DistributionStrategy.Link)
-                        {
-                            linkstr++;
-                        }
-
                         if (l3a.MaxQueueLengthLast60Seconds > maxqueue)
                             maxqueue += l3a.MaxQueueLengthLast60Seconds;
 

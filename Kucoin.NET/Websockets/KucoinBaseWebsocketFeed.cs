@@ -91,8 +91,6 @@ namespace Kucoin.NET.Websockets
 
         protected bool monitorThroughput;
 
-        protected bool wantMsgPumpThread = true;
-
         private long throughput;
 
         private long maxQueueLengthLast60Seconds;
@@ -393,6 +391,11 @@ namespace Kucoin.NET.Websockets
         #region Public Abstract Members
 
         /// <summary>
+        /// Gets the topic for the feed subscription.
+        /// </summary>
+        public abstract string Topic { get; }
+
+        /// <summary>
         /// Gets a value indicating whether this feed is public, or not.
         /// </summary>
         public abstract bool IsPublic { get; }
@@ -419,7 +422,7 @@ namespace Kucoin.NET.Websockets
             socket?.Dispose();
             socket = null;
             token = null;
-            
+
             CancelAllThreads();
 
             OnPropertyChanged(nameof(Connected));
@@ -492,12 +495,12 @@ namespace Kucoin.NET.Websockets
             socket.Options.SetBuffer(recvBufferSize, sendBufferSize);
 
             await socket.ConnectAsync(new Uri(uri), ctsReceive.Token);
-            
+
             if (socket?.State == WebSocketState.Open)
             {
                 // The Pinger:
                 PingService.RegisterService(this);
-               
+
                 // The Reader:
                 // -----------
 
@@ -505,10 +508,7 @@ namespace Kucoin.NET.Websockets
                 msgQueue = new List<string>();
                 msgQueue.Capacity = minQueueBuffer;
 
-                if (wantMsgPumpThread)
-                {
-                    EnableMessagePumpThread();
-                }
+                EnableMessagePumpThread();
 
                 // data receiver
                 inputReaderThread = new Thread(DataReceiveThread);
@@ -742,7 +742,7 @@ namespace Kucoin.NET.Websockets
         private Thread inputReaderThread;
 
         private Thread msgPumpThread;
-
+        
         public virtual int QueueLength => msgQueue?.Count ?? 0;
 
         /// <summary>
@@ -764,7 +764,7 @@ namespace Kucoin.NET.Websockets
 
             int i, c;
             int xlen = 0;
-
+            
             sb.EnsureCapacity(recvBufferSize);
 
             var arrSeg = new Memory<byte>(inputChunk);
@@ -826,10 +826,7 @@ namespace Kucoin.NET.Websockets
 
                 strlen += c;
 
-                if (sb.Capacity < strlen)
-                {
-                    sb.EnsureCapacity(strlen);
-                }
+                sb.EnsureCapacity(strlen);
 
                 // process as many complete JSON objects as we can and
                 // hold on to incomplete string data for the next
@@ -859,7 +856,7 @@ namespace Kucoin.NET.Websockets
                         {
                             // quoted string complete, switch back to object scanning.
                             inQuote = false;
-                        }
+                        }                      
                     }
                     else if (inChar == '\"')
                     {
@@ -881,34 +878,16 @@ namespace Kucoin.NET.Websockets
                             // we're back down at the root level!
                             // we now have one whole JSON string to pass to the handler.
 
-                            string json = sb.ToString();
-                            sb.Clear();
+                            lock(msgQueue)
+                            {
+                                msgQueue.Add(sb.ToString());
 
-                            strlen = 0;
-                            AddPacket(json);
+                                sb.Clear();
+                                strlen = 0;
+                            }
                         }
                     }
                 }
-
-            }
-        }
-        
-        /// <summary>
-        /// Add a packet to the message queue.
-        /// </summary>
-        /// <param name="json">The JSON object that was received.</param>
-        /// <remarks>
-        /// Override this method if you do not wish to use the default queue.<br/>
-        /// Additionally, you may wish to set <see cref="wantMsgPumpThread"/> to false before connecting if you will not be using the default queue.
-        /// (Modifying this field has no effect after a connection is established.)
-        /// </remarks>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]  
-        protected virtual void AddPacket(string json)
-        {
-            // lock on message queue.
-            lock (msgQueue)
-            {
-                msgQueue.Add(json); 
             }
         }
 
@@ -958,24 +937,18 @@ namespace Kucoin.NET.Websockets
                         msgQueue.CopyTo(queue);
                         msgQueue.Clear();
                     }
-                }
-                
-                for (int i = 0; i < c; i++)
-                {
-                    RouteJsonPacket(queue[i]);
+
                 }
 
                 if (c == 0)
                 {
-                    // nothing in the queue, give up some time-slices.
-                    try
-                    {
-                        Task.Delay(5, ctsPump.Token)
-                            .ConfigureAwait(false)
-                            .GetAwaiter()
-                            .GetResult();
-                    }
-                    catch { }
+                    Thread.Sleep(1);
+                    continue;
+                }
+
+                for (int i = 0; i < c; i++)
+                {
+                    RouteJsonPacket(queue[i]);
                 }
 
                 if (monitorThroughput)
@@ -987,8 +960,8 @@ namespace Kucoin.NET.Websockets
                 }
             }
 
-            msgQueue?.Clear();
-            if (wantMsgPumpThread) OnDisconnected();
+            msgQueue?.Clear();            
+            OnDisconnected();
         }
 
         /// <summary>
@@ -1320,12 +1293,7 @@ namespace Kucoin.NET.Websockets
         /// <summary>
         /// Gets the message subject for the feed cycle.
         /// </summary>
-        protected abstract string Subject { get; }
-
-        /// <summary>
-        /// Gets the topic for the feed subscription.
-        /// </summary>
-        protected abstract string Topic { get; }
+        public abstract string Subject { get; }
 
         #region Default Constructor
 

@@ -19,8 +19,8 @@ namespace Kucoin.NET.Futures.Websockets
 
         public override bool IsPublic => true;
 
-        protected override string Subject => "snapshot.24h";
+        public override string Subject => "snapshot.24h";
 
-        protected override string Topic => "/contractMarket/snapshot";
+        public override string Topic => "/contractMarket/snapshot";
     }
 }

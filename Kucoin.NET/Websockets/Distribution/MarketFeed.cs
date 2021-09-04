@@ -27,8 +27,7 @@ namespace Kucoin.NET.Websockets.Distribution
         /// Instantiate a new market feed.
         /// </summary>
         /// <param name="credentialsProvider">API Credentials.</param>
-        /// <param name="distributionStrategy">Data distribution strategy.</param>
-        public MarketFeed(ICredentialsProvider credentialsProvider, DistributionStrategy distributionStrategy = DistributionStrategy.MessagePump) : base(credentialsProvider, distributionStrategy)
+        public MarketFeed(ICredentialsProvider credentialsProvider) : base(credentialsProvider)
         {
         }
 
@@ -40,8 +39,7 @@ namespace Kucoin.NET.Websockets.Distribution
         /// <param name="passphrase">API passphrase.</param>
         /// <param name="isSandbox">True if sandbox mode.</param>
         /// <param name="futures">True if KuCoin Futures.</param>
-        /// <param name="distributionStrategy">Data distribution strategy.</param>
-        public MarketFeed(string key, string secret, string passphrase, bool isSandbox = false, bool futures = false, DistributionStrategy distributionStrategy = DistributionStrategy.MessagePump) : base(key, secret, passphrase, isSandbox: isSandbox, futures: futures, distributionStrategy)
+        public MarketFeed(string key, string secret, string passphrase, bool isSandbox = false, bool futures = false) : base(key, secret, passphrase, isSandbox: isSandbox, futures: futures)
         {
         }
      

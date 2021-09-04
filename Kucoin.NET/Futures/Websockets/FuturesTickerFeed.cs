@@ -20,9 +20,9 @@ namespace Kucoin.NET.Futures.Websockets
 
         public override bool IsPublic => true;
 
-        protected override string Subject => "tickerV2";
+        public override string Subject => "tickerV2";
 
-        protected override string Topic => "/contractMarket/tickerV2";
+        public override string Topic => "/contractMarket/tickerV2";
 
         protected override Task HandleMessage(FeedMessage msg)
         {

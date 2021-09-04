@@ -54,9 +54,9 @@ namespace Kucoin.NET.Futures.Websockets
 
         public override bool IsPublic => false;
 
-        protected override string Subject => "change";
+        public override string Subject => "change";
 
-        protected override string Topic => "/contractAccount/wallet";
+        public override string Topic => "/contractAccount/wallet";
 
 
         protected override async Task HandleMessage(FeedMessage msg)

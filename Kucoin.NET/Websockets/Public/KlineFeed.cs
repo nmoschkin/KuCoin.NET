@@ -40,9 +40,9 @@ namespace Kucoin.NET.Websockets.Public
 
         public override bool IsPublic => true;
 
-        protected override string Subject => "trade.candles.update";
+        public override string Subject => "trade.candles.update";
 
-        protected override string Topic => "/market/candles";
+        public override string Topic => "/market/candles";
 
         protected override async Task HandleMessage(FeedMessage msg)
         {

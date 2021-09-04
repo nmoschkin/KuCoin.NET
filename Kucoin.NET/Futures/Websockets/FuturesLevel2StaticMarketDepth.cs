@@ -20,9 +20,9 @@ namespace Kucoin.NET.Futures.Websockets
     {
         public override bool IsPublic => true;
 
-        protected override string Subject => "level2";
+        public override string Subject => "level2";
 
-        protected override string Topic => "/contractMarket/level2Depth5";
+        public override string Topic => "/contractMarket/level2Depth5";
 
         protected Dictionary<string, ObservableFuturesStaticMarketDepthUpdate> symbolObservables = new Dictionary<string, ObservableFuturesStaticMarketDepthUpdate>();
 
@@ -258,7 +258,7 @@ namespace Kucoin.NET.Futures.Websockets
     /// </summary>
     public class FuturesLevel2Depth50 : FuturesLevel2Depth5
     {
-        protected override string Topic => "/contractMarket/level2Depth50";
+        public override string Topic => "/contractMarket/level2Depth50";
 
         /// <summary>
         /// The depth of this level 2 feed.

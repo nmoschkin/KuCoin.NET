@@ -68,7 +68,12 @@ namespace Kucoin.NET.Websockets.Distribution.Services
 
                             foreach (var t in Tenants)
                             {
-                                actions.Add(t.DoWork);
+                                actions.Add(() =>
+                                {
+                                    t.DoWork();
+                                    Thread.Sleep(0);
+                                    t.DoWork();
+                                });
                             }
 
                             arrActions = actions.ToArray();

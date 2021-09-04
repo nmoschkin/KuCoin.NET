@@ -4,6 +4,7 @@ using Kucoin.NET.Futures.Data.Market;
 using Kucoin.NET.Futures.Websockets.Observations;
 using Kucoin.NET.Helpers;
 using Kucoin.NET.Json;
+using Kucoin.NET.Websockets;
 using Kucoin.NET.Websockets.Distribution;
 
 using Newtonsoft.Json;
@@ -30,13 +31,8 @@ namespace Kucoin.NET.Futures.Websockets
         /// </summary>
         /// <param name="credentialsProvider">API Credentials.</param>
         /// <param name="distributionStrategy">Data distribution strategy.</param>
-        public FuturesLevel2(ICredentialsProvider credentialsProvider, DistributionStrategy distributionStrategy = DistributionStrategy.MessagePump) : base(credentialsProvider, distributionStrategy)
+        public FuturesLevel2(ICredentialsProvider credentialsProvider) : base(credentialsProvider)
         {
-            if (distributionStrategy == DistributionStrategy.Link)
-            {
-                base.wantMsgPumpThread = false;
-            }
-
             if (!credentialsProvider.GetFutures()) throw new NotSupportedException("Cannot use spot market API credentials on a futures feed.");
 
             recvBufferSize = 4194304;
@@ -53,13 +49,8 @@ namespace Kucoin.NET.Futures.Websockets
         /// <param name="isSandbox">True if sandbox mode.</param>
         /// <param name="futures">True if KuCoin Futures.</param>
         /// <param name="distributionStrategy">Data distribution strategy.</param>
-        public FuturesLevel2(string key, string secret, string passphrase, bool isSandbox = false, DistributionStrategy distributionStrategy = DistributionStrategy.MessagePump) : base(key, secret, passphrase, isSandbox: isSandbox, futures: true, distributionStrategy)
+        public FuturesLevel2(string key, string secret, string passphrase, bool isSandbox = false) : base(key, secret, passphrase, isSandbox: isSandbox, futures: true)
         {
-            if (distributionStrategy == DistributionStrategy.Link)
-            {
-                base.wantMsgPumpThread = false;
-            }
-
             recvBufferSize = 4194304;
             minQueueBuffer = 10000;
             chunkSize = 1024;
@@ -121,26 +112,6 @@ namespace Kucoin.NET.Futures.Websockets
             return null;
         }
 
-
-        public override DistributionStrategy DistributionStrategy
-        {
-            get => strategy;
-            set
-            {
-                if (SetProperty(ref strategy, value))
-                {
-                    wantMsgPumpThread = (strategy == DistributionStrategy.MessagePump);
-                    if (wantMsgPumpThread)
-                    {
-                        EnableMessagePumpThread();
-                    }
-                    else
-                    {
-                        DisableMessagePumpThread();
-                    }
-                }
-            }
-        }
         public override void Release(IDistributable<string, FuturesLevel2Update> obj) => Release((FuturesLevel2Observation)obj);
 
         public void Release(FuturesLevel2Observation obj)
@@ -258,18 +229,6 @@ namespace Kucoin.NET.Futures.Websockets
             }
         }
 
-        protected override void AddPacket(string json)
-        {
-            if (wantMsgPumpThread)
-            {
-                base.AddPacket(json);
-            }
-            else
-            {
-                RouteJsonPacket(json);
-            }
-        }
-
         JsonSerializerSettings settings = new JsonSerializerSettings()
         {
             Converters = new JsonConverter[]
@@ -281,34 +240,19 @@ namespace Kucoin.NET.Futures.Websockets
         protected override void RouteJsonPacket(string json, FeedMessage e = null)
         {
             var msg = JsonConvert.DeserializeObject<FeedMessage<FuturesLevel2Update>>(json, settings);
-
+            var symbol = msg.Data.Symbol;
 
             if (msg.TunnelId == tunnelId && msg.Type == "message")
             {
-
-                var i = msg.Topic.IndexOf(":");
-
-                if (i != -1)
-                {
-                    var symbol = msg.Topic.Substring(i + 1);
-                    if (string.IsNullOrEmpty(symbol)) return;
-
-                    FuturesLevel2Observation af;
-
-                    lock (lockObj)
-                    {
-                        af = activeFeeds[symbol];
-                    }
-
-                    var update = msg.Data;
-                    af.OnNext(update);
-                }
+                if (string.IsNullOrEmpty(symbol)) return;
+                activeFeeds[symbol].OnNext(msg.Data);
             }
             else
             {
                 base.RouteJsonPacket(json, e);
             }
         }
+
 
         protected override Task HandleMessage(FeedMessage msg)
         {

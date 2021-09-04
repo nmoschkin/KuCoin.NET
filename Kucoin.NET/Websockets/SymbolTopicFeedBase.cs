@@ -119,7 +119,8 @@ namespace Kucoin.NET.Websockets
                 Type = "subscribe",
                 Id = connectId.ToString("d"),
                 Topic = topic,
-                Response = true
+                Response = true,
+                PrivateChannel = !IsPublic
             };
 
             await Send(e);
@@ -165,7 +166,8 @@ namespace Kucoin.NET.Websockets
                 Type = "unsubscribe",
                 Id = connectId.ToString("d"),
                 Topic = topic,
-                Response = true
+                Response = true, 
+                PrivateChannel = !IsPublic
             };
 
             await Send(e);

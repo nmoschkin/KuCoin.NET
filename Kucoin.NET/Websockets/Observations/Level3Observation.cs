@@ -40,11 +40,11 @@ namespace Kucoin.NET.Websockets.Observations
 
         private Candle candle = new Candle() { Type = KlineType.Min1, Timestamp = KlineType.Min1.GetCurrentKlineStartTime() };
 
-        private KlineType sortingKlineType = KlineType.Min5;
+        private KlineType sortingKlineType = KlineType.Min1;
 
-        private DateTime sortingKlineTime = KlineType.Min5.GetCurrentKlineStartTime();
+        private DateTime sortingKlineTime = KlineType.Min1.GetCurrentKlineStartTime();
 
-        private Candle sortingCandle = new Candle() { Type = KlineType.Min5, Timestamp = KlineType.Min5.GetCurrentKlineStartTime() };
+        private Candle sortingCandle = new Candle() { Type = KlineType.Min1, Timestamp = KlineType.Min1.GetCurrentKlineStartTime() };
 
         private List<Candle> lastCandles = new List<Candle>();
 
@@ -259,7 +259,7 @@ namespace Kucoin.NET.Websockets.Observations
 
         public decimal SortingVolume
         {
-            get => sortingVolume == 0M ? marketVolume : sortingVolume;
+            get => vt?.Volume ?? (sortingVolume == 0M ? marketVolume : sortingVolume);
             set
             {
                 SetProperty(ref sortingVolume, value);  
@@ -617,6 +617,7 @@ namespace Kucoin.NET.Websockets.Observations
             }
         }
 
+        
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public override bool ProcessObject(Level3Update obj)
         {
@@ -752,6 +753,8 @@ namespace Kucoin.NET.Websockets.Observations
             }
         }
 
+        VolumeTool vt = new VolumeTool();
+
         public override void SetInitialDataProvider(IInitialDataProvider<string, KeyedAtomicOrderBook<AtomicOrderStruct>> dataProvider)
         {
             DataProvider = dataProvider;
@@ -787,7 +790,6 @@ namespace Kucoin.NET.Websockets.Observations
                     if (pieces.ContainsKey(u.OrderId))
                     {
                         return false;
-                        //pieces.Remove(u.OrderId);
                     }
 
                     pieces.Add(u);
@@ -808,18 +810,7 @@ namespace Kucoin.NET.Websockets.Observations
                     }
                     else
                     {
-                        //Reset();
                         return false;
-
-                        //var u2 = new AtomicOrderStruct
-                        //{
-                        //    Price = change.Price ?? 0,
-                        //    Size = change.Size ?? 0,
-                        //    Timestamp = change.Timestamp ?? DateTime.Now,
-                        //    OrderId = change.OrderId
-                        //};
-
-                        //pieces.Add(u2);
                     }
 
                     return true;
@@ -841,6 +832,8 @@ namespace Kucoin.NET.Websockets.Observations
                             MarketVolume += (csize * p);
                             SortingVolume += (csize * p);
 
+                            vt.Add(csize * p, change.Timestamp ?? DateTime.Now);
+
                             Candle.Volume = marketVolume;
                             SortingCandle.Volume = sortingVolume;
                         }
@@ -854,4 +847,106 @@ namespace Kucoin.NET.Websockets.Observations
         }
 
     }
+
+    public class VolumeTool
+    {
+        private Candle candle = new Candle() { Type = KlineType.Min1, Timestamp = KlineType.Min1.GetCurrentKlineStartTime() };
+
+        private readonly List<decimal> volumes = new List<decimal>(new decimal[5] { 0, 0, 0, 0, 0 });
+
+        private int cidx = 0;
+
+        private bool ra = true;
+
+        /// <summary>
+        /// Gets the current sum or average volume.
+        /// </summary>
+        public decimal Volume
+        {
+            get
+            {
+                if (volumes == null) return 0;
+
+                lock (volumes)
+                {
+                    if (ra)
+                    {
+                        if (cidx == 0) return volumes[0];
+                        return volumes.Where((a) => a != 0M)?.Average() ?? 0;
+                    }
+                    else
+                    {
+                        return volumes.Sum();
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// How many minutes to look back for the sum/average calculation.
+        /// </summary>
+        public int MinutesRolling
+        {
+            get
+            {
+                if (volumes == null) return 0;
+
+                lock (volumes)
+                {
+                    return volumes?.Count ?? 0;
+                }
+            }
+            set
+            {
+                if (volumes == null) return;
+
+                lock (volumes)
+                {
+                    volumes.Clear();
+                    volumes.AddRange(new decimal[value]);
+                    cidx = 0;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Average (as opposed to sum)
+        /// </summary>
+        public bool RollingAverage
+        {
+            get => ra;
+            set
+            {
+                ra = value;
+            }
+        }
+
+        public VolumeTool()
+        {
+        }
+        
+        public void Add(decimal v, DateTime t)
+        {
+            if (volumes == null) return;
+
+            lock (volumes)
+            {
+                if (!Candle.IsTimeInCandle(candle, t))
+                {
+                    if (++cidx == 5)
+                    {
+                        volumes.RemoveAt(0);
+                        volumes.Add(0);
+                        cidx = 4;
+                    }
+
+                    candle.Timestamp = KlineType.Min1.GetCurrentKlineStartTime();
+                }
+
+                volumes[cidx] += v;
+            }
+        }
+    }
+
+
 }

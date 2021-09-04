@@ -13,9 +13,9 @@ namespace Kucoin.NET.Websockets.Public
     {
         public override bool IsPublic => true;
 
-        protected override string Subject => "trade.ticker";
+        public override string Subject => "trade.ticker";
 
-        protected override string Topic => "/market/ticker";
+        public override string Topic => "/market/ticker";
 
         /// <summary>
         /// Creates a new symbol ticker feed.

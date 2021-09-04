@@ -40,9 +40,9 @@ namespace Kucoin.NET.Futures.Websockets
 
         public override bool IsPublic => false;
 
-        protected override string Subject => "position.change";
+        public override string Subject => "position.change";
 
-        protected override string Topic => "/contract/position";
+        public override string Topic => "/contract/position";
 
 
         #region IObservable<T> Pattern

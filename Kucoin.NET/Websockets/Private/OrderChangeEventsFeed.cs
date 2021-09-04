@@ -14,9 +14,9 @@ namespace Kucoin.NET.Websockets.Private
     {
         public override bool IsPublic => false;
 
-        protected override string Subject => "orderChange";
+        public override string Subject => "orderChange";
 
-        protected override string Topic => "/spotMarket/tradeOrders";
+        public override string Topic => "/spotMarket/tradeOrders";
 
         /// <summary>
         /// When the order enters into the order book

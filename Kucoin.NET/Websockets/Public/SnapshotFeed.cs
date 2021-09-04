@@ -17,13 +17,13 @@ namespace Kucoin.NET.Websockets.Public
         /// <summary>
         /// Instantiate a new symbol snapshot feed.
         /// </summary>
-        public SnapshotFeed() : base(null, null, null)
+        public SnapshotFeed(ICredentialsProvider cred) : base(cred)
         {
         }
+        public override bool IsPublic => false;
+        public override string Subject => "trade.snapshot";
 
-        protected override string Subject => "trade.snapshot";
-
-        protected override string Topic => "/market/snapshot";
+        public override string Topic => "/market/snapshot";
 
         /// <summary>
         /// Instantiate and connect a new price snapshot feed.

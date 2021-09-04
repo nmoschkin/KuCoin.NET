@@ -13,9 +13,9 @@ namespace Kucoin.NET.Websockets.Private
 
         public override bool IsPublic => false;
 
-        protected override string Subject => "account.balance";
+        public override string Subject => "account.balance";
 
-        protected override string Topic => "/account/balance";
+        public override string Topic => "/account/balance";
 
         public BalanceNoticeFeed(ICredentialsProvider credProvider) : base(credProvider)
         {

@@ -13,8 +13,6 @@ namespace Kucoin.NET.Websockets.Public
     /// </summary>
     public class AllTickerFeed : TopicFeedBase<Ticker>
     {
-        private List<string> activeTickers = new List<string>();
-
         /// <summary>
         /// Instantiate a new all ticker feed.
         /// </summary>
@@ -23,9 +21,9 @@ namespace Kucoin.NET.Websockets.Public
         }
         public override bool IsPublic => true;
 
-        protected override string Subject => "trade.ticker";
+        public override string Subject => "trade.ticker";
 
-        protected override string Topic => "/market/ticker:all";
+        public override string Topic => "/market/ticker:all";
 
         protected override async Task HandleMessage(FeedMessage msg)
         {

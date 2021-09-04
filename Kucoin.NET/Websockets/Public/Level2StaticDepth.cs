@@ -16,9 +16,9 @@ namespace Kucoin.NET.Websockets.Public
     {
         public override bool IsPublic => true;
 
-        protected override string Subject => "level2";
+        public override string Subject => "level2";
 
-        protected override string Topic => "/spotMarket/level2Depth5";
+        public override string Topic => "/spotMarket/level2Depth5";
 
         protected Dictionary<string, ObservableStaticMarketDepthUpdate> symbolObservables = new Dictionary<string, ObservableStaticMarketDepthUpdate>();
 
@@ -260,7 +260,7 @@ namespace Kucoin.NET.Websockets.Public
     /// </summary>
     public class Level2Depth50 : Level2Depth5
     {
-        protected override string Topic => "/spotMarket/level2Depth50";
+        public override string Topic => "/spotMarket/level2Depth50";
 
         /// <summary>
         /// The depth of this level 2 feed.

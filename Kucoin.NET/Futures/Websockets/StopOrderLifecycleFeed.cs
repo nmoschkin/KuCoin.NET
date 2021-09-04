@@ -36,8 +36,8 @@ namespace Kucoin.NET.Futures.Websockets
 
         public override bool IsPublic => false;
 
-        protected override string Subject => "stopOrder";
+        public override string Subject => "stopOrder";
 
-        protected override string Topic => "/contractMarket/advancedOrders";
+        public override string Topic => "/contractMarket/advancedOrders";
     }
 }
