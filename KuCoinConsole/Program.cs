@@ -931,8 +931,8 @@ namespace KuCoinConsole
                     {
                         case 0:
 
-                            if (a.Level3Observation.SortingVolume > b.Level3Observation.SortingVolume) return 1 * sortorder;
-                            else if (a.Level3Observation.SortingVolume < b.Level3Observation.SortingVolume) return -1 * sortorder;
+                            if (a.Level3Observation.MarketVolume > b.Level3Observation.MarketVolume) return 1 * sortorder;
+                            else if (a.Level3Observation.MarketVolume < b.Level3Observation.MarketVolume) return -1 * sortorder;
                             else break;
 
                         case 1:
@@ -965,8 +965,8 @@ namespace KuCoinConsole
                         bb = ((IList<AtomicOrderStruct>)l3.FullDepthOrderBook.Bids)[0].Price;
                         ts = l3.FullDepthOrderBook.Timestamp;
 
-                        op = l3.SortingCandle.OpenPrice;
-                        cp = l3.SortingCandle.ClosePrice;
+                        op = l3.Candle.OpenPrice;
+                        cp = l3.Candle.ClosePrice;
 
                     }
                     else
@@ -1015,7 +1015,7 @@ namespace KuCoinConsole
                         zt = "{Green}▲{Reset}";
                     }
 
-                    itsb.WriteToEdgeLine($"{MinChars(obs.Symbol, maxSymbolLen)} {zt} Best Ask: {{Red}}{MinChars(ba.ToString("#,##0.00######"), 12)}{{Reset}} Best Bid: {{Green}}{MinChars(bb.ToString("#,##0.00######"), 12)}{{Reset}} {{Yellow}}{MinChars(currname, maxCurrencyLen)}{{Reset}}          Volume: {{Cyan}}{MinChars(l3.SortingVolume.ToString("#,##0.00##"), 14)}{{Reset}}");
+                    itsb.WriteToEdgeLine($"{MinChars(obs.Symbol, maxSymbolLen)} {zt} Best Ask: {{Red}}{MinChars(ba.ToString("#,##0.00######"), 12)}{{Reset}} Best Bid: {{Green}}{MinChars(bb.ToString("#,##0.00######"), 12)}{{Reset}} {{Yellow}}{MinChars(currname, maxCurrencyLen)}{{Reset}}          Volume: {{Cyan}}{MinChars(l3.MarketVolume.ToString("#,##0.00##"), 14)}{{Reset}}");
                     
                     if (ba == 0)
                     {

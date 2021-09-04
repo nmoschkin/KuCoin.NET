@@ -28,8 +28,7 @@ namespace Kucoin.NET.Websockets.Public
 
     public class Level3 : MarketFeed<Level3Observation, Level3Update, KeyedAtomicOrderBook<AtomicOrderStruct>, ObservableAtomicOrderBook<ObservableAtomicOrderUnit>>, ILevel3
     {
-        object lockObj = new object();
-        int topiclen;
+        protected object lockObj = new object();
 
         /// <summary>
         /// Instantiate a new market feed.
@@ -43,7 +42,6 @@ namespace Kucoin.NET.Websockets.Public
             recvBufferSize = 4194304;
             minQueueBuffer = 10000;
             chunkSize = 1024;
-            topiclen = Topic.Length;
         }
 
         /// <summary>
@@ -59,7 +57,6 @@ namespace Kucoin.NET.Websockets.Public
             recvBufferSize = 4194304;
             minQueueBuffer = 10000;
             chunkSize = 1024;
-            topiclen = Topic.Length;
         }
 
         public override string Topic => "/spotMarket/level3";

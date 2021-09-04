@@ -1,0 +1,503 @@
+﻿using Kucoin.NET.Data.Market;
+using Kucoin.NET.Data.Websockets;
+
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Runtime.CompilerServices;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace Kucoin.NET.Websockets.Distribution
+{
+    public abstract class OrderBookObservation<TBookIn, TBookOut, TDistributable, TParent> 
+        : MarketObservation<TBookIn, TBookOut, TDistributable>, IFeedDiagnostics, IMarketVolume
+        where TParent: IDistributor, IInitialDataProvider<string, TBookIn>
+        where TBookIn: class, new()
+        where TBookOut: class, new()
+        where TDistributable: ISymbol
+    {
+        protected new TParent parent;
+        
+        protected long matchTime = DateTime.UtcNow.Ticks;
+
+        protected long transactSec = 0;
+
+        protected long matchSec = 0;
+
+        protected IInitialDataProvider<string, TBookIn> dataProvider;
+
+        protected DateTime? lastFailureTime = null;
+
+        protected TBookIn fullDepth;
+
+        protected TBookOut orderBook;
+
+        protected IKlineType klineType = Kucoin.NET.Data.Market.KlineType.Min1;
+
+        protected DateTime klineTime = Kucoin.NET.Data.Market.KlineType.Min1.GetCurrentKlineStartTime();
+
+        protected Candle candle = new Candle() { Type = Kucoin.NET.Data.Market.KlineType.Min1, Timestamp = Kucoin.NET.Data.Market.KlineType.Min1.GetCurrentKlineStartTime() };
+
+        protected List<Candle> lastCandles = new List<Candle>();
+
+        protected bool disabled = true;
+
+        protected bool updVol;
+
+        protected bool diagEnable;
+
+        protected bool failure;
+
+        protected int interval = 100;
+
+        protected int marketDepth = 50;
+
+        protected bool initialized;
+
+        protected int resets = 0;
+
+        protected int maxResets = 3;
+
+        protected int resetTimeout = 30000;
+
+        protected bool initializing;
+
+        public override event EventHandler Initialized;
+
+        public OrderBookObservation(TParent parent, string symbol, bool observationDisabledByDefault) : base(parent, symbol)
+        {
+            this.parent = parent;
+            base.parent = parent;
+
+            dataProvider = parent;
+            IsObservationDisabled = observationDisabledByDefault;
+        }
+
+        public virtual Candle Candle
+        {
+            get => candle;
+            set
+            {
+                SetProperty(ref candle, value);
+            }
+        }
+
+        public virtual List<Candle> LastCandles
+        {
+            get => lastCandles;
+            protected set
+            {
+                SetProperty(ref lastCandles, value);
+            }
+        }
+
+        public virtual Candle LastCandle
+        {
+            get
+            {
+                if (lastCandles == null) return null;
+                else return lastCandles.LastOrDefault();
+            }
+        }
+
+        public virtual IKlineType KlineType
+        {
+            get => klineType;
+            set
+            {
+                if (SetProperty(ref klineType, value))
+                {
+                    KlineTime = klineType.GetCurrentKlineStartTime();
+                    Candle = new Candle() { Type = (KlineType)klineType, Timestamp = klineTime };
+                }
+            }
+        }
+
+        public virtual DateTime KlineTime
+        {
+            get => klineTime;
+            protected set
+            {
+                SetProperty(ref klineTime, value);
+            }
+        }
+
+        public override bool IsObservationDisabled
+        {
+            get => disabled;
+            set
+            {
+                SetProperty(ref disabled, value);
+            }
+        }
+
+        /// <summary>
+        /// Gets the full depth order book.
+        /// </summary>
+        public virtual TBookIn FullDepthOrderBook
+        {
+            get => fullDepth;
+            protected set
+            {
+                if (SetProperty(ref fullDepth, value))
+                {
+                    OnPropertyChanged(nameof(InternalData));
+                }
+            }
+        }
+
+        /// <summary>
+        /// Get the best-ask/bid observable order book.
+        /// </summary>
+        public virtual TBookOut OrderBook
+        {
+            get => orderBook;
+            protected set
+            {
+                if (SetProperty(ref orderBook, value))
+                {
+                    OnPropertyChanged(nameof(ObservableData));
+                }
+            }
+        }
+
+        public override TBookIn InternalData
+        {
+            get => fullDepth;
+            protected set
+            {
+                if (SetProperty(ref fullDepth, value))
+                {
+                    OnPropertyChanged(nameof(FullDepthOrderBook));
+                }
+            }
+        }
+
+        public override TBookOut ObservableData
+        {
+            get => orderBook;
+            protected set
+            {
+                if (SetProperty(ref orderBook, value))
+                {
+                    OnPropertyChanged(nameof(OrderBook));
+                }
+            }
+        }
+
+        public override bool PreferDispatcher => true;
+
+        public override int Interval
+        {
+            get => interval;
+            set
+            {
+                SetProperty(ref interval, value);
+            }
+        }
+
+        public override int MarketDepth
+        {
+            get => marketDepth;
+            set
+            {
+                SetProperty(ref marketDepth, value);
+            }
+        }
+
+        public virtual decimal MarketVolume
+        {
+            get => candle?.Volume ?? 0M;
+            protected set
+            {
+                if (candle != null) candle.Volume = value;
+            }
+        }
+
+        public virtual bool IsVolumeEnabled
+        {
+            get => updVol;
+            set
+            {
+                SetProperty(ref updVol, value);
+            }
+        }
+
+        public virtual bool DiagnosticsEnabled
+        {
+            get => diagEnable;
+            set
+            {
+                SetProperty(ref diagEnable, value);
+            }
+        }
+
+        public virtual long GrandTotal { get; protected set; }
+
+        public virtual long MatchesPerSecond { get; protected set; }
+
+        public virtual long MatchTotal { get; protected set; }
+
+        public virtual long TransactionsPerSecond { get; protected set; }
+
+        public virtual int QueueLength => buffer?.Count ?? 0;
+
+        public override IInitialDataProvider<string, TBookIn> DataProvider
+        {
+            get => dataProvider;
+            protected set
+            {
+                SetProperty(ref dataProvider, value);
+            }
+        }
+
+        public override bool IsDataProviderAvailable { get; protected set; } = true;
+
+        /// <summary>
+        /// Gets a value indicating that this order book is initialized with the full-depth (preflight) order book.
+        /// </summary>
+        public override bool IsInitialized
+        {
+            get => !disposedValue ? initialized : throw new ObjectDisposedException(GetType().FullName);
+            protected set
+            {
+                if (disposedValue) throw new ObjectDisposedException(GetType().FullName);
+                if (SetProperty(ref initialized, value))
+                {
+                    //if (value) State = FeedState.Running;
+                    //else State = FeedState.Initializing;
+                }
+            }
+        }
+
+        public override int ResetCount
+        {
+            get => resets;
+            protected set
+            {
+                SetProperty(ref resets, value);
+            }
+        }
+
+        public override int ResetTimeout
+        {
+            get => resetTimeout;
+            set
+            {
+                SetProperty(ref resetTimeout, value);
+            }
+        }
+        public override int MaxTimeoutRetries
+        {
+            get => maxResets;
+            set
+            {
+                SetProperty(ref maxResets, value);
+            }
+        }
+
+        public override bool Failure
+        {
+            get => failure;
+            protected set
+            {
+                if (SetProperty(ref failure, value))
+                {
+                    if (value)
+                    {
+                        state = FeedState.Failed;
+                        lastFailureTime = DateTime.UtcNow;
+                    }
+
+                    OnPropertyChanged(nameof(State));
+                    OnPropertyChanged(nameof(TimeUntilNextRetry));
+                    OnPropertyChanged(nameof(LastFailureTime));
+                }
+            }
+        }
+
+        /// <summary>
+        /// The time of the last failure, or null if the feed is running normally.
+        /// </summary>
+        public virtual DateTime? LastFailureTime
+        {
+            get => lastFailureTime;
+            protected set
+            {
+                if (SetProperty(ref lastFailureTime, value))
+                {
+                    OnPropertyChanged(nameof(TimeUntilNextRetry));
+                }
+            }
+        }
+
+        /// <summary>
+        /// The number of milliseconds remaining until the next retry, or null if the feed is running normally.
+        /// </summary>
+        public virtual double? TimeUntilNextRetry
+        {
+            get
+            {
+                if (lastFailureTime is DateTime t)
+                {
+                    return (resetTimeout - (DateTime.UtcNow - t).TotalMilliseconds);
+                }
+                else
+                {
+                    return null;
+                }
+            }
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public override async Task<bool> Initialize()
+        {
+            lock (lockObj)
+            {
+                IsInitialized = false;
+                initializing = true;
+
+                State = FeedState.Initializing;
+            }
+
+            TBookIn fd = null;
+            int maxtries = 3;
+
+            for (int tries = 0; tries < maxtries; tries++)
+            {
+                await Task.Delay(100);
+                fd = await DataProvider.ProvideInitialData(key);
+                if (fd != null) break;
+            }
+
+            lock (lockObj)
+            {
+                if (fd == null)
+                {
+                    State = FeedState.Failed;
+                    LastFailureTime = DateTime.Now;
+                    Failure = true;
+                    OnPropertyChanged(nameof(TimeUntilNextRetry));
+                }
+
+                FullDepthOrderBook = fd;
+
+                initializing = false;
+                IsInitialized = fd != null;
+
+                return IsInitialized;
+            }
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public override async Task Reset()
+        {
+            await Task.Run(() =>
+            {
+                lock (lockObj)
+                {
+                    if (initializing) return;
+
+                    initialized = failure = false;
+                    LastFailureTime = null;
+
+                    _ = Task.Run(() =>
+                    {
+                        OnPropertyChanged(nameof(IsInitialized));
+                        OnPropertyChanged(nameof(Failure));
+                        OnPropertyChanged(nameof(TimeUntilNextRetry));
+                        OnPropertyChanged(nameof(LastFailureTime));
+                    });
+
+                    FullDepthOrderBook = null;
+                    buffer.Clear();
+                }
+            });
+        }
+
+        CancellationTokenSource cts;
+        DateTime? startFetch;
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public override void DoWork()
+        {
+            lock (lockObj)
+            {
+                if (!initialized || failure)
+                {
+                    if (failure)
+                    {
+                        buffer.Clear();
+
+                        if (lastFailureTime is DateTime t && (DateTime.UtcNow - t).TotalMilliseconds >= resetTimeout)
+                        {
+                            initializing = false;
+                            LastFailureTime = null;
+                            Failure = false;
+                            State = FeedState.Initializing;
+
+                            _ = Reset();
+                        }
+                        else
+                        {
+                            OnPropertyChanged(nameof(TimeUntilNextRetry));
+                        }
+
+                        return;
+                    }
+
+                    if (!initializing)
+                    {
+                        initializing = true;
+                        startFetch = DateTime.Now;
+                        cts = new CancellationTokenSource();
+
+                        Initialize().ContinueWith((t) =>
+                        {
+                            if (t.Result)
+                            {
+                                State = FeedState.Running;
+                            }
+
+                            cts = null;
+                            startFetch = null;
+                        }, cts.Token);
+                    }
+                    else if (startFetch != null && (DateTime.Now - (DateTime)startFetch).TotalMilliseconds >= (resetTimeout * 2))
+                    {
+                        cts?.Cancel();
+                        startFetch = null;
+                        cts = null;
+                        State = FeedState.Failed;
+                        LastFailureTime = DateTime.Now;
+                        Failure = true;
+                        OnPropertyChanged(nameof(TimeUntilNextRetry));
+
+                        return;
+                    }
+
+                    return;
+                }
+
+                foreach (var obj in buffer)
+                {
+                    ProcessObject(obj);
+                }
+
+                buffer.Clear();
+                return;
+            }
+        }
+
+
+        public override void SetInitialDataProvider(IInitialDataProvider<string, TBookIn> dataProvider)
+        {
+            DataProvider = dataProvider;
+        }
+
+       
+
+    }
+
+}
