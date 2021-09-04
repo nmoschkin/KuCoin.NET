@@ -16,6 +16,7 @@ using System.Threading;
 using Kucoin.NET.Json;
 using System.Diagnostics;
 using System.Linq;
+using System.Runtime.CompilerServices;
 
 namespace Kucoin.NET.Websockets.Public
 {
@@ -27,6 +28,7 @@ namespace Kucoin.NET.Websockets.Public
     public class Level3 : MarketFeed<Level3Observation, Level3Update, KeyedAtomicOrderBook<AtomicOrderStruct>, ObservableAtomicOrderBook<ObservableAtomicOrderUnit>>, ILevel3
     {
         object lockObj = new object();
+        int topiclen;
 
         /// <summary>
         /// Instantiate a new market feed.
@@ -45,6 +47,7 @@ namespace Kucoin.NET.Websockets.Public
             recvBufferSize = 4194304;
             minQueueBuffer = 10000;
             chunkSize = 1024;
+            topiclen = Topic.Length;
         }
 
         /// <summary>
@@ -66,7 +69,7 @@ namespace Kucoin.NET.Websockets.Public
             recvBufferSize = 4194304;
             minQueueBuffer = 10000;
             chunkSize = 1024;
-
+            topiclen = Topic.Length;
         }
 
         public override string Topic => "/spotMarket/level3";
@@ -260,6 +263,14 @@ namespace Kucoin.NET.Websockets.Public
             }
         }
 
+        JsonSerializerSettings settings = new JsonSerializerSettings()
+        {
+            Converters = new JsonConverter[]
+            {
+                new Level3UpdateConverter()
+            }
+        };
+
         protected override void AddPacket(string json)
         {
             if (wantMsgPumpThread)
@@ -272,48 +283,26 @@ namespace Kucoin.NET.Websockets.Public
             }
         }
 
-        JsonSerializerSettings settings = new JsonSerializerSettings()
-        {
-            Converters = new JsonConverter[]
-            {
-                new Level3UpdateConverter()
-            }
-        };
+        FeedMessage<Level3Update> msg = new FeedMessage<Level3Update>();
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         protected override void RouteJsonPacket(string json, FeedMessage e = null)
         {
-            var msg = JsonConvert.DeserializeObject<FeedMessage<Level3Update>>(json, settings);
-            
+            JsonConvert.PopulateObject(json, msg, settings);
 
-            if (msg.TunnelId == tunnelId && msg.Type == "message")
+            if (msg.Type[0] == 'm' && msg.TunnelId == tunnelId)
             {
-                
-                var i = msg.Topic.IndexOf(":");
+                var update = msg.Data;
+                update.Subject = msg.Subject;
 
-                if (i != -1)
-                {
-                    var symbol = msg.Topic.Substring(i + 1);
-                    if (string.IsNullOrEmpty(symbol)) return;
-
-                    Level3Observation af;
-                    
-                    lock(lockObj)
-                    {
-                        af = activeFeeds[symbol];
-                    }
-
-                    var update = msg.Data;
-                    update.Subject = msg.Subject;
-
-                    af.OnNext(update);
-                }
+                activeFeeds[update.Symbol].OnNext(update);
             }
             else
             {
                 base.RouteJsonPacket(json, e);
             }
         }
-              
+
         protected override Task HandleMessage(FeedMessage msg)
         {
             throw new NotImplementedException();

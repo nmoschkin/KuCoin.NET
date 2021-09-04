@@ -38,13 +38,13 @@ namespace Kucoin.NET.Websockets.Observations
 
         private DateTime klineTime = KlineType.Min1.GetCurrentKlineStartTime();
 
-        private Candle candle = new Candle() { Type = KlineType.Min1, Timestamp = DateTime.Now.AddSeconds(-DateTime.Now.Second) };
+        private Candle candle = new Candle() { Type = KlineType.Min1, Timestamp = KlineType.Min1.GetCurrentKlineStartTime() };
 
-        private KlineType sortingKlineType = KlineType.Min15;
+        private KlineType sortingKlineType = KlineType.Min5;
 
-        private DateTime sortingKlineTime = KlineType.Min15.GetCurrentKlineStartTime();
+        private DateTime sortingKlineTime = KlineType.Min5.GetCurrentKlineStartTime();
 
-        private Candle sortingCandle = new Candle() { Type = KlineType.Min15, Timestamp = DateTime.Now.AddSeconds(-DateTime.Now.Second) };
+        private Candle sortingCandle = new Candle() { Type = KlineType.Min5, Timestamp = KlineType.Min5.GetCurrentKlineStartTime() };
 
         private List<Candle> lastCandles = new List<Candle>();
 
@@ -547,7 +547,7 @@ namespace Kucoin.NET.Websockets.Observations
         DateTime? startFetch;
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        protected override bool DoWork()
+        public override void DoWork()
         {
             lock (lockObj)
             {
@@ -571,7 +571,7 @@ namespace Kucoin.NET.Websockets.Observations
                             OnPropertyChanged(nameof(TimeUntilNextRetry));
                         }
 
-                        return false;
+                        return;
                     }
 
                     if (!initializing)
@@ -601,35 +601,19 @@ namespace Kucoin.NET.Websockets.Observations
                         Failure = true;
                         OnPropertyChanged(nameof(TimeUntilNextRetry));
 
-                        return false;
+                        return;
                     }
 
-                    return true;
+                    return;
                 }
 
-                int i, c = buffer.Count;
-                if (c == 0) return false;
-
-                if (c >= 20)
+                foreach (var obj in buffer)
                 {
-                    for (i = 0; i < 20; i++)
-                    {
-                        ProcessObject(buffer[i]);
-                    }
-
-                    buffer.RemoveRange(0, 20);
-                }
-                else
-                {
-                    foreach (var obj in buffer)
-                    {
-                        ProcessObject(obj);
-                    }
-
-                    buffer.Clear();
+                    ProcessObject(obj);
                 }
 
-                return true;
+                buffer.Clear();
+                return;
             }
         }
 
@@ -671,7 +655,7 @@ namespace Kucoin.NET.Websockets.Observations
                     GrandTotal++;
                     transactSec++;
 
-                    if (obj.Subject == "match")
+                    if (obj.Subject[0] == 'm')
                     {
                         MatchTotal++;
                         matchSec++;
@@ -680,7 +664,7 @@ namespace Kucoin.NET.Websockets.Observations
             
                 if (obj.Side == null)
                 {
-                    if (obj.Subject == "done")
+                    if (obj.Subject[0] == 'd')
                     {
                         if (fullDepth.Asks.ContainsKey(obj.OrderId))
                         {
@@ -709,13 +693,13 @@ namespace Kucoin.NET.Websockets.Observations
                 {
                     decimal price = (decimal)fullDepth.Bids[0].Price;
 
-                    if (!Candle.IsTimeInCandle(candle, fullDepth.Timestamp.ToUniversalTime()))
+                    if (!Candle.IsTimeInCandle(candle, fullDepth.Timestamp))
                     {
                         candle.ClosePrice = price;
                         LastCandles.Add(candle);
 
                         Candle = new Candle();
-
+                        Candle.Type = KlineType;
                         MarketVolume = 0;
                         Candle.Volume = 0;
 
@@ -736,15 +720,16 @@ namespace Kucoin.NET.Websockets.Observations
                         }
                     }
 
-                    if (!Candle.IsTimeInCandle(sortingCandle, fullDepth.Timestamp.ToUniversalTime()))
+                    if (!Candle.IsTimeInCandle(sortingCandle, fullDepth.Timestamp))
                     {
                         sortingCandle.ClosePrice = price;
                         SortingCandle = new Candle();
+                        SortingCandle.Type = SortingKlineType;
 
-                        MarketVolume = 0;
+                        SortingVolume = 0;
                         SortingCandle.Volume = 0;
 
-                        SortingCandle.OpenPrice = Candle.ClosePrice = Candle.HighPrice = Candle.LowPrice = price;
+                        SortingCandle.OpenPrice = SortingCandle.ClosePrice = SortingCandle.HighPrice = SortingCandle.LowPrice = price;
                         SortingKlineTime = SortingCandle.Timestamp = sortingKlineType.GetCurrentKlineStartTime();
                     }
                     else
@@ -780,14 +765,14 @@ namespace Kucoin.NET.Websockets.Observations
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         protected bool SequencePieces(string subj, Level3Update change, KeyedBook<AtomicOrderStruct> pieces, KeyedBook<AtomicOrderStruct> otherPieces)
         {
-            switch (subj)
+            switch (subj[0])
             {
-                case "done":
+                case 'd':
 
                     pieces.Remove(change.OrderId);
                     return true;
 
-                case "open":
+                case 'o':
 
                     if (change.Price == null || change.Price == 0 || change.Size == null || change.Size == 0) return true;
 
@@ -809,7 +794,7 @@ namespace Kucoin.NET.Websockets.Observations
 
                     return true;
 
-                case "change":
+                case 'c':
 
                     if (pieces.TryGetValue(change.OrderId, out AtomicOrderStruct piece))
                     {
@@ -839,7 +824,7 @@ namespace Kucoin.NET.Websockets.Observations
 
                     return true;
 
-                case "match":
+                case 'm':
 
                     if (change.Price is decimal p && change.Size is decimal csize
                         && otherPieces.TryGetValue(change.MakerOrderId, out AtomicOrderStruct o))

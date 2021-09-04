@@ -26,7 +26,7 @@ namespace Kucoin.NET.Websockets.Distribution
         /// Do work.
         /// </summary>
         /// <returns>True if work was done, otherwise false.</returns>
-        bool DoWork();
+        void DoWork();
 
         /// <summary>
         /// Object that can be locked to support thread interlocking.

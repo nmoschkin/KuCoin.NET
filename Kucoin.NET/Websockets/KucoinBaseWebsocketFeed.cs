@@ -743,7 +743,7 @@ namespace Kucoin.NET.Websockets
 
         private Thread msgPumpThread;
 
-        public int QueueLength => msgQueue?.Count ?? 0;
+        public virtual int QueueLength => msgQueue?.Count ?? 0;
 
         /// <summary>
         /// The data receive thread.
@@ -933,7 +933,7 @@ namespace Kucoin.NET.Websockets
         /// the order in which they were received without delaying the data
         /// receiving thread.
         /// </summary>
-        private void MessagePumpThread()
+        protected virtual void MessagePumpThread()
         {
             string[] queue = new string[minQueueBuffer];
             int c;

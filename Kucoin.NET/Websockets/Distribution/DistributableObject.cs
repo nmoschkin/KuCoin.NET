@@ -64,16 +64,11 @@ namespace Kucoin.NET.Websockets.Distribution
             State = FeedState.Subscribed;
         }
 
-        bool IDistributable.DoWork()
-        {
-            return DoWork();
-        }
-
         /// <summary>
         /// Do work.
         /// </summary>
         /// <returns>True if work was done.</returns>
-        protected abstract bool DoWork();
+        public abstract void DoWork();
 
         /// <summary>
         /// Process the object with internal data handling.
@@ -95,10 +90,7 @@ namespace Kucoin.NET.Websockets.Distribution
         {
             lock (lockObj)
             {
-                lock (buffer)
-                {
-                    buffer.Add(value);
-                }
+                buffer.Add(value);
             }
         }
 

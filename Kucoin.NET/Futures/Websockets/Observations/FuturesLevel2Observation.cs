@@ -540,7 +540,7 @@ namespace Kucoin.NET.Futures.Websockets.Observations
         DateTime? startFetch;
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        protected override bool DoWork()
+        public override void DoWork()
         {
             lock (lockObj)
             {
@@ -564,7 +564,7 @@ namespace Kucoin.NET.Futures.Websockets.Observations
                             OnPropertyChanged(nameof(TimeUntilNextRetry));
                         }
 
-                        return false;
+                        return;
                     }
 
                     if (!initializing)
@@ -594,35 +594,20 @@ namespace Kucoin.NET.Futures.Websockets.Observations
                         Failure = true;
                         OnPropertyChanged(nameof(TimeUntilNextRetry));
 
-                        return false;
+                        return;
                     }
 
-                    return true;
+                    return;
                 }
 
-                int i, c = buffer.Count;
-                if (c == 0) return false;
-
-                if (c >= 20)
+                foreach (var obj in buffer)
                 {
-                    for (i = 0; i < 20; i++)
-                    {
-                        ProcessObject(buffer[i]);
-                    }
-
-                    buffer.RemoveRange(0, 20);
-                }
-                else
-                {
-                    foreach (var obj in buffer)
-                    {
-                        ProcessObject(obj);
-                    }
-
-                    buffer.Clear();
+                    ProcessObject(obj);
                 }
 
-                return true;
+                buffer.Clear();
+
+                return;
             }
         }
 

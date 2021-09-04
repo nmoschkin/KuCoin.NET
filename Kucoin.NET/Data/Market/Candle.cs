@@ -101,7 +101,9 @@ namespace Kucoin.NET.Data.Market
         public static bool IsTimeInCandle<T>(ITypedCandle<T> candle, DateTime time) where T: IKlineType
         {
             DateTime dv;
-            
+
+            if (time.Kind != DateTimeKind.Utc) time = time.ToUniversalTime();
+
             if (candle.Type.LengthType == KlineLengthType.Seconds)
                 dv = candle.Timestamp.AddSeconds(candle.Type.Length);
             else

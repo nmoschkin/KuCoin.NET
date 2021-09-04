@@ -38,8 +38,8 @@ namespace Kucoin.NET.Websockets.Distribution.Services
                 if (disposed) throw new ObjectDisposedException(GetType().FullName);
 
                 cts?.Cancel();
-                Thread = null;
                 cts = null;
+                Thread = null;
                 disposed = true;
             }
 
@@ -54,9 +54,9 @@ namespace Kucoin.NET.Websockets.Distribution.Services
             {
                 var actions = new List<Action>();
                 Action[] arrActions = new Action[0];
-                int x = 0, f = 0;
+                int x = 0, f = -1;
 
-                while (!cts.IsCancellationRequested)
+                while (true)
                 {
                     lock (Tenants)
                     {
@@ -65,24 +65,15 @@ namespace Kucoin.NET.Websockets.Distribution.Services
                             ActionsChanged = false;
 
                             actions.Clear();
+
                             foreach (var t in Tenants)
                             {
-                                actions.Add(new Action(() =>
-                                {
-                                    try
-                                    {
-                                        if (!t.DoWork()) x++;
-                                    }
-                                    catch { }
-
-                                }));
+                                actions.Add(t.DoWork);
                             }
 
                             arrActions = actions.ToArray();
                         }
                     }
-
-                    x = 0;
 
                     try
                     {
@@ -90,12 +81,49 @@ namespace Kucoin.NET.Websockets.Distribution.Services
                     }
                     catch { }
 
-                    if (f++ == sleepDivisor)
+                    if (++f == sleepDivisor)
                     {
                         Thread.Sleep(idleSleepTime);
-                        f = 0;
+                        f = -1;
                     }
 
+                    try
+                    {
+                        Parallel.Invoke(arrActions);
+                    }
+                    catch { }
+
+                    if (++f == sleepDivisor)
+                    {
+                        Thread.Sleep(idleSleepTime);
+                        f = -1;
+                    }
+
+                    try
+                    {
+                        Parallel.Invoke(arrActions);
+                    }
+                    catch { }
+
+                    if (++f == sleepDivisor)
+                    {
+                        Thread.Sleep(idleSleepTime);
+                        f = -1;
+                    }
+
+                    try
+                    {
+                        Parallel.Invoke(arrActions);
+                    }
+                    catch { }
+
+                    if (++f == sleepDivisor)
+                    {
+                        Thread.Sleep(idleSleepTime);
+                        f = -1;
+                    }
+
+                    if (cts == null) return;
                 }
             }
 

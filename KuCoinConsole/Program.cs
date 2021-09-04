@@ -189,13 +189,23 @@ namespace KuCoinConsole
             //    AllocConsole();
             //}
 
-            Console.WindowWidth = 150;
-            Console.WindowHeight = 60;
+            try
+            {
+                Console.WindowWidth = 150;
+                Console.WindowHeight = 60;
+            }
+            catch
+            {
+
+            }
+
+
             maxRows = 11;
 
             var em = new ConsoleEmulator();
 
             Console.Clear();
+
             Console.WriteLine("Initializing KuCoin Library (Loading Symbols and Currencies)...");
             KuCoin.Initialize();
 
@@ -567,6 +577,11 @@ namespace KuCoinConsole
                                 if (sortmode == 2) sortorder = sortorder * -1;
                                 else sortmode = 2;
                             }
+                            else if (key.Key == ConsoleKey.Q)
+                            {
+                                Console.CursorTop = Console.WindowHeight - 1;
+                                Environment.Exit(0);
+                            }
 
                         }
 
@@ -731,9 +746,18 @@ namespace KuCoinConsole
             var itsb = new StringBuilder();
             int cwid = Console.WindowWidth;
 
+            if (activeSymbols != null && maxRows > 0)
+            {
+                if (maxScrollIndex != activeSymbols.Count - maxRows)
+                {
+                    maxScrollIndex = activeSymbols.Count - maxRows;
+                }
+            }
+
+
             lock (lockObj)
             {
-                decimal ba, bb;
+                decimal ba, bb, op, cp;
                 
                 long biggrand = 0;
                 long matchgrand = 0;
@@ -941,10 +965,14 @@ namespace KuCoinConsole
                         ba = ((IList<AtomicOrderStruct>)l3.FullDepthOrderBook.Asks)[0].Price;
                         bb = ((IList<AtomicOrderStruct>)l3.FullDepthOrderBook.Bids)[0].Price;
                         ts = l3.FullDepthOrderBook.Timestamp;
+
+                        op = l3.SortingCandle.OpenPrice;
+                        cp = l3.SortingCandle.ClosePrice;
+
                     }
                     else
                     {
-                        ba = bb = 0;
+                        op = cp = ba = bb = 0;
                     }
 
                     var currname = "";
@@ -976,7 +1004,19 @@ namespace KuCoinConsole
                         cidx++;
                     }
 
-                    itsb.WriteToEdgeLine($"{MinChars(obs.Symbol, maxSymbolLen)} - Best Ask: {{Red}}{MinChars(ba.ToString("#,##0.00######"), 12)}{{Reset}} Best Bid: {{Green}}{MinChars(bb.ToString("#,##0.00######"), 12)}{{Reset}} - {{Yellow}}{MinChars(currname, maxCurrencyLen)}{{Reset}}  Volume: {{Cyan}}{MinChars(l3.SortingVolume.ToString("#,##0.00"), 14)}{{Reset}}");
+                    var zt = "{Reset}-";
+                    var t = "▲▼";
+
+                    if (op > cp)
+                    {
+                        zt = "{Red}▼{Reset}";
+                    }
+                    else if (cp > op)
+                    {
+                        zt = "{Green}▲{Reset}";
+                    }
+
+                    itsb.WriteToEdgeLine($"{MinChars(obs.Symbol, maxSymbolLen)} {zt} Best Ask: {{Red}}{MinChars(ba.ToString("#,##0.00######"), 12)}{{Reset}} Best Bid: {{Green}}{MinChars(bb.ToString("#,##0.00######"), 12)}{{Reset}} {{Yellow}}{MinChars(currname, maxCurrencyLen)}{{Reset}}          Volume: {{Cyan}}{MinChars(l3.SortingVolume.ToString("#,##0.00##"), 14)}{{Reset}}");
                     
                     if (ba == 0)
                     {
@@ -984,7 +1024,7 @@ namespace KuCoinConsole
                     }
                     else
                     {
-                        itsb.WriteToEdgeLine($"{MinChars($"{{White}}{vc + 1} {{Blue}}@{fidx}{{Reset}}", maxSymbolLen + 20)} - Match Share: {MinChars(mpcts[z].ToString("##0") + "%", 4)}   Total Share: {MinChars(pcts[z++].ToString("##0") + "%", 4)}   State: " + MinChars(l3.State.ToString(), 14) + "  Queue Length: " + MinChars(l3.QueueLength.ToString(), 10) + $"{{Reset}} Timestamp: {{Blue}}{ts:G}{{Reset}}");
+                        itsb.WriteToEdgeLine($"{MinChars($"{{White}}{vc + 1} {{Blue}}@{fidx}{{Reset}}", maxSymbolLen + 20)}   Match Share: {MinChars(mpcts[z].ToString("##0.##") + "%", 7)}   Total Share: {MinChars(pcts[z++].ToString("##0.##") + "%", 7)}   State: " + MinChars(l3.State.ToString(), 14) + "  Queue Length: " + MinChars(l3.QueueLength.ToString(), 10) + $"{{Reset}} Timestamp: {{Blue}}{ts:G}{{Reset}}");
                         //itsb.WriteToEdgeLine($"{MinChars($"{{White}}{vc + 1} ", maxSymbolLen + 7)} - Match Share: {MinChars(mpcts[z].ToString("##0") + "%", 4)}   Total Share: {MinChars(pcts[z++].ToString("##0") + "%", 4)}   State: " + MinChars(l3.State.ToString(), 14) + "  Queue Length: " + MinChars(l3.QueueLength.ToString(), 10) + $" {{Reset}}Feed: {{White}}{MinChars((fidx == 0) ? "N/A" : fidx.ToString(), 4)}");
                     }
 
@@ -1022,14 +1062,14 @@ namespace KuCoinConsole
                 }
                 
                 ft.WriteToEdgeLine($"");
-                ft.WriteToEdgeLine($"Match Total: {{White}}{matchgrand:#,##0}{{Reset}}");
-                ft.WriteToEdgeLine($"Grand Total: {{White}}{biggrand:#,##0}{{Reset}}");
-                ft.WriteToEdgeLine($"");
+                ft.WriteToEdgeLine($"Match Total: {{White}}{matchgrand:#,##0}{{Reset}}      ");
+                ft.WriteToEdgeLine($"Grand Total: {{White}}{biggrand:#,##0}{{Reset}}        ");
+                ft.WriteToEdgeLine($"                                                       ");
                 ft.WriteToEdgeLine($"Matches Per Second:      ~ {{Cyan}}{mps:#,###}{{Reset}}");
                 ft.WriteToEdgeLine($"Transactions Per Second: ~ {{Cyan}}{tps:#,###}{{Reset}}");
                 ft.WriteToEdgeLine($"");
                 ft.WriteToEdgeLine($"{{White}}Use Arrow Up/Arrow Down, Page Up/Page Down, Home/End to navigate the feed list. Ctrl+Arrow Up/Down scrolls the message log, below.{{Reset}}");
-                ft.WriteToEdgeLine($"{{White}}Press: (A) Sort Alphabetically, (P) Price, (V) Volume. Press again to reverse order.");
+                ft.WriteToEdgeLine($"{{White}}Press: (A) Sort Alphabetically, (P) Price, (V) Volume. Press again to reverse order. (Q) To Quit.");
 
                 lock(messages)
                 {
