@@ -296,19 +296,19 @@ namespace Kucoin.NET.Services
 
             if (tickerEnabled)
             {
-                await tickerfeed.RemoveAllSymbols();
+                await tickerfeed.UnsubscribeAll();
             }
 
             // these are multiplexed but require the enabled state to be unset
             if (level2d5enabled)
             {
-                await level2d5.RemoveAllSymbols();
+                await level2d5.UnsubscribeAll();
                 level2d5enabled = false;
             }
 
             if (level2d50enabled)
             {
-                await level2d50.RemoveAllSymbols();
+                await level2d50.UnsubscribeAll();
                 level2d50enabled = false;
             }
             var oldsymbol = symbol;
@@ -403,19 +403,19 @@ namespace Kucoin.NET.Services
 
             if (tickerEnabled)
             {
-                await tickerfeed.RemoveAllSymbols();
-                await tickerfeed.AddSymbol((string)symbol);
+                await tickerfeed.UnsubscribeAll();
+                await tickerfeed.SubscribeOne((string)symbol);
             }
 
             if (level2d5enabled)
             {
-                await level2d5.RemoveAllSymbols();
+                await level2d5.UnsubscribeAll();
                 level2d5update = await level2d5.AddSymbol((string)symbol);
             }
 
             if (level2d50enabled)
             {
-                await level2d50.RemoveAllSymbols();
+                await level2d50.UnsubscribeAll();
                 level2d50update = await level2d5.AddSymbol((string)symbol);
             }
 

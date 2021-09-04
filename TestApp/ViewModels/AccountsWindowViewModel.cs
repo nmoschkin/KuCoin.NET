@@ -227,7 +227,7 @@ namespace KuCoinApp.ViewModels
 
             if (addTicker)
             {
-                _ = ticker.AddSymbol(pair);
+                _ = ticker.SubscribeOne(pair);
             }
         }
 
@@ -304,7 +304,7 @@ namespace KuCoinApp.ViewModels
                     if (tick != null)
                     {
                         ((IObserver<Ticker>)this).OnNext(tick);
-                        await ticker.AddSymbol(pair);
+                        await ticker.SubscribeOne(pair);
                     }
                 }
                 catch

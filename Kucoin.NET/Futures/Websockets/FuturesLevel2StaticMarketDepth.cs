@@ -66,7 +66,7 @@ namespace Kucoin.NET.Futures.Websockets
         /// </returns>
         public new async Task<Dictionary<string, ObservableFuturesStaticMarketDepthUpdate>> AddSymbols(IEnumerable<string> symbols)
         {
-            await base.AddSymbols(symbols);
+            await base.SubscribeMany(symbols);
             var dict = new Dictionary<string, ObservableFuturesStaticMarketDepthUpdate>();
 
             foreach (var sym in symbols)
@@ -88,9 +88,9 @@ namespace Kucoin.NET.Futures.Websockets
         /// </summary>
         /// <param name="symbols">The symbols to unsubscribe.</param>
         /// <returns></returns>
-        public override async Task RemoveSymbols(IEnumerable<string> symbols)
+        public override async Task UnsubscribeMany(IEnumerable<string> symbols)
         {
-            await base.RemoveSymbols(symbols);
+            await base.UnsubscribeMany(symbols);
 
             foreach (var sym in symbols)
             {

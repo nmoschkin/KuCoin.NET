@@ -472,14 +472,14 @@ namespace KuCoinApp
 
             if (force || (oldSymbol != (string)symbol && oldSymbol != null))
             {
-                tickerFeed.RemoveSymbol(oldSymbol).ContinueWith((t) =>
+                tickerFeed.UnsubscribeOne(oldSymbol).ContinueWith((t) =>
                 {
                     klineFeed.RemoveSymbol(oldSymbol, oldKline ?? KlineType).ContinueWith((t) =>
                     {
                         RefreshData().ContinueWith(async (t) =>
                         {
 
-                            await tickerFeed.AddSymbol(newSymbol);
+                            await tickerFeed.SubscribeOne(newSymbol);
                             await klineFeed.AddSymbol(newSymbol, KlineType);
 
                             Volume = null;
@@ -540,7 +540,7 @@ namespace KuCoinApp
 
                     });
 
-                    await tickerFeed.AddSymbol(newSymbol);
+                    await tickerFeed.SubscribeOne(newSymbol);
                     await klineFeed.AddSymbol(newSymbol, KlineType);
 
                 });

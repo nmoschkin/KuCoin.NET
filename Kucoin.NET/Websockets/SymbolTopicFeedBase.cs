@@ -79,9 +79,9 @@ namespace Kucoin.NET.Websockets
         /// </summary>
         /// <param name="symbol"></param>
         /// <returns></returns>
-        public async Task AddSymbol(string symbol)
+        public async Task SubscribeOne(string symbol)
         {
-            await AddSymbols(new string[] { symbol });
+            await SubscribeMany(new string[] { symbol });
         }
 
         /// <summary>
@@ -89,7 +89,7 @@ namespace Kucoin.NET.Websockets
         /// </summary>
         /// <param name="symbols"></param>
         /// <returns></returns>
-        public virtual async Task AddSymbols(IEnumerable<string> symbols)
+        public virtual async Task SubscribeMany(IEnumerable<string> symbols)
         {
             if (subject == null) subject = Subject;
             if (this.topic == null) this.topic = Topic;
@@ -132,9 +132,9 @@ namespace Kucoin.NET.Websockets
         /// </summary>
         /// <param name="symbol"></param>
         /// <returns></returns>
-        public async Task RemoveSymbol(string symbol)
+        public async Task UnsubscribeOne(string symbol)
         {
-            await RemoveSymbols(new string[] { symbol });
+            await UnsubscribeMany(new string[] { symbol });
         }
 
         /// <summary>
@@ -142,7 +142,7 @@ namespace Kucoin.NET.Websockets
         /// </summary>
         /// <param name="symbols"></param>
         /// <returns></returns>
-        public virtual async Task RemoveSymbols(IEnumerable<string> symbols)
+        public virtual async Task UnsubscribeMany(IEnumerable<string> symbols)
         {
             if (disposedValue) throw new ObjectDisposedException(GetType().FullName);
             if (!Connected) return;
@@ -177,9 +177,9 @@ namespace Kucoin.NET.Websockets
         /// Remove from all symbols
         /// </summary>
         /// <returns></returns>
-        public virtual async Task RemoveAllSymbols()
+        public virtual async Task UnsubscribeAll()
         {
-            await RemoveSymbols(new List<string>(activeSymbols));
+            await UnsubscribeMany(new List<string>(activeSymbols));
         }
 
         #region IObservable<T> Pattern
@@ -281,7 +281,6 @@ namespace Kucoin.NET.Websockets
 
         #endregion
 
-
         #region Multiplexing
 
         /// <summary>
@@ -313,7 +312,7 @@ namespace Kucoin.NET.Websockets
 
             if (inheritSymbols && Connected && activeSymbols?.Count > 0)
             {
-                await child.AddSymbols(activeSymbols);
+                await child.SubscribeMany(activeSymbols);
             }
 
             return child;

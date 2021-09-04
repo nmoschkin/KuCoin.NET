@@ -32,7 +32,7 @@ namespace Kucoin.NET.Websockets.Public
         {
             Connect().ContinueWith(async (t) =>
             {
-                await AddSymbols(symbols);
+                await SubscribeMany(symbols);
             });
         }
 
@@ -44,7 +44,7 @@ namespace Kucoin.NET.Websockets.Public
         {
             Connect().ContinueWith(async (t) =>
             {
-                await AddSymbol(symbol);
+                await SubscribeOne(symbol);
             });
         }
     }
