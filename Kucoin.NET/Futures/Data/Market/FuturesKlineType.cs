@@ -16,18 +16,18 @@ namespace Kucoin.NET.Futures.Data.Market
         /// <summary>
         /// The length of the K Line, in minutes.
         /// </summary>
-        private readonly int length;
+        private readonly TimeSpan ts;
 
-        public int Length => length;
+        public TimeSpan TimeSpan => ts;
 
-        public KlineLengthType LengthType => KlineLengthType.Minutes;
 
         public static readonly int[] ValidValues = new int[] { 0, 1, 5, 15, 30, 60, 120, 240, 480, 720, 1440, 10080 };
 
         private FuturesKlineType(int value)
         {
             if (!ValidValues.Contains(value)) throw new ArgumentException("Invalid Futures K-Line Length");
-            length = value;
+
+            ts = new TimeSpan(0, value, 0);
         }
 
         /// <summary>
@@ -92,7 +92,7 @@ namespace Kucoin.NET.Futures.Data.Market
 
         private static readonly FieldInfo[] klineFields = typeof(FuturesKlineType).GetFields(BindingFlags.Public | BindingFlags.Static);
 
-        public bool IsInvalid => length == 0;
+        public bool IsInvalid => ts == TimeSpan.Zero;
 
         /// <summary>
         /// Gets a list of all K-Line types.
@@ -105,7 +105,7 @@ namespace Kucoin.NET.Futures.Data.Market
 
                 foreach (var f in klineFields)
                 {
-                    if (f.GetValue(null) is FuturesKlineType ktt && ktt.length != 0) l.Add(ktt);
+                    if (f.GetValue(null) is FuturesKlineType ktt && ktt.ts != TimeSpan.Zero) l.Add(ktt);
                 }
 
                 return l.ToArray();
@@ -120,7 +120,7 @@ namespace Kucoin.NET.Futures.Data.Market
 
         public override string ToString()
         {
-            return length.ToString();
+            return ts.ToString();
         }
 
         /// <summary>
@@ -161,30 +161,32 @@ namespace Kucoin.NET.Futures.Data.Market
 
         public DateTime GetCurrentKlineStartTime()
         {
+            var num = Number;
+
             var dt = DateTime.UtcNow;
             dt = dt.AddSeconds(-dt.Second);
 
             if (Unit == "Min")
             {
-                dt = dt.AddMinutes(-(dt.Minute % Number));
+                dt = dt.AddMinutes(-(dt.Minute % num));
             }
             else if (Unit == "Hour")
             {
                 dt = dt.AddMinutes(-dt.Minute);
-                dt = dt.AddHours(-(dt.Hour % Number));
+                dt = dt.AddHours(-(dt.Hour % num));
             }
             else if (Unit == "Day")
             {
 
                 dt = dt.AddMinutes(-dt.Minute);
                 dt = dt.AddHours(-dt.Hour);
-                dt = dt.AddDays(-(dt.Day % Number));
+                dt = dt.AddDays(-(dt.Day % num));
             }
             else if (Unit == "Week")
             {
                 dt = dt.AddMinutes(-dt.Minute);
                 dt = dt.AddHours(-dt.Hour);
-                dt = dt.AddDays(-((int)dt.DayOfWeek % (Number * 7)));
+                dt = dt.AddDays(-((int)dt.DayOfWeek % (num * 7)));
             }
             else
             {
@@ -203,7 +205,7 @@ namespace Kucoin.NET.Futures.Data.Market
         {
             if (!formatted)
             {
-                return length.ToString();
+                return ts.ToString();
             }
             else 
             {
@@ -218,7 +220,7 @@ namespace Kucoin.NET.Futures.Data.Market
                 {
                     if (f.GetValue(null) is FuturesKlineType fc)
                     {
-                        if (fc.length == length)
+                        if (fc.ts == ts)
                         {
                             n = f.Name;
                             break;
@@ -258,11 +260,11 @@ namespace Kucoin.NET.Futures.Data.Market
             }
             else if (obj is FuturesKlineType fc)
             {
-                return fc.length == length;
+                return fc.ts == ts;
             }
             else if (obj is int i)
             {
-                return i == length;
+                return i == ts.TotalMinutes;
             }
             else
             {
@@ -272,18 +274,18 @@ namespace Kucoin.NET.Futures.Data.Market
 
         public override int GetHashCode()
         {
-            return length;
+            return ts.GetHashCode();
         }
 
         public DateTime GetStartDate(int pieces, DateTime? endDate = null)
         {
             var et = endDate ?? DateTime.Now;
-            return et.AddMinutes(-1 * length * pieces);
+            return et.AddMinutes(-1 * ts.TotalMinutes * pieces);
         }
 
         public static implicit operator int(FuturesKlineType val)
         {
-            return val.length;
+            return (int)val.ts.TotalMinutes;
         }
 
         public static explicit operator FuturesKlineType(int val)
@@ -293,20 +295,20 @@ namespace Kucoin.NET.Futures.Data.Market
 
         public static bool operator ==(int val1, FuturesKlineType val2)
         {
-            return val1 == val2.length;
+            return val1 == val2.ts.TotalMinutes;
         }
         public static bool operator !=(int val1, FuturesKlineType val2)
         {
-            return val1 != val2.length;
+            return val1 != val2.ts.TotalMinutes;
         }
 
         public static bool operator ==(FuturesKlineType val1, int val2)
         {
-            return val2 == val1.length;
+            return val2 == val1.ts.TotalMinutes;
         }
         public static bool operator !=(FuturesKlineType val1, int val2)
         {
-            return val2 != val1.length;
+            return val2 != val1.ts.TotalMinutes;
         }
 
         public static bool operator ==(FuturesKlineType val1, FuturesKlineType val2)

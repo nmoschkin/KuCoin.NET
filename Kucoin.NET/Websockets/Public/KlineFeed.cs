@@ -34,7 +34,7 @@ namespace Kucoin.NET.Websockets.Public
         {
             Connect().ContinueWith(async (t) =>
             {
-                await AddSymbol(symbol, type);
+                await SubscribeOne(symbol, type);
             });
         }
 
@@ -105,9 +105,9 @@ namespace Kucoin.NET.Websockets.Public
         /// </summary>
         /// <param name="symbolKline">The <see cref="SymbolKline"/> combination of the ticker to add.</param>
         /// <returns></returns>
-        public virtual async Task AddSymbol(SymbolKline symbolKline)
+        public virtual async Task SubscribeOne(SymbolKline symbolKline)
         {
-            await AddSymbol(symbolKline.Symbol, symbolKline.KlineType);
+            await SubscribeOne(symbolKline.Symbol, symbolKline.KlineType);
         }
 
         /// <summary>
@@ -116,7 +116,7 @@ namespace Kucoin.NET.Websockets.Public
         /// <param name="symbol">The trading pair (symbol) of the ticker to add.</param>
         /// <param name="type">The <see cref="KlineType"/> of the ticker to add.</param>
         /// <returns></returns>
-        public virtual async Task AddSymbol(string symbol, KlineType type)
+        public virtual async Task SubscribeOne(string symbol, KlineType type)
         {
             if (disposedValue) throw new ObjectDisposedException(GetType().FullName);
             if (!Connected)
@@ -155,9 +155,9 @@ namespace Kucoin.NET.Websockets.Public
         /// </summary>
         /// <param name="symbolKline">The <see cref="SymbolKline"/> combination of the ticker to remove.</param>
         /// <returns></returns>
-        public virtual async Task RemoveSymbol(SymbolKline symbolKline)
+        public virtual async Task UnsubscribeOne(SymbolKline symbolKline)
         {
-            await RemoveSymbol(symbolKline.Symbol, symbolKline.KlineType);
+            await UnsubscribeOne(symbolKline.Symbol, symbolKline.KlineType);
         }
 
         /// <summary>
@@ -165,7 +165,7 @@ namespace Kucoin.NET.Websockets.Public
         /// </summary>
         /// <param name="symbol">The trading pair (symbol) of the ticker to remove.</param>
         /// <param name="type">The <see cref="KlineType"/> of the ticker to remove.</param>
-        public virtual async Task RemoveSymbol(string symbol, KlineType type)
+        public virtual async Task UnsubscribeOne(string symbol, KlineType type)
         {
             if (disposedValue) throw new ObjectDisposedException(GetType().FullName);
             if (!Connected) return;
@@ -205,7 +205,7 @@ namespace Kucoin.NET.Websockets.Public
         {
             foreach (var s in activeTickers)
             {
-                await RemoveSymbol(s.Symbol, s.KlineType);
+                await UnsubscribeOne(s.Symbol, s.KlineType);
             }
 
         }

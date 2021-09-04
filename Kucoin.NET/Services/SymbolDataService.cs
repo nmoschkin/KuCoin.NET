@@ -397,7 +397,7 @@ namespace Kucoin.NET.Services
 
                 foreach (var k in kt)
                 {
-                    await klinefeed.AddSymbol((string)symbol, k);
+                    await klinefeed.SubscribeOne((string)symbol, k);
                 }
             }
 
@@ -559,7 +559,7 @@ namespace Kucoin.NET.Services
         {
             if (disposed) throw new ObjectDisposedException(this.GetType().FullName);
 
-            _ = Task.Run(async () => await klinefeed.AddSymbol(Symbol, klineType));
+            _ = Task.Run(async () => await klinefeed.SubscribeOne(Symbol, klineType));
 
             klineEnabled = true;
             return klinefeed.Subscribe(observer); 

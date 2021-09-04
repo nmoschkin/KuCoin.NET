@@ -19,14 +19,9 @@ namespace Kucoin.NET.Data.Market
         /// </summary>
         private readonly string value;
 
-        /// <summary>
-        /// Length of an individual candlestick, in seconds.
-        /// </summary>
-        private readonly int length;
+        private readonly TimeSpan ts;
 
-        public int Length => length;
-        public KlineLengthType LengthType => KlineLengthType.Seconds;
-
+        public TimeSpan TimeSpan => ts;
 
         private static readonly FieldInfo[] klineFields = typeof(KlineType).GetFields(BindingFlags.Public | BindingFlags.Static);
 
@@ -210,35 +205,37 @@ namespace Kucoin.NET.Data.Market
         public DateTime GetStartDate(int pieces, DateTime? endDate = null)
         {
             var et = endDate ?? DateTime.Now;
-            return et.AddSeconds(-1 * length * pieces);
+            return et.AddSeconds(-1 * ts.TotalSeconds * pieces);
         }
 
         public DateTime GetCurrentKlineStartTime()
         {
             var dt = DateTime.UtcNow;
+            var num = Number;
+
             dt = dt.AddSeconds(-dt.Second);
 
             if (Unit == "Min")
             {
-                dt = dt.AddMinutes(-(dt.Minute % Number));
+                dt = dt.AddMinutes(-(dt.Minute % num));
             }
             else if (Unit == "Hour")
             {
                 dt = dt.AddMinutes(-dt.Minute);
-                dt = dt.AddHours(-(dt.Hour % Number));
+                dt = dt.AddHours(-(dt.Hour % num));
             }
             else if (Unit == "Day")
             {
 
                 dt = dt.AddMinutes(-dt.Minute);
                 dt = dt.AddHours(-dt.Hour);
-                dt = dt.AddDays(-(dt.Day % Number));
+                dt = dt.AddDays(-(dt.Day % num));
             }
             else if (Unit == "Week")
             {
                 dt = dt.AddMinutes(-dt.Minute);
                 dt = dt.AddHours(-dt.Hour);
-                dt = dt.AddDays(-((int)dt.DayOfWeek % (Number * 7)));
+                dt = dt.AddDays(-((int)dt.DayOfWeek % (num * 7)));
             }
             else
             {
@@ -298,7 +295,7 @@ namespace Kucoin.NET.Data.Market
 
             if (value == null)
             {
-                length = 0;
+                ts = TimeSpan.Zero;
                 return;
             }
 
@@ -346,8 +343,7 @@ namespace Kucoin.NET.Data.Market
             m *= timenum;
             m *= 60;
 
-            length = m;
-
+            ts = new TimeSpan(0, 0, m);
         }
 
         public override bool Equals(object obj)
@@ -363,7 +359,7 @@ namespace Kucoin.NET.Data.Market
             }
             else if (obj is int i)
             {
-                return i == length;
+                return i == ts.TotalSeconds;
             }
             else
             {

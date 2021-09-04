@@ -104,12 +104,9 @@ namespace Kucoin.NET.Data.Market
 
             if (time.Kind != DateTimeKind.Utc) time = time.ToUniversalTime();
 
-            if (candle.Type.LengthType == KlineLengthType.Seconds)
-                dv = candle.Timestamp.AddSeconds(candle.Type.Length);
-            else
-                dv = candle.Timestamp.AddMinutes(candle.Type.Length);
+            dv = candle.Timestamp + candle.Type.TimeSpan;
 
-            if (time > dv || time < candle.Timestamp) return false;
+            if (time >= dv || time < candle.Timestamp) return false;
             else return true;
         }
 

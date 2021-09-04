@@ -20,18 +20,16 @@ namespace Kucoin.NET.Data.Market
         Minutes
     }
 
-
     /// <summary>
     /// Interface for all K-Line types.
     /// </summary>
     public interface IKlineType : IFormattable
     {
-        KlineLengthType LengthType { get; }
-
+        
         /// <summary>
-        /// Gets the length of time in units determined by a specific implementation.
+        /// The absolute length of time as a <see cref="System.TimeSpan"/> object.
         /// </summary>
-        int Length { get; }
+        TimeSpan TimeSpan { get; }
 
         /// <summary>
         /// Gets the number of the unit of time.
@@ -65,7 +63,6 @@ namespace Kucoin.NET.Data.Market
         /// of pieces based on the length of the current KlineType value.
         /// </remarks>
         DateTime GetStartDate(int pieces, DateTime? endDate = null);
-
         
         /// <summary>
         /// Gets the current kline start time calculated by the kline type.
