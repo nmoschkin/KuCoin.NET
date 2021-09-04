@@ -33,11 +33,11 @@ namespace Kucoin.NET.Websockets.Distribution
 
         protected TBookOut orderBook;
 
-        protected IKlineType klineType = Kucoin.NET.Data.Market.KlineType.Min1;
+        protected IKlineType klineType = Kucoin.NET.Data.Market.KlineType.Min15;
 
-        protected DateTime klineTime = Kucoin.NET.Data.Market.KlineType.Min1.GetCurrentKlineStartTime();
+        protected DateTime klineTime = Kucoin.NET.Data.Market.KlineType.Min15.GetCurrentKlineStartTime();
 
-        protected Candle candle = new Candle() { Type = Kucoin.NET.Data.Market.KlineType.Min1, Timestamp = Kucoin.NET.Data.Market.KlineType.Min1.GetCurrentKlineStartTime() };
+        protected Candle candle = new Candle() { Type = Kucoin.NET.Data.Market.KlineType.Min15, Timestamp = Kucoin.NET.Data.Market.KlineType.Min15.GetCurrentKlineStartTime() };
 
         protected List<Candle> lastCandles = new List<Candle>();
 
