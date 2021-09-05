@@ -57,7 +57,7 @@ namespace Kucoin.NET.Data.Market
     /// <summary>
     /// Writable K-Line Candlestick Interface
     /// </summary>
-    public interface ICandle : IReadOnlyCandle
+    public interface ICandle : IReadOnlyCandle, IStreamableObject
     {
         /// <summary>
         /// Open time stamp of the candle stick.

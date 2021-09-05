@@ -181,7 +181,7 @@ namespace Kucoin.NET.Websockets.Public
                 }
             }
 
-            if (sk == null) return;
+            if (sk == SymbolKline.Empty) return;
 
             var topic = $"{Topic}:{sk}";
 

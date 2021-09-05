@@ -59,7 +59,7 @@ namespace Kucoin.NET.Futures.Websockets
 
         public override bool IsPublic => false;
 
-        public override void Release(IDistributable<string, FuturesLevel2Update> obj) => Release((FuturesLevel2OrderBook)obj);
+        public override void Release(IWebsocketListener obj) => Release((FuturesLevel2OrderBook)obj);
 
         public void Release(FuturesLevel2OrderBook obj)
         {

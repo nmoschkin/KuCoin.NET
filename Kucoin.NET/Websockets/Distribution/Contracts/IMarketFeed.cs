@@ -1,4 +1,5 @@
-﻿using Kucoin.NET.Data.Market;
+﻿using Kucoin.NET.Data;
+using Kucoin.NET.Data.Market;
 using Kucoin.NET.Websockets.Public;
 
 using System;
@@ -13,7 +14,7 @@ namespace Kucoin.NET.Websockets.Distribution
                         IAsyncUnsubscribableSubscriptionProvider<string, TDistributable>,
                         IDistributor<TDistributable, TValue>        
                         where TDistributable : DistributableObject<string, TValue>
-                        where TValue : ISymbol
+                        where TValue : ISymbol, IStreamableObject
     {
      
     }

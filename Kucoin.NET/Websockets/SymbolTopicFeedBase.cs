@@ -6,13 +6,14 @@ using System.Collections.Generic;
 using System.Text;
 using System.Threading.Tasks;
 using Kucoin.NET.Helpers;
+using Kucoin.NET.Data;
 
 namespace Kucoin.NET.Websockets
 {
     /// <summary>
     /// Base class for live feeds supporting multiple symbols per feed.
     /// </summary>
-    public abstract class SymbolTopicFeedBase<T> : KucoinBaseWebsocketFeed<T> where T: class, ISymbol
+    public abstract class SymbolTopicFeedBase<T> : KucoinBaseWebsocketFeed<T> where T: class, ISymbol, IStreamableObject
     {
         protected List<string> activeSymbols = new List<string>();
 
@@ -295,7 +296,7 @@ namespace Kucoin.NET.Websockets
         /// 
         /// An <see cref="InvalidOperationException"/> will be raised if an attempt is made to initialize a new feed on to a class instance that is already initialized as a multiplex client.
         /// </remarks>
-        public virtual async Task<TFeed> CreateMultiplexedClient<TFeed, TValue>(bool inheritSymbols) where TFeed : SymbolTopicFeedBase<TValue>, new() where TValue: class, ISymbol
+        public virtual async Task<TFeed> CreateMultiplexedClient<TFeed, TValue>(bool inheritSymbols) where TFeed : SymbolTopicFeedBase<TValue>, new() where TValue: class, ISymbol, IStreamableObject
         {
             if (tunnelId != null && !isMultiplexHost)
             {

@@ -16,7 +16,12 @@ namespace Kucoin.NET.Websockets.Distribution
         /// <summary>
         /// Gets the parent distributor
         /// </summary>
-        IDistributor Parent { get; }
+        IWebsocketFeed Parent { get; }
+    }
+
+    public interface IParent<T> : IParent where T: IWebsocketFeed
+    {
+        new T Parent { get; }
     }
 
 }

@@ -1,4 +1,5 @@
-﻿using Kucoin.NET.Data.Market;
+﻿using Kucoin.NET.Data;
+using Kucoin.NET.Data.Market;
 using Kucoin.NET.Data.Websockets;
 
 using System;
@@ -15,7 +16,7 @@ namespace Kucoin.NET.Websockets.Distribution
         where TParent: IDistributor, IInitialDataProvider<string, TBookIn>
         where TBookIn: class, new()
         where TBookOut: class, new()
-        where TDistributable: ISymbol
+        where TDistributable: ISymbol, IStreamableObject
     {
         protected new TParent parent;
         

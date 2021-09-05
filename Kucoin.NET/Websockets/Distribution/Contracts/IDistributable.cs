@@ -1,3 +1,4 @@
+using Kucoin.NET.Data;
 using Kucoin.NET.Data.Market;
 
 using Kucoin.NET.Websockets.Public;
@@ -20,7 +21,7 @@ namespace Kucoin.NET.Websockets.Distribution
     /// <summary>
     /// An object that can do distributed work (typically in parallel with other such objects.)
     /// </summary>
-    public interface IDistributable : IParent, INotifyPropertyChanged, IDisposable // : IComparable<IDistributable>
+    public interface IDistributable : IWebsocketListener // : IComparable<IDistributable>
     {
         /// <summary>
         /// Do work.
@@ -48,7 +49,7 @@ namespace Kucoin.NET.Websockets.Distribution
     /// <remarks>
     /// A value of type <typeparamref name="TKey"/> is used to uniquely identify a distributable object from other objects that handle identical workloads.
     /// </remarks>
-    public interface IDistributable<TKey, TValue> : IDistributable, IObserver<TValue>
+    public interface IDistributable<TKey, TValue> : IDistributable, IObserver<TValue>, IWebsocketListener<TValue> where TValue: IStreamableObject
     {
         /// <summary>
         /// Get the object key.
@@ -64,7 +65,7 @@ namespace Kucoin.NET.Websockets.Distribution
     /// <remarks>
     /// A string key is used to uniquely identify a distributable object from other objects that handle identical workloads.
     /// </remarks>
-    public interface IDistributable<T> : IDistributable<string, T>
+    public interface IDistributable<T> : IDistributable<string, T> where T: IStreamableObject
     {
     }
 

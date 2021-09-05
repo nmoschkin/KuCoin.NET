@@ -1,4 +1,5 @@
-﻿using Kucoin.NET.Data.Market;
+﻿using Kucoin.NET.Data;
+using Kucoin.NET.Data.Market;
 using Kucoin.NET.Helpers;
 using Kucoin.NET.Websockets.Distribution.Services;
 using Kucoin.NET.Websockets.Public;
@@ -20,7 +21,7 @@ namespace Kucoin.NET.Websockets.Distribution
     public abstract class MarketFeed<TDistributable, TValue, TInitial, TObservable> :
         DistributionFeed<TDistributable, TValue, TInitial>, IMarketFeed<TDistributable, TValue, TInitial, TObservable>
         where TDistributable : MarketDistributable<TInitial, TObservable, TValue>
-        where TValue : ISymbol
+        where TValue : ISymbol, IStreamableObject
     {
 
         /// <summary>

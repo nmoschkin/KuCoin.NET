@@ -1,4 +1,5 @@
-﻿using Kucoin.NET.Data.Websockets;
+﻿using Kucoin.NET.Data;
+using Kucoin.NET.Data.Websockets;
 using Kucoin.NET.Helpers;
 
 using System;
@@ -12,7 +13,7 @@ namespace Kucoin.NET.Websockets
     /// Base class for simple topic feeds.
     /// </summary>
     /// <typeparam name="T">The type of object that is pushed on the feed.</typeparam>
-    public abstract class TopicFeedBase<T> : KucoinBaseWebsocketFeed<T> where T: class
+    public abstract class TopicFeedBase<T> : KucoinBaseWebsocketFeed<T> where T : class, IStreamableObject
     {
         protected bool feedStarted = false;
 

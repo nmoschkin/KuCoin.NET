@@ -77,7 +77,7 @@ namespace Kucoin.NET.Websockets.Public
 
         public override bool IsPublic => false;
 
-        public override void Release(IDistributable<string, Level3Update> obj) => Release((Level3OrderBook)obj);
+        public override void Release(IWebsocketListener obj) => Release((Level3OrderBook)obj);
 
         public void Release(Level3OrderBook obj)
         {

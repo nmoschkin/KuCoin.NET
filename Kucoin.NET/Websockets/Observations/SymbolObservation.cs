@@ -1,4 +1,5 @@
-﻿using Kucoin.NET.Data.Market;
+﻿using Kucoin.NET.Data;
+using Kucoin.NET.Data.Market;
 
 using System;
 using System.Collections.Generic;
@@ -13,7 +14,7 @@ namespace Kucoin.NET.Websockets
     /// <remarks>
     /// The active symbols can be changed at any time and will be instantly reflected on the next <see cref="IObserver{T}.OnNext(T)"/> call.
     /// </remarks>
-    public class SymbolObservation<T> : FeedObject<T> where T: class
+    public class SymbolObservation<T> : FeedObject<T> where T: class, IStreamableObject
     {
         private List<string> activeSymbols;
 

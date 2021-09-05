@@ -1,9 +1,11 @@
-﻿using Kucoin.NET.Data.Market;
+﻿using Kucoin.NET.Data;
+using Kucoin.NET.Data.Market;
 using Kucoin.NET.Helpers;
 using Kucoin.NET.Observable;
 using Kucoin.NET.Websockets.Distribution.Services;
 
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
@@ -22,7 +24,7 @@ namespace Kucoin.NET.Websockets.Distribution
     /// <typeparam name="TInitial">The type of the initial data set.</typeparam>
     public abstract class DistributionFeed<TDistributable, TValue, TInitial> : DistributionFeed<TDistributable, string, TValue, TInitial>
         where TDistributable : DistributableObject<string, TValue>
-        where TValue : ISymbol
+        where TValue : ISymbol, IStreamableObject
     {
 
         /// <summary>
@@ -58,7 +60,7 @@ namespace Kucoin.NET.Websockets.Distribution
         IAsyncUnsubscribableSubscriptionProvider<TKey, TDistributable>, 
         IDistributor<TKey, TDistributable, TValue> 
         where TDistributable : DistributableObject<TKey, TValue> 
-        where TValue : ISymbol
+        where TValue : IStreamableObject
     {
 
         protected Dictionary<TKey, TDistributable> activeFeeds = new Dictionary<TKey, TDistributable>();
@@ -171,7 +173,8 @@ namespace Kucoin.NET.Websockets.Distribution
         }
         public abstract Task<IDictionary<TKey, TDistributable>> SubscribeMany(IEnumerable<TKey> keys);
         public abstract Task<TInitial> ProvideInitialData(TKey key);
-        public abstract void Release(IDistributable<TKey, TValue> obj);
+
+        public void Release(IDistributable<TKey, TValue> obj) => Release((IWebsocketListener)obj);
 
         async Task IAsyncUnsubscribableSubscriptionProvider.UnsubscribeOne(object key)
         {
@@ -191,6 +194,18 @@ namespace Kucoin.NET.Websockets.Distribution
         async Task<System.Collections.IEnumerable> IAsyncSubscriptionProvider.SubscribeMany(System.Collections.IEnumerable keys)
         {
             return await SubscribeMany((IEnumerable<TKey>)keys);
+        }
+
+        IEnumerable IWebsocketFeed.GetActiveFeeds()
+        {
+            return GetActiveFeeds();
+        }
+
+        public abstract void Release(IWebsocketListener obj);
+
+        IEnumerable<TDistributable> IWebsocketFeed<TValue, TDistributable>.GetActiveFeeds()
+        {
+            return activeFeeds.Values;
         }
     }
 

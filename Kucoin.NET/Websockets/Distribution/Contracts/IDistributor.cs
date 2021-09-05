@@ -1,3 +1,4 @@
+using Kucoin.NET.Data;
 using Kucoin.NET.Data.Market;
 using Kucoin.NET.Websockets.Public;
 
@@ -16,16 +17,19 @@ using System.Threading.Tasks;
 
 namespace Kucoin.NET.Websockets.Distribution
 {
+
+
+
     /// <summary>
     /// An object that provides distributed objects with data.
     /// </summary>
-    public interface IDistributor : IFeedState
+    public interface IDistributor : IWebsocketFeed, IFeedState
     {
         /// <summary>
         /// Get an <see cref="IEnumerable{T}"/> of the active feeds.
         /// </summary>
         /// <returns></returns>
-        IEnumerable<IDistributable> GetActiveFeeds();
+        new IEnumerable<IDistributable> GetActiveFeeds();
 
         /// <summary>
         /// Release an object from the distributor.
@@ -33,11 +37,6 @@ namespace Kucoin.NET.Websockets.Distribution
         /// <param name="obj">Object to release.</param>
         void Release(IDistributable obj);
 
-        bool Connected { get; }
-
-        void Disconnect();
-
-        Task<bool> Connect();
 
         Task<bool> Reconnect();
 
@@ -46,7 +45,7 @@ namespace Kucoin.NET.Websockets.Distribution
     /// <summary>
     /// An object that provides distributed objects with data.
     /// </summary>
-    public interface IDistributor<TDistribution, TValue> : IDistributor<string, TDistribution, TValue> where TDistribution : IDistributable<string, TValue>
+    public interface IDistributor<TDistribution, TValue> : IDistributor<string, TDistribution, TValue> where TDistribution : IDistributable<string, TValue> where TValue : IStreamableObject
     {
         void Release(IDistributable<string, TValue> obj);
     }
@@ -54,7 +53,7 @@ namespace Kucoin.NET.Websockets.Distribution
     /// <summary>
     /// An object that provides distributed objects with data.
     /// </summary>
-    public interface IDistributor<TKey, TDistribution, TValue> : IDistributor where TDistribution: IDistributable<TKey, TValue>
+    public interface IDistributor<TKey, TDistribution, TValue> : IDistributor, IWebsocketFeed<TValue, TDistribution> where TDistribution: IDistributable<TKey, TValue> where TValue: IStreamableObject
     {
         /// <summary>
         /// Gets a dictionary of active feeds, keyed on a value of type <typeparamref name="TKey"/>.

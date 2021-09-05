@@ -1,4 +1,5 @@
-﻿using Kucoin.NET.Data.Market;
+﻿using Kucoin.NET.Data;
+using Kucoin.NET.Data.Market;
 using Kucoin.NET.Data.Websockets;
 using Kucoin.NET.Helpers;
 using Kucoin.NET.Json;
@@ -26,7 +27,7 @@ namespace Kucoin.NET.Websockets.Distribution
     /// <typeparam name="TParent">The parent of the feed (the inheriter of <see cref="OrderBookFeed{TDistributable, TValue, TBookIn, TBookOut, TParent}"/>.)</typeparam>
     public abstract class OrderBookFeed<TDistributable, TValue, TBookIn, TBookOut, TParent> : MarketFeed<TDistributable, TValue, TBookIn, TBookOut>
         where TDistributable: OrderBookDistributable<TBookIn, TBookOut, TValue, TParent>
-        where TValue: ISymbol
+        where TValue: ISymbol, IStreamableObject
         where TBookIn: class, new()
         where TBookOut: class, new()
         where TParent: OrderBookFeed<TDistributable, TValue, TBookIn, TBookOut, TParent>

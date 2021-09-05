@@ -12,6 +12,7 @@
  *
  * **/
 
+using Kucoin.NET.Data;
 using Kucoin.NET.Data.Websockets;
 using Kucoin.NET.Helpers;
 using Kucoin.NET.Rest;
@@ -21,6 +22,7 @@ using Kucoin.NET.Websockets.Distribution.Services;
 using Newtonsoft.Json;
 
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel.DataAnnotations;
@@ -1346,9 +1348,11 @@ namespace Kucoin.NET.Websockets
     /// <typeparam name="T">The type of object to serve.</typeparam>
     public abstract class KucoinBaseWebsocketFeed<T> :
         KucoinBaseWebsocketFeed,
+        IWebsocketFeed<T>,
         IObservable<T>
-        where T : class
+        where T : class, IStreamableObject
     {
+       
         /// <summary>
         /// Event that is raised for every single JSON entity that is received.
         /// </summary>
@@ -1441,15 +1445,7 @@ namespace Kucoin.NET.Websockets
         /// </remarks>
         internal virtual void RemoveObservation(FeedObject<T> observation)
         {
-            observation.Observer.OnCompleted();
-
-            lock (observations)
-            {
-                if (observations.Contains(observation))
-                {
-                    observations.Remove(observation);
-                }
-            }
+            Release(observation);
         }
 
         /// <summary>
@@ -1519,6 +1515,29 @@ namespace Kucoin.NET.Websockets
             catch { }
 
             base.Dispose(disposing);
+        }
+
+        public IEnumerable GetActiveFeeds() => observations;
+
+        public void Release(IWebsocketListener obj)
+        {
+            if (obj is FeedObject<T> observation)
+            {
+                observation.Observer.OnCompleted();
+
+                lock (observations)
+                {
+                    if (observations.Contains(observation))
+                    {
+                        observations.Remove(observation);
+                    }
+                }
+            }
+        }
+
+        IEnumerable<FeedObject<T>> IWebsocketFeed<T, FeedObject<T>>.GetActiveFeeds()
+        {
+            return observations;
         }
     }
 }

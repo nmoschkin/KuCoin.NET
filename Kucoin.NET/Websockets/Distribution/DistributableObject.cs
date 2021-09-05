@@ -1,3 +1,4 @@
+using Kucoin.NET.Data;
 using Kucoin.NET.Data.Market;
 using Kucoin.NET.Observable;
 using Kucoin.NET.Websockets.Distribution.Services;
@@ -14,6 +15,7 @@ namespace Kucoin.NET.Websockets.Distribution
     /// </summary>
     /// <typeparam name="TValue">The type of data being handled.</typeparam>
     public abstract class DistributableObject<TKey, TValue> : ObservableBase, IDistributable<TKey, TValue>
+        where TValue: IStreamableObject
     {
         public virtual event EventHandler DistributionCompleted;
 
@@ -21,7 +23,7 @@ namespace Kucoin.NET.Websockets.Distribution
 
         protected object lockObj = new object();
 
-        protected IDistributor parent;
+        protected IWebsocketFeed parent;
 
         protected TKey key;
 
@@ -29,7 +31,7 @@ namespace Kucoin.NET.Websockets.Distribution
 
         protected List<TValue> buffer;
 
-        public IDistributor Parent => parent;
+        public IWebsocketFeed Parent => parent;
 
         public TKey Key => key; 
 
@@ -47,7 +49,10 @@ namespace Kucoin.NET.Websockets.Distribution
             {
                 if (SetProperty(ref state, value))
                 {
-                    Parent?.RefreshState();
+                    if (parent is IDistributor dist)
+                    {
+                        dist.RefreshState();
+                    }
                 }
             }
         }

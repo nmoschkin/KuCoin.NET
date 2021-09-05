@@ -1,4 +1,5 @@
-﻿using Kucoin.NET.Helpers;
+﻿using Kucoin.NET.Data;
+using Kucoin.NET.Helpers;
 using Kucoin.NET.Websockets;
 
 using System;
@@ -38,7 +39,7 @@ namespace Kucoin.NET.Futures.Websockets
     /// Base class for most symbol-specific futures websocket feeds
     /// </summary>
     public abstract class FuturesBaseWebsocketFeed<T> : KucoinBaseWebsocketFeed<T>
-        where T: class        
+        where T: class, IStreamableObject
     {
 
         public FuturesBaseWebsocketFeed(ICredentialsProvider credProvider) : base(credProvider, futures: true)

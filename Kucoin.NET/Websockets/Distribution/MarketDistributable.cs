@@ -1,4 +1,5 @@
-﻿using Kucoin.NET.Data.Market;
+﻿using Kucoin.NET.Data;
+using Kucoin.NET.Data.Market;
 using Kucoin.NET.Data.Websockets;
 using Kucoin.NET.Websockets.Distribution.Services;
 
@@ -10,7 +11,13 @@ using System.Threading.Tasks;
 
 namespace Kucoin.NET.Websockets.Distribution
 {
-    public interface IMarketDistributable<TInternal, TObservable, TValue> : IDistributable<string, TValue>, IInitializable<string, TInternal>, ISymbol, IMarketDepth, IObservableCopy<TInternal, TObservable> where TValue : ISymbol
+    public interface IMarketDistributable<TInternal, TObservable, TValue> 
+        : IDistributable<string, TValue>, 
+        IInitializable<string, TInternal>, 
+        ISymbol, 
+        IMarketDepth, 
+        IObservableCopy<TInternal, TObservable> 
+        where TValue : ISymbol, IStreamableObject
     {
     }
 
@@ -20,7 +27,10 @@ namespace Kucoin.NET.Websockets.Distribution
     /// <typeparam name="TInternal"></typeparam>
     /// <typeparam name="TObservable"></typeparam>
     /// <typeparam name="TValue"></typeparam>
-    public abstract class MarketDistributable<TInternal, TObservable, TValue> : DistributableObject<string, TValue>, IMarketDistributable<TInternal, TObservable, TValue> where TValue : ISymbol 
+    public abstract class MarketDistributable<TInternal, TObservable, TValue> : 
+        DistributableObject<string, TValue>, 
+        IMarketDistributable<TInternal, TObservable, TValue> 
+        where TValue : ISymbol, IStreamableObject
     {
         public MarketDistributable(IDistributor parent, string symbol) : base(parent, symbol)
         {
