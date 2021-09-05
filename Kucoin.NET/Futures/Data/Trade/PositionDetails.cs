@@ -13,7 +13,7 @@ namespace Kucoin.NET.Futures.Data.Trade
     /// <summary>
     /// Position Details
     /// </summary>
-    public class PositionDetails : IDataObject
+    public class PositionDetails : DataObject
     {
         /// <summary>
         /// Position ID

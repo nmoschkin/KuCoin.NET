@@ -14,7 +14,7 @@ namespace Kucoin.NET.Futures.Data.Websockets
     /// <summary>
     /// Contract market snapshot data
     /// </summary>
-    public class ContractMarketSnapshot : ISymbol, IStreamableObject
+    public class ContractMarketSnapshot : DataObject, ISymbol, IStreamableObject
     {
         [JsonIgnore()]
         public string Symbol { get; set; }

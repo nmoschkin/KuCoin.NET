@@ -12,7 +12,7 @@ namespace Kucoin.NET.Data.Order
     /// <summary>
     /// Order list query parameters object.
     /// </summary>
-    public class OrderListParams : JsonDictBase
+    public class OrderListParams : DataObject
     {
 
         public OrderListParams()

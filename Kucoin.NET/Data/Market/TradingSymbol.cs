@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
+using Kucoin.NET.Json;
 using Kucoin.NET.Observable;
 
 using Newtonsoft.Json;
@@ -13,7 +14,7 @@ namespace Kucoin.NET.Data.Market
     /// <summary>
     /// Trading symbol
     /// </summary>
-    public class TradingSymbol : ISymbolicated, IDataObject
+    public class TradingSymbol : DataObject, ISymbolicated, IDataObject
     {
         /// <summary>
         /// Gets the trading pair as an array of strings [base, quote].

@@ -13,7 +13,7 @@ namespace Kucoin.NET.Data.Market
     /// <summary>
     /// Trade history information
     /// </summary>
-    public class TradeHistoryItem : IDataObject
+    public class TradeHistoryItem : DataObject
     {
         /// <summary>
         /// Order sequence

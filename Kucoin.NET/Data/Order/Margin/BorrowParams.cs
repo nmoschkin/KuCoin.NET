@@ -31,7 +31,7 @@ namespace Kucoin.NET.Data.Order.Margin
     /// <summary>
     /// Borrow parameters class
     /// </summary>
-    public class BorrowParams : JsonDictBase
+    public class BorrowParams : DataObject
     {
         /// <summary>
         /// Currency to Borrow

@@ -77,7 +77,7 @@ namespace Kucoin.NET.Data.User
     /// <summary>
     /// Deposit item
     /// </summary>
-    public class DepositListItem : IDataObject
+    public class DepositListItem : DataObject
     {
         /// <summary>
         /// Wallet Address

@@ -7,6 +7,7 @@ using System.Text;
 
 using Kucoin.NET.Data.Market;
 using Kucoin.NET.Helpers;
+using Kucoin.NET.Json;
 using Kucoin.NET.Observable;
 using Kucoin.NET.Websockets.Private;
 
@@ -17,7 +18,7 @@ namespace Kucoin.NET.Data.Websockets
     /// <summary>
     /// Level 2 New Sequence Changes
     /// </summary>
-    public struct Changes : IOrderUnitList<IOrderUnit>
+    public struct Changes : IDataObject, IOrderUnitList<IOrderUnit>
     {
         IList<IOrderUnit> IOrderUnitList<IOrderUnit>.Asks => (IList<IOrderUnit>)Asks;
 
@@ -32,13 +33,38 @@ namespace Kucoin.NET.Data.Websockets
         /// Asks (from sellers)
         /// </summary>
         [JsonProperty("asks")]
-        public List<OrderUnit> Asks { get; set; }
+        public List<OrderUnitStruct> Asks { get; set; }
 
         /// <summary>
         /// Bids (from buyers)
         /// </summary>
         [JsonProperty("bids")]
-        public List<OrderUnit> Bids { get; set; }
+        public List<OrderUnitStruct> Bids { get; set; }
+
+        public Dictionary<string, object> ToDict()
+        {
+
+            var l1 = new List<object>();
+            var l2 = new List<object>();
+
+            foreach (var ask in Asks)
+            {
+                l1.Add(ask.ToDict());
+            }
+
+            foreach (var ask in Bids)
+            {
+                l2.Add(ask.ToDict());
+            }
+
+            return new Dictionary<string, object>()
+            {
+                { "asks", l1.ToArray() },
+                { "bids", l2.ToArray() }
+            };
+        }
+
+
     }
 
 
@@ -76,5 +102,17 @@ namespace Kucoin.NET.Data.Websockets
             get => Changes;
             set => Changes = (Changes)value;
         }
+
+        public Dictionary<string, object> ToDict()
+        {
+            return new Dictionary<string, object>()
+            {
+                { "sequenceStart", SequenceStart },
+                { "sequenceEnd", SequenceEnd },
+                { "symbol", Symbol },
+                { "changes", Changes.ToDict() },
+            };
+        }
+
     }
 }

@@ -61,7 +61,7 @@ namespace Kucoin.NET.Futures.Data.User
         Pending
     }
 
-    public class TransactionHistory : IDataObject
+    public class TransactionHistory : DataObject
     {
 
         [JsonProperty("hasMore")]
@@ -74,7 +74,7 @@ namespace Kucoin.NET.Futures.Data.User
     /// <summary>
     /// Represents a single transaction in the futures account.
     /// </summary>
-    public class Transaction : IDataObject
+    public class Transaction : DataObject
     {
 
 

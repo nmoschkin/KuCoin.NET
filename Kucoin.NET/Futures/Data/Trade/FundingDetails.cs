@@ -11,7 +11,7 @@ using System.Text;
 namespace Kucoin.NET.Futures.Data.Trade
 {
 
-    public class FundingHistory : IDataObject
+    public class FundingHistory : DataObject
     {
 
         [JsonProperty("hasMore")]
@@ -24,7 +24,7 @@ namespace Kucoin.NET.Futures.Data.Trade
     /// <summary>
     /// Funding Details
     /// </summary>
-    public class FundingDetails : IDataObject
+    public class FundingDetails : DataObject
     {
 
 

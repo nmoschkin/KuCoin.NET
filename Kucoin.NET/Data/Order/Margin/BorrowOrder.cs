@@ -12,7 +12,7 @@ namespace Kucoin.NET.Data.Order.Margin
     /// <summary>
     /// Borrow Order
     /// </summary>
-    public class BorrowOrder : IStreamableObject
+    public class BorrowOrder : DataObject, IStreamableObject
     {
 
         /// <summary>
@@ -61,7 +61,7 @@ namespace Kucoin.NET.Data.Order.Margin
     /// <summary>
     /// Borrow Order Match Data
     /// </summary>
-    public class BorrowMatch : IStreamableObject
+    public class BorrowMatch : DataObject, IStreamableObject
     {
         /// <summary>
         /// Currency

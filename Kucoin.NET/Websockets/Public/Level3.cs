@@ -98,11 +98,13 @@ namespace Kucoin.NET.Websockets.Public
         {
             return new Level3OrderBook(this, sym);
         }
+        
+        
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         protected override void RouteJsonPacket(string json, FeedMessage e = null)
         {
-            JsonConvert.PopulateObject(json, msg, settings);
+            var msg = JsonConvert.DeserializeObject<Level3FeedMessage>(json, settings);
 
             if (msg.Type[0] == 'm' && msg.TunnelId == tunnelId)
             {

@@ -26,7 +26,7 @@ namespace Kucoin.NET.Websockets.Observations
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public override void CopyToPresentation()
+        public override void PresentData()
         {
             lock (lockObj)
             {

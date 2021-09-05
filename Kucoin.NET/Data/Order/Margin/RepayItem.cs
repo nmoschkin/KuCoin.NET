@@ -29,7 +29,7 @@ namespace Kucoin.NET.Data.Order.Margin
         HighestRateFirst
     }
 
-    public class RepayItem : IDataObject
+    public class RepayItem : DataObject
     {
         /// <summary>
         /// TradeId

@@ -26,7 +26,7 @@ namespace Kucoin.NET.Websockets.Observations
 
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public override void CopyToPresentation()
+        public override void PresentData()
         {
             lock (lockObj)
             {
@@ -188,7 +188,7 @@ namespace Kucoin.NET.Websockets.Observations
         /// <param name="changes">The changes to sequence.</param>
         /// <param name="pieces">The collection to change (either an ask or a bid collection)</param>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        protected void SequencePieces(IList<OrderUnit> changes, Level2KeyedCollection<OrderUnitStruct> pieces)
+        protected void SequencePieces(IList<OrderUnitStruct> changes, Level2KeyedCollection<OrderUnitStruct> pieces)
         {
             foreach (var change in changes)
             {

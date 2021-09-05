@@ -28,12 +28,25 @@ namespace Kucoin.NET.Data
         TCol2 Data2 { get; }
     }
 
+    /// <summary>
+    /// A data object that is recognized as valid by the framework.
+    /// </summary>
     public interface IDataObject
     {
+        /// <summary>
+        /// Writes the properties of this object ito a dictionary of string/object pairs.
+        /// </summary>
+        /// <returns></returns>
+        Dictionary<string, object> ToDict();
     }
 
+    /// <summary>
+    /// A data object that is recognized as streamable by the framework.
+    /// </summary>
     public interface IStreamableObject : IDataObject
     {
+        // There's nothing here.  This is just to identify objects as objects we can expect to stream.
     }
+
 
 }

@@ -14,7 +14,7 @@ namespace Kucoin.NET.Futures.Data.Websockets
     /// <summary>
     /// Position Information
     /// </summary>
-    public class PositionData : ISymbol, IStreamableObject
+    public class PositionData : DataObject, ISymbol, IStreamableObject
     {
         [JsonIgnore]
         public string Symbol { get; set; }

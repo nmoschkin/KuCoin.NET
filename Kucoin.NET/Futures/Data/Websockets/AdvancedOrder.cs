@@ -16,7 +16,7 @@ namespace Kucoin.NET.Futures.Data.Websockets
     /// <summary>
     /// Advanced order
     /// </summary>
-    public class AdvancedOrder : IStreamableObject
+    public class AdvancedOrder : DataObject, IStreamableObject
     {
 
 

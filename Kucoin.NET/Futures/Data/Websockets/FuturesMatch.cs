@@ -14,7 +14,7 @@ namespace Kucoin.NET.Futures.Data.Websockets
     /// <summary>
     /// Futures Order Match
     /// </summary>
-    public class FuturesMatch : ISymbol, IStreamableObject
+    public class FuturesMatch : DataObject, ISymbol, IStreamableObject
     {
         /// <summary>
         /// Symbol

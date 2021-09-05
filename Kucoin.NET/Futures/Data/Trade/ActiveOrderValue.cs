@@ -1,4 +1,5 @@
 ﻿using Kucoin.NET.Data;
+using Kucoin.NET.Json;
 
 using Newtonsoft.Json;
 
@@ -11,7 +12,7 @@ namespace Kucoin.NET.Futures.Data.Trade
     /// <summary>
     /// Active order value information
     /// </summary>
-    public class ActiveOrderValue : IDataObject
+    public class ActiveOrderValue : DataObject
     {
 
 

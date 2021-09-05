@@ -4,13 +4,14 @@ using System.Text;
 
 using Newtonsoft.Json;
 using Kucoin.NET.Helpers;
+using Kucoin.NET.Json;
 
 namespace Kucoin.NET.Data.Order
 {
     /// <summary>
     /// Order receipt that is generated when an order is created on the system.
     /// </summary>
-    public class OrderReceipt : IDataObject
+    public class OrderReceipt : DataObject
     {
         /// <summary>
         /// The system Id of the newly-created order.

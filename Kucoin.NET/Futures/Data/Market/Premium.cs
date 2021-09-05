@@ -15,7 +15,7 @@ namespace Kucoin.NET.Futures.Data.Market
     /// <summary>
     /// Premium index page
     /// </summary>
-    public class PremiumIndex : IDataObject
+    public class PremiumIndex : DataObject
     {
 
         [JsonProperty("hasMore")]
@@ -28,7 +28,7 @@ namespace Kucoin.NET.Futures.Data.Market
     /// <summary>
     /// Premium index
     /// </summary>
-    public class Premium
+    public class Premium : DataObject
     {
         /// <summary>
         /// Premium index symbol

@@ -9,14 +9,14 @@ using System.Text;
 namespace Kucoin.NET.Websockets.Distribution
 {
     /// <summary>
-    /// Maintains a version of the data for presentation.
+    /// Presents data.
     /// </summary>
     public interface IPresentable : INotifyPropertyChanged
     {
         /// <summary>
-        /// Copy the internal contents of the object to an observed location for presentation.
+        /// Present the data.
         /// </summary>
-        void CopyToPresentation();
+        void PresentData();
 
         /// <summary>
         /// Prefer that the copy method be executed on the main thread.
@@ -37,10 +37,10 @@ namespace Kucoin.NET.Websockets.Distribution
         /// Gets or sets a value indicating whether or not the presentation observation is disabled, and pushes do not occur.
         /// </summary>
         bool IsPresentationDisabled { get; set; }
-
     }
+
     /// <summary>
-    /// Maintains a version of the data for presentation.
+    /// Maintains data for presentation.
     /// </summary>
     public interface IPresentable<TPresented> : IPresentable
     {

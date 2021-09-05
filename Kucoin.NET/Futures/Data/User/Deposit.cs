@@ -15,7 +15,7 @@ namespace Kucoin.NET.Futures.Data.User
     /// <summary>
     /// Deposit
     /// </summary>
-    public class Deposit : IDataObject
+    public class Deposit : DataObject
     {
         /// <summary>
         /// Currency

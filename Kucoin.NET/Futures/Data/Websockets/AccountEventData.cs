@@ -35,7 +35,7 @@ namespace Kucoin.NET.Futures.Data.Websockets
     /// <summary>
     /// Account event data
     /// </summary>
-    public class AccountEventData : IStreamableObject
+    public class AccountEventData : DataObject, IStreamableObject
     {
         /// <summary>
         /// The type of information contained in this class.

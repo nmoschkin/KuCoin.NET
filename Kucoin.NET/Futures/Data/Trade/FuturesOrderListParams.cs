@@ -13,7 +13,7 @@ namespace Kucoin.NET.Futures.Data.Trade
     /// <summary>
     /// Order list query parameters object.
     /// </summary>
-    public class FuturesOrderListParams : JsonDictBase
+    public class FuturesOrderListParams : DataObject
     {
 
         public FuturesOrderListParams()

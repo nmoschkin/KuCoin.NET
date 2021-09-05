@@ -12,7 +12,7 @@ namespace Kucoin.NET.Data.Order
     /// <summary>
     /// Base class for all orders.
     /// </summary>
-    public abstract class OrderBase : JsonDictBase, IStreamableObject
+    public abstract class OrderBase : DataObject, IStreamableObject
     {
         protected string remark;
 

@@ -67,7 +67,7 @@ namespace Kucoin.NET.Data.User
     /// <summary>
     /// Account ledger item (piece of account business)
     /// </summary>
-    public class AccountLedgerItem : IDataObject
+    public class AccountLedgerItem : DataObject
     {
         /// <summary>
         /// The item Id

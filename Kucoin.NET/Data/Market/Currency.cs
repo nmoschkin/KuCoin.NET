@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
+using Kucoin.NET.Json;
 using Kucoin.NET.Observable;
 
 using Newtonsoft.Json;
@@ -11,7 +12,7 @@ namespace Kucoin.NET.Data.Market
     /// <summary>
     /// Crypto-market currency information.
     /// </summary>
-    public class MarketCurrency : IDataObject
+    public class MarketCurrency : DataObject
     {
 
         /// <summary>

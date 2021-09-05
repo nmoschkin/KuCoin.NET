@@ -15,9 +15,9 @@ namespace Kucoin.NET.Websockets.Distribution.Services
 {
 
     /// <summary>
-    /// Provides automatic push services for objects that must update UI-facing objects at regular intervals.
+    /// Provides automatic push services for objects that must update UI-facing objects for presentation at regular intervals.
     /// </summary>
-    public static class ObserverService
+    public static class PresentationService
     {
         private static object lockObj = new object();
 
@@ -51,11 +51,11 @@ namespace Kucoin.NET.Websockets.Distribution.Services
 
                     if (feed.PreferDispatcher && Dispatcher.Initialized)
                     {
-                        a = () => Dispatcher.InvokeOnMainThread((o) => feed.CopyToPresentation());
+                        a = () => Dispatcher.InvokeOnMainThread((o) => feed.PresentData());
                     }
                     else
                     {
-                        a = () => feed.CopyToPresentation();
+                        a = () => feed.PresentData();
                     }
 
                     if (!tmpdict.ContainsKey(pi))
@@ -86,7 +86,7 @@ namespace Kucoin.NET.Websockets.Distribution.Services
             }
         }
 
-        static ObserverService()
+        static PresentationService()
         {
         }
 

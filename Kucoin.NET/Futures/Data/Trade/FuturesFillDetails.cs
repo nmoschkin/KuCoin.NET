@@ -16,7 +16,7 @@ namespace Kucoin.NET.Futures.Data.Trade
     /// <summary>
     /// Futures Fill Details
     /// </summary>
-    public class FuturesFillDetails : IDataObject
+    public class FuturesFillDetails : DataObject
     {
 
 

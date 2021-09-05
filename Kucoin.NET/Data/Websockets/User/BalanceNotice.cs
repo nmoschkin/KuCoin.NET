@@ -13,7 +13,7 @@ namespace Kucoin.NET.Data.Websockets.User
     /// <summary>
     /// Balance notice event information
     /// </summary>
-    public class BalanceNotice : ICloneable, IStreamableObject
+    public class BalanceNotice : DataObject, ICloneable, IStreamableObject
     {
         /// <summary>
         /// Total

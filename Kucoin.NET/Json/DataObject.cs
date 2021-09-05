@@ -9,9 +9,9 @@ using Newtonsoft.Json.Linq;
 namespace Kucoin.NET.Json
 {
     /// <summary>
-    /// Base class for objects that can be serialized to <see cref="Dictionary{string, object}"/> objects.
+    /// Base class for data objects.
     /// </summary>
-    public abstract class JsonDictBase 
+    public abstract class DataObject : IDataObject
     {
         /// <summary>
         /// Returns the JSON-serialized contents of this object.
@@ -25,17 +25,26 @@ namespace Kucoin.NET.Json
         /// <returns>A new dictionary.</returns>
         public virtual Dictionary<string, object> ToDict()
         {
-            object obj;
+            return ToDict(this);
+        }
+
+        /// <summary>
+        /// Converts public properties into a <see cref="Dictionary{TKey, TValue}"/> of string, object.
+        /// </summary>
+        /// <returns>A new dictionary.</returns>
+        public static Dictionary<string, object> ToDict(object obj)
+        {
+            object value;
             var dict = new Dictionary<string, object>();
 
-            var pis = GetType().GetProperties(BindingFlags.Public | BindingFlags.Instance);
+            var pis = obj.GetType().GetProperties(BindingFlags.Public | BindingFlags.Instance);
             string name;
             //var jt = new JObject(this);
             //return jt.ToObject<Dictionary<string, object>>();
 
             foreach (var pi in pis)
             {
-                obj = pi.GetValue(this);
+                value = pi.GetValue(obj);
 
                 var attr = pi.GetCustomAttribute(typeof(JsonPropertyAttribute)) as JsonPropertyAttribute;
 
@@ -49,15 +58,22 @@ namespace Kucoin.NET.Json
                     name = pi.Name;
                 }
 
-                if (obj != null)
+                if (value != null)
                 {
-                    dict.Add(name, obj);
+                    if (value is IDataObject dobj)
+                    {
+                        dict.Add(name, dobj.ToDict());
+                    }
+                    else
+                    {
+                        dict.Add(name, value);
+                    }
+
                 }
             }
 
             return dict;
         }
-
 
     }
 }

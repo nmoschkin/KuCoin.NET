@@ -54,7 +54,7 @@ namespace Kucoin.NET.Futures.Data.Websockets
     /// <summary>
     /// Futures Trade Order 
     /// </summary>
-    public class TradeOrder : ISymbol, IStreamableObject
+    public class TradeOrder : DataObject, ISymbol, IStreamableObject
     {
         /// <summary>
         /// Order ID

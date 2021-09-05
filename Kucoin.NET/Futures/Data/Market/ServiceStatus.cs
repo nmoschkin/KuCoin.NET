@@ -38,7 +38,7 @@ namespace Kucoin.NET.Futures.Data.Market
     /// <summary>
     /// KuCoin Futures Service Information
     /// </summary>
-    public class ServiceInfo : IDataObject
+    public class ServiceInfo : DataObject
     {
         /// <summary>
         /// Gets the service status

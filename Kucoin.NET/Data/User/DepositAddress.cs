@@ -11,7 +11,7 @@ namespace Kucoin.NET.Data.User
     /// <summary>
     /// Deposit address base class
     /// </summary>
-    public class AccountAddress : JsonDictBase
+    public class AccountAddress : DataObject
     {
         /// <summary>
         /// Address

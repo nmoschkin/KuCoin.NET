@@ -34,7 +34,7 @@ namespace Kucoin.NET.Futures.Data.User
     /// <summary>
     /// Futures Account Info
     /// </summary>
-    public class FuturesAccount : IDataObject
+    public class FuturesAccount : DataObject
     {
 
 

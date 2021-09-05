@@ -13,7 +13,7 @@ namespace Kucoin.NET.Futures.Data.Websockets
     /// <summary>
     /// Funding Settlement Data
     /// </summary>
-    public class FundingSettlement : IStreamableObject
+    public class FundingSettlement : DataObject, IStreamableObject
     {
 
 

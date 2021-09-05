@@ -1,5 +1,6 @@
 ﻿using Kucoin.NET.Data;
 using Kucoin.NET.Data.Market;
+using Kucoin.NET.Json;
 using Kucoin.NET.Observable;
 
 using Newtonsoft.Json;
@@ -13,7 +14,7 @@ namespace Kucoin.NET.Futures.Data.Market
     /// <summary>
     /// Contains data about an open futures contract
     /// </summary>
-    public class FuturesContract : ISymbolicated, IDataObject
+    public class FuturesContract : DataObject, ISymbolicated, IDataObject
     {
 
         /// <summary>

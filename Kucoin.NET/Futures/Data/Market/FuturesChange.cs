@@ -40,6 +40,12 @@ namespace Kucoin.NET.Futures.Data.Market
         [JsonConverter(typeof(AutoTimeConverter), TimeTypes.InMilliseconds)]
         public DateTime Timestamp { get; set; }
 
+
+        public Dictionary<string, object> ToDict()
+        {
+            return DataObject.ToDict(this);
+        }
+
     }
 
     /// <summary>
@@ -90,6 +96,12 @@ namespace Kucoin.NET.Futures.Data.Market
         }
 
         public FuturesChange Clone() => (FuturesChange)MemberwiseClone();
+
+
+        public Dictionary<string, object> ToDict()
+        {
+            return DataObject.ToDict(this);
+        }
     }
 
 

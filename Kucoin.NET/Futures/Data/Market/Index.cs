@@ -13,7 +13,7 @@ namespace Kucoin.NET.Futures.Data.Market
     /// <summary>
     /// Index data list page
     /// </summary>
-    public class IndexList : IDataObject
+    public class IndexList : DataObject
     {
 
         [JsonProperty("hasMore")]
@@ -26,7 +26,7 @@ namespace Kucoin.NET.Futures.Data.Market
     /// <summary>
     /// Index decomposition
     /// </summary>
-    public class IndexDecomposition : IDataObject
+    public class IndexDecomposition : DataObject
     {
 
 
@@ -55,7 +55,7 @@ namespace Kucoin.NET.Futures.Data.Market
     /// <summary>
     /// Index data
     /// </summary>
-    public class IndexData : IDataObject
+    public class IndexData : DataObject
     {
 
 

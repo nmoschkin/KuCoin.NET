@@ -17,7 +17,7 @@ namespace Kucoin.NET.Data.Market
     /// </summary>
 
     [JsonConverter(typeof(AtomicOrderUnitConverter))]
-    public class AtomicOrderUnit : ICloneable, IAtomicOrderUnit
+    public class AtomicOrderUnit : DataObject, ICloneable, IAtomicOrderUnit
     {
         protected decimal price;
         protected decimal size;
@@ -321,6 +321,17 @@ namespace Kucoin.NET.Data.Market
             return ret;
         }
 
+        public Dictionary<string, object> ToDict()
+        {
+            return new Dictionary<string, object>()
+            {
+                { "price", Price },
+                { "size", Size },
+                { "orderId", OrderId },
+                { "ts", Timestamp },
+            };
+        }
+        
         object ICloneable.Clone()
         {
             return MemberwiseClone();

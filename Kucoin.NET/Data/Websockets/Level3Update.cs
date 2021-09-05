@@ -142,6 +142,10 @@ namespace Kucoin.NET.Data.Websockets
         [JsonIgnore]
         public string Subject { get; set; }
 
+        public Dictionary<string, object> ToDict()
+        {
+            return DataObject.ToDict(this);
+        }
     }
 
 

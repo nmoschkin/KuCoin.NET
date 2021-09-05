@@ -12,7 +12,7 @@ namespace Kucoin.NET.Data.Market
     /// <summary>
     /// Spot / Mark Price Data
     /// </summary>
-    public class Price : IDataObject
+    public class Price : DataObject
     {
         /// <summary>
         /// Symbol

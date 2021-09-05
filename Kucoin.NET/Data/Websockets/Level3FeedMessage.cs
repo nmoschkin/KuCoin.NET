@@ -1,19 +1,20 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Reflection;
-using System.Text;
+﻿using Kucoin.NET.Json;
 
 using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
-using Kucoin.NET.Json;
-using System.Runtime.CompilerServices;
+
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 
 namespace Kucoin.NET.Data.Websockets
 {
+
     /// <summary>
     /// Websocket feed packet object
     /// </summary>
-    public class FeedMessage : DataObject
+    public struct Level3FeedMessage : IDataObject
     {
 
         /// <summary>
@@ -67,23 +68,10 @@ namespace Kucoin.NET.Data.Websockets
         /// <summary>
         /// Deserialized data contents
         /// </summary>
-        [JsonProperty("data")] 
-        public virtual JToken Data { get; set; }
-
-    }
-
-    /// <summary>
-    /// Websocket feed packet object
-    /// </summary>
-    public class FeedMessage<T> : FeedMessage
-    {
-        /// <summary>
-        /// Deserialized data contents
-        /// </summary>
         [JsonProperty("data")]
-        new public virtual T Data { get; set; }
+        public Level3Update Data { get; set; }
 
+
+        public Dictionary<string, object> ToDict() => DataObject.ToDict(this);
     }
-
-
 }

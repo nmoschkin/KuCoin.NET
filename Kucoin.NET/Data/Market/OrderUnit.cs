@@ -16,7 +16,7 @@ namespace Kucoin.NET.Data.Market
     /// </summary>
 
     [JsonConverter(typeof(OrderUnitConverter))]
-    public class OrderUnit : ISequencedOrderUnit
+    public class OrderUnit : DataObject, ISequencedOrderUnit
     {
         protected decimal price;
         protected decimal size;
@@ -263,6 +263,15 @@ namespace Kucoin.NET.Data.Market
             }
 
             return objNew;
+        }
+
+        public Dictionary<string, object> ToDict()
+        {
+            return new Dictionary<string, object>()
+            {
+                { "price", Price },
+                { "size", Size }
+            };
         }
 
         public OrderUnitStruct Clone()

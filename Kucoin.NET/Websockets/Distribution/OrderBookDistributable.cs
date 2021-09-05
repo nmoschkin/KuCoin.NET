@@ -48,23 +48,9 @@ namespace Kucoin.NET.Websockets.Distribution
 
         protected bool diagEnable;
 
-        protected bool failure;
-
         protected int interval = 100;
 
         protected int marketDepth = 50;
-
-        protected bool initialized;
-
-        protected int resets = 0;
-
-        protected int maxResets = 3;
-
-        protected int resetTimeout = 30000;
-
-        protected bool initializing;
-
-        public override event EventHandler Initialized;
 
         public OrderBookDistributable(TParent parent, string symbol, bool observationDisabledByDefault) : base(parent, symbol)
         {
@@ -242,192 +228,6 @@ namespace Kucoin.NET.Websockets.Distribution
 
         public virtual long TransactionsPerSecond { get; protected set; }
 
-        public override IInitialDataProvider<string, TBookIn> DataProvider
-        {
-            get => dataProvider;
-            protected set
-            {
-                SetProperty(ref dataProvider, value);
-            }
-        }
-
-        public override bool IsDataProviderAvailable { get; protected set; } = true;
-
-        /// <summary>
-        /// Gets a value indicating that this order book is initialized with the full-depth (preflight) order book.
-        /// </summary>
-        public override bool IsInitialized
-        {
-            get => !disposedValue ? initialized : throw new ObjectDisposedException(GetType().FullName);
-            protected set
-            {
-                if (disposedValue) throw new ObjectDisposedException(GetType().FullName);
-                if (SetProperty(ref initialized, value))
-                {
-                    //if (value) State = FeedState.Running;
-                    //else State = FeedState.Initializing;
-                }
-            }
-        }
-
-        public override int ResetCount
-        {
-            get => resets;
-            protected set
-            {
-                SetProperty(ref resets, value);
-            }
-        }
-
-        public override int ResetTimeout
-        {
-            get => resetTimeout;
-            set
-            {
-                SetProperty(ref resetTimeout, value);
-            }
-        }
-        public override int MaxTimeoutRetries
-        {
-            get => maxResets;
-            set
-            {
-                SetProperty(ref maxResets, value);
-            }
-        }
-
-        public override bool Failure
-        {
-            get => failure;
-            protected set
-            {
-                if (SetProperty(ref failure, value))
-                {
-                    if (value)
-                    {
-                        state = FeedState.Failed;
-                        lastFailureTime = DateTime.UtcNow;
-                    }
-
-                    OnPropertyChanged(nameof(State));
-                    OnPropertyChanged(nameof(TimeUntilNextRetry));
-                    OnPropertyChanged(nameof(LastFailureTime));
-                }
-            }
-        }
-
-        /// <summary>
-        /// The time of the last failure, or null if the feed is running normally.
-        /// </summary>
-        public virtual DateTime? LastFailureTime
-        {
-            get => lastFailureTime;
-            protected set
-            {
-                if (SetProperty(ref lastFailureTime, value))
-                {
-                    OnPropertyChanged(nameof(TimeUntilNextRetry));
-                }
-            }
-        }
-
-        /// <summary>
-        /// The number of milliseconds remaining until the next retry, or null if the feed is running normally.
-        /// </summary>
-        public virtual double? TimeUntilNextRetry
-        {
-            get
-            {
-                if (lastFailureTime is DateTime t)
-                {
-                    return (resetTimeout - (DateTime.UtcNow - t).TotalMilliseconds);
-                }
-                else
-                {
-                    return null;
-                }
-            }
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public override async Task<bool> Initialize()
-        {
-            lock (lockObj)
-            {
-                IsInitialized = false;
-                initializing = true;
-
-                State = FeedState.Initializing;
-            }
-
-            TBookIn fd = null;
-            int maxtries = 3;
-
-            for (int tries = 0; tries < maxtries; tries++)
-            {
-                try
-                {
-                    await Task.Delay(100);
-
-                    if (DataProvider != null)
-                    {
-                        fd = await DataProvider?.ProvideInitialData(key);
-                        if (fd != null) break;
-                    }
-                }
-                catch
-                {
-                    fd = null;
-                    break;
-                }
-            }
-
-            lock (lockObj)
-            {
-                if (fd == null)
-                {
-                    State = FeedState.Failed;
-                    LastFailureTime = DateTime.Now;
-                    Failure = true;
-                    OnPropertyChanged(nameof(TimeUntilNextRetry));
-                }
-
-                FullDepthOrderBook = fd;
-
-                initializing = false;
-                IsInitialized = fd != null;
-
-                _ = Task.Run(OnInitialized);
-
-                return IsInitialized;
-            }
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public override async Task Reset()
-        {
-            await Task.Run(() =>
-            {
-                lock (lockObj)
-                {
-                    if (initializing) return;
-
-                    initialized = failure = false;
-                    LastFailureTime = null;
-
-                    _ = Task.Run(() =>
-                    {
-                        OnPropertyChanged(nameof(IsInitialized));
-                        OnPropertyChanged(nameof(Failure));
-                        OnPropertyChanged(nameof(TimeUntilNextRetry));
-                        OnPropertyChanged(nameof(LastFailureTime));
-                    });
-
-                    FullDepthOrderBook = null;
-                    buffer.Clear();
-                }
-            });
-        }
 
         CancellationTokenSource cts;
         DateTime? startFetch;
@@ -507,14 +307,6 @@ namespace Kucoin.NET.Websockets.Distribution
         public override void SetInitialDataProvider(IInitialDataProvider<string, TBookIn> dataProvider)
         {
             DataProvider = dataProvider;
-        }
-
-        /// <summary>
-        /// Fired when the order book is completely synced and running, after an initial connection or a reset.
-        /// </summary>
-        protected virtual void OnInitialized()
-        {
-            Initialized?.Invoke(this, new EventArgs());
         }
 
     }

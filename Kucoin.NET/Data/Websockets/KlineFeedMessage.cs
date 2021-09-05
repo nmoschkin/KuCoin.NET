@@ -15,7 +15,7 @@ namespace Kucoin.NET.Data.Websockets
     /// K-Line websocket feed data packet
     /// </summary>
     /// <typeparam name="T">An implementation of <see cref="IFullCandle"/>.</typeparam>
-    public class KlineFeedMessage<T> : IStreamableObject where T: IFullCandle, new()
+    public class KlineFeedMessage<T> : DataObject, IStreamableObject where T: IFullCandle, new()
     {
         /// <summary>
         /// Time stamp in local time.

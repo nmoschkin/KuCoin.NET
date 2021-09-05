@@ -52,23 +52,19 @@ namespace Kucoin.NET.Websockets.Distribution
     /// <typeparam name="TObservable"></typeparam>
     /// <typeparam name="TValue"></typeparam>
     public abstract class MarketPresenter<TInternal, TObservable, TValue> : 
-        DistributableObject<string, TValue>, 
+        InitializableObject<string, TValue, TInternal>, 
         IMarketPresenter<TInternal, TObservable, string, TValue> 
         where TValue : IStreamableObject
     {
         public MarketPresenter(IDistributor parent, string symbol) : base(parent, symbol)
         {
             Symbol = symbol;
-            ObserverService.RegisterService(this);
+            PresentationService.RegisterService(this);
         }
 
         public abstract bool IsPresentationDisabled { get; set; }
-
-        public abstract TInternal InternalData { get; protected set; }
         public abstract TObservable PresentedData { get; protected set; }
         public abstract bool PreferDispatcher { get; }
-
-        public abstract bool Failure { get; protected set; }
         public abstract int Interval { get; set; }
         public abstract int MarketDepth { get; set; }
 
@@ -81,23 +77,10 @@ namespace Kucoin.NET.Websockets.Distribution
             }
         }
 
-        public abstract IInitialDataProvider<string, TInternal> DataProvider { get; protected set; }
-        public abstract bool IsDataProviderAvailable { get; protected set; }
-        public abstract bool IsInitialized { get; protected set; }
-        public abstract int ResetCount { get; protected set; }
-        public abstract int ResetTimeout { get; set; }
-        public abstract int MaxTimeoutRetries { get; set; }
-
-        public abstract event EventHandler Initialized;
-
-        public abstract void CopyToPresentation();
-        public abstract Task<bool> Initialize();
-        public abstract Task Reset();
-        public abstract void SetInitialDataProvider(IInitialDataProvider<string, TInternal> dataProvider);
-
+        public abstract void PresentData();
         protected override void Dispose(bool disposing)
         {
-            ObserverService.UnregisterService(this);    
+            PresentationService.UnregisterService(this);    
             base.Dispose(disposing);
         }
     }

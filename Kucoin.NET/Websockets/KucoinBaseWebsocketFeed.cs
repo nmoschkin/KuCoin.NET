@@ -785,7 +785,6 @@ namespace Kucoin.NET.Websockets
             
             sb.EnsureCapacity(recvBufferSize);
 
-            var arrSeg = new Memory<byte>(inputChunk);
 
             DateTime xtime = DateTime.UtcNow;
 
@@ -794,7 +793,28 @@ namespace Kucoin.NET.Websockets
             long tms = xtime.Ticks;
             long tqms = tms;
 
+
+#if DOTNETSTD
+            WebSocketReceiveResult result;
+            var arrSeg = new ArraySegment<byte>(inputChunk);
+
+            // loop forever or until the connection is broken or canceled.
+            while (!ctsReceive.IsCancellationRequested && socket?.State == WebSocketState.Open)
+            {
+                try
+                {
+                    result = socket.ReceiveAsync(arrSeg, ctsReceive.Token)
+                        .ConfigureAwait(false)
+                        .GetAwaiter()
+                        .GetResult();
+                }
+                catch
+                {
+                    return;
+                }
+#else
             ValueWebSocketReceiveResult result;
+            var arrSeg = new Memory<byte>(inputChunk);
 
             // loop forever or until the connection is broken or canceled.
             while (!ctsReceive.IsCancellationRequested && socket?.State == WebSocketState.Open)
@@ -811,6 +831,7 @@ namespace Kucoin.NET.Websockets
                     return;
                 }
 
+#endif
                 if (ctsReceive?.IsCancellationRequested ?? true) return;
 
                 c = result.Count;
@@ -1178,7 +1199,7 @@ namespace Kucoin.NET.Websockets
             await Send(data.ToString(), encoding);
         }
 
-        #region IAsyncPingable
+#region IAsyncPingable
 
         /// <summary>
         /// Ping the remote connection.
@@ -1228,11 +1249,11 @@ namespace Kucoin.NET.Websockets
             }
         }
 
-        #endregion IAsyncPingable
+#endregion IAsyncPingable
 
-        #endregion Data Send and Receive
+#endregion Data Send and Receive
 
-        #region Thread cancellation
+#region Thread cancellation
 
         /// <summary>
         /// Cancel all threads.
@@ -1268,9 +1289,9 @@ namespace Kucoin.NET.Websockets
             ctsPump?.Cancel();
         }
 
-        #endregion Thread cancellation
+#endregion Thread cancellation
 
-        #region IDisposable Pattern
+#region IDisposable Pattern
 
         protected bool disposedValue = false;
 
@@ -1339,7 +1360,7 @@ namespace Kucoin.NET.Websockets
             this.disposing = false;
         }
 
-        #endregion IDisposable Pattern
+#endregion IDisposable Pattern
     }
 
     /// <summary>
@@ -1366,7 +1387,7 @@ namespace Kucoin.NET.Websockets
         /// </summary>
         public abstract string Subject { get; }
 
-        #region Default Constructor
+#region Default Constructor
 
         /// <summary>
         /// Default constructor
@@ -1408,9 +1429,9 @@ namespace Kucoin.NET.Websockets
         {
         }
 
-        #endregion Default Constructor
+#endregion Default Constructor
 
-        #region IObservable<T> Pattern
+#region IObservable<T> Pattern
 
         internal List<FeedObject<T>> observations = new List<FeedObject<T>>();
 
@@ -1474,7 +1495,7 @@ namespace Kucoin.NET.Websockets
             });
         }
 
-        #endregion IObservable<T> Pattern
+#endregion IObservable<T> Pattern
 
         protected override void Dispose(bool disposing)
         {

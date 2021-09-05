@@ -13,7 +13,7 @@ namespace Kucoin.NET.Futures.Data.Market
     /// <summary>
     /// Futures interest rate history page results
     /// </summary>
-    public class InterestHistory : IDataObject
+    public class InterestHistory : DataObject
     {
 
         [JsonProperty("hasMore")]
@@ -27,7 +27,7 @@ namespace Kucoin.NET.Futures.Data.Market
     /// <summary>
     /// Futures interest rate information
     /// </summary>
-    public class FuturesInterestRate : IDataObject
+    public class FuturesInterestRate : DataObject
     {
         /// <summary>
         /// Symbol of the Bitcoin Lending Rate

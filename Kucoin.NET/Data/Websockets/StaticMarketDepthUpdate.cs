@@ -72,6 +72,11 @@ namespace Kucoin.NET.Data.Websockets
         [JsonConverter(typeof(AutoTimeConverter), TimeTypes.InMilliseconds)]
         public virtual DateTime Timestamp { get; set; }
 
+        public Dictionary<string, object> ToDict()
+        {
+            return DataObject.ToDict(this);
+        }
+
     }
 
     /// <summary>

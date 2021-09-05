@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
 using System.Text;
+using Kucoin.NET.Json;
 
 namespace Kucoin.NET.Data.Market
 {
@@ -13,7 +14,7 @@ namespace Kucoin.NET.Data.Market
     /// <summary>
     /// K-Line Candlestick basic implementation.
     /// </summary>
-    public abstract class CandleBase : ICandle
+    public abstract class CandleBase : DataObject, ICandle
     {
         public DateTime Timestamp { get; set; }
 

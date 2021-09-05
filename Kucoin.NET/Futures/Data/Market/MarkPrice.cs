@@ -13,7 +13,7 @@ namespace Kucoin.NET.Futures.Data.Market
     /// <summary>
     /// Mark price ticker feed
     /// </summary>
-    public class MarkPrice : IDataObject
+    public class MarkPrice : DataObject
     {
 
 
