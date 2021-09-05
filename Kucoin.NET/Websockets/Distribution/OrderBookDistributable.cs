@@ -12,7 +12,7 @@ using System.Threading.Tasks;
 namespace Kucoin.NET.Websockets.Distribution
 {
     public abstract class OrderBookDistributable<TBookIn, TBookOut, TDistributable, TParent> 
-        : MarketDistributable<TBookIn, TBookOut, TDistributable>, IFeedDiagnostics, IMarketVolume
+        : MarketPresenter<TBookIn, TBookOut, TDistributable>, IFeedDiagnostics, IMarketVolume
         where TParent: IDistributor, IInitialDataProvider<string, TBookIn>
         where TBookIn: class, new()
         where TBookOut: class, new()
@@ -72,7 +72,7 @@ namespace Kucoin.NET.Websockets.Distribution
             base.parent = parent;
 
             dataProvider = parent;
-            IsObservationDisabled = observationDisabledByDefault;
+            IsPresentationDisabled = observationDisabledByDefault;
         }
 
         public virtual Candle Candle
@@ -124,7 +124,7 @@ namespace Kucoin.NET.Websockets.Distribution
             }
         }
 
-        public override bool IsObservationDisabled
+        public override bool IsPresentationDisabled
         {
             get => disabled;
             set
@@ -158,7 +158,7 @@ namespace Kucoin.NET.Websockets.Distribution
             {
                 if (SetProperty(ref orderBook, value))
                 {
-                    OnPropertyChanged(nameof(ObservableData));
+                    OnPropertyChanged(nameof(PresentedData));
                 }
             }
         }
@@ -175,7 +175,7 @@ namespace Kucoin.NET.Websockets.Distribution
             }
         }
 
-        public override TBookOut ObservableData
+        public override TBookOut PresentedData
         {
             get => orderBook;
             protected set

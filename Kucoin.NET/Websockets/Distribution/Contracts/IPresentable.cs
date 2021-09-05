@@ -9,18 +9,19 @@ using System.Text;
 namespace Kucoin.NET.Websockets.Distribution
 {
     /// <summary>
-    /// Contains an observable version of internal information.
+    /// Maintains a version of the data for presentation.
     /// </summary>
-    public interface IObservableCopy : INotifyPropertyChanged
+    public interface IPresentable : INotifyPropertyChanged
     {
         /// <summary>
-        /// Copy the internal contents of the object to an observed location.
+        /// Copy the internal contents of the object to an observed location for presentation.
         /// </summary>
-        void CopyToObservable();
+        void CopyToPresentation();
 
         /// <summary>
         /// Prefer that the copy method be executed on the main thread.
         /// </summary>
+        [DefaultValue(true)]
         bool PreferDispatcher { get; }
 
         /// <summary>
@@ -29,37 +30,37 @@ namespace Kucoin.NET.Websockets.Distribution
         /// <remarks>
         /// This should be a value divisible by 10.
         /// </remarks>
+        [DefaultValue(10)]
         int Interval { get; set; }
 
-
         /// <summary>
-        /// Gets or sets a value indicating whether or not the observation is disabled, and pushes do not occur.
+        /// Gets or sets a value indicating whether or not the presentation observation is disabled, and pushes do not occur.
         /// </summary>
-        bool IsObservationDisabled { get; set; }
+        bool IsPresentationDisabled { get; set; }
 
     }
-
     /// <summary>
-    /// Contains an observable version of internal information.
+    /// Maintains a version of the data for presentation.
     /// </summary>
-    public interface IObservableCopy<TInternal, TObservable> : IObservableCopy 
+    public interface IPresentable<TPresented> : IPresentable
     {
 
         /// <summary>
-        /// The internal copy of the data we observing.
-        /// </summary>
-        /// <remarks>
-        /// This is data that can change rapidly and is likely not observable.
-        /// </remarks>
-        TInternal InternalData { get; }
-
-        /// <summary>
-        /// The public-facing copy of the data we are observing.
+        /// The presentation version of the data.
         /// </summary>
         /// <remarks>
         /// This data is likely to implement <see cref="INotifyPropertyChanged"/> or <see cref="INotifyCollectionChanged"/>.
         /// </remarks>
-        TObservable ObservableData { get; }
+        TPresented PresentedData { get; }
+
+    }
+
+    /// <summary>
+    /// Maintains a version of the data for presentation.
+    /// </summary>
+    public interface IPresentable<TInternal, TPresented> : IPresentable<TPresented>, IInternalData<TInternal>
+    {
+
 
     }
 

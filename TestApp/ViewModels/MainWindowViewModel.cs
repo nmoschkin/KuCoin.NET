@@ -507,7 +507,7 @@ namespace KuCoinApp
                                 App.Current?.Dispatcher?.Invoke(() =>
                                 {
                                     Level3 = t.Result;
-                                    Level3.IsObservationDisabled = false;
+                                    Level3.IsPresentationDisabled = false;
                                     Level3.Interval = l2delay;
                                 });
 
@@ -534,7 +534,7 @@ namespace KuCoinApp
                         App.Current?.Dispatcher?.Invoke(() =>
                         {
                             Level3 = t.Result;
-                            Level3.IsObservationDisabled = false;
+                            Level3.IsPresentationDisabled = false;
                             Level3.Interval = l2delay;
                         });
 

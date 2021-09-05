@@ -12,7 +12,7 @@ namespace Kucoin.NET.Websockets.Distribution
     }
 
     /// <summary>
-    /// Handles subscribing to multuditinous workloads in an orderly fashion.
+    /// Handles subscribing to multitudinous workloads in an orderly fashion.
     /// </summary>
     public interface ISubscriptionManager
     {

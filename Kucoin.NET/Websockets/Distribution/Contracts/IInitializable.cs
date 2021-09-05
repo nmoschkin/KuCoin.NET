@@ -56,7 +56,7 @@ namespace Kucoin.NET.Websockets.Distribution
 
     }
 
-    public interface IInitializable<TKey, TValue> : IInitializable
+    public interface IInitializable<TKey, TValue> : IInitializable, IInternalData<TValue>
     {
                 
         /// <summary>

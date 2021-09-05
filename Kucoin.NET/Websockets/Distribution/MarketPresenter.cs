@@ -11,37 +11,61 @@ using System.Threading.Tasks;
 
 namespace Kucoin.NET.Websockets.Distribution
 {
-    public interface IMarketDistributable<TInternal, TObservable, TValue> 
-        : IDistributable<string, TValue>, 
-        IInitializable<string, TInternal>, 
-        ISymbol, 
-        IMarketDepth, 
-        IObservableCopy<TInternal, TObservable> 
-        where TValue : ISymbol, IStreamableObject
+
+    public interface IMarketPresenter
+    : IDistributable,
+        IInitializable,
+        ISymbol,
+        IMarketDepth,
+        IPresentable
     {
     }
 
+    public interface IMarketPresenter<TKey, TValue>
+    : IMarketPresenter, IDistributable<TKey, TValue>
+      where TValue : IStreamableObject
+    {
+    }
+
+    public interface IMarketPresenter<TObservable, TKey, TValue> 
+    :  IMarketPresenter<TKey, TValue>, IPresentable<TObservable>
+       where TValue : IStreamableObject
+    {
+    }
+
+    public interface IMarketPresenter<TInternal, TObservable, TKey, TValue> 
+        : IDistributable<TKey, TValue>, 
+        IInitializable<TKey, TInternal>, 
+        ISymbol, 
+        IMarketDepth, 
+        IPresentable<TInternal, TObservable> 
+        where TValue : IStreamableObject
+    {
+    }
+
+
+
     /// <summary>
-    /// Base class for all market observations.
+    /// Base class for all market presentation where the raw data and the presented data are two different objects, with the presented data being data prepared from the raw data at regular intervals.
     /// </summary>
     /// <typeparam name="TInternal"></typeparam>
     /// <typeparam name="TObservable"></typeparam>
     /// <typeparam name="TValue"></typeparam>
-    public abstract class MarketDistributable<TInternal, TObservable, TValue> : 
+    public abstract class MarketPresenter<TInternal, TObservable, TValue> : 
         DistributableObject<string, TValue>, 
-        IMarketDistributable<TInternal, TObservable, TValue> 
-        where TValue : ISymbol, IStreamableObject
+        IMarketPresenter<TInternal, TObservable, string, TValue> 
+        where TValue : IStreamableObject
     {
-        public MarketDistributable(IDistributor parent, string symbol) : base(parent, symbol)
+        public MarketPresenter(IDistributor parent, string symbol) : base(parent, symbol)
         {
             Symbol = symbol;
             ObserverService.RegisterService(this);
         }
 
-        public abstract bool IsObservationDisabled { get; set; }
+        public abstract bool IsPresentationDisabled { get; set; }
 
         public abstract TInternal InternalData { get; protected set; }
-        public abstract TObservable ObservableData { get; protected set; }
+        public abstract TObservable PresentedData { get; protected set; }
         public abstract bool PreferDispatcher { get; }
 
         public abstract bool Failure { get; protected set; }
@@ -66,7 +90,7 @@ namespace Kucoin.NET.Websockets.Distribution
 
         public abstract event EventHandler Initialized;
 
-        public abstract void CopyToObservable();
+        public abstract void CopyToPresentation();
         public abstract Task<bool> Initialize();
         public abstract Task Reset();
         public abstract void SetInitialDataProvider(IInitialDataProvider<string, TInternal> dataProvider);

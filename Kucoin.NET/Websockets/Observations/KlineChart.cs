@@ -11,12 +11,17 @@ using System.Threading.Tasks;
 
 namespace Kucoin.NET.Websockets.Observations
 {
-    public class KlineChart<TCandle, TCustom, TCol> : DistributableObject<SymbolKline, KlineFeedMessage<TCandle>>
+    public class KlineChart<TCandle, TCustom, TCol> : InitializableObject<SymbolKline, KlineFeedMessage<TCandle>, TCol>, IParent<KlineFeedNew<TCandle, TCustom, TCol>>
           where TCandle : IFullCandle, TCustom, new()
           where TCol : IList<TCustom>, new()        
     {
 
         protected TCol candles;
+
+        new public KlineFeedNew<TCandle, TCustom, TCol> Parent
+        {
+            get => (KlineFeedNew<TCandle, TCustom, TCol>)parent;
+        }
 
         /// <summary>
         /// Gets the candles data.
@@ -40,14 +45,19 @@ namespace Kucoin.NET.Websockets.Observations
             {
                 foreach (var b in buffer)
                 {
-
+                    ProcessObject(b);
                 }
             }
         }
 
         public override bool ProcessObject(KlineFeedMessage<TCandle> obj)
         {
-            throw new NotImplementedException();
+
+
+
+
+
+            return true;
         }
     }
 }

@@ -442,7 +442,7 @@ namespace KuCoinApp
                             {
                                 FuturesLevel2 = t.Result;
                                 FuturesLevel2.Interval = 50;
-                                FuturesLevel2.IsObservationDisabled = false;
+                                FuturesLevel2.IsPresentationDisabled = false;
 
                             });
 
@@ -468,7 +468,7 @@ namespace KuCoinApp
                         {
                             FuturesLevel2 = t.Result;
                             FuturesLevel2.Interval = 50;
-                            FuturesLevel2.IsObservationDisabled = false;
+                            FuturesLevel2.IsPresentationDisabled = false;
                         });
 
                     });

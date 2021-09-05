@@ -20,7 +20,7 @@ namespace Kucoin.NET.Websockets.Distribution
     /// <typeparam name="TInitial">The type of the initial data set.</typeparam>
     public abstract class MarketFeed<TDistributable, TValue, TInitial, TObservable> :
         DistributionFeed<TDistributable, TValue, TInitial>, IMarketFeed<TDistributable, TValue, TInitial, TObservable>
-        where TDistributable : MarketDistributable<TInitial, TObservable, TValue>
+        where TDistributable : MarketPresenter<TInitial, TObservable, TValue>
         where TValue : ISymbol, IStreamableObject
     {
 

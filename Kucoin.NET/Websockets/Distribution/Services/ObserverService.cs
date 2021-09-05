@@ -21,7 +21,7 @@ namespace Kucoin.NET.Websockets.Distribution.Services
     {
         private static object lockObj = new object();
 
-        private static readonly List<IObservableCopy> feeds = new List<IObservableCopy>();
+        private static readonly List<IPresentable> feeds = new List<IPresentable>();
 
         private static Thread IntervalThread;
 
@@ -51,11 +51,11 @@ namespace Kucoin.NET.Websockets.Distribution.Services
 
                     if (feed.PreferDispatcher && Dispatcher.Initialized)
                     {
-                        a = () => Dispatcher.InvokeOnMainThread((o) => feed.CopyToObservable());
+                        a = () => Dispatcher.InvokeOnMainThread((o) => feed.CopyToPresentation());
                     }
                     else
                     {
-                        a = () => feed.CopyToObservable();
+                        a = () => feed.CopyToPresentation();
                     }
 
                     if (!tmpdict.ContainsKey(pi))
@@ -95,7 +95,7 @@ namespace Kucoin.NET.Websockets.Distribution.Services
         /// </summary>
         /// <param name="obj">The object to register.</param>
         /// <returns>True if the object was successfully registered, false if the object was already registered.</returns>
-        public static bool RegisterService(IObservableCopy obj)
+        public static bool RegisterService(IPresentable obj)
         {
             lock (lockObj)
             {
@@ -127,7 +127,7 @@ namespace Kucoin.NET.Websockets.Distribution.Services
 
         private static void OnFeedPropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
         {
-            if (e.PropertyName == nameof(IObservableCopy.Interval))
+            if (e.PropertyName == nameof(IPresentable.Interval))
             {
                 UpdateTriggerGroups();
             }
@@ -138,7 +138,7 @@ namespace Kucoin.NET.Websockets.Distribution.Services
         /// </summary>
         /// <param name="obj">The object to unregister.</param>
         /// <returns>True if the object was successfully unregistered, false if the object was not registered.</returns>
-        public static bool UnregisterService(IObservableCopy obj)
+        public static bool UnregisterService(IPresentable obj)
         {
             lock (lockObj)
             {

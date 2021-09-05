@@ -22,11 +22,11 @@ namespace Kucoin.NET.Websockets.Observations
         {
             this.parent = parent;
             dataProvider = parent;
-            IsObservationDisabled = true;
+            IsPresentationDisabled = true;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public override void CopyToObservable()
+        public override void CopyToPresentation()
         {
             lock (lockObj)
             {
