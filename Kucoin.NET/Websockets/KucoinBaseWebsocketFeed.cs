@@ -755,18 +755,18 @@ namespace Kucoin.NET.Websockets
 
         // The core engine is private and cannot (and should not) be altered by derived classes.
 
-        private List<string> msgQueue;
+        protected List<string> msgQueue;
 
-        private Thread inputReaderThread;
+        protected Thread inputReaderThread;
 
-        private Thread msgPumpThread;
+        protected Thread msgPumpThread;
         
         public virtual int QueueLength => msgQueue?.Count ?? 0;
 
         /// <summary>
         /// The data receive thread.
         /// </summary>
-        private void DataReceiveThread()
+        protected virtual void DataReceiveThread()
         {
             Thread.CurrentThread.Priority = recvPriority;
 

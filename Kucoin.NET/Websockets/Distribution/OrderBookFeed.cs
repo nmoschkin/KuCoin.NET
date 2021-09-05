@@ -164,6 +164,7 @@ namespace Kucoin.NET.Websockets.Distribution
                 PrivateChannel = false
             };
 
+
             await Send(e);
 
             State = FeedState.Subscribed;
