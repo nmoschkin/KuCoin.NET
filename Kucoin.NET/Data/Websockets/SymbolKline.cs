@@ -108,7 +108,35 @@ namespace Kucoin.NET.Data.Websockets
             return !val1.Equals(val2);
         }
 
+        public static explicit operator SymbolKline(string val)
+        {
+            return Parse(val);
+        }
 
+        public static implicit operator string(SymbolKline val)
+        {
+            return val.ToString();
+        }
+
+        public static explicit operator SymbolKline((string, string) val)
+        {
+            return new SymbolKline(val.Item1, KlineType.Parse(val.Item2));
+        }
+
+        public static implicit operator (string, string)(SymbolKline val)
+        {
+            return (val.Symbol, val.KlineType.ToString());
+        }
+
+        public static implicit operator (string, KlineType)(SymbolKline val)
+        {
+            return (val.Symbol, val.KlineType);
+        }
+
+        public static implicit operator SymbolKline((string, KlineType) val)
+        {
+            return new SymbolKline(val.Item1, val.Item2);
+        }
 
     }
 }
