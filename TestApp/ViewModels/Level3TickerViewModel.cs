@@ -14,7 +14,7 @@ namespace KuCoinApp.ViewModels
 {
     public class Level3TickerViewModel : SymbolViewModel
     {
-        private Level3Observation observation;
+        private Level3OrderBook observation;
 
         private decimal bestAsk;
 
@@ -35,7 +35,7 @@ namespace KuCoinApp.ViewModels
             State = observation?.State ?? FeedState.Disconnected;
         }
 
-        public Level3TickerViewModel(TradingSymbol symbol, Level3Observation observation) : base(symbol)
+        public Level3TickerViewModel(TradingSymbol symbol, Level3OrderBook observation) : base(symbol)
         {
             this.observation = observation;
         }
@@ -67,7 +67,7 @@ namespace KuCoinApp.ViewModels
             }
         }
 
-        public Level3Observation Observation
+        public Level3OrderBook Observation
         {
             get => observation;
             set

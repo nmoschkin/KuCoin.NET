@@ -10,7 +10,7 @@ namespace Kucoin.NET.Futures.Websockets.Observations
     /// <summary>
     /// Funding event observation
     /// </summary>
-    public class FundingObservation : FeedObservation<FundingSettlement>
+    public class FundingObservation : FeedObject<FundingSettlement>
     {
         private new PositionChangeFeed feed;
 

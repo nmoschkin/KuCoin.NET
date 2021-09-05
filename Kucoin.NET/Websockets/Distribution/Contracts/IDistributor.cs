@@ -32,6 +32,15 @@ namespace Kucoin.NET.Websockets.Distribution
         /// </summary>
         /// <param name="obj">Object to release.</param>
         void Release(IDistributable obj);
+
+        bool Connected { get; }
+
+        void Disconnect();
+
+        Task<bool> Connect();
+
+        Task<bool> Reconnect();
+
     }
 
     /// <summary>

@@ -1091,7 +1091,12 @@ namespace KuCoinConsole
 
                     itsb.WriteToEdgeLine($"{MinChars(obs.Symbol, maxSymbolLen)} {zt} Best Ask: {{Red}}{MinChars(ba.ToString("#,##0.00######"), 12)}{{Reset}} Best Bid: {{Green}}{MinChars(bb.ToString("#,##0.00######"), 12)}{{Reset}} {{Yellow}}{MinChars(currname, maxCurrencyLen)}{{Reset}}          Volume: {{Cyan}}{MinChars(l3.MarketVolume.ToString("#,##0.00##"), 14)}{{Reset}}");
                     
-                    if (ba == 0)
+                    
+                    if (l3.Parent.Connected == false)
+                    {
+                        itsb.WriteToEdgeLine($"{MinChars($"{{White}}{vc + 1} {{Red}}Feed Disconnected{{Reset}}", maxSymbolLen + 22)}");
+                    }
+                    else if (ba == 0)
                     {
                         itsb.WriteToEdgeLine($"{MinChars($"{{White}}{vc + 1} {{Yellow}}Initializing{{Reset}}", maxSymbolLen + 22)}");
                     }

@@ -55,7 +55,7 @@ namespace Kucoin.NET.Websockets.Public
                     if (obs.Observer == observer) return obs;
                 }
 
-                var obsNew = new SymbolObservation<Ticker>(this, observer);
+                var obsNew = new SymbolDistributable<Ticker>(this, observer);
                 observations.Add(obsNew);
 
                 return obsNew;
@@ -78,7 +78,7 @@ namespace Kucoin.NET.Websockets.Public
                     if (obs.Observer == observer) return obs;
                 }
 
-                var obsNew = new SymbolObservation<Ticker>(symbols, this, observer);
+                var obsNew = new SymbolDistributable<Ticker>(symbols, this, observer);
                 observations.Add(obsNew);
 
                 return obsNew;
@@ -93,7 +93,7 @@ namespace Kucoin.NET.Websockets.Public
         {
             await Task.Run(() =>
             {
-                foreach (SymbolObservation<Ticker> obs in observations)
+                foreach (SymbolDistributable<Ticker> obs in observations)
                 {
                         obs.Observer.OnNext(obj);
                 }

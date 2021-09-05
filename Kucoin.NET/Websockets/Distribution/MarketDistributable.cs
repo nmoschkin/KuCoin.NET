@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 
 namespace Kucoin.NET.Websockets.Distribution
 {
-    public interface IMarketObservation<TInternal, TObservable, TValue> : IDistributable<string, TValue>, IInitializable<string, TInternal>, ISymbol, IMarketDepth, IObservableCopy<TInternal, TObservable> where TValue : ISymbol
+    public interface IMarketDistributable<TInternal, TObservable, TValue> : IDistributable<string, TValue>, IInitializable<string, TInternal>, ISymbol, IMarketDepth, IObservableCopy<TInternal, TObservable> where TValue : ISymbol
     {
     }
 
@@ -20,9 +20,9 @@ namespace Kucoin.NET.Websockets.Distribution
     /// <typeparam name="TInternal"></typeparam>
     /// <typeparam name="TObservable"></typeparam>
     /// <typeparam name="TValue"></typeparam>
-    public abstract class MarketObservation<TInternal, TObservable, TValue> : DistributableObject<string, TValue>, IMarketObservation<TInternal, TObservable, TValue> where TValue : ISymbol 
+    public abstract class MarketDistributable<TInternal, TObservable, TValue> : DistributableObject<string, TValue>, IMarketDistributable<TInternal, TObservable, TValue> where TValue : ISymbol 
     {
-        public MarketObservation(IDistributor parent, string symbol) : base(parent, symbol)
+        public MarketDistributable(IDistributor parent, string symbol) : base(parent, symbol)
         {
             Symbol = symbol;
             ObserverService.RegisterService(this);

@@ -19,7 +19,7 @@ namespace Kucoin.NET.Websockets.Distribution
     /// <typeparam name="TInitial">The type of the initial data set.</typeparam>
     public abstract class MarketFeed<TDistributable, TValue, TInitial, TObservable> :
         DistributionFeed<TDistributable, TValue, TInitial>, IMarketFeed<TDistributable, TValue, TInitial, TObservable>
-        where TDistributable : MarketObservation<TInitial, TObservable, TValue>
+        where TDistributable : MarketDistributable<TInitial, TObservable, TValue>
         where TValue : ISymbol
     {
 
@@ -43,35 +43,5 @@ namespace Kucoin.NET.Websockets.Distribution
         {
         }
      
-        /// <summary>
-        /// Add the specified symbol to the feed.
-        /// </summary>
-        /// <param name="symbol">The trading symbol to add.</param>
-        /// <returns></returns>
-        public virtual async Task<TDistributable> AddSymbol(string symbol) => await SubscribeOne(symbol);
-
-        /// <summary>
-        /// Add the specified trading symbols to the feed.
-        /// </summary>
-        /// <param name="symbols">The symbols to add.</param>
-        /// <returns></returns>
-        public virtual async Task<IDictionary<string, TDistributable>> AddSymbols(IEnumerable<string> symbols) => await SubscribeMany(symbols);
-
-        /// <summary>
-        /// Remove the specified trading symbol from the feed.
-        /// </summary>
-        /// <param name="symbol">The symbol to remove.</param>
-        /// <returns></returns>
-        public virtual async Task RemoveSymbol(string symbol) => await UnsubscribeOne(symbol);
-
-        /// <summary>
-        /// Remove the specified trading symbols from the feed.
-        /// </summary>
-        /// <param name="symbols">The symbols to remove.</param>
-        /// <returns></returns>
-        public virtual async Task RemoveSymbols(IEnumerable<string> symbols) => await UnsubscribeMany(symbols);
-
-
-
     }
 }

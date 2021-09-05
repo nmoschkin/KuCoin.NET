@@ -448,13 +448,23 @@ namespace Kucoin.NET.Websockets
             return subData;
         }
 
+
+        /// <summary>
+        /// Establish a websocket connection to the remote server.
+        /// </summary>
+        /// <returns>True if the connection was negotiated and established, successfully.</returns>
+        public virtual async Task<bool> Connect()
+        {
+            return await Connect(false);
+        }
+
         /// <summary>
         /// Establish a websocket connection to the remote server.
         /// </summary>
         /// <param name="initAsMultiplexHost">True to initialize as a multiplexing tunnel connection host.</param>
         /// <param name="tunnelId">Optional tunnel id for initialization.  If one is not specified, one will be created.</param>
         /// <returns>True if the connection was negotiated and established, successfully.</returns>
-        public async Task<bool> Connect(bool initAsMultiplexHost = false, string tunnelId = null)
+        public async Task<bool> Connect(bool initAsMultiplexHost, string tunnelId = null)
         {
             if (socket != null)
             {
@@ -1341,7 +1351,7 @@ namespace Kucoin.NET.Websockets
 
         #region IObservable<T> Pattern
 
-        internal List<FeedObservation<T>> observations = new List<FeedObservation<T>>();
+        internal List<FeedObject<T>> observations = new List<FeedObject<T>>();
 
         /// <summary>
         /// Subscribe to this feed.
@@ -1357,7 +1367,7 @@ namespace Kucoin.NET.Websockets
                     if (obs.Observer == observer) return obs;
                 }
 
-                var obsNew = new FeedObservation<T>(this, observer);
+                var obsNew = new FeedObject<T>(this, observer);
                 observations.Add(obsNew);
 
                 return obsNew;
@@ -1372,7 +1382,7 @@ namespace Kucoin.NET.Websockets
         /// <remarks>
         /// This method is called internally by the various observation classes when the <see cref="IDisposable.Dispose"/> method is called on them.
         /// </remarks>
-        internal virtual void RemoveObservation(FeedObservation<T> observation)
+        internal virtual void RemoveObservation(FeedObject<T> observation)
         {
             observation.Observer.OnCompleted();
 

@@ -10,8 +10,8 @@ using System.Threading.Tasks;
 
 namespace Kucoin.NET.Websockets.Distribution
 {
-    public abstract class OrderBookObservation<TBookIn, TBookOut, TDistributable, TParent> 
-        : MarketObservation<TBookIn, TBookOut, TDistributable>, IFeedDiagnostics, IMarketVolume
+    public abstract class OrderBookDistributable<TBookIn, TBookOut, TDistributable, TParent> 
+        : MarketDistributable<TBookIn, TBookOut, TDistributable>, IFeedDiagnostics, IMarketVolume
         where TParent: IDistributor, IInitialDataProvider<string, TBookIn>
         where TBookIn: class, new()
         where TBookOut: class, new()
@@ -65,7 +65,7 @@ namespace Kucoin.NET.Websockets.Distribution
 
         public override event EventHandler Initialized;
 
-        public OrderBookObservation(TParent parent, string symbol, bool observationDisabledByDefault) : base(parent, symbol)
+        public OrderBookDistributable(TParent parent, string symbol, bool observationDisabledByDefault) : base(parent, symbol)
         {
             this.parent = parent;
             base.parent = parent;

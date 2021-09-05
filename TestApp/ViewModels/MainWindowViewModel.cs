@@ -85,7 +85,7 @@ namespace KuCoinApp
 
         protected ObservableCollection<CurrencyViewModel> currencies = new ObservableCollection<CurrencyViewModel>();
 
-        protected Level3Observation level2;
+        protected Level3OrderBook level2;
 
         protected List<SymbolViewModel> recentSymbols = new List<SymbolViewModel>();
 
@@ -138,7 +138,7 @@ namespace KuCoinApp
         }
 
 
-        public Level3Observation Level3
+        public Level3OrderBook Level3
         {
             get => level2;
             set
@@ -502,7 +502,7 @@ namespace KuCoinApp
                                 await level2Feed.Connect();
                             }
 
-                            await level2Feed.AddSymbol(newSymbol).ContinueWith((t) =>
+                            await level2Feed.SubscribeOne(newSymbol).ContinueWith((t) =>
                             {
                                 App.Current?.Dispatcher?.Invoke(() =>
                                 {
@@ -529,7 +529,7 @@ namespace KuCoinApp
                         await level2Feed.Connect();
                     }
 
-                    level2Feed?.AddSymbol(newSymbol).ContinueWith((t) =>
+                    level2Feed?.SubscribeOne(newSymbol).ContinueWith((t) =>
                     {
                         App.Current?.Dispatcher?.Invoke(() =>
                         {

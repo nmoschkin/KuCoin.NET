@@ -14,7 +14,7 @@ namespace Kucoin.NET.Websockets
     /// Feed <see cref="IObserver{T}"/> observation provider.
     /// </summary>
     /// <typeparam name="T">The type of information the feed provides.</typeparam>
-    public class FeedObservation<T> : IDisposable where T: class
+    public class FeedObject<T> : IDisposable where T: class
     {
         protected KucoinBaseWebsocketFeed<T> feed;
         protected IObserver<T> observer;
@@ -26,7 +26,7 @@ namespace Kucoin.NET.Websockets
 
         public KucoinBaseWebsocketFeed<T> Feed => feed;
 
-        internal FeedObservation(KucoinBaseWebsocketFeed<T> feed, IObserver<T> observer)
+        internal FeedObject(KucoinBaseWebsocketFeed<T> feed, IObserver<T> observer)
         {
             this.feed = feed;
             this.observer = observer;
@@ -46,7 +46,7 @@ namespace Kucoin.NET.Websockets
             disposed = true;
         }
 
-        ~FeedObservation()
+        ~FeedObject()
         {
             Dispose(false);
         }

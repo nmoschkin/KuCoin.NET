@@ -33,9 +33,9 @@ namespace Kucoin.NET.Services
 
         protected MarketCurrency quoteCurrency;
 
-        protected Level2Observation level2obs;
+        protected Level2OrderBook level2obs;
 
-        protected Level3Observation level3obs;
+        protected Level3OrderBook level3obs;
 
         protected Level2 level2feed;
 
@@ -69,9 +69,9 @@ namespace Kucoin.NET.Services
 
         protected bool ownmarket = true;
 
-        public virtual Level2Observation Level2Observation => level2obs;
+        public virtual Level2OrderBook Level2Observation => level2obs;
 
-        public virtual Level3Observation Level3Observation => level3obs;
+        public virtual Level3OrderBook Level3Observation => level3obs;
 
         public virtual bool Connected
         {
@@ -413,13 +413,13 @@ namespace Kucoin.NET.Services
             if (level2enabled)
             {
                 level2obs?.Dispose();
-                level2obs = await level2feed.AddSymbol(newSymbol);
+                level2obs = await level2feed.SubscribeOne(newSymbol);
             }
 
             if (level3enabled)
             {
                 level3obs?.Dispose();
-                level3obs = await level3feed.AddSymbol(newSymbol);
+                level3obs = await level3feed.SubscribeOne(newSymbol);
             }
 
             if (klineEnabled)
@@ -484,7 +484,7 @@ namespace Kucoin.NET.Services
             OnPropertyChanged(nameof(Level2Feed));
             level2feed.FeedDisconnected += OnLevel2Disconnected;
 
-            level2obs = await level2feed.AddSymbol((string)symbol);
+            level2obs = await level2feed.SubscribeOne((string)symbol);
             OnPropertyChanged(nameof(Level2Observation));
             level2enabled = true;
         }
@@ -518,7 +518,7 @@ namespace Kucoin.NET.Services
             OnPropertyChanged(nameof(Level3Feed));
             level3feed.FeedDisconnected += OnLevel3Disconnected;
 
-            level3obs = await level3feed.AddSymbol((string)symbol);
+            level3obs = await level3feed.SubscribeOne((string)symbol);
             OnPropertyChanged(nameof(Level3Observation));
             level3enabled = true;
         }

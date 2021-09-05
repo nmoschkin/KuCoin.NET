@@ -436,7 +436,7 @@ namespace KuCoinApp
                             FuturesLevel2.Dispose();
                         }
 
-                        await futuresl2.AddSymbol(newSymbol).ContinueWith((t) =>
+                        await futuresl2.SubscribeOne(newSymbol).ContinueWith((t) =>
                         {
                             App.Current?.Dispatcher?.Invoke(() =>
                             {
@@ -462,7 +462,7 @@ namespace KuCoinApp
                         await futuresl2.Connect();
                     }
 
-                    await futuresl2.AddSymbol(newSymbol).ContinueWith((t) =>
+                    await futuresl2.SubscribeOne(newSymbol).ContinueWith((t) =>
                     {
                         App.Current?.Dispatcher?.Invoke(() =>
                         {

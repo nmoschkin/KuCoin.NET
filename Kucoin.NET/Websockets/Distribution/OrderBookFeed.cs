@@ -2,7 +2,6 @@
 using Kucoin.NET.Data.Websockets;
 using Kucoin.NET.Helpers;
 using Kucoin.NET.Json;
-using Kucoin.NET.Websockets.Distribution;
 using Kucoin.NET.Websockets.Observations;
 
 using Newtonsoft.Json;
@@ -10,28 +9,27 @@ using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Kucoin.NET.Websockets.Public
+namespace Kucoin.NET.Websockets.Distribution
 {
-    public interface ILevel2 : IMarketFeed<Level2OrderBook, Level2Update, KeyedOrderBook<OrderUnitStruct>, ObservableOrderBook<ObservableOrderUnit>>
+    public abstract class OrderBookFeed<TObject, TUpdate, TBookIn, TBookOut, TParent> : MarketFeed<TObject, TUpdate, TBookIn, TBookOut>
+        where TObject: OrderBookDistributable<TBookIn, TBookOut, TUpdate, TParent>
+        where TUpdate: ISymbol
+        where TBookIn: class, new()
+        where TBookOut: class, new()
+        where TParent: OrderBookFeed<TObject, TUpdate, TBookIn, TBookOut, TParent>
     {
-
-    }
-
-    public class Level2 : MarketFeed<Level2OrderBook, Level2Update, KeyedOrderBook<OrderUnitStruct>, ObservableOrderBook<ObservableOrderUnit>>, ILevel2
-    {
-        object lockObj = new object();
+        protected object lockObj = new object();
 
         /// <summary>
         /// Instantiate a new market feed.
         /// </summary>
         /// <param name="credentialsProvider">API Credentials.</param>
-        public Level2(ICredentialsProvider credentialsProvider) : base(credentialsProvider)
+        public OrderBookFeed(ICredentialsProvider credentialsProvider) : base(credentialsProvider)
         {
-            if (credentialsProvider.GetFutures()) throw new NotSupportedException("Cannot use Futures API credentials on a spot market feed.");
-
             recvBufferSize = 4194304;
             minQueueBuffer = 10000;
             chunkSize = 1024;
@@ -44,87 +42,22 @@ namespace Kucoin.NET.Websockets.Public
         /// <param name="secret">API secret.</param>
         /// <param name="passphrase">API passphrase.</param>
         /// <param name="isSandbox">True if sandbox mode.</param>
-        public Level2(string key, string secret, string passphrase, bool isSandbox = false) : base(key, secret, passphrase, isSandbox: isSandbox, futures: false)
+        /// <param name="futures">Is Futures feed.</param>
+        public OrderBookFeed(string key, string secret, string passphrase, bool isSandbox = false, bool futures = false) : base(key, secret, passphrase, isSandbox: isSandbox, futures: futures)
         {
             recvBufferSize = 4194304;
             minQueueBuffer = 10000;
             chunkSize = 1024;
-
-        }
-        public override string InitialDataUrl => "/api/v3/market/orderbook/level2";
-
-        public string Subject => "trade.l2update";
-
-        public override string Topic => "/market/level2";
-
-        public override bool IsPublic => false;
-
-        public override async Task<KeyedOrderBook<OrderUnitStruct>> ProvideInitialData(string key)
-        {
-            Exception err = null;
-
-            var cts = new CancellationTokenSource();
-
-            var ft = Task.Run(async () =>
-            {
-                var curl = InitialDataUrl;
-                var param = new Dictionary<string, object>();
-
-                param.Add("symbol", key);
-
-                try
-                {
-                    var jobj = await MakeRequest(HttpMethod.Get, curl, auth: !IsPublic, reqParams: param);
-                    var result = jobj.ToObject<KeyedOrderBook<OrderUnitStruct>>();
-
-                    GC.Collect(2);
-                    return result;
-                }
-                catch (Exception ex)
-                {
-                    err = ex;
-                    return null;
-                }
-
-            }, cts.Token);
-
-            DateTime start = DateTime.UtcNow;
-
-            while ((DateTime.UtcNow - start).TotalSeconds < 60)
-            {
-                await Task.Delay(10);
-
-                if (ft.IsCompleted)
-                {
-                    return ft.Result;
-                }
-            }
-
-            cts.Cancel();
-
-            if (err != null) throw err;
-
-            return null;
         }
 
-        public override void Release(IDistributable<string, Level2Update> obj) => Release((Level2OrderBook)obj);
+        /// <summary>
+        /// Create a new feed for the given symbol.
+        /// </summary>
+        /// <param name="sym">The symbol to create the feed for.</param>
+        /// <returns></returns>
+        protected abstract TObject CreateFeed(string sym);
 
-        public void Release(Level2OrderBook obj)
-        {
-            if (activeFeeds.ContainsValue(obj))
-            {
-                try
-                {
-                    UnsubscribeOne(obj.Key).ConfigureAwait(false).GetAwaiter().GetResult();
-                }
-                catch
-                {
-
-                }
-            }
-        }
-
-        public override async Task<IDictionary<string, Level2OrderBook>> SubscribeMany(IEnumerable<string> keys)
+        public override async Task<IDictionary<string, TObject>> SubscribeMany(IEnumerable<string> keys)
         {
             if (disposedValue) throw new ObjectDisposedException(GetType().FullName);
             if (!Connected)
@@ -133,7 +66,7 @@ namespace Kucoin.NET.Websockets.Public
             }
 
             var sb = new StringBuilder();
-            var lnew = new Dictionary<string, Level2OrderBook>();
+            var lnew = new Dictionary<string, TObject>();
 
             lock (lockObj)
             {
@@ -151,7 +84,7 @@ namespace Kucoin.NET.Websockets.Public
                     if (sb.Length > 0) sb.Append(',');
                     sb.Append(sym);
 
-                    var obs = new Level2OrderBook(this, sym);
+                    var obs = CreateFeed(sym);
                     activeFeeds.Add(sym, obs);
 
                     if (!lnew.ContainsKey(sym))
@@ -223,30 +156,19 @@ namespace Kucoin.NET.Websockets.Public
                 State = FeedState.Unsubscribed;
             }
         }
-       
-        JsonSerializerSettings settings = new JsonSerializerSettings()
+
+        protected JsonSerializerSettings settings = new JsonSerializerSettings()
         {
-            Converters = new JsonConverter[]
+            Converters = new List<JsonConverter>()
             {
                 new StringToDecimalConverter()
             }
         };
 
-        protected override void RouteJsonPacket(string json, FeedMessage e = null)
-        {
-            var msg = JsonConvert.DeserializeObject<FeedMessage<Level2Update>>(json, settings);
-            var symbol = msg.Data.Symbol;
+        protected FeedMessage<TUpdate> msg = new FeedMessage<TUpdate>();
 
-            if (msg.TunnelId == tunnelId && msg.Type == "message")
-            {
-                if (string.IsNullOrEmpty(symbol)) return;
-                activeFeeds[symbol].OnNext(msg.Data);
-            }
-            else
-            {
-                base.RouteJsonPacket(json, e);
-            }
-        }
+        //[MethodImpl(MethodImplOptions.AggressiveInlining)]
+        //protected override abstract void RouteJsonPacket(string json, FeedMessage e = null);
 
         protected override Task HandleMessage(FeedMessage msg)
         {

@@ -142,7 +142,7 @@ namespace Kucoin.NET.Websockets
             await Send(e);
         }
 
-        internal override void RemoveObservation(FeedObservation<T> observation)
+        internal override void RemoveObservation(FeedObject<T> observation)
         {
             base.RemoveObservation(observation);
             if (autoStartStop && observations.Count == 0)

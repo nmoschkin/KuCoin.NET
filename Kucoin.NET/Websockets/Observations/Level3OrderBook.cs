@@ -16,9 +16,9 @@ using System.Linq;
 
 namespace Kucoin.NET.Websockets.Observations
 {
-    public class Level3Observation : OrderBookObservation<KeyedAtomicOrderBook<AtomicOrderStruct>, ObservableAtomicOrderBook<ObservableAtomicOrderUnit>, Level3Update, Level3>
+    public class Level3OrderBook : OrderBookDistributable<KeyedAtomicOrderBook<AtomicOrderStruct>, ObservableAtomicOrderBook<ObservableAtomicOrderUnit>, Level3Update, Level3>
     {
-        public Level3Observation(Level3 parent, string symbol) : base(parent, symbol, true)
+        public Level3OrderBook(Level3 parent, string symbol) : base(parent, symbol, true)
         {
             this.parent = parent;
             dataProvider = parent;
