@@ -29,6 +29,11 @@ namespace Kucoin.NET.Websockets.Distribution
         void DoWork();
 
         /// <summary>
+        /// The current number of buffered waiting objects.
+        /// </summary>
+        int QueueLength { get; }
+
+        /// <summary>
         /// Object that can be locked to support thread interlocking.
         /// </summary>
         object LockObject { get; }

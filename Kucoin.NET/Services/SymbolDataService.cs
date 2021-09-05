@@ -73,7 +73,29 @@ namespace Kucoin.NET.Services
 
         public virtual Level3Observation Level3Observation => level3obs;
 
-        public virtual bool Connected => cred != null && tickerfeed != null && tickerfeed.Connected;
+        public virtual bool Connected
+        {
+            get
+            {
+                if (cred == null) return false;
+
+                bool b = true;
+
+                if (tickerEnabled) b &= tickerfeed?.Connected ?? false;
+
+                if (klineEnabled) b &= klinefeed?.Connected ?? false;
+
+                if (level2d5enabled) b &= level2d5?.Connected ?? false;
+
+                if (level2d50enabled) b &= level2d50?.Connected ?? false;
+
+                if (level2enabled) b &= level2feed?.Connected ?? false;
+
+                if (level3enabled) b &= level3feed?.Connected ?? false;
+
+                return b;
+            }
+        }
 
         public virtual string Symbol
         {
@@ -133,7 +155,7 @@ namespace Kucoin.NET.Services
             cred = credentialsProvider;
             await Initialize();
 
-            return tickerfeed?.Connected ?? false;
+            return Connected;
         }
 
         public virtual async Task<bool> Reconnect(bool flushSubscriptions)
@@ -141,57 +163,73 @@ namespace Kucoin.NET.Services
             if (flushSubscriptions) Reset();
 
             await Initialize();
-            return tickerfeed.Connected;
+
+            if (!flushSubscriptions)
+            {
+                if (level2enabled)
+                {
+                    await level2feed?.Reconnect();
+                }
+
+                if (level3enabled)
+                {
+                    await level3feed?.Reconnect();
+                }
+            }
+
+            return Connected;
         }
 
         protected virtual async Task Initialize(KucoinBaseWebsocketFeed connection = null)
         {
-            if (tickerfeed == null || tickerfeed.Disposed)
+            if (tickerEnabled || klineEnabled || level2d5enabled || level2d50enabled)
             {
-                tickerfeed = new TickerFeed();
-                tickerfeed.FeedDisconnected += OnTickerDisconnected;
-            }
+                if (tickerfeed == null || tickerfeed.Disposed)
+                {
+                    tickerfeed = new TickerFeed();
+                    tickerfeed.FeedDisconnected += OnTickerDisconnected;
+                }
 
-            if (klinefeed == null || klinefeed.Disposed || connection != null)
-                klinefeed = new KlineFeed<Candle>();
-
-            if (Dispatcher.Initialized)
-            {
-                if (level2d5 == null || level2d5.Disposed || connection != null)
-                    level2d5 = new Level2Depth5();
-                if (level2d50 == null || level2d50.Disposed || connection != null)
-                    level2d50 = new Level2Depth50();
-            }
-
-            if (connection != null)
-            {
-
-                await tickerfeed.MultiplexInit(connection);
-                await klinefeed.MultiplexInit(connection);
+                if (klinefeed == null || klinefeed.Disposed || connection != null)
+                    klinefeed = new KlineFeed<Candle>();
 
                 if (Dispatcher.Initialized)
                 {
-                    await level2d5.MultiplexInit(connection);
-                    await level2d50.MultiplexInit(connection);
+                    if (level2d5 == null || level2d5.Disposed || connection != null)
+                        level2d5 = new Level2Depth5();
+                    if (level2d50 == null || level2d50.Disposed || connection != null)
+                        level2d50 = new Level2Depth50();
                 }
-            }
-            else
-            {
-                if (tickerfeed.Connected)
+
+                if (connection != null)
                 {
-                    tickerfeed.Disconnect();
+
+                    await tickerfeed.MultiplexInit(connection);
+                    await klinefeed.MultiplexInit(connection);
+
+                    if (Dispatcher.Initialized)
+                    {
+                        await level2d5.MultiplexInit(connection);
+                        await level2d50.MultiplexInit(connection);
+                    }
                 }
-
-                await tickerfeed.Connect(true);
-
-                await klinefeed.MultiplexInit(tickerfeed);
-
-                if (Dispatcher.Initialized)
+                else
                 {
-                    await level2d5?.MultiplexInit(tickerfeed);
-                    await level2d50?.MultiplexInit(tickerfeed);
-                }
+                    if (tickerfeed.Connected)
+                    {
+                        tickerfeed.Disconnect();
+                    }
 
+                    await tickerfeed.Connect(true);
+                    await klinefeed.MultiplexInit(tickerfeed);
+
+                    if (Dispatcher.Initialized)
+                    {
+                        await level2d5?.MultiplexInit(tickerfeed);
+                        await level2d50?.MultiplexInit(tickerfeed);
+                    }
+
+                }
             }
 
             if (cred != null)

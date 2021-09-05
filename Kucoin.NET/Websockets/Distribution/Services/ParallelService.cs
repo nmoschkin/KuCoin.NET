@@ -70,7 +70,12 @@ namespace Kucoin.NET.Websockets.Distribution.Services
 
                             foreach (var t in Tenants)
                             {
-                                actions.Add(t.DoWork);
+                                actions.Add(() =>
+                                {
+                                    t.DoWork();
+                                    Thread.Sleep(1);
+                                    t.DoWork();
+                                });
                             }
 
                             arrActions = actions.ToArray();
@@ -109,6 +114,8 @@ namespace Kucoin.NET.Websockets.Distribution.Services
 
         private static int sleepDivisor = 1;
 
+        private static int workRepeat = 4;
+
         private static ThreadPriority distributorPriority = ThreadPriority.AboveNormal;
 
         /// <summary>
@@ -123,6 +130,20 @@ namespace Kucoin.NET.Websockets.Distribution.Services
             set
             {
                 RedistributeServices(value);
+            }
+        }
+
+        public static int WorkRepeat
+        {
+            get => workRepeat;
+            set
+            {
+                if (value < 0 || value > 255) throw new ArgumentOutOfRangeException();
+
+                if (workRepeat != value)
+                {
+                    workRepeat = value;
+                }
             }
         }
 

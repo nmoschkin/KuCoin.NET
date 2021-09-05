@@ -103,6 +103,23 @@ namespace Kucoin.NET.Websockets.Distribution
         }
 
         /// <summary>
+        /// Attempt to-establish the connection.
+        /// </summary>
+        /// <returns></returns>
+        public virtual async Task<bool> Reconnect()
+        {
+            var currentFeeds = new Dictionary<string, TDistributable>(activeFeeds);
+            Disconnect();
+
+            activeFeeds.Clear();
+
+            await Connect();
+            await SubscribeMany(currentFeeds.Keys);
+
+            return (socket?.State == System.Net.WebSockets.WebSocketState.Open && activeFeeds.Count == currentFeeds.Count);
+        }
+
+        /// <summary>
         /// Gets all active subscriptions as dictionary of trading symbol keys and <see cref="TDistributable"/> values.
         /// </summary>
         /// <returns></returns>

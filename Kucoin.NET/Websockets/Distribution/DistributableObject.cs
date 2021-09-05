@@ -34,7 +34,9 @@ namespace Kucoin.NET.Websockets.Distribution
         public TKey Key => key; 
 
         protected FeedState state;
-        
+
+        public virtual int QueueLength => buffer?.Count ?? 0;
+
         /// <summary>
         /// Gets the current run state of the feed.
         /// </summary>

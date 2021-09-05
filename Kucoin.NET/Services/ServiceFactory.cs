@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Net;
 using System.Text;
 
 namespace Kucoin.NET.Services
@@ -69,7 +70,14 @@ namespace Kucoin.NET.Services
 
             if (!current.Connected)
             {
-                return null;
+                try
+                {
+                    current.Reconnect(false).ConfigureAwait(false).GetAwaiter().GetResult();
+                }
+                catch
+                {
+                    return null;
+                }
             }
 
             if (string.IsNullOrEmpty(current.Symbol))

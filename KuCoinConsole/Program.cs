@@ -330,7 +330,7 @@ namespace KuCoinConsole
 
             // This changes the number of feeds per distributor:
             ParallelService.MaxTenants = maxTenants;
-            ParallelService.SleepDivisor = 4;
+            ParallelService.SleepDivisor = 100;
 
             List<AllSymbolsTickerItem> l2;
 
@@ -428,9 +428,13 @@ namespace KuCoinConsole
                         continue;
                     }
 
-                    lock (fslog)
+                    lock (lockObj)
                     {
                         subscribing = ($"{sym}");
+                    }
+
+                    lock (fslog)
+                    {
                         fslog?.Write(Encoding.UTF8.GetBytes($"Subscribing to {sym} ... {DateTime.Now:G}\r\n"));
                         fslog?.Flush();
                     }
@@ -446,9 +450,20 @@ namespace KuCoinConsole
                         {
                             try
                             {
+                                var precurr = curr;
                                 curr = serviceFactory.EnableOrAddSymbol(sym, curr, (tickerCount == 0 || (tickerCount % maxSharedConn != 0)));
 
-                                if (curr == null) continue;
+                                if (curr == null)
+                                {
+                                    curr = precurr;
+                                    curr = serviceFactory.EnableOrAddSymbol(sym, curr, (tickerCount == 0 || (tickerCount % maxSharedConn != 0)));
+
+                                    if (curr == null)
+                                    {
+                                        curr = precurr;
+                                        continue;
+                                    }
+                                }
                                 tickerCount++;
 
                                 if (!services.Contains(curr))

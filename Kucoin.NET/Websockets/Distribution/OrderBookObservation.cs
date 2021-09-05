@@ -241,8 +241,6 @@ namespace Kucoin.NET.Websockets.Distribution
 
         public virtual long TransactionsPerSecond { get; protected set; }
 
-        public virtual int QueueLength => buffer?.Count ?? 0;
-
         public override IInitialDataProvider<string, TBookIn> DataProvider
         {
             get => dataProvider;
@@ -366,9 +364,21 @@ namespace Kucoin.NET.Websockets.Distribution
 
             for (int tries = 0; tries < maxtries; tries++)
             {
-                await Task.Delay(100);
-                fd = await DataProvider.ProvideInitialData(key);
-                if (fd != null) break;
+                try
+                {
+                    await Task.Delay(100);
+
+                    if (DataProvider != null)
+                    {
+                        fd = await DataProvider?.ProvideInitialData(key);
+                        if (fd != null) break;
+                    }
+                }
+                catch
+                {
+                    fd = null;
+                    break;
+                }
             }
 
             lock (lockObj)
@@ -385,6 +395,8 @@ namespace Kucoin.NET.Websockets.Distribution
 
                 initializing = false;
                 IsInitialized = fd != null;
+
+                _ = Task.Run(OnInitialized);
 
                 return IsInitialized;
             }
@@ -496,7 +508,13 @@ namespace Kucoin.NET.Websockets.Distribution
             DataProvider = dataProvider;
         }
 
-       
+        /// <summary>
+        /// Fired when the order book is completely synced and running, after an initial connection or a reset.
+        /// </summary>
+        protected virtual void OnInitialized()
+        {
+            Initialized?.Invoke(this, new EventArgs());
+        }
 
     }
 
