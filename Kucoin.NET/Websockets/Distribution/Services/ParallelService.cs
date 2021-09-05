@@ -53,14 +53,16 @@ namespace Kucoin.NET.Websockets.Distribution.Services
             private void ThreadMethod()
             {
                 var actions = new List<Action>();
+                CancellationToken tok = cts.Token;
+
                 Action[] arrActions = new Action[0];
-                int x = 0, f = -1;
+                int x = 0, f = 0;
 
                 while (true)
                 {
-                    lock (Tenants)
+                    if (ActionsChanged)
                     {
-                        if (ActionsChanged)
+                        lock (Tenants)
                         {
                             ActionsChanged = false;
 
@@ -68,12 +70,7 @@ namespace Kucoin.NET.Websockets.Distribution.Services
 
                             foreach (var t in Tenants)
                             {
-                                actions.Add(() =>
-                                {
-                                    t.DoWork();
-                                    Thread.Sleep(1);
-                                    t.DoWork();
-                                });
+                                actions.Add(t.DoWork);
                             }
 
                             arrActions = actions.ToArray();
@@ -89,94 +86,10 @@ namespace Kucoin.NET.Websockets.Distribution.Services
                     if (++f == sleepDivisor)
                     {
                         Thread.Sleep(idleSleepTime);
-                        f = -1;
+                        f = 0;
                     }
 
-                    try
-                    {
-                        Parallel.Invoke(arrActions);
-                    }
-                    catch { }
-
-                    if (++f == sleepDivisor)
-                    {
-                        Thread.Sleep(idleSleepTime);
-                        f = -1;
-                    }
-
-                    try
-                    {
-                        Parallel.Invoke(arrActions);
-                    }
-                    catch { }
-
-                    if (++f == sleepDivisor)
-                    {
-                        Thread.Sleep(idleSleepTime);
-                        f = -1;
-                    }
-
-                    try
-                    {
-                        Parallel.Invoke(arrActions);
-                    }
-                    catch { }
-
-                    if (++f == sleepDivisor)
-                    {
-                        Thread.Sleep(idleSleepTime);
-                        f = -1;
-                    }
-
-                    try
-                    {
-                        Parallel.Invoke(arrActions);
-                    }
-                    catch { }
-
-                    if (++f == sleepDivisor)
-                    {
-                        Thread.Sleep(idleSleepTime);
-                        f = -1;
-                    }
-
-                    try
-                    {
-                        Parallel.Invoke(arrActions);
-                    }
-                    catch { }
-
-                    if (++f == sleepDivisor)
-                    {
-                        Thread.Sleep(idleSleepTime);
-                        f = -1;
-                    }
-
-                    try
-                    {
-                        Parallel.Invoke(arrActions);
-                    }
-                    catch { }
-
-                    if (++f == sleepDivisor)
-                    {
-                        Thread.Sleep(idleSleepTime);
-                        f = -1;
-                    }
-
-                    try
-                    {
-                        Parallel.Invoke(arrActions);
-                    }
-                    catch { }
-
-                    if (++f == sleepDivisor)
-                    {
-                        Thread.Sleep(idleSleepTime);
-                        f = -1;
-                    }
-
-                    if (cts == null) return;
+                    if (tok.IsCancellationRequested) return;
                 }
             }
 

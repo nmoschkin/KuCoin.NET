@@ -330,7 +330,7 @@ namespace KuCoinConsole
 
             // This changes the number of feeds per distributor:
             ParallelService.MaxTenants = maxTenants;
-            ParallelService.SleepDivisor = 50;
+            ParallelService.SleepDivisor = 4;
 
             List<AllSymbolsTickerItem> l2;
 
@@ -406,43 +406,77 @@ namespace KuCoinConsole
 
             fslog = new FileStream(".\\message_log.txt", FileMode.Append, FileAccess.Write);
 
-            Task.Run(async () =>
+            _ = Task.Run(async () =>
             {
-
-                int c = 0;
-              
                 ISymbolDataService curr = service;
+                var ass = activeSymbols.ToArray();
+                int c = ass.Length;
 
-                foreach (var sym in activeSymbols)
+                string sym;
+
+                for (int i = 0; i < c; i++)
                 {
+                    sym = ass[i];
                     if (!market.Symbols.Contains(sym))
                     {
+                        lock (fslog)
+                        {
+                            fslog?.Write(Encoding.UTF8.GetBytes($"Skipping Unknown Symbol '{sym}' : {DateTime.Now:G}"));
+                            fslog?.Flush();
+                        }
+
                         continue;
-                        //throw new KeyNotFoundException($"The trading symbol '{sym}' does not exist on the KuCoin exchange.");
                     }
 
-                    lock (lockObj)
+                    lock (fslog)
                     {
                         subscribing = ($"{sym}");
+                        fslog?.Write(Encoding.UTF8.GetBytes($"Subscribing to {sym} ... {DateTime.Now:G}\r\n"));
+                        fslog?.Flush();
                     }
 
-                    fslog?.Write(Encoding.UTF8.GetBytes($"Subscribing to {sym} ... {DateTime.Now:G}\r\n"));
                     try
                     {
-                        if (!Observers.ContainsKey(sym))
+                        bool pass;
+                        lock (lockObj)
                         {
-                            curr = serviceFactory.EnableOrAddSymbol(sym, curr, (tickerCount == 0 || (tickerCount % maxSharedConn != 0)));
-
-                            if (curr == null) continue;
-                            tickerCount++;
-
-                            await curr.EnableLevel3();
-                            await Task.Delay(10);
-
-                            if (!services.Contains(curr))
+                            pass = Observers.ContainsKey(sym);
+                        }
+                        if (!pass)
+                        {
+                            try
                             {
-                                services.Add(curr);
+                                curr = serviceFactory.EnableOrAddSymbol(sym, curr, (tickerCount == 0 || (tickerCount % maxSharedConn != 0)));
+
+                                if (curr == null) continue;
+                                tickerCount++;
+
+                                if (!services.Contains(curr))
+                                {
+                                    services.Add(curr);
+                                }
+
+                                await curr.EnableLevel3();
+                                await Task.Delay(10);
+
+                                if (curr.Level3Feed == null) 
+                                {
+                                    await curr.EnableLevel3();
+                                    await Task.Delay(10);
+                                }
+
                             }
+                            catch (Exception ex2)
+                            {
+                                var s = ex2.Message;
+                                lock (fslog)
+                                {
+                                    fslog?.Write(Encoding.UTF8.GetBytes($"{ex2.GetType().Name}: {s} : {DateTime.Now:G}"));
+                                    fslog?.Flush();
+                                }
+
+                            }
+
 
                             if (curr.Level3Feed != null)
                             {
@@ -466,30 +500,50 @@ namespace KuCoinConsole
                             }
                             else
                             {
-                                Console.WriteLine("Something's wrong.  We seem to be unable to connect. Aborting...");
-                                fslog?.Write(Encoding.UTF8.GetBytes($"Something's wrong.  We seem to be unable to connect. Aborting... {DateTime.Now:G}"));
-                                fslog.Dispose();
-                                fslog = null;
-                                return;
+                                lock (fslog)
+                                {
+                                    Console.WriteLine("Something's wrong.  We seem to be unable to connect. Aborting...");
+                                    fslog?.Write(Encoding.UTF8.GetBytes($"Something's wrong.  We seem to be unable to connect. Aborting... {DateTime.Now:G}"));
+                                    fslog?.Flush();
+                                    fslog.Dispose();
+                                    //fslog = null;
+                                    Environment.Exit(-352);
+                                }
+                            }
+
+                        }
+                        else
+                        {
+                            lock (fslog)
+                            {
+                                fslog?.Write(Encoding.UTF8.GetBytes($"Skipping Duplicate '{sym}' : {DateTime.Now:G}"));
+                                fslog?.Flush();
                             }
 
                         }
                     }
                     catch (Exception ex) 
                     {
+
                         var s = ex.Message;
+                        lock (fslog)
+                        {
+                            fslog?.Write(Encoding.UTF8.GetBytes($"{ex.GetType().Name}: {s} : {DateTime.Now:G}"));
+                            fslog?.Flush();
+                        }
                     }
                 }
 
                 subscribing = null;
+
                 // clear console to display data.
                 Console.Clear();
                 Console.CursorVisible = false;
-                ready = true;
 
+                ready = true;
                 TickersReady?.Invoke(services, new EventArgs());
 
-            }).ConfigureAwait(false);
+            });
 
             // loop until the connection is broken or the program is exited.
             while (true)
@@ -715,10 +769,15 @@ namespace KuCoinConsole
                     {
                         messages.Add($"{{Reset}}Feed {{White}}{x}{{Reset}}: {{Yellow}}{msg.Type} {{Cyan}}{msg.Subject} {msg.Topic} {{Blue}}({DateTime.Now:G}){{Reset}}");
                         msgidx = messages.Count >= 4 ? messages.Count - 5 : messages.Count - 1;
-                    }
 
-                    var tstr = ($"Feed {x}: {msg.Type} {msg.Subject} {msg.Topic} ({DateTime.Now:G})\r\n");
-                    fslog?.Write(Encoding.UTF8.GetBytes(tstr));
+
+                        lock (fslog)
+                        {
+                            var tstr = ($"Feed {x}: {msg.Type} {msg.Subject} {msg.Topic} ({DateTime.Now:G})\r\n");
+                            fslog?.Write(Encoding.UTF8.GetBytes(tstr));
+                            fslog?.Flush();
+                        }
+                    }
                 }
 
                 x++;
