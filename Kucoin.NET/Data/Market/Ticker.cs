@@ -16,7 +16,7 @@ namespace Kucoin.NET.Data.Market
     /// <summary>
     /// Symbol ticker.
     /// </summary>
-    public class Ticker : ISymbol 
+    public class Ticker : ISymbol, IStreamableObject
     {
         /// <summary>
         /// Trading symbol

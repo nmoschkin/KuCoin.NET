@@ -134,6 +134,12 @@ namespace Kucoin.NET.Websockets
         /// </remarks>
         public virtual event EventHandler<DataReceivedEventArgs> DataReceived;
 
+        /// <summary>
+        /// Event that is raised when an ack is received.
+        /// </summary>
+        public event EventHandler Ack;
+
+
         #endregion Events
 
         #region Static Constructor
@@ -1055,6 +1061,57 @@ namespace Kucoin.NET.Websockets
         {
             PingTime = DateTime.Now - lastPing;
             Pong?.Invoke(this, new EventArgs());
+        }
+
+        protected object ackLock = new object();
+        protected bool awaitAck = false;
+
+        /// <summary>
+        /// Called when an ack message is received.  
+        /// </summary>
+        /// <param name="msg">The contents of the ack message.</param>
+        /// <remarks>
+        /// You may override this function to confirm requests.
+        ///
+        /// The default behavior of this method is to fire the <see cref="Ack"/> event.
+        /// </remarks>
+        protected virtual void OnAck(FeedMessage msg)
+        {
+            lock (ackLock)
+            {
+                if (awaitAck)
+                {
+                    awaitAck = false;
+                }
+            }
+            
+            Ack?.Invoke(this, new EventArgs());
+        }
+        
+        /// <summary>
+        /// Waits for an ack.
+        /// </summary>
+        /// <param name="timeout">Timeout in milliseconds.</param>
+        /// <returns></returns>
+        public async Task<bool> AwaitAck(int timeout = 1000)
+        {
+            return await Task.Run(() =>
+            {
+                var t = DateTime.Now;
+
+                lock (ackLock)
+                {
+                    awaitAck = true;
+                }
+
+                while ((DateTime.Now - t).TotalMilliseconds <= timeout)
+                {
+                    if (!awaitAck) return true;
+                    Thread.Sleep(1);
+                }
+
+                return false;
+            });
         }
 
         /// <summary>

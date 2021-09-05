@@ -1,4 +1,5 @@
-﻿using Kucoin.NET.Json;
+﻿using Kucoin.NET.Data;
+using Kucoin.NET.Json;
 
 using Newtonsoft.Json;
 
@@ -37,7 +38,7 @@ namespace Kucoin.NET.Futures.Data.Market
     /// <summary>
     /// KuCoin Futures Service Information
     /// </summary>
-    public class ServiceInfo
+    public class ServiceInfo : IDataObject
     {
         /// <summary>
         /// Gets the service status

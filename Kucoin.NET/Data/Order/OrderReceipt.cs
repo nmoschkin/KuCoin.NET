@@ -10,7 +10,7 @@ namespace Kucoin.NET.Data.Order
     /// <summary>
     /// Order receipt that is generated when an order is created on the system.
     /// </summary>
-    public class OrderReceipt
+    public class OrderReceipt : IDataObject
     {
         /// <summary>
         /// The system Id of the newly-created order.

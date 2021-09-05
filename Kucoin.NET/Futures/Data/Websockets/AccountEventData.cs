@@ -1,4 +1,5 @@
-﻿using Kucoin.NET.Helpers;
+﻿using Kucoin.NET.Data;
+using Kucoin.NET.Helpers;
 using Kucoin.NET.Json;
 
 using Newtonsoft.Json;
@@ -34,7 +35,7 @@ namespace Kucoin.NET.Futures.Data.Websockets
     /// <summary>
     /// Account event data
     /// </summary>
-    public class AccountEventData
+    public class AccountEventData : IStreamableObject
     {
         /// <summary>
         /// The type of information contained in this class.

@@ -1,4 +1,5 @@
-﻿using Kucoin.NET.Helpers;
+﻿using Kucoin.NET.Data;
+using Kucoin.NET.Helpers;
 using Kucoin.NET.Json;
 
 using Newtonsoft.Json;
@@ -14,7 +15,7 @@ namespace Kucoin.NET.Futures.Data.Market
     /// <summary>
     /// Premium index page
     /// </summary>
-    public class PremiumIndex
+    public class PremiumIndex : IDataObject
     {
 
         [JsonProperty("hasMore")]

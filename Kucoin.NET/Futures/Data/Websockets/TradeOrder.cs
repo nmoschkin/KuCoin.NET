@@ -1,4 +1,5 @@
-﻿using Kucoin.NET.Data.Market;
+﻿using Kucoin.NET.Data;
+using Kucoin.NET.Data.Market;
 using Kucoin.NET.Data.Order;
 using Kucoin.NET.Futures.Data.Trade;
 using Kucoin.NET.Helpers;
@@ -53,7 +54,7 @@ namespace Kucoin.NET.Futures.Data.Websockets
     /// <summary>
     /// Futures Trade Order 
     /// </summary>
-    public class TradeOrder : ISymbol
+    public class TradeOrder : ISymbol, IStreamableObject
     {
         /// <summary>
         /// Order ID

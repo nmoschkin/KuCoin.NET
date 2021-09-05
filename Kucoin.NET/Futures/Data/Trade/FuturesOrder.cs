@@ -1,4 +1,5 @@
-﻿using Kucoin.NET.Data.Market;
+﻿using Kucoin.NET.Data;
+using Kucoin.NET.Data.Market;
 using Kucoin.NET.Data.Order;
 using Kucoin.NET.Json;
 
@@ -14,7 +15,7 @@ namespace Kucoin.NET.Futures.Data.Trade
     /// <summary>
     /// Describes a futures order
     /// </summary>
-    public abstract class FuturesOrderBase : JsonDictBase
+    public abstract class FuturesOrderBase : JsonDictBase, IDataObject, ISymbol
     {
         /// <summary>
         /// Unique order id created by users to identify their orders, e.g. UUID, Only allows numbers, characters, underline(_), and separator(-)

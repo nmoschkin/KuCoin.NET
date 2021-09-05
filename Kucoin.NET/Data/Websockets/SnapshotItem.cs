@@ -17,7 +17,7 @@ namespace Kucoin.NET.Data.Websockets
     /// <summary>
     /// Represents market or symbol snapshot data
     /// </summary>
-    public class SnapshotItem : ISymbol
+    public class SnapshotItem : ISymbol, IStreamableObject
     {
         /// <summary>
         /// True if the symbol is trading

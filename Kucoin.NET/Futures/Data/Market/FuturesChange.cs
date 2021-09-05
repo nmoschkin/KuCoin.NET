@@ -1,4 +1,5 @@
-﻿using Kucoin.NET.Data.Market;
+﻿using Kucoin.NET.Data;
+using Kucoin.NET.Data.Market;
 using Kucoin.NET.Helpers;
 using Kucoin.NET.Json;
 
@@ -14,7 +15,7 @@ namespace Kucoin.NET.Futures.Data.Market
     /// <summary>
     /// Represents a change packet pushed from the Futures Level 2 feed.
     /// </summary>
-    public struct FuturesLevel2Update : ISymbol
+    public struct FuturesLevel2Update : ISymbol, IStreamableObject
     {
         [JsonIgnore]
         public string Symbol { get; set; }

@@ -18,7 +18,7 @@ namespace Kucoin.NET.Data.Market
     /// <summary>
     /// All Symbols Ticker list.
     /// </summary>
-    public class AllSymbolsTicker : ObservableBase
+    public class AllSymbolsTicker : ObservableBase, IDataSeries<AllSymbolsTickerItem, ObservableDictionary<string, AllSymbolsTickerItem>>
     {
         private ObservableDictionary<string, AllSymbolsTickerItem> ticker = new ObservableDictionary<string, AllSymbolsTickerItem>();
 
@@ -36,6 +36,8 @@ namespace Kucoin.NET.Data.Market
             }
         }
 
+
+
         private DateTime time;
 
         /// <summary>
@@ -52,6 +54,7 @@ namespace Kucoin.NET.Data.Market
             }
         }
 
+        ObservableDictionary<string, AllSymbolsTickerItem> IDataSeries<AllSymbolsTickerItem, ObservableDictionary<string, AllSymbolsTickerItem>>.Data => Ticker;
     }
 
 }

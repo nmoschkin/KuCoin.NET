@@ -23,6 +23,11 @@ namespace Kucoin.NET.Data.Websockets
 
         IList<IOrderUnit> IOrderUnitList<IOrderUnit>.Bids => (IList<IOrderUnit>)Bids;
 
+        IList<IOrderUnit> IDataSeries<IOrderUnit, IOrderUnit, IList<IOrderUnit>, IList<IOrderUnit>>.Data1 => (IList<IOrderUnit>)Asks;
+
+        IList<IOrderUnit> IDataSeries<IOrderUnit, IOrderUnit, IList<IOrderUnit>, IList<IOrderUnit>>.Data2 => (IList<IOrderUnit>)Bids;
+
+
         /// <summary>
         /// Asks (from sellers)
         /// </summary>
@@ -40,7 +45,7 @@ namespace Kucoin.NET.Data.Websockets
     /// <summary>
     /// Level 2 Full Market Depth Data Update
     /// </summary>
-    public struct Level2Update : ISymbol, IOrderUnitListProvider<IOrderUnit>
+    public struct Level2Update : ILevel2Update
     {
         /// <summary>
         /// Update sequence start

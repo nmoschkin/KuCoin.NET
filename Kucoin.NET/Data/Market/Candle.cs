@@ -13,7 +13,7 @@ namespace Kucoin.NET.Data.Market
     /// <summary>
     /// K-Line Candlestick basic implementation.
     /// </summary>
-    public abstract class CandleBase : IWritableBasicCandle
+    public abstract class CandleBase : ICandle
     {
         public DateTime Timestamp { get; set; }
 
@@ -33,7 +33,7 @@ namespace Kucoin.NET.Data.Market
     /// <summary>
     /// K-Line Candlestick standard implementation.
     /// </summary>
-    public class Candle : CandleBase, IWritableTypedCandle<KlineType>
+    public class Candle : CandleBase, IFullKlineCandle<KlineType>
     {
         /// <summary>
         /// Initialize a new candle stick object from a list of string values.
@@ -93,12 +93,12 @@ namespace Kucoin.NET.Data.Market
         }
 
         /// <summary>
-        /// Test whether the specified time falls within the time range of the specified <see cref="ITypedCandle{T}"/>.
+        /// Test whether the specified time falls within the time range of the specified <see cref="IReadOnlyFullKlineCandle{T}"/>.
         /// </summary>
         /// <param name="candle">The candlestick to test.</param>
         /// <param name="time">The time to test.</param>
         /// <returns>True if the time falls within the candlestick.</returns>
-        public static bool IsTimeInCandle<T>(ITypedCandle<T> candle, DateTime time) where T: IKlineType
+        public static bool IsTimeInCandle<T>(IReadOnlyFullKlineCandle<T> candle, DateTime time) where T: IKlineType
         {
             DateTime dv;
 

@@ -9,7 +9,7 @@ namespace Kucoin.NET.Data.Market
     /// <summary>
     /// K-Line Candlestick Interface
     /// </summary>
-    public interface IBasicCandle
+    public interface IReadOnlyCandle : IDataObject
     {
         /// <summary>
         /// Open time stamp of the candle stick.
@@ -46,7 +46,7 @@ namespace Kucoin.NET.Data.Market
     /// <summary>
     /// K-Line Candlestick Interface
     /// </summary>
-    public interface ICandle : IBasicCandle 
+    public interface IReadOnlyFullCandle : IReadOnlyCandle 
     { 
         /// <summary>
         /// Amount
@@ -57,7 +57,7 @@ namespace Kucoin.NET.Data.Market
     /// <summary>
     /// Writable K-Line Candlestick Interface
     /// </summary>
-    public interface IWritableBasicCandle : IBasicCandle
+    public interface ICandle : IReadOnlyCandle
     {
         /// <summary>
         /// Open time stamp of the candle stick.
@@ -93,7 +93,7 @@ namespace Kucoin.NET.Data.Market
     /// <summary>
     /// Writable K-Line Candlestick Interface
     /// </summary>
-    public interface IWritableCandle : IWritableBasicCandle, ICandle 
+    public interface IFullCandle : ICandle, IReadOnlyFullCandle 
     { 
         /// <summary>
         /// Amount
@@ -104,7 +104,7 @@ namespace Kucoin.NET.Data.Market
     /// <summary>
     /// K-Line Candlestick with K-Line Type Interface
     /// </summary>
-    public interface ITypedBasicCandle<T> : IBasicCandle where T : IKlineType
+    public interface IReadOnlyKlineCandle<T> : IReadOnlyCandle where T : IKlineType
     {
         /// <summary>
         /// The type (length) of the K-Line
@@ -116,7 +116,7 @@ namespace Kucoin.NET.Data.Market
     /// <summary>
     /// Writable K-Line Candlestick with K-Line Type Interface
     /// </summary>
-    public interface IWritableTypedBasicCandle<T> : IWritableBasicCandle, ITypedBasicCandle<T> where T : IKlineType
+    public interface IKlineCandle<T> : ICandle, IReadOnlyKlineCandle<T> where T : IKlineType
     {
         /// <summary>
         /// The type (length) of the K-Line
@@ -128,7 +128,7 @@ namespace Kucoin.NET.Data.Market
     /// <summary>
     /// K-Line Candlestick with K-Line Type Interface
     /// </summary>
-    public interface ITypedCandle<T> : ICandle where T: IKlineType
+    public interface IReadOnlyFullKlineCandle<T> : IReadOnlyFullCandle where T: IKlineType
     {
         /// <summary>
         /// The type (length) of the K-Line
@@ -140,7 +140,7 @@ namespace Kucoin.NET.Data.Market
     /// <summary>
     /// Writable K-Line Candlestick with K-Line Type Interface
     /// </summary>
-    public interface IWritableTypedCandle<T> : IWritableCandle, ITypedCandle<T> where T: IKlineType
+    public interface IFullKlineCandle<T> : IFullCandle, IReadOnlyFullKlineCandle<T> where T: IKlineType
     {
         /// <summary>
         /// The type (length) of the K-Line

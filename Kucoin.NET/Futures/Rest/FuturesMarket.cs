@@ -109,7 +109,7 @@ namespace Kucoin.NET.Futures.Rest
         /// <summary>
         /// Get a customized K-Line for the specified ticker symbol and the specified time range.
         /// </summary>
-        /// <typeparam name="TCandle">The type of the K-Line objects to create that implements both <see cref="IWritableCandle"/> and <typeparamref name="TCustom"/>.</typeparam>
+        /// <typeparam name="TCandle">The type of the K-Line objects to create that implements both <see cref="IFullCandle"/> and <typeparamref name="TCustom"/>.</typeparam>
         /// <typeparam name="TCustom">
         /// The (usually user-provided) type of the objects to return.  
         /// Objects of this type will be returned in the newly created collection.
@@ -125,7 +125,7 @@ namespace Kucoin.NET.Futures.Rest
             FuturesKlineType type, 
             DateTime? startTime = null, 
             DateTime? endTime = null)
-            where TCandle : IWritableBasicCandle, TCustom, new()
+            where TCandle : ICandle, TCustom, new()
             where TCol : IList<TCustom>, new()
         {
             var curl = "/api/v1/kline/query";
@@ -181,11 +181,11 @@ namespace Kucoin.NET.Futures.Rest
                     Volume = decimal.Parse(values[5])
                 };
 
-                if (candle is IWritableTypedBasicCandle<FuturesKlineType> tc)
+                if (candle is IKlineCandle<FuturesKlineType> tc)
                 {
                     tc.Type = type;
                 }
-                else if (candle is IWritableTypedCandle<FuturesKlineType> tce)
+                else if (candle is IFullKlineCandle<FuturesKlineType> tce)
                 {
                     tce.Type = type;
                 }

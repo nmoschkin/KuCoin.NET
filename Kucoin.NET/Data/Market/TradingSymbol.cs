@@ -13,7 +13,7 @@ namespace Kucoin.NET.Data.Market
     /// <summary>
     /// Trading symbol
     /// </summary>
-    public class TradingSymbol : ISymbolicated
+    public class TradingSymbol : ISymbolicated, IDataObject
     {
         /// <summary>
         /// Gets the trading pair as an array of strings [base, quote].

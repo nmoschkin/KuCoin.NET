@@ -10,7 +10,7 @@ namespace Kucoin.NET.Data
     /// Interface for all KuCoin requests that support pagination.
     /// </summary>
     /// <typeparam name="T">The type parameter</typeparam>
-    public interface IPaginated<T> where T : class, new()
+    public interface IPaginated<T> : IDataSeries<T, IList<T>> where T : class, IDataObject, new()
     {
         /// <summary>
         /// Gets or sets the number of items on each page.

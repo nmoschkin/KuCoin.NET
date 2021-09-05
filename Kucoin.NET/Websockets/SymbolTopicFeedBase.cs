@@ -198,7 +198,7 @@ namespace Kucoin.NET.Websockets
                     if (obs.Observer == observer) return obs;
                 }
 
-                var obsNew = new SymbolDistributable<T>(this, observer);
+                var obsNew = new SymbolObservation<T>(this, observer);
                 observations.Add(obsNew);
 
                 return obsNew;
@@ -221,7 +221,7 @@ namespace Kucoin.NET.Websockets
                     if (obs.Observer == observer) return obs;
                 }
 
-                var obsNew = new SymbolDistributable<T>(symbols, this, observer);
+                var obsNew = new SymbolObservation<T>(symbols, this, observer);
                 observations.Add(obsNew);
 
                 return obsNew;
@@ -262,7 +262,7 @@ namespace Kucoin.NET.Websockets
 
                 if (observations != null && observations.Count != 0)
                 {
-                    foreach (SymbolDistributable<T> obs in observations)
+                    foreach (SymbolObservation<T> obs in observations)
                     {
                         if (obs.ActiveSymbols.Count == 0 || obs.ActiveSymbols.Contains(obj.Symbol))
                         {

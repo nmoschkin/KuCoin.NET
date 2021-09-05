@@ -58,7 +58,7 @@ namespace Kucoin.NET.Data.Websockets.User
     /// <summary>
     /// User order change information.
     /// </summary>
-    public class OrderChange : IReadOnlySymbol, ICloneable
+    public class OrderChange : IReadOnlySymbol, ICloneable, IStreamableObject
     {
         /// <summary>
         /// Symbol

@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Text;
 
 namespace Kucoin.NET.Data.Websockets
@@ -10,10 +11,14 @@ namespace Kucoin.NET.Data.Websockets
     /// <summary>
     /// Represents a combination trading pair (symbol) and <see cref="Kucoin.NET.Data.Market.KlineType"/>.
     /// </summary>
-    public class SymbolKline
+    public struct SymbolKline : ISymbol, IEquatable<SymbolKline>
     {
-        KlineType type;
+        /// <summary>
+        /// Represents an empty SymbolKline structure.
+        /// </summary>
+        public static readonly SymbolKline Empty = new SymbolKline(null, KlineType.Invalid);
 
+        KlineType type;
         string symbol;
 
         /// <summary>
@@ -44,15 +49,7 @@ namespace Kucoin.NET.Data.Websockets
             this.type = type;
             this.symbol = symbol;
         }
-
-        /// <summary>
-        /// Instantiate a new <see cref="SymbolKline"/> with the specified parameters.
-        /// </summary>
-        public SymbolKline()
-        {
-
-        }
-
+              
         /// <summary>
         /// Returns the serialized symbol and kline-type combination.
         /// </summary>
@@ -78,6 +75,40 @@ namespace Kucoin.NET.Data.Websockets
 
             return output;
         }
+
+        public override bool Equals([NotNullWhen(true)] object obj)
+        {
+            if (obj is SymbolKline other)
+            {
+                return Equals(other);
+            }
+            else
+            {
+                return false;
+            }
+        }
+
+        public bool Equals(SymbolKline other)
+        {
+            return other.symbol == symbol && other.KlineType == KlineType;
+        }
+
+        public override int GetHashCode()
+        {
+            return (symbol?.GetHashCode() ?? 0) ^ (KlineType.GetHashCode());
+        }
+
+        public static bool operator ==(SymbolKline val1, SymbolKline val2)
+        {
+            return val1.Equals(val2);
+        }
+
+        public static bool operator !=(SymbolKline val1, SymbolKline val2)
+        {
+            return !val1.Equals(val2);
+        }
+
+
 
     }
 }

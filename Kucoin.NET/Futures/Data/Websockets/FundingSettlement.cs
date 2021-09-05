@@ -1,4 +1,5 @@
-﻿using Kucoin.NET.Helpers;
+﻿using Kucoin.NET.Data;
+using Kucoin.NET.Helpers;
 using Kucoin.NET.Json;
 
 using Newtonsoft.Json;
@@ -12,7 +13,7 @@ namespace Kucoin.NET.Futures.Data.Websockets
     /// <summary>
     /// Funding Settlement Data
     /// </summary>
-    public class FundingSettlement
+    public class FundingSettlement : IStreamableObject
     {
 
 

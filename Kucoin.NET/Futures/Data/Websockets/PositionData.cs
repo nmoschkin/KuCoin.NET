@@ -1,4 +1,5 @@
-﻿using Kucoin.NET.Data.Market;
+﻿using Kucoin.NET.Data;
+using Kucoin.NET.Data.Market;
 using Kucoin.NET.Helpers;
 using Kucoin.NET.Json;
 
@@ -13,7 +14,7 @@ namespace Kucoin.NET.Futures.Data.Websockets
     /// <summary>
     /// Position Information
     /// </summary>
-    public class PositionData : ISymbol
+    public class PositionData : ISymbol, IStreamableObject
     {
         [JsonIgnore]
         public string Symbol { get; set; }

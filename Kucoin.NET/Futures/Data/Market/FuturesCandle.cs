@@ -6,7 +6,7 @@ using System.Text;
 
 namespace Kucoin.NET.Futures.Data.Market
 {
-    public class FuturesCandle : CandleBase, IWritableTypedBasicCandle<FuturesKlineType>
+    public class FuturesCandle : CandleBase, IKlineCandle<FuturesKlineType>
     {
         public FuturesKlineType Type { get; set; }
 

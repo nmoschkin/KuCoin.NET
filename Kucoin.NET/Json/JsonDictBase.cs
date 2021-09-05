@@ -1,6 +1,8 @@
 ﻿using System.Collections.Generic;
 using System.Reflection;
 
+using Kucoin.NET.Data;
+
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
@@ -9,7 +11,7 @@ namespace Kucoin.NET.Json
     /// <summary>
     /// Base class for objects that can be serialized to <see cref="Dictionary{string, object}"/> objects.
     /// </summary>
-    public abstract class JsonDictBase
+    public abstract class JsonDictBase 
     {
         /// <summary>
         /// Returns the JSON-serialized contents of this object.

@@ -11,7 +11,7 @@ namespace Kucoin.NET.Data.Market
     /// <summary>
     /// Crypto-market currency information.
     /// </summary>
-    public class MarketCurrency 
+    public class MarketCurrency : IDataObject
     {
 
         /// <summary>

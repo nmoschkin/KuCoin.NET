@@ -10,44 +10,14 @@ namespace Kucoin.NET.Data.Order
     /// <summary>
     /// Paginated order details
     /// </summary>
-    public class OrderDetailsPage : IPaginated<OrderDetails>
+    public class OrderDetailsPage : PaginatedData<OrderDetails>
     {
-        [JsonProperty("pageSize")]
-        public int PageSize { get; set; }
-
-        [JsonProperty("currentSize")]
-        public int CurrentPage { get; set; }
-
-        [JsonProperty("totalNum")]
-        public int TotalNumber { get; set; }
-
-        [JsonProperty("items")]
-        public IList<OrderDetails> Items { get; set; }
-
-        [JsonProperty("totalPages")]
-        public int TotalPages { get; set; }
-
     }
 
     /// <summary>
     /// Paginated order fills
     /// </summary>
-    public class FillPage : IPaginated<Fill>
+    public class FillPage : PaginatedData<Fill>
     {
-        [JsonProperty("pageSize")]
-        public int PageSize { get; set; }
-
-        [JsonProperty("currentSize")]
-        public int CurrentPage { get; set; }
-
-        [JsonProperty("totalNum")]
-        public int TotalNumber { get; set; }
-
-        [JsonProperty("items")]
-        public IList<Fill> Items { get; set; }
-
-        [JsonProperty("totalPages")]
-        public int TotalPages { get; set; }
-
     }
 }

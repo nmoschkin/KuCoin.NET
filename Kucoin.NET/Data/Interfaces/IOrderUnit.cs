@@ -11,7 +11,7 @@ namespace Kucoin.NET.Data.Market
     /// <summary>
     /// Ask or Bid Order Unit Interface
     /// </summary>
-    public interface IOrderUnit : ICloneable
+    public interface IOrderUnit : ICloneable, IDataObject
     {
         /// <summary>
         /// The price of the order in quote currency.
@@ -59,22 +59,10 @@ namespace Kucoin.NET.Data.Market
     }
 
     /// <summary>
-    /// Futures Level 2 Order Update Interface
-    /// </summary>
-    public interface IFuturesOrderUpdate : IOrderUnit
-    {
-
-        /// <summary>
-        /// The side of the order (buy or sell)
-        /// </summary>
-        Side Side { get; set; }
-    }
-
-    /// <summary>
     /// Lists of Asks and Bids Interface
     /// </summary>
     /// <typeparam name="T"></typeparam>
-    public interface IOrderUnitList<T> where T : IOrderUnit
+    public interface IOrderUnitList<T> : IDataSeries<T, T, IList<T>, IList<T>> where T : IOrderUnit
     {
         /// <summary>
         /// Asks (sell)
@@ -171,10 +159,27 @@ namespace Kucoin.NET.Data.Market
     {
     }
 
-    public interface ILevel3Update : ISymbol
+    public interface ILevel2Update : ISymbol, IOrderUnitListProvider<IOrderUnit>, IStreamableObject
+    {
+    }
+
+    public interface ILevel3Update : ISymbol, IStreamableObject
     {
 
         string Subject { get; set; }
     }
+
+    /// <summary>
+    /// Futures Level 2 Order Update Interface
+    /// </summary>
+    public interface IFuturesOrderUpdate : IOrderUnit, IStreamableObject
+    {
+
+        /// <summary>
+        /// The side of the order (buy or sell)
+        /// </summary>
+        Side Side { get; set; }
+    }
+
 
 }

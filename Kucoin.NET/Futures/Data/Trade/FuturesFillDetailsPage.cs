@@ -12,23 +12,9 @@ namespace Kucoin.NET.Futures.Data.Trade
     /// <summary>
     /// Paginated order details
     /// </summary>
-    public class FuturesFillDetailsPage : IPaginated<FuturesFillDetails>
+    public class FuturesFillDetailsPage : PaginatedData<FuturesFillDetails>
     {
-        [JsonProperty("pageSize")]
-        public int PageSize { get; set; }
-
-        [JsonProperty("currentSize")]
-        public int CurrentPage { get; set; }
-
-        [JsonProperty("totalNum")]
-        public int TotalNumber { get; set; }
-
-        [JsonProperty("items")]
-        public IList<FuturesFillDetails> Items { get; set; }
-
-        [JsonProperty("totalPages")]
-        public int TotalPages { get; set; }
-
+    
     }
 
 }

@@ -324,7 +324,7 @@ namespace Kucoin.NET.Rest
             bool auth = true,
             IDictionary<string, object> reqParams = null,
             bool wholeResponseJson = false)
-            where TItem : class, new()
+            where TItem : class, IDataObject, new()
             where TPage : class, IPaginated<TItem>, new()
         {
             var param = new Dictionary<string, object>();
@@ -369,7 +369,7 @@ namespace Kucoin.NET.Rest
             bool auth = true,
             IDictionary<string, object> reqParams = null,
             bool wholeResponseJson = false)
-            where TItem : class, new()
+            where TItem : class, IDataObject, new()
             where TPage : class, IPaginated<TItem>, new()
         {
             int pageSize = 500;

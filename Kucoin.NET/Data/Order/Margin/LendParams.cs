@@ -33,7 +33,7 @@ namespace Kucoin.NET.Data.Order.Margin
     /// <summary>
     /// Lending object base class
     /// </summary>
-    public class LendBase : JsonDictBase
+    public class LendBase : JsonDictBase, IDataObject
     {
         /// <summary>
         /// Currency to lend
@@ -205,7 +205,7 @@ namespace Kucoin.NET.Data.Order.Margin
     /// <summary>
     /// Account lend record item
     /// </summary>
-    public class AccountLendRecordItem
+    public class AccountLendRecordItem : IDataObject
     {
 
         /// <summary>

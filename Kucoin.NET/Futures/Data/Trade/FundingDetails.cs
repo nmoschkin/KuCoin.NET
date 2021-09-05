@@ -1,4 +1,5 @@
-﻿using Kucoin.NET.Helpers;
+﻿using Kucoin.NET.Data;
+using Kucoin.NET.Helpers;
 using Kucoin.NET.Json;
 
 using Newtonsoft.Json;
@@ -10,7 +11,7 @@ using System.Text;
 namespace Kucoin.NET.Futures.Data.Trade
 {
 
-    public class FundingHistory
+    public class FundingHistory : IDataObject
     {
 
         [JsonProperty("hasMore")]
@@ -23,7 +24,7 @@ namespace Kucoin.NET.Futures.Data.Trade
     /// <summary>
     /// Funding Details
     /// </summary>
-    public class FundingDetails
+    public class FundingDetails : IDataObject
     {
 
 

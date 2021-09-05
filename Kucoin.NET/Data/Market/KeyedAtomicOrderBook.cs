@@ -49,6 +49,10 @@ namespace Kucoin.NET.Data.Market
         IList<T> IOrderUnitList<T>.Asks => Asks;
 
         IList<T> IOrderUnitList<T>.Bids => Bids;
+
+        IList<T> IDataSeries<T, T, IList<T>, IList<T>>.Data1 => Asks;
+
+        IList<T> IDataSeries<T, T, IList<T>, IList<T>>.Data2 => Bids;
     }
 
     /// <summary>
@@ -121,6 +125,10 @@ namespace Kucoin.NET.Data.Market
         IList<T> IOrderUnitList<T>.Asks => asks;
 
         IList<T> IOrderUnitList<T>.Bids => bids;
+
+        IList<T> IDataSeries<T, T, IList<T>, IList<T>>.Data1 => asks;
+
+        IList<T> IDataSeries<T, T, IList<T>, IList<T>>.Data2 => bids;
     }
 
 }

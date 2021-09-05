@@ -539,7 +539,7 @@ namespace Kucoin.NET.Services
         }
 
         public async Task<TCol> GetKline<TCandle, TCustom, TCol>(KlineType klineType, int pieces)
-            where TCandle : IWritableCandle, TCustom, new()
+            where TCandle : IFullCandle, TCustom, new()
             where TCol : IList<TCustom>, new()
 
         {

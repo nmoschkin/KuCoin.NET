@@ -1,4 +1,5 @@
-﻿using Kucoin.NET.Json;
+﻿using Kucoin.NET.Data;
+using Kucoin.NET.Json;
 
 using Newtonsoft.Json;
 
@@ -33,7 +34,7 @@ namespace Kucoin.NET.Futures.Data.User
     /// <summary>
     /// Futures Account Info
     /// </summary>
-    public class FuturesAccount
+    public class FuturesAccount : IDataObject
     {
 
 

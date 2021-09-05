@@ -10,22 +10,7 @@ namespace Kucoin.NET.Data.Order
     /// <summary>
     /// Paginated stop order information
     /// </summary>
-    public class StopOrderDetailsPage : IPaginated<StopOrderDetails>
+    public class StopOrderDetailsPage : PaginatedData<StopOrderDetails>
     {
-
-        [JsonProperty("pageSize")]
-        public int PageSize { get; set; }
-
-        [JsonProperty("currentSize")]
-        public int CurrentPage { get; set; }
-
-        [JsonProperty("totalNum")]
-        public int TotalNumber { get; set; }
-
-        [JsonProperty("items")]
-        public IList<StopOrderDetails> Items { get; set; }
-
-        [JsonProperty("totalPages")]
-        public int TotalPages { get; set; }
     }
 }

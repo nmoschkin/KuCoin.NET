@@ -191,14 +191,14 @@ namespace Kucoin.NET.Services
         /// <summary>
         /// Gets the most recent K-Line.
         /// </summary>
-        /// <typeparam name="TCandle">The type of concrete candle object to create.  Must implmeent <see cref="IWritableCandle"/>.</typeparam>
+        /// <typeparam name="TCandle">The type of concrete candle object to create.  Must implmeent <see cref="IFullCandle"/>.</typeparam>
         /// <typeparam name="TCol">The type of collection to return.  Must implement <see cref="IList{T}"/> of <typeparamref name="TCustom"/>.</typeparam>
         /// <typeparam name="TCustom">The item type for the collection that is returned.</typeparam>
         /// <param name="klineType">The type of K-Line to retrieve.</param>
         /// <param name="pieces">The number of pieces (max 200)</param>
         /// <returns></returns>
         Task<TCol> GetKline<TCandle, TCustom, TCol>(KlineType klineType, int pieces)
-            where TCandle : IWritableCandle, TCustom, new()
+            where TCandle : IFullCandle, TCustom, new()
             where TCol : IList<TCustom>, new();
 
 

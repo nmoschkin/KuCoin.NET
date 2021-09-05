@@ -1,4 +1,5 @@
-﻿using Kucoin.NET.Data.Market;
+﻿using Kucoin.NET.Data;
+using Kucoin.NET.Data.Market;
 using Kucoin.NET.Helpers;
 using Kucoin.NET.Json;
 
@@ -13,7 +14,7 @@ namespace Kucoin.NET.Futures.Data.Websockets
     /// <summary>
     /// Contract market snapshot data
     /// </summary>
-    public class ContractMarketSnapshot : ISymbol
+    public class ContractMarketSnapshot : ISymbol, IStreamableObject
     {
         [JsonIgnore()]
         public string Symbol { get; set; }

@@ -16,7 +16,7 @@ namespace Kucoin.NET.Data.Market
     /// <summary>
     /// All Symbols Ticker list item.
     /// </summary>
-    public class AllSymbolsTickerItem 
+    public class AllSymbolsTickerItem : IStreamableObject
     {
 
         /// <summary>

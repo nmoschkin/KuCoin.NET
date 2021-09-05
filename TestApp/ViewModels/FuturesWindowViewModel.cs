@@ -80,7 +80,7 @@ namespace KuCoinApp
 
         protected ObservableCollection<CurrencyViewModel> currencies = new ObservableCollection<CurrencyViewModel>();
 
-        protected FuturesLevel2Observation futureslevel2;
+        protected FuturesLevel2OrderBook futureslevel2;
         
         protected List<SymbolViewModel> recentSymbols = new List<SymbolViewModel>();
 
@@ -93,7 +93,7 @@ namespace KuCoinApp
 
         public override event EventHandler AskQuit;
 
-        public FuturesLevel2Observation FuturesLevel2
+        public FuturesLevel2OrderBook FuturesLevel2
         {
             get => futureslevel2;
             protected set
@@ -657,7 +657,7 @@ namespace KuCoinApp
             {
                 if (SetProperty(ref lastCandle, value))
                 {
-                    if (data.Count == 0 || !Candle.IsTimeInCandle((ITypedCandle<FuturesKlineType>)data.LastOrDefault(), lastCandle.Timestamp))
+                    if (data.Count == 0 || !Candle.IsTimeInCandle((IReadOnlyFullKlineCandle<FuturesKlineType>)data.LastOrDefault(), lastCandle.Timestamp))
                     {
                         data.Add(lastCandle);
                     }

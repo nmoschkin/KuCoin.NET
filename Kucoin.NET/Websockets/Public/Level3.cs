@@ -77,54 +77,6 @@ namespace Kucoin.NET.Websockets.Public
 
         public override bool IsPublic => false;
 
-        public override async Task<KeyedAtomicOrderBook<AtomicOrderStruct>> ProvideInitialData(string key)
-        {
-            Exception err = null;
-
-            var cts = new CancellationTokenSource();
-
-            var ft = Task.Run(async () =>
-            {
-                var curl = InitialDataUrl;
-                var param = new Dictionary<string, object>();
-
-                param.Add("symbol", key);
-
-                try
-                {
-                    var jobj = await MakeRequest(HttpMethod.Get, curl, auth: !IsPublic, reqParams: param);
-                    var result = jobj.ToObject<KeyedAtomicOrderBook<AtomicOrderStruct>>();
-
-                    GC.Collect(2);
-                    return result;
-                }
-                catch (Exception ex)
-                {
-                    err = ex;
-                    return null;
-                }
-
-            }, cts.Token);
-
-            DateTime start = DateTime.UtcNow;
-
-            while ((DateTime.UtcNow - start).TotalSeconds < 60)
-            {
-                await Task.Delay(10);
-
-                if (ft.IsCompleted)
-                {
-                    return ft.Result;
-                }
-            }
-
-            cts.Cancel();
-
-            if (err != null) throw err;
-
-            return null;
-        }
-
         public override void Release(IDistributable<string, Level3Update> obj) => Release((Level3OrderBook)obj);
 
         public void Release(Level3OrderBook obj)

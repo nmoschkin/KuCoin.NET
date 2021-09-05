@@ -11,7 +11,7 @@ namespace Kucoin.NET.Data.User
     /// <summary>
     /// Withdraw order information
     /// </summary>
-    public class Withdrawal
+    public class Withdrawal : IDataObject
     {
 
         /// <summary>

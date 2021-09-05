@@ -13,7 +13,7 @@ namespace Kucoin.NET.Data.Websockets
     /// <summary>
     /// Order book change 
     /// </summary>
-    public class OrderBookChange
+    public class OrderBookChange : IStreamableObject
     {
 
         /// <summary>

@@ -1,4 +1,5 @@
-﻿using Kucoin.NET.Data.User;
+﻿using Kucoin.NET.Data;
+using Kucoin.NET.Data.User;
 using Kucoin.NET.Helpers;
 using Kucoin.NET.Json;
 
@@ -14,7 +15,7 @@ namespace Kucoin.NET.Futures.Data.User
     /// <summary>
     /// Deposit
     /// </summary>
-    public class Deposit
+    public class Deposit : IDataObject
     {
         /// <summary>
         /// Currency

@@ -20,10 +20,8 @@ namespace Kucoin.NET.Websockets.Public
 
     }
 
-    public class Level2 : MarketFeed<Level2OrderBook, Level2Update, KeyedOrderBook<OrderUnitStruct>, ObservableOrderBook<ObservableOrderUnit>>, ILevel2
+    public class Level2 : OrderBookFeed<Level2OrderBook, Level2Update, KeyedOrderBook<OrderUnitStruct>, ObservableOrderBook<ObservableOrderUnit>, Level2>, ILevel2
     {
-        object lockObj = new object();
-
         /// <summary>
         /// Instantiate a new market feed.
         /// </summary>
@@ -59,53 +57,6 @@ namespace Kucoin.NET.Websockets.Public
 
         public override bool IsPublic => false;
 
-        public override async Task<KeyedOrderBook<OrderUnitStruct>> ProvideInitialData(string key)
-        {
-            Exception err = null;
-
-            var cts = new CancellationTokenSource();
-
-            var ft = Task.Run(async () =>
-            {
-                var curl = InitialDataUrl;
-                var param = new Dictionary<string, object>();
-
-                param.Add("symbol", key);
-
-                try
-                {
-                    var jobj = await MakeRequest(HttpMethod.Get, curl, auth: !IsPublic, reqParams: param);
-                    var result = jobj.ToObject<KeyedOrderBook<OrderUnitStruct>>();
-
-                    GC.Collect(2);
-                    return result;
-                }
-                catch (Exception ex)
-                {
-                    err = ex;
-                    return null;
-                }
-
-            }, cts.Token);
-
-            DateTime start = DateTime.UtcNow;
-
-            while ((DateTime.UtcNow - start).TotalSeconds < 60)
-            {
-                await Task.Delay(10);
-
-                if (ft.IsCompleted)
-                {
-                    return ft.Result;
-                }
-            }
-
-            cts.Cancel();
-
-            if (err != null) throw err;
-
-            return null;
-        }
 
         public override void Release(IDistributable<string, Level2Update> obj) => Release((Level2OrderBook)obj);
 
@@ -124,113 +75,10 @@ namespace Kucoin.NET.Websockets.Public
             }
         }
 
-        public override async Task<IDictionary<string, Level2OrderBook>> SubscribeMany(IEnumerable<string> keys)
+        protected override Level2OrderBook CreateFeed(string sym)
         {
-            if (disposedValue) throw new ObjectDisposedException(GetType().FullName);
-            if (!Connected)
-            {
-                await Connect();
-            }
-
-            var sb = new StringBuilder();
-            var lnew = new Dictionary<string, Level2OrderBook>();
-
-            lock (lockObj)
-            {
-                foreach (var sym in keys)
-                {
-                    if (activeFeeds.ContainsKey(sym))
-                    {
-                        if (!lnew.ContainsKey(sym))
-                        {
-                            lnew.Add(sym, activeFeeds[sym]);
-                        }
-                        continue;
-                    }
-
-                    if (sb.Length > 0) sb.Append(',');
-                    sb.Append(sym);
-
-                    var obs = new Level2OrderBook(this, sym);
-                    activeFeeds.Add(sym, obs);
-
-                    if (!lnew.ContainsKey(sym))
-                    {
-                        lnew.Add(sym, activeFeeds[sym]);
-                    }
-                }
-            }
-
-            var topic = $"{Topic}:{sb}";
-
-            var e = new FeedMessage()
-            {
-                Type = "subscribe",
-                Id = connectId.ToString("d"),
-                Topic = topic,
-                Response = true,
-                PrivateChannel = false
-            };
-
-            await Send(e);
-
-            State = FeedState.Subscribed;
-            return lnew;
+            return new Level2OrderBook(this, sym);
         }
-
-        public override async Task UnsubscribeMany(IEnumerable<string> keys)
-        {
-            if (disposedValue) throw new ObjectDisposedException(GetType().FullName);
-            if (!Connected) return;
-
-            var sb = new StringBuilder();
-
-            lock (lockObj)
-            {
-                foreach (var sym in keys)
-                {
-                    if (activeFeeds.ContainsKey(sym))
-                    {
-                        try
-                        {
-                            activeFeeds[sym].Dispose();
-                        }
-                        catch { }
-
-                        activeFeeds.Remove(sym);
-                    }
-
-                    if (sb.Length > 0) sb.Append(',');
-                    sb.Append(sym);
-                }
-            }
-
-            var topic = $"{Topic}:{sb}";
-
-            var e = new FeedMessage()
-            {
-                Type = "unsubscribe",
-                Id = connectId.ToString("d"),
-                Topic = topic,
-                Response = true,
-                PrivateChannel = false
-            };
-
-            await Send(e);
-
-            if (activeFeeds.Count == 0)
-            {
-                State = FeedState.Unsubscribed;
-            }
-        }
-       
-        JsonSerializerSettings settings = new JsonSerializerSettings()
-        {
-            Converters = new JsonConverter[]
-            {
-                new StringToDecimalConverter()
-            }
-        };
 
         protected override void RouteJsonPacket(string json, FeedMessage e = null)
         {
@@ -248,9 +96,5 @@ namespace Kucoin.NET.Websockets.Public
             }
         }
 
-        protected override Task HandleMessage(FeedMessage msg)
-        {
-            throw new NotImplementedException();
-        }
     }
 }

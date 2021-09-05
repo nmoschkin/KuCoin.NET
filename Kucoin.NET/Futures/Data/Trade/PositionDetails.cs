@@ -1,4 +1,5 @@
-﻿using Kucoin.NET.Helpers;
+﻿using Kucoin.NET.Data;
+using Kucoin.NET.Helpers;
 using Kucoin.NET.Json;
 
 using Newtonsoft.Json;
@@ -12,7 +13,7 @@ namespace Kucoin.NET.Futures.Data.Trade
     /// <summary>
     /// Position Details
     /// </summary>
-    public class PositionDetails
+    public class PositionDetails : IDataObject
     {
         /// <summary>
         /// Position ID

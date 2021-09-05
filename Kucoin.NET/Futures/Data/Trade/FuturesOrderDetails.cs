@@ -1,4 +1,5 @@
-﻿using Kucoin.NET.Data.Market;
+﻿using Kucoin.NET.Data;
+using Kucoin.NET.Data.Market;
 using Kucoin.NET.Data.Order;
 using Kucoin.NET.Helpers;
 using Kucoin.NET.Json;
@@ -14,7 +15,7 @@ namespace Kucoin.NET.Futures.Data.Trade
     /// <summary>
     /// Futures Order Details
     /// </summary>
-    public class FuturesOrderDetails
+    public class FuturesOrderDetails : IDataObject
     {
         /// <summary>
         /// Order ID

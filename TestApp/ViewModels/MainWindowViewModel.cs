@@ -666,7 +666,7 @@ namespace KuCoinApp
             {
                 if (SetProperty(ref lastCandle, value))
                 {
-                    if (data.Count == 0 || !Candle.IsTimeInCandle((ITypedCandle<KlineType>)data.LastOrDefault(), lastCandle.Timestamp))
+                    if (data.Count == 0 || !Candle.IsTimeInCandle((IReadOnlyFullKlineCandle<KlineType>)data.LastOrDefault(), lastCandle.Timestamp))
                     {
                         data.Add(lastCandle);
                     }

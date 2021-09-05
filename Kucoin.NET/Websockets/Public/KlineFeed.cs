@@ -13,8 +13,8 @@ namespace Kucoin.NET.Websockets.Public
     /// <summary>
     /// Implements the symbol candles feed (Level 2).
     /// </summary>
-    /// <typeparam name="TCandle">The type of the <see cref="IWritableCandle"/> interface implementation to serve.</typeparam>
-    public class KlineFeed<TCandle> : KucoinBaseWebsocketFeed<KlineFeedMessage<TCandle>> where TCandle: IWritableCandle, new()
+    /// <typeparam name="TCandle">The type of the <see cref="IFullCandle"/> interface implementation to serve.</typeparam>
+    public class KlineFeed<TCandle> : KucoinBaseWebsocketFeed<KlineFeedMessage<TCandle>> where TCandle: IFullCandle, new()
     {
 
         private List<SymbolKline> activeTickers = new List<SymbolKline>();
@@ -87,7 +87,7 @@ namespace Kucoin.NET.Websockets.Public
 
                     // The candlestick does not need to be a typed candle,
                     // but if it is, we will set that value, as well.
-                    if (candle is IWritableTypedCandle<KlineType> wt)
+                    if (candle is IFullKlineCandle<KlineType> wt)
                     {
                         wt.Type = sk.KlineType;
                     }
@@ -170,7 +170,7 @@ namespace Kucoin.NET.Websockets.Public
             if (disposedValue) throw new ObjectDisposedException(GetType().FullName);
             if (!Connected) return;
 
-            SymbolKline sk = null;
+            SymbolKline sk = SymbolKline.Empty;
 
             foreach (var t in activeTickers)
             {

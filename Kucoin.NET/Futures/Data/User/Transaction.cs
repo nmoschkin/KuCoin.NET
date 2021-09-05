@@ -7,6 +7,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Runtime.Serialization;
+using Kucoin.NET.Data;
 
 namespace Kucoin.NET.Futures.Data.User
 {
@@ -60,7 +61,7 @@ namespace Kucoin.NET.Futures.Data.User
         Pending
     }
 
-    public class TransactionHistory
+    public class TransactionHistory : IDataObject
     {
 
         [JsonProperty("hasMore")]
@@ -73,7 +74,7 @@ namespace Kucoin.NET.Futures.Data.User
     /// <summary>
     /// Represents a single transaction in the futures account.
     /// </summary>
-    public class Transaction
+    public class Transaction : IDataObject
     {
 
 

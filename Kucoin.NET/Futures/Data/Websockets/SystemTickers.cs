@@ -1,4 +1,5 @@
-﻿using Kucoin.NET.Data.Market;
+﻿using Kucoin.NET.Data;
+using Kucoin.NET.Data.Market;
 using Kucoin.NET.Helpers;
 using Kucoin.NET.Json;
 
@@ -29,7 +30,7 @@ namespace Kucoin.NET.Futures.Data.Websockets
     /// <summary>
     /// Funding Point (Begin or End)
     /// </summary>
-    public class FundingPoint : ISymbol
+    public class FundingPoint : ISymbol, IStreamableObject
     {
 
 
@@ -86,7 +87,7 @@ namespace Kucoin.NET.Futures.Data.Websockets
     /// <summary>
     /// Contract Market Data
     /// </summary>
-    public class ContractMarketData : ISymbol
+    public class ContractMarketData : ISymbol, IStreamableObject
     {
         /// <summary>
         /// The symbol for the data being reported.

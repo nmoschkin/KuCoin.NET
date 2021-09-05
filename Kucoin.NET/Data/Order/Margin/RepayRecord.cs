@@ -10,21 +10,7 @@ namespace Kucoin.NET.Data.Order.Margin
     /// <summary>
     /// Paginated repayment records
     /// </summary>
-    public class RepayRecord : IPaginated<RepayItem>
+    public class RepayRecord : PaginatedData<RepayItem>
     {
-        [JsonProperty("pageSize")]
-        public int PageSize { get; set; }
-
-        [JsonProperty("currentSize")]
-        public int CurrentPage { get; set; }
-
-        [JsonProperty("totalNum")]
-        public int TotalNumber { get; set; }
-
-        [JsonProperty("items")]
-        public IList<RepayItem> Items { get; set; }
-
-        [JsonProperty("totalPages")]
-        public int TotalPages { get; set; }
     }
 }

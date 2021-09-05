@@ -1,4 +1,5 @@
-﻿using Kucoin.NET.Data.Market;
+﻿using Kucoin.NET.Data;
+using Kucoin.NET.Data.Market;
 using Kucoin.NET.Data.Order;
 using Kucoin.NET.Futures.Data.Trade;
 using Kucoin.NET.Helpers;
@@ -15,7 +16,7 @@ namespace Kucoin.NET.Futures.Data.Websockets
     /// <summary>
     /// Advanced order
     /// </summary>
-    public class AdvancedOrder
+    public class AdvancedOrder : IStreamableObject
     {
 
 

@@ -1,4 +1,5 @@
-﻿using Kucoin.NET.Helpers;
+﻿using Kucoin.NET.Data;
+using Kucoin.NET.Helpers;
 using Kucoin.NET.Json;
 
 using Newtonsoft.Json;
@@ -12,7 +13,7 @@ namespace Kucoin.NET.Futures.Data.Market
     /// <summary>
     /// Index data list page
     /// </summary>
-    public class IndexList
+    public class IndexList : IDataObject
     {
 
         [JsonProperty("hasMore")]
@@ -25,7 +26,7 @@ namespace Kucoin.NET.Futures.Data.Market
     /// <summary>
     /// Index decomposition
     /// </summary>
-    public class IndexDecomposition
+    public class IndexDecomposition : IDataObject
     {
 
 
@@ -54,7 +55,7 @@ namespace Kucoin.NET.Futures.Data.Market
     /// <summary>
     /// Index data
     /// </summary>
-    public class IndexData
+    public class IndexData : IDataObject
     {
 
 

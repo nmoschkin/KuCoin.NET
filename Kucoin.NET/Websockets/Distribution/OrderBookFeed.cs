@@ -15,12 +15,21 @@ using System.Threading.Tasks;
 
 namespace Kucoin.NET.Websockets.Distribution
 {
-    public abstract class OrderBookFeed<TObject, TUpdate, TBookIn, TBookOut, TParent> : MarketFeed<TObject, TUpdate, TBookIn, TBookOut>
-        where TObject: OrderBookDistributable<TBookIn, TBookOut, TUpdate, TParent>
-        where TUpdate: ISymbol
+
+    /// <summary>
+    /// Abstract base class for all live order book market feeds, including Level 2 and Level 3 for both the spot and futures markets.
+    /// </summary>
+    /// <typeparam name="TDistributable">The type of the order book distributable object.</typeparam>
+    /// <typeparam name="TValue">The type of object that is being streamed.</typeparam>
+    /// <typeparam name="TBookIn">The base order book type.</typeparam>
+    /// <typeparam name="TBookOut">The observerable order book type.</typeparam>
+    /// <typeparam name="TParent">The parent of the feed (the inheriter of <see cref="OrderBookFeed{TDistributable, TValue, TBookIn, TBookOut, TParent}"/>.)</typeparam>
+    public abstract class OrderBookFeed<TDistributable, TValue, TBookIn, TBookOut, TParent> : MarketFeed<TDistributable, TValue, TBookIn, TBookOut>
+        where TDistributable: OrderBookDistributable<TBookIn, TBookOut, TValue, TParent>
+        where TValue: ISymbol
         where TBookIn: class, new()
         where TBookOut: class, new()
-        where TParent: OrderBookFeed<TObject, TUpdate, TBookIn, TBookOut, TParent>
+        where TParent: OrderBookFeed<TDistributable, TValue, TBookIn, TBookOut, TParent>
     {
         protected object lockObj = new object();
 
@@ -55,9 +64,58 @@ namespace Kucoin.NET.Websockets.Distribution
         /// </summary>
         /// <param name="sym">The symbol to create the feed for.</param>
         /// <returns></returns>
-        protected abstract TObject CreateFeed(string sym);
+        protected abstract TDistributable CreateFeed(string sym);
 
-        public override async Task<IDictionary<string, TObject>> SubscribeMany(IEnumerable<string> keys)
+        public override async Task<TBookIn> ProvideInitialData(string key)
+        {
+            Exception err = null;
+
+            var cts = new CancellationTokenSource();
+
+            var ft = Task.Run(async () =>
+            {
+                var curl = InitialDataUrl;
+                var param = new Dictionary<string, object>();
+
+                param.Add("symbol", key);
+
+                try
+                {
+                    var jobj = await MakeRequest(HttpMethod.Get, curl, auth: !IsPublic, reqParams: param);
+                    var result = jobj.ToObject<TBookIn>();
+
+                    GC.Collect(2);
+                    return result;
+                }
+                catch (Exception ex)
+                {
+                    err = ex;
+                    return null;
+                }
+
+            }, cts.Token);
+
+            DateTime start = DateTime.UtcNow;
+
+            while ((DateTime.UtcNow - start).TotalSeconds < 60)
+            {
+                await Task.Delay(10);
+
+                if (ft.IsCompleted)
+                {
+                    return ft.Result;
+                }
+            }
+
+            cts.Cancel();
+
+            if (err != null) throw err;
+
+            return null;
+        }
+
+
+        public override async Task<IDictionary<string, TDistributable>> SubscribeMany(IEnumerable<string> keys)
         {
             if (disposedValue) throw new ObjectDisposedException(GetType().FullName);
             if (!Connected)
@@ -66,7 +124,7 @@ namespace Kucoin.NET.Websockets.Distribution
             }
 
             var sb = new StringBuilder();
-            var lnew = new Dictionary<string, TObject>();
+            var lnew = new Dictionary<string, TDistributable>();
 
             lock (lockObj)
             {
@@ -165,7 +223,7 @@ namespace Kucoin.NET.Websockets.Distribution
             }
         };
 
-        protected FeedMessage<TUpdate> msg = new FeedMessage<TUpdate>();
+        protected FeedMessage<TValue> msg = new FeedMessage<TValue>();
 
         //[MethodImpl(MethodImplOptions.AggressiveInlining)]
         //protected override abstract void RouteJsonPacket(string json, FeedMessage e = null);

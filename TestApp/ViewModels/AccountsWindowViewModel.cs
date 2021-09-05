@@ -29,7 +29,7 @@ namespace KuCoinApp.ViewModels
         private TickerFeed ticker;
         private BalanceNoticeFeed balances; 
 
-        private SymbolDistributable<Ticker> feedContext;
+        private SymbolObservation<Ticker> feedContext;
         private FeedObject<BalanceNotice> balanceContext;
 
         public event EventHandler<EventArgs> AccountsRefreshed;
@@ -288,7 +288,7 @@ namespace KuCoinApp.ViewModels
 
             balanceContext = (FeedObject<BalanceNotice>)balances.Subscribe(this);
 
-            feedContext = (SymbolDistributable<Ticker>)ticker.Subscribe(this);
+            feedContext = (SymbolObservation<Ticker>)ticker.Subscribe(this);
             feedContext.ActiveSymbols = pairs;
 
             foreach (var pair in pairs)

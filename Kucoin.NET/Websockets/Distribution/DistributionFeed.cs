@@ -20,16 +20,48 @@ namespace Kucoin.NET.Websockets.Distribution
     /// <typeparam name="TDistributable">The type of object that contains the distributed information.</typeparam>
     /// <typeparam name="TValue">The type of object that is being streamed.</typeparam>
     /// <typeparam name="TInitial">The type of the initial data set.</typeparam>
-    public abstract class DistributionFeed<TDistributable, TValue, TInitial> : 
-        KucoinBaseWebsocketFeed, 
-        IInitialDataProvider<string, TInitial>, 
-        IAsyncUnsubscribableSubscriptionProvider<string, TDistributable>, 
-        IDistributor<TDistributable, TValue> 
-        where TDistributable : DistributableObject<string, TValue> 
+    public abstract class DistributionFeed<TDistributable, TValue, TInitial> : DistributionFeed<TDistributable, string, TValue, TInitial>
+        where TDistributable : DistributableObject<string, TValue>
         where TValue : ISymbol
     {
 
-        protected Dictionary<string, TDistributable> activeFeeds = new Dictionary<string, TDistributable>();
+        /// <summary>
+        /// Instantiate a new distribution feed.
+        /// </summary>
+        /// <param name="credentialsProvider">API Credentials.</param>
+        public DistributionFeed(ICredentialsProvider credentialsProvider) : base(credentialsProvider)
+        {
+        }
+
+        /// <summary>
+        /// Instantiate a new distribution feed.
+        /// </summary>
+        /// <param name="key">API key.</param>
+        /// <param name="secret">API secret.</param>
+        /// <param name="passphrase">API passphrase.</param>
+        /// <param name="isSandbox">True if sandbox mode.</param>
+        /// <param name="futures">True if KuCoin Futures.</param>
+        public DistributionFeed(string key, string secret, string passphrase, bool isSandbox = false, bool futures = false) : base(key, secret, passphrase, isSandbox: isSandbox, futures: futures)
+        {
+        }
+    }
+
+    /// <summary>
+    /// Base class for all websocket distribution feeds that use the <see cref="ParallelService"/>.
+    /// </summary>
+    /// <typeparam name="TDistributable">The type of object that contains the distributed information.</typeparam>
+    /// <typeparam name="TValue">The type of object that is being streamed.</typeparam>
+    /// <typeparam name="TInitial">The type of the initial data set.</typeparam>
+    public abstract class DistributionFeed<TDistributable, TKey, TValue, TInitial> : 
+        KucoinBaseWebsocketFeed, 
+        IInitialDataProvider<TKey, TInitial>, 
+        IAsyncUnsubscribableSubscriptionProvider<TKey, TDistributable>, 
+        IDistributor<TKey, TDistributable, TValue> 
+        where TDistributable : DistributableObject<TKey, TValue> 
+        where TValue : ISymbol
+    {
+
+        protected Dictionary<TKey, TDistributable> activeFeeds = new Dictionary<TKey, TDistributable>();
         protected FeedState state;
 
         public virtual FeedState State
@@ -90,7 +122,7 @@ namespace Kucoin.NET.Websockets.Distribution
         public abstract string InitialDataUrl { get; }
 
        
-        public virtual IReadOnlyDictionary<string, TDistributable> ActiveFeeds { get => activeFeeds; }
+        public virtual IReadOnlyDictionary<TKey, TDistributable> ActiveFeeds { get => activeFeeds; }
         IEnumerable<IDistributable> IDistributor.GetActiveFeeds()
         {
             var l = new List<IDistributable>(); 
@@ -108,7 +140,7 @@ namespace Kucoin.NET.Websockets.Distribution
         /// <returns></returns>
         public virtual async Task<bool> Reconnect()
         {
-            var currentFeeds = new Dictionary<string, TDistributable>(activeFeeds);
+            var currentFeeds = new Dictionary<TKey, TDistributable>(activeFeeds);
             Disconnect();
 
             activeFeeds.Clear();
@@ -123,42 +155,42 @@ namespace Kucoin.NET.Websockets.Distribution
         /// Gets all active subscriptions as dictionary of trading symbol keys and <see cref="TDistributable"/> values.
         /// </summary>
         /// <returns></returns>
-        public virtual IReadOnlyDictionary<string, TDistributable> GetActiveFeeds() => activeFeeds;
+        public virtual IReadOnlyDictionary<TKey, TDistributable> GetActiveFeeds() => activeFeeds;
 
-        public virtual void Release(IDistributable obj) => Release((IDistributable<string, TValue>)obj);
-        public virtual async Task UnsubscribeOne(string key)
+        public virtual void Release(IDistributable obj) => Release((IDistributable<TKey, TValue>)obj);
+        public virtual async Task UnsubscribeOne(TKey key)
         {
-            await UnsubscribeMany(new string[] { key });
+            await UnsubscribeMany(new TKey[] { key });
         }
         
-        public abstract Task UnsubscribeMany(IEnumerable<string> keys);
-        public virtual async Task<TDistributable> SubscribeOne(string key)
+        public abstract Task UnsubscribeMany(IEnumerable<TKey> keys);
+        public virtual async Task<TDistributable> SubscribeOne(TKey key)
         {
-            var x = await SubscribeMany(new string[] { key });
+            var x = await SubscribeMany(new TKey[] { key });
             return x?.Values?.FirstOrDefault();
         }
-        public abstract Task<IDictionary<string, TDistributable>> SubscribeMany(IEnumerable<string> keys);
-        public abstract Task<TInitial> ProvideInitialData(string key);
-        public abstract void Release(IDistributable<string, TValue> obj);
+        public abstract Task<IDictionary<TKey, TDistributable>> SubscribeMany(IEnumerable<TKey> keys);
+        public abstract Task<TInitial> ProvideInitialData(TKey key);
+        public abstract void Release(IDistributable<TKey, TValue> obj);
 
         async Task IAsyncUnsubscribableSubscriptionProvider.UnsubscribeOne(object key)
         {
-            await UnsubscribeOne((string)key);
+            await UnsubscribeOne((TKey)key);
         }
 
         async Task IAsyncUnsubscribableSubscriptionProvider.UnsubscribeMany(System.Collections.IEnumerable keys)
         {
-            await UnsubscribeMany((IEnumerable<string>)keys);
+            await UnsubscribeMany((IEnumerable<TKey>)keys);
         }
 
         async Task<IDisposable> IAsyncSubscriptionProvider.SubscribeOne(object key)
         {
-            return await SubscribeOne((string)key);
+            return await SubscribeOne((TKey)key);
         }
 
         async Task<System.Collections.IEnumerable> IAsyncSubscriptionProvider.SubscribeMany(System.Collections.IEnumerable keys)
         {
-            return await SubscribeMany((IEnumerable<string>)keys);
+            return await SubscribeMany((IEnumerable<TKey>)keys);
         }
     }
 

@@ -1,4 +1,5 @@
-﻿using Kucoin.NET.Data.Market;
+﻿using Kucoin.NET.Data;
+using Kucoin.NET.Data.Market;
 using Kucoin.NET.Helpers;
 using Kucoin.NET.Json;
 
@@ -13,7 +14,7 @@ namespace Kucoin.NET.Futures.Data.Market
     /// <summary>
     /// Historical trade data
     /// </summary>
-    public class HistoricalData
+    public class HistoricalData : IDataObject
     {
         /// <summary>
         /// Sequence number

@@ -86,20 +86,4 @@ namespace Kucoin.NET.Data.Websockets
     }
 
 
-
-    /// <summary>
-    /// Websocket feed packet object
-    /// </summary>
-    public class Level3FeedMessage : FeedMessage<Level3Update>
-    {
-
-        ///// <summary>
-        ///// Deserialized data contents
-        ///// </summary>
-        //[JsonProperty("data")]
-        //public override Level3Update Data { get => base.Data; set => base.Data = value; }
-
-    }
-
-
 }

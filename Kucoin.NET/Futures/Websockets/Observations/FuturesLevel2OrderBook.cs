@@ -13,10 +13,10 @@ using System.Threading.Tasks;
 
 namespace Kucoin.NET.Futures.Websockets.Observations
 {
-    public class FuturesLevel2Observation : OrderBookDistributable<KeyedOrderBook<OrderUnitStruct>, ObservableOrderBook<ObservableOrderUnit>, FuturesLevel2Update, FuturesLevel2>
+    public class FuturesLevel2OrderBook : OrderBookDistributable<KeyedOrderBook<OrderUnitStruct>, ObservableOrderBook<ObservableOrderUnit>, FuturesLevel2Update, FuturesLevel2>
     {
 
-        public FuturesLevel2Observation(FuturesLevel2 parent, string symbol) : base(parent, symbol, false)
+        public FuturesLevel2OrderBook(FuturesLevel2 parent, string symbol) : base(parent, symbol, false)
         {
             this.parent = parent;
             base.parent = parent;

@@ -1,4 +1,5 @@
-﻿using Kucoin.NET.Data.Market;
+﻿using Kucoin.NET.Data;
+using Kucoin.NET.Data.Market;
 using Kucoin.NET.Helpers;
 using Kucoin.NET.Json;
 
@@ -13,7 +14,7 @@ namespace Kucoin.NET.Futures.Data.Websockets
     /// <summary>
     /// Futures Order Match
     /// </summary>
-    public class FuturesMatch : ISymbol
+    public class FuturesMatch : ISymbol, IStreamableObject
     {
         /// <summary>
         /// Symbol

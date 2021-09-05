@@ -35,7 +35,7 @@ namespace Kucoin.NET.Data.Websockets
     /// <summary>
     /// Level 2 Static Market Depth Feed (5/50) Changes
     /// </summary>
-    public class StaticMarketDepthUpdate : ISymbol, IOrderUnitList<IOrderUnit>
+    public class StaticMarketDepthUpdate : ISymbol, IOrderUnitList<IOrderUnit>, IStreamableObject
     {
         public virtual string Symbol { get; set; }
 
@@ -54,6 +54,10 @@ namespace Kucoin.NET.Data.Websockets
         IList<IOrderUnit> IOrderUnitList<IOrderUnit>.Asks => Asks;
 
         IList<IOrderUnit> IOrderUnitList<IOrderUnit>.Bids => Bids;
+
+        IList<IOrderUnit> IDataSeries<IOrderUnit, IOrderUnit, IList<IOrderUnit>, IList<IOrderUnit>>.Data1 => Asks;
+
+        IList<IOrderUnit> IDataSeries<IOrderUnit, IOrderUnit, IList<IOrderUnit>, IList<IOrderUnit>>.Data2 => Bids;
 
 
         /// <summary>
