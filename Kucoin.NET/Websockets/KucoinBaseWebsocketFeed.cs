@@ -93,13 +93,13 @@ namespace Kucoin.NET.Websockets
 
         protected bool monitorThroughput;
 
-        private long throughput;
+        protected long throughput;
 
-        private long maxQueueLengthLast60Seconds;
+        protected long maxQueueLengthLast60Seconds;
 
-        private TimeSpan pingTime = TimeSpan.Zero;
+        protected TimeSpan pingTime = TimeSpan.Zero;
 
-        private DateTime lastPing = DateTime.Now;
+        protected DateTime lastPing = DateTime.Now;
 
         protected int? overridePingInterval = null;
 

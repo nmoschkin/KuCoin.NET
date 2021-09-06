@@ -18,6 +18,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Reflection.Metadata.Ecma335;
+using System.Net.WebSockets;
 
 namespace Kucoin.NET.Websockets.Public
 {
@@ -28,6 +29,27 @@ namespace Kucoin.NET.Websockets.Public
 
     public class Level3 : OrderBookFeed<Level3OrderBook, Level3Update, KeyedAtomicOrderBook<AtomicOrderStruct>, ObservableAtomicOrderBook<ObservableAtomicOrderUnit>, Level3>, ILevel3
     {
+
+        public const int buy = -813464969;
+        public const int sell = -1684090755;
+        public const int filled = -1725622140;
+        public const int canceled = -443854079;
+        public const int sequence = 1384568619;
+        public const int symbol = -322423047;
+        public const int orderId = -98339785;
+        public const int clientOid = 97372753;
+        public const int side = 595663797;
+        public const int price = -892853543;
+        public const int size = -138402710;
+        public const int remainSize = 513984757;
+        public const int takerOrderId = -1263072696;
+        public const int makerOrderId = 621206821;
+        public const int tradeId = -154148381;
+        public const int reason = 1001949196;
+        public const int orderTime = -1047109151;
+        public const int ts = -1014591861;
+        public const int subject = -70369670;
+
         /// <summary>
         /// Instantiate a new Level 3 market feed.
         /// </summary>
@@ -118,5 +140,360 @@ namespace Kucoin.NET.Websockets.Public
                 base.RouteJsonPacket(json, e);
             }
         }
+
+        public override int QueueLength => l3Queue.Count;
+        List<Level3Update> l3Queue = new List<Level3Update>();
+
+        protected override void MessagePumpThread()
+        {
+            string[] queue = new string[minQueueBuffer];
+            Level3Update[] l3queue = new Level3Update[minQueueBuffer];
+            Level3Update l3q;
+            int c, d;
+
+            Thread.CurrentThread.Priority = recvPriority;
+
+            // loop forever
+            while (!(ctsPump?.IsCancellationRequested ?? true) && socket?.State == WebSocketState.Open)
+            {
+                // lock on msgQueue.
+                lock (msgQueue)
+                {
+                    c = msgQueue.Count;
+                    d = l3Queue.Count;
+
+                    if (c != 0)
+                    {
+                        if (queue.Length < c)
+                        {
+                            Array.Resize(ref queue, c * 2);
+                        }
+
+                        msgQueue.CopyTo(queue);
+                        msgQueue.Clear();
+                    }
+
+                    if (d != 0)
+                    {
+                        if (l3queue.Length < d)
+                        {
+                            Array.Resize(ref l3queue, d * 2);
+                        }
+
+                        l3Queue.CopyTo(l3queue);
+                        l3Queue.Clear();
+                    }
+
+                }
+
+                if (c == 0 && d == 0)
+                {
+                    Thread.Sleep(1);
+                    continue;
+                }
+
+                for (int i = 0; i < c; i++)
+                {
+                    RouteJsonPacket(queue[i]);
+                }
+
+                for (int i = 0; i < d; i++)
+                {
+                    l3q = l3queue[i];
+                    activeFeeds[l3q.Symbol].OnNext(l3q);
+                }
+
+                if (monitorThroughput)
+                {
+                    if (maxQueueLengthLast60Seconds < c)
+                    {
+                        maxQueueLengthLast60Seconds = c;
+                    }
+                }
+            }
+
+            msgQueue?.Clear();
+            OnDisconnected();
+        }
+
+        /// <summary>
+        /// The data receive thread.
+        /// </summary>
+        protected override void DataReceiveThread()
+        {
+            Thread.CurrentThread.Priority = recvPriority;
+
+            byte[] inputChunk = new byte[chunkSize];
+
+            StringBuilder sb = new StringBuilder();
+
+            int strlen = 0;
+            int level = 0;
+
+            bool inQuote = false;
+            bool inEsc = false;
+
+            int i, c;
+            int xlen = 0;
+
+            sb.EnsureCapacity(recvBufferSize);
+            DateTime xtime = DateTime.UtcNow;
+
+            xtime.AddSeconds(-1 * xtime.Second);
+
+            long tms = xtime.Ticks;
+            long tqms = tms;
+
+            int hash = 0;
+            StringBuilder cstr = new StringBuilder();
+            cstr.Capacity = 50;
+            bool maybenum = false;
+            Level3Update update = new Level3Update();
+
+#if DOTNETSTD
+            WebSocketReceiveResult result;
+            var arrSeg = new ArraySegment<byte>(inputChunk);
+
+            // loop forever or until the connection is broken or canceled.
+            while (!ctsReceive.IsCancellationRequested && socket?.State == WebSocketState.Open)
+            {
+                try
+                {
+                    result = socket.ReceiveAsync(arrSeg, ctsReceive.Token)
+                        .ConfigureAwait(false)
+                        .GetAwaiter()
+                        .GetResult();
+                }
+                catch
+                {
+                    return;
+                }
+#else
+            ValueWebSocketReceiveResult result;
+            var arrSeg = new Memory<byte>(inputChunk);
+
+            // loop forever or until the connection is broken or canceled.
+            while (!ctsReceive.IsCancellationRequested && socket?.State == WebSocketState.Open)
+            {
+                try
+                {
+                    result = socket.ReceiveAsync(arrSeg, ctsReceive.Token)
+                        .ConfigureAwait(false)
+                        .GetAwaiter()
+                        .GetResult();
+                }
+                catch
+                {
+                    return;
+                }
+
+#endif
+                if (ctsReceive?.IsCancellationRequested ?? true) return;
+
+                c = result.Count;
+
+                if (monitorThroughput)
+                {
+                    xtime = DateTime.UtcNow;
+
+                    if ((DateTime.UtcNow.Ticks - tms) >= throughputUpdateInterval * 10_000)
+                    {
+                        Throughput = (long)(xlen * 8d * (1000d / throughputUpdateInterval));
+
+                        tms = xtime.Ticks;
+
+                        xlen = 0;
+                    }
+                    else
+                    {
+                        xlen += c;
+                    }
+
+                    if ((DateTime.UtcNow.Ticks - tqms) >= 600_000_000)
+                    {
+                        maxQueueLengthLast60Seconds = 0;
+
+                        xtime.AddSeconds(-1 * xtime.Second);
+                        tqms = xtime.Ticks;
+                    }
+
+                }
+
+                strlen += c;
+
+                sb.EnsureCapacity(strlen);
+
+                // process as many complete JSON objects as we can and
+                // hold on to incomplete string data for the next
+                // receive, which will complete the current object
+                // and add additional objects, ad infinitum.
+                for (i = 0; i < c; i++)
+                {
+                    // character by character is the simplest and fastest way.
+                    char inChar = (char)inputChunk[i];
+                    sb.Append(inChar);
+
+                    if (inQuote)
+                    {
+                        // quoted string logic
+
+                        if (!inEsc && inChar == '\\')
+                        {
+                            // escaped character avoidance logic
+                            inEsc = true;
+                        }
+                        else if (inEsc)
+                        {
+                            // escaped character avoided, continue scanning quoted string.
+                            cstr.Append(inChar);
+                            inEsc = false;
+                        }
+                        else if (inChar == '\"')
+                        {
+                            var str = cstr.ToString();
+                            if (str.Length > 0)
+                            {
+                                switch (hash)
+                                {
+                                    case symbol:
+                                        update.Symbol = str;
+                                        break;
+
+                                    case orderId:
+                                        update.OrderId = str;
+                                        break;
+
+
+                                    case clientOid:
+                                        update.ClientOid = str;
+                                        break;
+
+                                    case side:
+                                        update.Side = (Side)Crc32.Hash(str);
+                                        break;
+
+                                    case price:
+
+                                        update.Price = decimal.Parse(str);
+                                        break;
+
+                                    case size:
+                                        update.Size = decimal.Parse(str);
+                                        break;
+
+                                    case remainSize:
+                                        update.RemainSize = decimal.Parse(str);
+                                        break;
+
+                                    case takerOrderId:
+                                        update.TakerOrderId = str;
+                                        break;
+
+                                    case makerOrderId:
+                                        update.MakerOrderId = str;
+                                        break;
+
+                                    case tradeId:
+                                        update.TradeId = str;
+                                        break;
+
+                                    case reason:
+                                        update.Reason = (DoneReason)Crc32.Hash(str);
+                                        break;
+
+                                    case subject:
+                                        update.Subject = str;
+                                        break;
+                                }
+                            }
+
+                            // quoted string complete, switch back to object scanning.
+                            hash = Crc32.Hash(cstr.ToString());
+                            inQuote = false;
+                        }
+                        else
+                        {
+                            cstr.Append(inChar);
+                        }
+                    }
+                    else if (inChar == ':')
+                    {
+                        cstr.Clear();
+                        maybenum = true;
+                    }
+                    else if (inChar == '\"')
+                    {
+                        // quoted string avoidance logic
+                        inQuote = true;
+                        maybenum = false;
+                        cstr.Clear();
+                    }
+                    else if (inChar == '{')
+                    {
+                        // with quoted strings out of the way,
+                        // all we have to do is count the JSON object nests.
+                        ++level;
+                    }
+                    else if (inChar == '}' || (maybenum && inChar != ' '))
+                    {
+                        if (maybenum)
+                        {
+                            if ("0123456789".Contains(inChar))
+                            {
+                                cstr.Append(inChar);
+                            }
+                            else
+                            {
+                                var ll = long.Parse(cstr.ToString());
+                                switch (hash)
+                                {
+                                    case sequence:
+                                        update.Sequence = ll;
+                                        break;
+
+                                    case orderTime:
+                                        update.OrderTime = EpochTime.NanosecondsToDate(ll);
+                                        break;
+
+                                    case ts:
+                                        update.Timestamp = EpochTime.NanosecondsToDate(ll);
+                                        break;
+                                }
+                                cstr.Clear();
+                                maybenum = false;
+                            }
+                        }
+
+                        if (inChar == '}')
+                        {
+                            --level;
+
+                            if (level == 0)
+                            {
+                                // we're back down at the root level!
+                                // we now have one whole JSON string to pass to the handler.
+
+                                lock (msgQueue)
+                                {
+                                    if (update.Sequence > 0)
+                                    {
+                                        l3Queue.Add(update);
+                                        update.Sequence = 0L;
+                                    }
+                                    else
+                                    {
+                                        msgQueue.Add(sb.ToString());
+                                    }
+                                    sb.Clear();
+                                    strlen = 0;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+
     }
 }

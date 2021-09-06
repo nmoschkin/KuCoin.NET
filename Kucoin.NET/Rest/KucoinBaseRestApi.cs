@@ -194,7 +194,14 @@ namespace Kucoin.NET.Rest
                 DefaultValueHandling = DefaultValueHandling.IgnoreAndPopulate,
 
                 // We don't care about nothing
-                NullValueHandling = NullValueHandling.Ignore
+                NullValueHandling = NullValueHandling.Ignore,
+
+                Converters = new JsonConverter[] 
+                {
+                    new StringToDecimalConverter()
+                },
+
+                FloatParseHandling = FloatParseHandling.Decimal
                 
             };
 

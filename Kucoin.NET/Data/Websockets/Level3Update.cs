@@ -122,6 +122,8 @@ namespace Kucoin.NET.Data.Websockets
         [JsonProperty("reason")]
         public DoneReason? Reason { get; set; }
 
+        private DateTime? ts;
+        private DateTime? ot;
 
         /// <summary>
         /// Order time
@@ -130,17 +132,28 @@ namespace Kucoin.NET.Data.Websockets
         [JsonConverter(typeof(AutoTimeConverter), TimeTypes.InNanoseconds)]
         public DateTime? OrderTime { get; set; }
 
-
         /// <summary>
         /// Time Stamp
         /// </summary>
         [JsonProperty("ts")]
         [JsonConverter(typeof(AutoTimeConverter), TimeTypes.InNanoseconds)]
         public DateTime? Timestamp { get; set; }
-
+      
 
         [JsonIgnore]
-        public string Subject { get; set; }
+        public string Subject 
+        { 
+            get => subj;
+            set
+            {
+                subj = value;
+                sc = subj[0];
+            }
+        }
+
+        public string subj;
+
+        public char sc;
 
         public Dictionary<string, object> ToDict()
         {

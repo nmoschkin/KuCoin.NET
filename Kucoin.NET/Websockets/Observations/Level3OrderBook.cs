@@ -139,7 +139,7 @@ namespace Kucoin.NET.Websockets.Observations
                     GrandTotal++;
                     transactSec++;
 
-                    if (obj.Subject[0] == 'm')
+                    if (obj.sc == 'm')
                     {
                         MatchTotal++;
                         matchSec++;
@@ -148,7 +148,7 @@ namespace Kucoin.NET.Websockets.Observations
             
                 if (obj.Side == null)
                 {
-                    if (obj.Subject[0] == 'd')
+                    if (obj.sc == 'd')
                     {
                         if (fullDepth.Asks.ContainsKey(obj.OrderId))
                         {
@@ -163,11 +163,11 @@ namespace Kucoin.NET.Websockets.Observations
                 }
                 else if (obj.Side == Side.Sell)
                 {
-                    SequencePieces(obj.Subject, obj, fullDepth.Asks, fullDepth.Bids);
+                    SequencePieces(obj.sc, obj, fullDepth.Asks, fullDepth.Bids);
                 }
                 else if (obj.Side == Side.Buy)
                 {
-                    SequencePieces(obj.Subject, obj, fullDepth.Bids, fullDepth.Asks);
+                    SequencePieces(obj.sc, obj, fullDepth.Bids, fullDepth.Asks);
                 }
 
                 fullDepth.Sequence = obj.Sequence;
@@ -179,7 +179,6 @@ namespace Kucoin.NET.Websockets.Observations
 
                     if (!Candle.IsTimeInCandle(candle, fullDepth.Timestamp))
                     {
-                        candle.ClosePrice = price;
                         LastCandles.Add(candle);
 
                         Candle = new Candle();
@@ -216,9 +215,9 @@ namespace Kucoin.NET.Websockets.Observations
         /// <param name="changes">The changes to sequence.</param>
         /// <param name="pieces">The collection to change (either an ask or a bid collection)</param>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        protected bool SequencePieces(string subj, Level3Update change, KeyedBook<AtomicOrderStruct> pieces, KeyedBook<AtomicOrderStruct> otherPieces)
+        protected bool SequencePieces(char subj, Level3Update change, KeyedBook<AtomicOrderStruct> pieces, KeyedBook<AtomicOrderStruct> otherPieces)
         {
-            switch (subj[0])
+            switch (subj)
             {
                 case 'd':
 

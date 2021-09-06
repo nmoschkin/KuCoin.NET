@@ -127,11 +127,12 @@ namespace KuCoinConsole
         //[STAThread]
         public static void Main(string[] args)
         {
-            
+
             // Analytics and crash reporting.
             //AppCenter.Start("d364ea69-c1fa-4d0d-8c37-debaa05f91bc",
             //       typeof(Analytics), typeof(Crashes));
             // Analytics and crash reporting.
+
 
             KuCoin.InitializeAsync().ConfigureAwait(false).GetAwaiter().GetResult();
 
