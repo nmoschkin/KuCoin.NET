@@ -44,7 +44,7 @@ namespace Kucoin.NET.Json
 
                 reader.Read();
 
-                switch (hash)
+                switch ((int)hash)
                 {
                     case sequence:
                         update.Sequence = (long)reader.Value;

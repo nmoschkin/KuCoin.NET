@@ -58,7 +58,7 @@ namespace Kucoin.NET.Websockets.Distribution.Services
                 Action[] arrActions = new Action[0];
                 int x = 0, f = 0;
 
-                while (true)
+                while (!tok.IsCancellationRequested)
                 {
                     if (ActionsChanged)
                     {
@@ -70,23 +70,20 @@ namespace Kucoin.NET.Websockets.Distribution.Services
 
                             foreach (var t in Tenants)
                             {
-                                actions.Add(() =>
-                                {
-                                    t.DoWork();
-                                    Thread.Sleep(1);
-                                    t.DoWork();
-                                });
+                                actions.Add(t.DoWork);
+                                //actions.Add(() =>
+                                //{
+                                //    t.DoWork();
+                                //    Thread.Sleep(0);
+                                //    t.DoWork();
+                                //});
                             }
 
                             arrActions = actions.ToArray();
                         }
                     }
 
-                    try
-                    {
-                        Parallel.Invoke(arrActions);
-                    }
-                    catch { }
+                    Parallel.Invoke(arrActions);
 
                     if (++f == sleepDivisor)
                     {
@@ -94,7 +91,6 @@ namespace Kucoin.NET.Websockets.Distribution.Services
                         f = 0;
                     }
 
-                    if (tok.IsCancellationRequested) return;
                 }
             }
 

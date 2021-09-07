@@ -19,6 +19,7 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Reflection.Metadata.Ecma335;
 using System.Net.WebSockets;
+using System.Runtime.ExceptionServices;
 
 namespace Kucoin.NET.Websockets.Public
 {
@@ -227,6 +228,8 @@ namespace Kucoin.NET.Websockets.Public
 
             StringBuilder sb = new StringBuilder();
 
+            Crc32 hash = new Crc32();
+
             int strlen = 0;
             int level = 0;
 
@@ -243,8 +246,7 @@ namespace Kucoin.NET.Websockets.Public
 
             long tms = xtime.Ticks;
             long tqms = tms;
-
-            int hash = 0;
+            int lastcrc = 0;
             StringBuilder cstr = new StringBuilder();
             cstr.Capacity = 50;
             bool maybenum = false;
@@ -330,7 +332,8 @@ namespace Kucoin.NET.Websockets.Public
                 for (i = 0; i < c; i++)
                 {
                     // character by character is the simplest and fastest way.
-                    char inChar = (char)inputChunk[i];
+                    byte inByte = inputChunk[i];
+                    char inChar = (char)inByte;
                     sb.Append(inChar);
 
                     if (inQuote)
@@ -346,6 +349,7 @@ namespace Kucoin.NET.Websockets.Public
                         {
                             // escaped character avoided, continue scanning quoted string.
                             cstr.Append(inChar);
+                            hash.Next(inByte);
                             inEsc = false;
                         }
                         else if (inChar == '\"')
@@ -353,7 +357,7 @@ namespace Kucoin.NET.Websockets.Public
                             var str = cstr.ToString();
                             if (str.Length > 0)
                             {
-                                switch (hash)
+                                switch (lastcrc)
                                 {
                                     case symbol:
                                         update.Symbol = str;
@@ -369,7 +373,7 @@ namespace Kucoin.NET.Websockets.Public
                                         break;
 
                                     case side:
-                                        update.Side = (Side)Crc32.Hash(str);
+                                        update.Side = (Side)Crc32.Hash(str, Encoding.UTF8);
                                         break;
 
                                     case price:
@@ -398,7 +402,7 @@ namespace Kucoin.NET.Websockets.Public
                                         break;
 
                                     case reason:
-                                        update.Reason = (DoneReason)Crc32.Hash(str);
+                                        update.Reason = (DoneReason)Crc32.Hash(str, Encoding.UTF8);
                                         break;
 
                                     case subject:
@@ -408,17 +412,23 @@ namespace Kucoin.NET.Websockets.Public
                             }
 
                             // quoted string complete, switch back to object scanning.
-                            hash = Crc32.Hash(cstr.ToString());
                             inQuote = false;
+                            lastcrc = (int)hash.Current;
+
+                            hash.Reset();
+                            cstr.Clear();
                         }
                         else
                         {
+                            hash.Next(inByte);
                             cstr.Append(inChar);
                         }
                     }
                     else if (inChar == ':')
                     {
                         cstr.Clear();
+                        hash.Reset();
+                        
                         maybenum = true;
                     }
                     else if (inChar == '\"')
@@ -426,7 +436,9 @@ namespace Kucoin.NET.Websockets.Public
                         // quoted string avoidance logic
                         inQuote = true;
                         maybenum = false;
+
                         cstr.Clear();
+                        hash.Reset();
                     }
                     else if (inChar == '{')
                     {
@@ -445,7 +457,7 @@ namespace Kucoin.NET.Websockets.Public
                             else
                             {
                                 var ll = long.Parse(cstr.ToString());
-                                switch (hash)
+                                switch (lastcrc)
                                 {
                                     case sequence:
                                         update.Sequence = ll;
@@ -459,6 +471,7 @@ namespace Kucoin.NET.Websockets.Public
                                         update.Timestamp = EpochTime.NanosecondsToDate(ll);
                                         break;
                                 }
+
                                 cstr.Clear();
                                 maybenum = false;
                             }

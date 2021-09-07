@@ -11,7 +11,7 @@ namespace Kucoin.NET.Data.Websockets
     /// <summary>
     /// Represents a combination trading pair (symbol) and <see cref="Kucoin.NET.Data.Market.KlineType"/>.
     /// </summary>
-    public struct SymbolKline : ISymbol, IEquatable<SymbolKline>
+    public struct SymbolKline : ISymbol, IEquatable<SymbolKline>, IComparable<SymbolKline>
     {
         /// <summary>
         /// Represents an empty SymbolKline structure.
@@ -98,6 +98,13 @@ namespace Kucoin.NET.Data.Websockets
             return (symbol?.GetHashCode() ?? 0) ^ (KlineType.GetHashCode());
         }
 
+        public int CompareTo(SymbolKline other)
+        {
+            int i = KlineType.TimeSpan.CompareTo(other.KlineType.TimeSpan);
+            if (i != 0) return i;
+            return string.Compare(symbol, other.symbol);
+        }
+
         public static bool operator ==(SymbolKline val1, SymbolKline val2)
         {
             return val1.Equals(val2);
@@ -106,6 +113,24 @@ namespace Kucoin.NET.Data.Websockets
         public static bool operator !=(SymbolKline val1, SymbolKline val2)
         {
             return !val1.Equals(val2);
+        }
+
+        public static bool operator >(SymbolKline val1, SymbolKline val2)
+        {
+            return val1.CompareTo(val2) > 0;
+        }
+        public static bool operator <(SymbolKline val1, SymbolKline val2)
+        {
+            return val1.CompareTo(val2) < 0;
+        }
+
+        public static bool operator >=(SymbolKline val1, SymbolKline val2)
+        {
+            return val1.CompareTo(val2) >= 0;
+        }
+        public static bool operator <=(SymbolKline val1, SymbolKline val2)
+        {
+            return val1.CompareTo(val2) <= 0;
         }
 
         public static explicit operator SymbolKline(string val)
@@ -137,6 +162,8 @@ namespace Kucoin.NET.Data.Websockets
         {
             return new SymbolKline(val.Item1, val.Item2);
         }
+
+        
 
     }
 }

@@ -6,13 +6,14 @@ using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
 using System.Text;
+using System.Data.Common;
 
 namespace Kucoin.NET.Data.Market
 {
     /// <summary>
     /// A structure that represents the different supported candlestick time lengths.
     /// </summary>
-    public struct KlineType : IKlineType
+    public struct KlineType : IKlineType, IEquatable<IKlineType>, IComparable<IKlineType>
     {
         /// <summary>
         /// The internal "kline-type" string value that the KuCoin API recognizes.
@@ -348,10 +349,9 @@ namespace Kucoin.NET.Data.Market
 
         public override bool Equals(object obj)
         {
-
-            if (obj is KlineType kt)
+            if (obj is IKlineType kt)
             {
-                return kt.value == value;
+                return Equals(kt);
             }
             else if (obj is string s)
             {
@@ -414,6 +414,16 @@ namespace Kucoin.NET.Data.Market
             return ToString(format);
         }
 
+        public bool Equals(IKlineType other)
+        {
+            return TimeSpan.Equals(other.TimeSpan);
+        }
+
+        public int CompareTo(IKlineType other)
+        {
+            return TimeSpan.CompareTo(other.TimeSpan);
+        }
+
         public static bool operator ==(KlineType val1, KlineType val2)
         {
             return val1.Equals(val2);
@@ -424,6 +434,34 @@ namespace Kucoin.NET.Data.Market
             return !val1.Equals(val2);
         }
 
+        public static bool operator >(KlineType val1, KlineType val2)
+        {
+            return val1.CompareTo(val2) > 0;
+        }
+        public static bool operator <(KlineType val1, KlineType val2)
+        {
+            return val1.CompareTo(val2) < 0;
+        }
+
+        public static bool operator >=(KlineType val1, KlineType val2)
+        {
+            return val1.CompareTo(val2) >= 0;
+        }
+        public static bool operator <=(KlineType val1, KlineType val2)
+        {
+            return val1.CompareTo(val2) <= 0;
+        }
+
+        public static implicit operator TimeSpan(KlineType val) => val.TimeSpan;
+
+        public static explicit operator KlineType(TimeSpan val)
+        {
+            foreach (KlineType kt in AllTypes)
+            {
+                if (kt.TimeSpan == val) return kt;
+            }
+            return Invalid;
+        }
 
         public static explicit operator string(KlineType val)
         {

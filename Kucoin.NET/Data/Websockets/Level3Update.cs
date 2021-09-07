@@ -122,9 +122,6 @@ namespace Kucoin.NET.Data.Websockets
         [JsonProperty("reason")]
         public DoneReason? Reason { get; set; }
 
-        private DateTime? ts;
-        private DateTime? ot;
-
         /// <summary>
         /// Order time
         /// </summary>

@@ -246,10 +246,6 @@ namespace Kucoin.NET.Websockets.Distribution
                         if (lastFailureTime is DateTime t && (DateTime.UtcNow - t).TotalMilliseconds >= resetTimeout)
                         {
                             initializing = false;
-                            LastFailureTime = null;
-                            Failure = false;
-                            State = FeedState.Initializing;
-
                             _ = Reset();
                         }
                         else
@@ -265,7 +261,7 @@ namespace Kucoin.NET.Websockets.Distribution
                         initializing = true;
                         startFetch = DateTime.Now;
                         cts = new CancellationTokenSource();
-
+                        
                         Initialize().ContinueWith((t) =>
                         {
                             if (t.Result)
@@ -293,9 +289,12 @@ namespace Kucoin.NET.Websockets.Distribution
                     return;
                 }
 
-                foreach (var obj in buffer)
+                int c = buffer.Count;
+                if (c == 0) return;
+
+                for(int i = 0; i < c; i++)
                 {
-                    ProcessObject(obj);
+                    ProcessObject(buffer[i]);
                 }
 
                 buffer.Clear();

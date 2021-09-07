@@ -8,6 +8,7 @@ using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using Newtonsoft.Json.Schema;
 using Kucoin.NET.Helpers;
+using System.Runtime.InteropServices;
 
 namespace Kucoin.NET.Data.Market
 {
@@ -244,11 +245,16 @@ namespace Kucoin.NET.Data.Market
     /// Atomic (Level 3) Order Unit (struct implementation)
     /// </summary>
     [JsonConverter(typeof(AtomicOrderUnitConverter))]
+    [StructLayout(LayoutKind.Sequential)]
     public struct AtomicOrderStruct : IAtomicOrderUnit
     {
+        [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 24)]
         internal string orderId;
+        
         internal decimal price;
+        
         internal decimal size;
+        
         internal DateTime timestamp;
 
         [JsonProperty("orderId")]

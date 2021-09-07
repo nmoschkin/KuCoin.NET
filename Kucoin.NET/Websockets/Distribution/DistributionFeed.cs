@@ -63,7 +63,7 @@ namespace Kucoin.NET.Websockets.Distribution
         where TValue : IStreamableObject
     {
 
-        protected Dictionary<TKey, TDistributable> activeFeeds = new Dictionary<TKey, TDistributable>();
+        protected SortedDictionary<TKey, TDistributable> activeFeeds = new SortedDictionary<TKey, TDistributable>();
         protected FeedState state;
 
         public virtual FeedState State

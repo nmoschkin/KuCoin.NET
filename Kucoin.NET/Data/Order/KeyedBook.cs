@@ -8,19 +8,21 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 using System.Text;
 
 namespace Kucoin.NET.Data.Order
 {
     [JsonConverter(typeof(KeyedBookConverter))]
-    public class KeyedBook<TUnit> : Collection<TUnit>, IReadOnlyDictionary<string, TUnit> where TUnit : IAtomicOrderUnit, new()
+    public sealed class KeyedBook<TUnit> : Collection<TUnit>, IReadOnlyDictionary<string, TUnit> where TUnit : IAtomicOrderUnit, new()
     {
-        protected object lockObj = new object();
-        internal Dictionary<string, TUnit> orderIds = new Dictionary<string, TUnit>();
+        private object lockObj = new object();
+        internal SortedDictionary<string, TUnit> orderIds = new SortedDictionary<string, TUnit>();
 
-        protected bool descending;
+        private bool descending;
 
         public bool Descending => descending;
 
@@ -35,7 +37,7 @@ namespace Kucoin.NET.Data.Order
             {
                 lock (lockObj)
                 {
-                    
+
                     if (orderIds.TryGetValue(orderId, out TUnit found))
                     {
                         return found;
@@ -162,7 +164,7 @@ namespace Kucoin.NET.Data.Order
                 lock (lockObj)
                 {
                     return this.ToArray();
-               }
+                }
             }
         }
 
@@ -181,132 +183,128 @@ namespace Kucoin.NET.Data.Order
         /// <param name="unit">The order unit to test.</param>
         /// <returns>The calculated insert index based on the sort direction.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        protected int GetInsertIndex(TUnit unit)
+        private int GetInsertIndex(TUnit unit)
         {
-            lock (lockObj)
+            if (Count == 0) return 0;
+
+            int hi = Count - 1;
+            int lo = 0;
+            int mid;
+
+            var l = this as IList<TUnit>;
+            var uprice = unit.Price;
+
+            long utime = unit.Timestamp.Ticks;
+            var usize = unit.Size;
+
+            decimal cprice;
+            decimal csize;
+
+            long ctime;
+
+            if (!descending)
             {
-                if (Count == 0) return 0;
-
-                int hi = Count - 1;
-                int lo = 0;
-                int mid;
-
-                var l = this as IList<TUnit>;
-                var uprice = unit.Price;
-
-                long utime = unit.Timestamp.Ticks;
-                var usize = unit.Size;
-
-                decimal cprice;
-                decimal csize;
-
-                long ctime;
-
-                if (!descending)
+                while (true)
                 {
-                    while (true)
+                    if (hi < lo)
                     {
-                        if (hi < lo)
-                        {
-                            return lo;
-                        }
+                        return lo;
+                    }
 
-                        mid = (hi + lo) / 2;
+                    mid = (hi + lo) / 2;
 
-                        cprice = l[mid].Price;
-                        ctime = l[mid].Timestamp.Ticks;
-                        csize = l[mid].Size;
+                    cprice = l[mid].Price;
+                    ctime = l[mid].Timestamp.Ticks;
+                    csize = l[mid].Size;
 
-                        if (uprice > cprice)
+                    if (uprice > cprice)
+                    {
+                        lo = mid + 1;
+                    }
+                    else if (uprice < cprice)
+                    {
+                        hi = mid - 1;
+                    }
+                    else
+                    {
+                        //return mid;
+
+                        if (usize < csize)
                         {
                             lo = mid + 1;
                         }
-                        else if (uprice < cprice)
+                        else if (usize > csize)
                         {
                             hi = mid - 1;
                         }
                         else
                         {
-                            //return mid;
-
-                            if (usize < csize)
+                            if (utime < ctime)
                             {
                                 lo = mid + 1;
                             }
-                            else if (usize > csize)
+                            else if (utime > ctime)
                             {
                                 hi = mid - 1;
                             }
                             else
                             {
-                                if (utime < ctime)
-                                {
-                                    lo = mid + 1;
-                                }
-                                else if (utime > ctime)
-                                {
-                                    hi = mid - 1;
-                                }
-                                else
-                                {
-                                    return mid;
-                                }
+                                return mid;
                             }
                         }
                     }
                 }
-                else
+            }
+            else
+            {
+                while (true)
                 {
-                    while (true)
+                    if (hi < lo)
                     {
-                        if (hi < lo)
-                        {
-                            return lo;
-                        }
+                        return lo;
+                    }
 
-                        mid = (hi + lo) / 2;
+                    mid = (hi + lo) / 2;
 
-                        cprice = l[mid].Price;
-                        ctime = l[mid].Timestamp.Ticks;
-                        csize = l[mid].Size;
+                    cprice = l[mid].Price;
+                    ctime = l[mid].Timestamp.Ticks;
+                    csize = l[mid].Size;
 
-                        if (uprice < cprice)
+                    if (uprice < cprice)
+                    {
+                        lo = mid + 1;
+                    }
+                    else if (uprice > cprice)
+                    {
+                        hi = mid - 1;
+                    }
+                    else
+                    {
+                        //return mid;
+
+                        if (usize < csize)
                         {
                             lo = mid + 1;
                         }
-                        else if (uprice > cprice)
+                        else if (usize > csize)
                         {
                             hi = mid - 1;
                         }
                         else
                         {
-                            //return mid;
-
-                            if (usize < csize)
+                            if (utime < ctime)
                             {
                                 lo = mid + 1;
                             }
-                            else if (usize > csize)
+                            else if (utime > ctime)
                             {
                                 hi = mid - 1;
                             }
                             else
                             {
-                                if (utime < ctime)
-                                {
-                                    lo = mid + 1;
-                                }
-                                else if (utime > ctime)
-                                {
-                                    hi = mid - 1;
-                                }
-                                else
-                                {
-                                    return mid;
-                                }
+                                return mid;
                             }
                         }
-
                     }
 
                 }

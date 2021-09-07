@@ -13,15 +13,15 @@ namespace Kucoin.NET.Helpers
     /// <remarks></remarks>
     public sealed class Crc32
     {
-
-        private static readonly uint CRC32Poly = 0xedb88320u;
-
-        private static uint[] Crc32Table = new uint[256];
-
-        private Crc32()
-        {
-            // this is not a creatable object.
-        }
+        /// <summary>
+        /// The ISO-3309 CRC-32 Polynomial.
+        /// </summary>
+        public const uint CRC32Poly = 0xedb88320u;
+        
+        /// <summary>
+        /// The ISO-3309 CRC-32 Hash Lookup Table.
+        /// </summary>
+        private static readonly uint[] Crc32Table;
 
         /// <summary>
         /// Initialize the CRC table from the polynomial.
@@ -29,9 +29,18 @@ namespace Kucoin.NET.Helpers
         /// <remarks></remarks>
         static Crc32()
         {
-            uint i = 0;
-            uint j = 0;
-            uint l = 0;
+            Crc32Table = CreateCrc32HashTable();
+        }
+        /// <summary>
+        /// Create an ISO-3309 CRC-32 Hash Lookup Table.
+        /// </summary>
+        public static uint[] CreateCrc32HashTable()
+        {
+            uint i;
+            uint j;
+            uint l;
+
+            uint[] table = new uint[256];
 
             for (i = 0; i <= 255; i++)
             {
@@ -47,17 +56,69 @@ namespace Kucoin.NET.Helpers
                         j >>= 1;
                     }
                 }
-                Crc32Table[i] = j;
+                table[i] = j;
             }
 
+            return table;
         }
 
         /// <summary>
-        /// Consistently Hash a String
+        /// Consistently Hash a string using .NET default 2 byte Unicode enoding.
         /// </summary>
-        /// <remarks></remarks>
+        /// <remarks>
+        /// In order to conform to ISO-3309 the text is hashed as a byte array.
+        /// </remarks>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static int Hash(string data)
+        public static uint Hash(string text)
+        {
+            uint crc = 0xffffffffu;
+            int j, c = text.Length;
+
+            for (j = 0; j < c; j++)
+            {
+                crc = Crc32Table[(crc ^ (text[j] & 0xff)) & 0xff] ^ crc >> 8;
+                crc = Crc32Table[(crc ^ (text[j] >> 8)) & 0xff] ^ crc >> 8;
+            }
+
+            return crc ^ 0xffffffffu;
+        }
+
+        /// <summary>
+        /// Hash a string with the ISO-3309 CRC-32 algorithm.
+        /// </summary>
+        /// <remarks>
+        /// In order to conform to ISO-3309 the text is hashed as a byte array.<br />
+        /// Note: Encoding and decoding from the internal UTF-16 is a somewhat expensive task.
+        /// </remarks>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static uint Hash(string text, Encoding encoding) => Hash(encoding.GetBytes(text));
+
+        /// <summary>
+        /// Consistently Hash characters using .NET default 2 byte Unicode enoding.
+        /// </summary>
+        /// <remarks>
+        /// In order to conform to ISO-3309 the text is hashed as a byte array.
+        /// </remarks>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static uint Hash(char[] chars)
+        {
+            uint crc = 0xffffffffu;
+            int j, c = chars.Length;
+
+            for (j = 0; j < c; j++)
+            {
+                crc = Crc32Table[(crc ^ (chars[j] & 0xff)) & 0xff] ^ crc >> 8;
+                crc = Crc32Table[(crc ^ (chars[j] >> 8)) & 0xff] ^ crc >> 8;
+            }
+
+            return crc ^ 0xffffffffu;
+        }
+
+        /// <summary>
+        /// Hash bytes with the ISO-3309 CRC-32 algorithm.
+        /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static uint Hash(byte[] data)
         {
             uint crc = 0xffffffffu;
             int j, c = data.Length;
@@ -67,8 +128,123 @@ namespace Kucoin.NET.Helpers
                 crc = Crc32Table[(crc ^ data[j]) & 0xff] ^ crc >> 8;
             }
 
-            return (int)(crc ^ 0xffffffffu);
+            return crc ^ 0xffffffffu;
         }
 
+        private uint current;
+
+        /// <summary>
+        /// Gets the current calculation of the CRC-32 as an unsigned 32-bit integer.
+        /// </summary>
+        public uint Current => current ^ 0xffffffffu;
+
+        /// <summary>
+        /// Create a rolling CRC-32 calculation.
+        /// </summary>
+        /// <param name="initialValue">The initial value.</param>
+        public Crc32(string initialValue)
+        {
+            current = Hash(initialValue) ^ 0xffffffffu;
+        }
+
+        /// <summary>
+        /// Create a rolling CRC-32 calculation.
+        /// </summary>
+        /// <param name="initialValue">The initial value.</param>
+        public Crc32(byte[] initialValue)
+        {
+            current = Hash(initialValue) ^ 0xffffffffu;
+        }
+        /// <summary>
+        /// Create a rolling CRC-32 calculation.
+        /// </summary>
+        /// <param name="initialValue">The initial value.</param>
+        public Crc32(char[] initialValue)
+        {
+            current = Hash(initialValue) ^ 0xffffffffu;
+        }
+
+        /// <summary>
+        /// Create a rolling CRC-32 calculation.
+        /// </summary>
+        public Crc32()
+        {
+            current = 0xffffffffu;           
+        }
+
+        /// <summary>
+        /// Hash two bytes into the current calculation (UTF-16 <see cref="char"/>.)
+        /// </summary>
+        /// <param name="str"></param>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public void Next(char str)
+        {
+            current = Crc32Table[(current ^ (str & 0xff)) & 0xff] ^ current >> 8;
+            current = Crc32Table[(current ^ (str >> 8)) & 0xff] ^ current >> 8;
+        }
+
+        /// <summary>
+        /// Hash characters into the current calculation (UTF-16 <see cref="char"/>.)
+        /// </summary>
+        /// <param name="str"></param>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public void Next(char[] str)
+        {
+            int c = str.Length;
+            for (int i = 0; i < c; i++)
+            {
+                current = Crc32Table[(current ^ (str[i] & 0xff)) & 0xff] ^ current >> 8;
+                current = Crc32Table[(current ^ (str[i] >> 8)) & 0xff] ^ current >> 8;
+            }
+        }
+
+        /// <summary>
+        /// Hash a string into the current calculation (UTF-16 <see cref="char"/>.)
+        /// </summary>
+        /// <param name="str"></param>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public void Next(string str)
+        {
+            int c = str.Length;
+            for (int i = 0; i < c; i++)
+            {
+                current = Crc32Table[(current ^ (str[i] & 0xff)) & 0xff] ^ current >> 8;
+                current = Crc32Table[(current ^ (str[i] >> 8)) & 0xff] ^ current >> 8;
+            }
+        }
+
+        /// <summary>
+        /// Hash a byte into the current calculation.
+        /// </summary>
+        /// <param name="b"></param>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public void Next(byte b)
+        {
+            current = Crc32Table[(current ^ b) & 0xff] ^ current >> 8;
+        }
+
+        /// <summary>
+        /// Hash bytes into the current calculation.
+        /// </summary>
+        /// <param name="b"></param>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public void Next(byte[] data)
+        {
+            int c = data.Length;
+
+            for (int i = 0; i < c; i++)
+            {
+                current = Crc32Table[(current ^ data[i]) & 0xff] ^ current >> 8;
+            }
+        }
+
+        /// <summary>
+        /// Reset the calculation.
+        /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public void Reset()
+        {
+            current = 0xffffffffu;
+        }
     }
 }

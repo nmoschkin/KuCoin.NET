@@ -133,9 +133,9 @@ namespace KuCoinConsole
             //       typeof(Analytics), typeof(Crashes));
             // Analytics and crash reporting.
 
-
+            Console.ResetColor();
+            
             KuCoin.InitializeAsync().ConfigureAwait(false).GetAwaiter().GetResult();
-
 
             int x, y, z;
 
@@ -267,6 +267,10 @@ namespace KuCoinConsole
                 KuCoin.Credentials.Add(cred);
             }
 
+            //var l3 = new Level3(cred);
+
+            //var test = l3.ProvideInitialData("ETH-USDT").ConfigureAwait(false).GetAwaiter().GetResult();
+            //return;
 
             Console.WriteLine("Number of feeds, or list of feeds separated by commas: ");
 
