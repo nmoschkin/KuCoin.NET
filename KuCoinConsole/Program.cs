@@ -854,7 +854,7 @@ namespace KuCoinConsole
 
                 IKlineType kt = obs1.Level3Observation.KlineType;
 
-                IKlineType ktnext = KlineType.AllTypes.Where((x) => x.TimeSpan > kt.TimeSpan)?.First() ?? default;
+                IKlineType ktnext = KlineType.AllTypes.Where((x) => x.TimeSpan > kt.TimeSpan)?.FirstOrDefault() ?? default;
 
                 if (ktnext == default)
                 {
@@ -877,7 +877,7 @@ namespace KuCoinConsole
 
                 IKlineType kt = obs1.Level3Observation.KlineType;
 
-                IKlineType ktnext = KlineType.AllTypes.Reverse().Where((x) => x.TimeSpan < kt.TimeSpan)?.First() ?? default;
+                IKlineType ktnext = KlineType.AllTypes.Reverse().Where((x) => x.TimeSpan < kt.TimeSpan)?.FirstOrDefault() ?? default;
 
                 if (ktnext == default)
                 {
