@@ -316,7 +316,7 @@ namespace Kucoin.NET.Websockets.Public
                                         break;
 
                                     case side:
-                                        update.Side = (Side)Crc32.Hash(str, Encoding.UTF8);
+                                        update.Side = (Side)hash.Current;
                                         break;
 
                                     case price:
@@ -344,7 +344,7 @@ namespace Kucoin.NET.Websockets.Public
                                         break;
 
                                     case reason:
-                                        update.Reason = (DoneReason)Crc32.Hash(str, Encoding.UTF8);
+                                        update.Reason = (DoneReason)hash.Current;
                                         break;
 
                                     case subject:
@@ -433,7 +433,7 @@ namespace Kucoin.NET.Websockets.Public
                                     {
                                         update.size = sb.Length;
                                         activeFeeds[update.Symbol].OnNext(update);
-                                        update.Sequence = 0L;
+                                        update = new Level3Update();
                                     }
                                     else
                                     {

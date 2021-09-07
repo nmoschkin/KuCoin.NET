@@ -56,7 +56,7 @@ namespace Kucoin.NET.Websockets.Observations
                     if (DateTime.UtcNow.Ticks - marktime >= 10_000_000)
                     {
                         marktime = DateTime.UtcNow.Ticks;
-                        throughput = bytesreceived;
+                        throughput = bytesreceived * 8;
                         bytesreceived = 0;
                     }
                     else
