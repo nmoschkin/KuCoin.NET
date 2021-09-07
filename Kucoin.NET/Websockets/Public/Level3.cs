@@ -367,7 +367,6 @@ namespace Kucoin.NET.Websockets.Public
                                         update.OrderId = str;
                                         break;
 
-
                                     case clientOid:
                                         update.ClientOid = str;
                                         break;
@@ -377,7 +376,6 @@ namespace Kucoin.NET.Websockets.Public
                                         break;
 
                                     case price:
-
                                         update.Price = decimal.Parse(str);
                                         break;
 
@@ -413,9 +411,8 @@ namespace Kucoin.NET.Websockets.Public
 
                             // quoted string complete, switch back to object scanning.
                             inQuote = false;
-                            lastcrc = (int)hash.Current;
+                            lastcrc = (int)hash.Reset();
 
-                            hash.Reset();
                             cstr.Clear();
                         }
                         else
@@ -506,7 +503,5 @@ namespace Kucoin.NET.Websockets.Public
                 }
             }
         }
-
-
     }
 }

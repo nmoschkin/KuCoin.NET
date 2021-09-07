@@ -25,6 +25,8 @@ namespace Kucoin.NET.Websockets.Distribution.Services
         {
             bool disposed;
 
+            bool many = false;
+
             private CancellationTokenSource cts = new CancellationTokenSource();
 
             public List<IDistributable> Tenants { get; } = new List<IDistributable>();
@@ -68,27 +70,80 @@ namespace Kucoin.NET.Websockets.Distribution.Services
 
                             actions.Clear();
 
-                            foreach (var t in Tenants)
+                            f = Tenants.Count;
+
+                            if (f == 0)
                             {
-                                actions.Add(t.DoWork);
-                                //actions.Add(() =>
-                                //{
-                                //    t.DoWork();
-                                //    Thread.Sleep(0);
-                                //    t.DoWork();
-                                //});
+                                return;
+                            }
+                            if (f == 1)
+                            {
+                                many = false;
+                            }
+                            else
+                            {
+                                many = true;
+                                for (x = 0; x < f; x++)
+                                {
+                                    IDistributable t = Tenants[x];
+
+                                    if (workRepeat > 1)
+                                    {
+                                        actions.Add(() =>
+                                        {
+                                            for (int r = 1; r <= workRepeat; r++)
+                                            {
+                                                t.DoWork();
+
+                                                if (r == workRepeat) break;
+                                                if (workIdleSleepTime < 0) continue;
+
+                                                Thread.Sleep(workIdleSleepTime);
+                                            }
+                                        });
+                                    }
+                                    else
+                                    {
+                                        if (workIdleSleepTime < 0)
+                                        {
+                                            actions.Add(t.DoWork);
+                                        }
+                                        else
+                                        {
+                                            actions.Add(() =>
+                                            {
+                                                t.DoWork();
+                                                Thread.Sleep(workIdleSleepTime);
+                                            });
+                                        }
+                                       
+                                    }
+                                }
                             }
 
+                            f = 0;
                             arrActions = actions.ToArray();
                         }
                     }
 
-                    Parallel.Invoke(arrActions);
+                    if (many)
+                    {
+                        Parallel.Invoke(arrActions);
+                        if (sleepDivisor < 0) continue;
+                    }
+                    else
+                    {
+                        Tenants[0].DoWork();
+                    }
 
-                    if (++f == sleepDivisor)
+                    if (f == sleepDivisor)
                     {
                         Thread.Sleep(idleSleepTime);
                         f = 0;
+                    }
+                    else
+                    {
+                        f++;
                     }
 
                 }
@@ -108,9 +163,11 @@ namespace Kucoin.NET.Websockets.Distribution.Services
 
         private static int idleSleepTime = 1;
 
-        private static int sleepDivisor = 1;
+        private static int sleepDivisor = 50;
 
-        private static int workRepeat = 4;
+        private static int workRepeat = 2;
+
+        private static int workIdleSleepTime = 1;
 
         private static ThreadPriority distributorPriority = ThreadPriority.AboveNormal;
 
@@ -129,6 +186,79 @@ namespace Kucoin.NET.Websockets.Distribution.Services
             }
         }
 
+        /// <summary>
+        /// The thread will sleep for <see cref="IdleSleepTime"/> every <see cref="SleepDivisor"/> cycles.
+        /// </summary>
+        /// <remarks>
+        /// Set this value to 0 to execute an idle sleep on every cycle.<br />
+        /// Values less than 0 are not allowed.<br />
+        /// The default value is 50.
+        /// </remarks>
+        public static int SleepDivisor
+        {
+            get => sleepDivisor;
+            set
+            {
+                if (value < 0) throw new ArgumentOutOfRangeException();
+                sleepDivisor = value;
+                RefreshAll();
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets amount of time to sleep for each idle sleep, in milliseconds.
+        /// </summary>
+        /// <remarks>
+        /// A value of 0 will yield the remainder of the time slice for the thread.</br>
+        /// A value less than zero will disable yielding completely.</br>
+        /// Values larger than 100 are not allowed.
+        /// The default value is 1.</br>
+        /// </remarks>
+        public static int IdleSleepTime
+        {
+            get => idleSleepTime;
+            set
+            {
+                if (value > 100) throw new ArgumentOutOfRangeException();
+                if (idleSleepTime != value)
+                {
+                    idleSleepTime = value;
+                    RefreshAll();
+                }
+            }
+        }
+
+
+        /// <summary>
+        /// Gets or sets amount of time to sleep for each work repeat, in milliseconds.
+        /// </summary>
+        /// <remarks>
+        /// A value of 0 will yield the remainder of the time slice for the thread.</br>
+        /// A value less than zero will disable yielding completely.</br>
+        /// The default value is 1.</br>
+        /// Values larger than 100 are not allowed.
+        /// </remarks>
+        public static int WorkIdleSleepTime
+        {
+            get => workIdleSleepTime;
+            set
+            {
+                if (value > 100) throw new ArgumentOutOfRangeException();
+
+                if (workIdleSleepTime != value)
+                {
+                    workIdleSleepTime = value;
+                    RefreshAll();
+                }
+            }
+        }
+
+        /// <summary>
+        /// The number of times to call <see cref="IDistributable.DoWork"/> per cycle.
+        /// </summary>
+        /// <remarks>
+        /// The default is 2.
+        /// </remarks>
         public static int WorkRepeat
         {
             get => workRepeat;
@@ -139,10 +269,14 @@ namespace Kucoin.NET.Websockets.Distribution.Services
                 if (workRepeat != value)
                 {
                     workRepeat = value;
+                    RefreshAll();
                 }
             }
         }
 
+        /// <summary>
+        /// Gets or sets the thread priority for distributors.
+        /// </summary>
         public static ThreadPriority DistributorPriority
         {
             get => distributorPriority;
@@ -163,36 +297,7 @@ namespace Kucoin.NET.Websockets.Distribution.Services
             }
         }
 
-        /// <summary>
-        /// The thread will sleep for <see cref="IdleSleepTime"/> every <see cref="SleepDivisor"/> cycles.
-        /// </summary>
-        public static int SleepDivisor
-        {
-            get => sleepDivisor;
-            set
-            {
-                if (value < 0 || value > 10000) throw new ArgumentOutOfRangeException();
-                sleepDivisor = value;
-
-            }
-        }
-
-        /// <summary>
-        /// Gets or sets the global idle sleep time in milliseconds.
-        /// </summary>
-        /// <remarks>
-        /// Must be a value between 0 and 100.<br /><br />
-        /// The default value is 1.
-        /// </remarks>
-        public static int IdleSleepTime
-        {
-            get => idleSleepTime;
-            set
-            {
-                if (value < 0 || value > 100) throw new ArgumentOutOfRangeException();
-                idleSleepTime = value;
-            }
-        }
+       
 
         /// <summary>
         /// Register an instance of a distributable service.
@@ -291,6 +396,19 @@ namespace Kucoin.NET.Websockets.Distribution.Services
             }
         }
 
+        /// <summary>
+        /// Forces all threads to refresh their current state and recreate all execution delegates.
+        /// </summary>
+        public static void RefreshAll()
+        {
+            lock (lockObj)
+            {
+                foreach (var dist in distributors)
+                {
+                    dist.ActionsChanged = true;
+                }
+            }
+        }
 
     }
 }

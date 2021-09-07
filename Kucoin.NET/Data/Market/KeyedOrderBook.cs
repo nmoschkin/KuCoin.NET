@@ -8,7 +8,6 @@ using Newtonsoft.Json;
 using Kucoin.NET.Rest;
 using Kucoin.NET.Helpers;
 using Kucoin.NET.Json;
-using Kucoin.NET.Data.Order;
 
 namespace Kucoin.NET.Data.Market
 {

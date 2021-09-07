@@ -1,5 +1,4 @@
 ﻿using Kucoin.NET.Data.Market;
-using Kucoin.NET.Data.Order;
 using Kucoin.NET.Data.Websockets;
 using Kucoin.NET.Futures.Data.Market;
 using Kucoin.NET.Websockets.Distribution;

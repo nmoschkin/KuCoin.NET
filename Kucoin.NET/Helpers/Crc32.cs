@@ -131,6 +131,22 @@ namespace Kucoin.NET.Helpers
             return crc ^ 0xffffffffu;
         }
 
+        /// <summary>
+        /// Hash bytes with the ISO-3309 CRC-32 algorithm.
+        /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static unsafe uint Hash(byte* data, int count)
+        {
+            uint crc = 0xffffffffu;
+          
+            for (int j = 0; j < count; j++)
+            {
+                crc = Crc32Table[(crc ^ data[j]) & 0xff] ^ crc >> 8;
+            }
+
+            return crc ^ 0xffffffffu;
+        }
+
         private uint current;
 
         /// <summary>
@@ -241,10 +257,14 @@ namespace Kucoin.NET.Helpers
         /// <summary>
         /// Reset the calculation.
         /// </summary>
+        /// <returns>The CRC calculated before reset.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void Reset()
+        public uint Reset()
         {
+            uint c = current;
             current = 0xffffffffu;
+            return c ^ 0xffffffffu;
         }
+
     }
 }

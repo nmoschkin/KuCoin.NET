@@ -1,5 +1,4 @@
-﻿using Kucoin.NET.Data.Order;
-using Kucoin.NET.Helpers;
+﻿using Kucoin.NET.Helpers;
 using Kucoin.NET.Json;
 using Kucoin.NET.Observable;
 

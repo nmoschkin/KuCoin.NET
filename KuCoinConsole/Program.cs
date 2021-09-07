@@ -82,23 +82,27 @@ namespace KuCoinConsole
 
         private static FileStream fslog;
 
-        static Level2 l2conn;
+        static object lockObj = new object();
+        public static ICredentialsProvider cred;
+
         static ISymbolDataService service;
         static StringBuilder readOut = new StringBuilder();
-        static object lockObj = new object();
 
         static int maxRows;
+        static int msgidx = 0;
+        static int sortmode = 0;
+        static int sortorder = -1;
+
+        static int scrollIndex = 0;
+
+        static int maxScrollIndex = 0;
+
+
         static string subscribing = null;
-        public static ICredentialsProvider cred;
 
         static List<string> messages = new List<string>();
 
         static Kucoin.NET.Rest.Market market;
-        
-        static bool ready = false;
-        static int msgidx = 0;
-        static int sortmode = 0;
-        static int sortorder = -1;
 
         static List<object> feeds = new List<object>();
 
@@ -114,10 +118,6 @@ namespace KuCoinConsole
         static DateTime start = DateTime.Now;
         
         public static event EventHandler TickersReady;
-
-        static int scrollIndex = 0;
-
-        static int maxScrollIndex = 0;
         static List<string> usersymbols = null;
         static int feednum;
         static List<string> activeSymbols = new List<string>();
@@ -127,6 +127,20 @@ namespace KuCoinConsole
         //[STAThread]
         public static void Main(string[] args)
         {
+            //Oid o, nn = new Oid();
+
+            //o = "012345678901234567890123";
+            //nn = o;
+            //string p = o;
+            //string z7 = o.ToString();
+            //var bt = p == o;
+            //bt = o == nn;
+            //int pipi = o;
+
+            //o.OrderId = "987654321098765432109876";
+            //z7 = o;
+            //z7 = o.OrderId;
+            //pipi = (int)o.Hash;
 
             // Analytics and crash reporting.
             //AppCenter.Start("d364ea69-c1fa-4d0d-8c37-debaa05f91bc",
@@ -315,6 +329,11 @@ namespace KuCoinConsole
             int maxSubscriptions = 0;
             int maxSharedConn = maxTenants * 4;
 
+            ParallelService.MaxTenants = maxTenants;
+            ParallelService.SleepDivisor = 4;
+            ParallelService.WorkRepeat = 3;
+            ParallelService.WorkIdleSleepTime = 1;
+
             var ast = market.GetAllTickers().ConfigureAwait(false). GetAwaiter().GetResult();
 
             var tickers = new List<AllSymbolsTickerItem>(ast.Ticker);
@@ -332,10 +351,6 @@ namespace KuCoinConsole
             tickers.RemoveRange(feednum, tickers.Count - feednum);
 
             List<List<AllSymbolsTickerItem>> buckets = new List<List<AllSymbolsTickerItem>>();
-
-            // This changes the number of feeds per distributor:
-            ParallelService.MaxTenants = maxTenants;
-            ParallelService.SleepDivisor = 100;
 
             List<AllSymbolsTickerItem> l2;
 
@@ -560,7 +575,6 @@ namespace KuCoinConsole
                 Console.Clear();
                 Console.CursorVisible = false;
 
-                ready = true;
                 TickersReady?.Invoke(services, new EventArgs());
 
             });

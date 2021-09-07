@@ -1,5 +1,4 @@
-﻿using Kucoin.NET.Data.Order;
-
+﻿
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;

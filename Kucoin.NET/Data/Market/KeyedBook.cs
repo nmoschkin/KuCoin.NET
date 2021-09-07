@@ -1,5 +1,4 @@
-﻿using Kucoin.NET.Data.Market;
-using Kucoin.NET.Helpers;
+﻿using Kucoin.NET.Helpers;
 using Kucoin.NET.Json;
 
 using Newtonsoft.Json;
@@ -14,7 +13,7 @@ using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Text;
 
-namespace Kucoin.NET.Data.Order
+namespace Kucoin.NET.Data.Market
 {
     [JsonConverter(typeof(KeyedBookConverter))]
     public sealed class KeyedBook<TUnit> : Collection<TUnit>, IReadOnlyDictionary<string, TUnit> where TUnit : IAtomicOrderUnit, new()
@@ -153,6 +152,15 @@ namespace Kucoin.NET.Data.Order
                 lock (lockObj)
                 {
                     return orderIds.Keys.ToArray();
+                    //int c = orderIds.Count;
+                    //string[] output = new string[c];
+                    //Oid[] keys = orderIds.Keys.ToArray();
+
+                    //for (int i = 0; i < c; i++)
+                    //{
+                    //    output[i] = keys[i];
+                    //}
+                    //return output;
                 }
             }
         }
@@ -163,7 +171,7 @@ namespace Kucoin.NET.Data.Order
             {
                 lock (lockObj)
                 {
-                    return this.ToArray();
+                    return ToArray();
                 }
             }
         }
@@ -191,14 +199,13 @@ namespace Kucoin.NET.Data.Order
             int lo = 0;
             int mid;
 
-            var l = this as IList<TUnit>;
-            var uprice = unit.Price;
+            var uprice = (double)unit.Price;
 
             long utime = unit.Timestamp.Ticks;
-            var usize = unit.Size;
+            var usize = (double)unit.Size;
 
-            decimal cprice;
-            decimal csize;
+            double cprice;
+            double csize;
 
             long ctime;
 
@@ -213,9 +220,9 @@ namespace Kucoin.NET.Data.Order
 
                     mid = (hi + lo) / 2;
 
-                    cprice = l[mid].Price;
-                    ctime = l[mid].Timestamp.Ticks;
-                    csize = l[mid].Size;
+                    cprice =(double) this[mid].Price;
+                    ctime = this[mid].Timestamp.Ticks;
+                    csize = (double)this[mid].Size;
 
                     if (uprice > cprice)
                     {
@@ -266,9 +273,9 @@ namespace Kucoin.NET.Data.Order
 
                     mid = (hi + lo) / 2;
 
-                    cprice = l[mid].Price;
-                    ctime = l[mid].Timestamp.Ticks;
-                    csize = l[mid].Size;
+                    cprice = (double)this[mid].Price;
+                    ctime = this[mid].Timestamp.Ticks;
+                    csize = (double)this[mid].Size;
 
                     if (uprice < cprice)
                     {

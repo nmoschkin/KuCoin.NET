@@ -1,9 +1,11 @@
 ﻿using Kucoin.NET.Data.Market;
 using Kucoin.NET.Futures.Data.Market;
+using Kucoin.NET.Json;
 using Kucoin.NET.Observable;
 
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -128,6 +130,11 @@ namespace KuCoinApp
             Type = kline.Type;
         }
 
+        public Dictionary<string, object> ToDict()
+        {
+            return DataObject.ToDict(this);
+        }
+
     }
 
 
@@ -236,6 +243,10 @@ namespace KuCoinApp
             return (FuturesKlineCandle)MemberwiseClone();
         }
 
+        public Dictionary<string, object> ToDict()
+        {
+            return DataObject.ToDict(this);
+        }
 
         public FuturesKlineCandle(FuturesCandle kline)
         {

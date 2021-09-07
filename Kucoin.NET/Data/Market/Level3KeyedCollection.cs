@@ -1,39 +1,40 @@
-﻿using Kucoin.NET.Data.Market;
-
+﻿
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Diagnostics.CodeAnalysis;
+using System.Runtime.CompilerServices;
 using System.Text;
 
-namespace Kucoin.NET.Data.Order
+namespace Kucoin.NET.Data.Market
 {
     /// <summary>
-    /// Keyed, sorted Level 2 order book.
+    /// Keyed, sorted Level 3 atomic order book.
     /// </summary>
     /// <typeparam name="TUnit">The type of the order unit.</typeparam>
     /// <remarks>
-    /// <see cref="TUnit"/> must implement <see cref="IOrderUnit"/>.
+    /// <see cref="TUnit"/> must implement <see cref="IAtomicOrderUnit"/>.
     /// Classes derived from this class maintain a price-sorted, keyed list.
     /// Sorting is vital to the function of Level 2 and Level 3 websocket feeds.
     /// Index for insert is ignored.  The insert index is calculated by the sort order using binary search.
     /// </remarks>
-    public class Level2KeyedCollection<TUnit> : KeyedCollection<decimal, TUnit> where TUnit: IOrderUnit
+    public class Level3KeyedCollection<TUnit> : KeyedCollection<string, TUnit> where TUnit : IAtomicOrderUnit
     {
         protected object lockObj = new object();
 
-        protected override decimal GetKeyForItem(TUnit item) => item.Price;
+        protected override string GetKeyForItem(TUnit item) => item.OrderId;
 
         protected bool descending;
 
-        public Level2KeyedCollection() : this(false)
+        public Level3KeyedCollection() : this(false)
         {
         }
 
-        public Level2KeyedCollection(bool descending) : base(null, 0)
+        public Level3KeyedCollection(bool descending) : base(null, 0)
         {
             this.descending = descending;
         }
-        
+
         protected override void InsertItem(int index, TUnit item)
         {
             lock (lockObj)
@@ -58,10 +59,14 @@ namespace Kucoin.NET.Data.Order
 
             var l = this as IList<TUnit>;
             var uprice = unit.Price;
-            decimal cprice;
+            DateTime utime = unit.Timestamp;
+            var usize = unit.Size;
 
-            // the code is quicker if we don't check the ascending/descending variable every time.
-            // so we implement the loop twice.  
+            decimal cprice;
+            decimal csize;
+            DateTime ctime;
+
+
             if (!descending)
             {
                 while (true)
@@ -72,7 +77,10 @@ namespace Kucoin.NET.Data.Order
                     }
 
                     mid = (hi + lo) / 2;
+
                     cprice = l[mid].Price;
+                    ctime = l[mid].Timestamp;
+                    csize = l[mid].Size;
 
                     if (uprice > cprice)
                     {
@@ -84,7 +92,31 @@ namespace Kucoin.NET.Data.Order
                     }
                     else
                     {
-                        return mid;
+                        //return mid;
+
+                        if (usize < csize)
+                        {
+                            lo = mid + 1;
+                        }
+                        else if (usize > csize)
+                        {
+                            hi = mid - 1;
+                        }
+                        else
+                        {
+                            if (utime < ctime)
+                            {
+                                lo = mid + 1;
+                            }
+                            else if (utime > ctime)
+                            {
+                                hi = mid - 1;
+                            }
+                            else
+                            {
+                                return mid;
+                            }
+                        }
                     }
                 }
             }
@@ -98,7 +130,10 @@ namespace Kucoin.NET.Data.Order
                     }
 
                     mid = (hi + lo) / 2;
+
                     cprice = l[mid].Price;
+                    ctime = l[mid].Timestamp;
+                    csize = l[mid].Size;
 
                     if (uprice < cprice)
                     {
@@ -110,7 +145,31 @@ namespace Kucoin.NET.Data.Order
                     }
                     else
                     {
-                        return mid;
+                        //return mid;
+
+                        if (usize < csize)
+                        {
+                            lo = mid + 1;
+                        }
+                        else if (usize > csize)
+                        {
+                            hi = mid - 1;
+                        }
+                        else
+                        {
+                            if (utime < ctime)
+                            {
+                                lo = mid + 1;
+                            }
+                            else if (utime > ctime)
+                            {
+                                hi = mid - 1;
+                            }
+                            else
+                            {
+                                return mid;
+                            }
+                        }
                     }
 
                 }
@@ -118,6 +177,7 @@ namespace Kucoin.NET.Data.Order
             }
 
         }
+
         protected override void SetItem(int index, TUnit item)
         {
             lock (lockObj)
@@ -127,23 +187,16 @@ namespace Kucoin.NET.Data.Order
                     InsertItem(0, item);
                     return;
                 }
-                var oldItem = ((IList<TUnit>)this)[index];
 
-                if (Contains(item.Price))
+                if (Contains(item.OrderId))
                 {
-                    //var orgitem = this[item.Price];
-                    //orgitem.Size = item.Size;
-
-                    //if (item is ISequencedOrderUnit seq && orgitem is ISequencedOrderUnit orgseq)
-                    //    orgseq.Sequence = seq.Sequence;
-
                     RemoveItem(index);
                     InsertItem(index, item);
-
-                    return;
                 }
-
-                base.SetItem(index, item);
+                else
+                {
+                    base.SetItem(index, item);
+                }
             }
         }
 
@@ -155,10 +208,11 @@ namespace Kucoin.NET.Data.Order
         {
 
             if (Count == 0) return new TUnit[0];
-            TUnit[] output = new TUnit[Count];
+            TUnit[] output;
 
             lock (lockObj)
             {
+                output = new TUnit[Count];
                 CopyTo(output, 0);
             }
 
@@ -167,4 +221,6 @@ namespace Kucoin.NET.Data.Order
 
 
     }
+
+
 }
