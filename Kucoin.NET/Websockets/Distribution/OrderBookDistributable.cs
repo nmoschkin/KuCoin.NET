@@ -96,13 +96,13 @@ namespace Kucoin.NET.Websockets.Distribution
                 if (SetProperty(ref klineType, value))
                 {
                     var oldVol = Candle.Volume;
-                    DateTime oldEnd = Candle.Timestamp + Candle.Type.TimeSpan;
+                    DateTime oldEnd = Candle.Timestamp;
 
                     KlineTime = klineType.GetCurrentKlineStartTime();
 
                     Candle = new Candle() { Type = (KlineType)klineType, Timestamp = klineTime };
 
-                    if (Candle.Timestamp + Candle.Type.TimeSpan <= oldEnd)
+                    if (Candle.IsTimeInCandle(Candle, oldEnd))
                     {
                         Candle.Volume = oldVol;
                     }
