@@ -618,12 +618,24 @@ namespace KuCoinConsole
                                     --msgidx;
                                 }
                             }
+                            if (key.Key == ConsoleKey.LeftArrow)
+                            {
+                                KlineLeft();
+                            }
                             else if (key.Key == ConsoleKey.RightArrow)
+                            {
+                                KlineRight();
+                            }
+
+                        }
+                        else
+                        {
+                            if (key.Key == ConsoleKey.RightArrow)
                             {
                                 currentConn++;
                                 if (currentConn >= feeds.Count)
                                 {
-                                    currentConn = feeds.Count - 1;
+                                    currentConn = -1;
                                 }
                                 scrollIndex = 0;
                                 Console.Clear();
@@ -632,17 +644,12 @@ namespace KuCoinConsole
                             else if (key.Key == ConsoleKey.LeftArrow)
                             {
                                 currentConn--;
-                                if (currentConn < -1) currentConn = -1;
+                                if (currentConn < -1) currentConn = feeds.Count - 1;
                                 scrollIndex = 0;
                                 Console.Clear();
                                 continue;
                             }
-
-                        }
-                        else
-                        {
-
-                            if (key.Key == ConsoleKey.DownArrow)
+                            else if (key.Key == ConsoleKey.DownArrow)
                             {
                                 if (scrollIndex < maxScrollIndex)
                                 {
@@ -836,6 +843,52 @@ namespace KuCoinConsole
                 x++;
             }
 
+        }
+
+        private static void KlineRight()
+        {
+            lock (lockObj)
+            {
+                var obs1 = Observers.FirstOrDefault().Value ?? null;
+                if (obs1 == null) return;
+
+                IKlineType kt = obs1.Level3Observation.KlineType;
+
+                IKlineType ktnext = KlineType.AllTypes.Where((x) => x.TimeSpan > kt.TimeSpan)?.First() ?? default;
+
+                if (ktnext == default)
+                {
+                    ktnext = KlineType.Min1;
+                }
+
+                foreach(var obs in Observers)
+                {
+                    obs.Value.Level3Observation.KlineType = ktnext;
+                }
+            }
+        }
+
+        private static void KlineLeft()
+        {
+            lock (lockObj)
+            {
+                var obs1 = Observers.FirstOrDefault().Value ?? null;
+                if (obs1 == null) return;
+
+                IKlineType kt = obs1.Level3Observation.KlineType;
+
+                IKlineType ktnext = KlineType.AllTypes.Reverse().Where((x) => x.TimeSpan < kt.TimeSpan)?.First() ?? default;
+
+                if (ktnext == default)
+                {
+                    ktnext = KlineType.Week1;
+                }
+
+                foreach (var obs in Observers)
+                {
+                    obs.Value.Level3Observation.KlineType = ktnext;
+                }
+            }
         }
 
         private static void Ticker_FeedDataReceived(object sender, Kucoin.NET.Websockets.FeedDataReceivedEventArgs<Kucoin.NET.Futures.Data.Websockets.ContractMarketSnapshot> e)
@@ -1081,35 +1134,13 @@ namespace KuCoinConsole
 
                 readOut.WriteToEdgeLine($"");
                 readOut.Append("Sort Order: ");
-                switch (sortmode)
-                {
-                    case 0:
-                        readOut.Append($"Volume ");
-                        break;
-                    case 1:
-                        readOut.Append($"Price ");
-                        break;
-                    case 2:
-                        readOut.Append($"Alphabetically ");
-                        break;
-                }
 
-                if (sortorder > 0) 
-                    readOut.WriteToEdgeLine($"Ascending");
-                else
-                    readOut.WriteToEdgeLine($"Descending");
+                string ordering = null;
 
-                readOut.WriteToEdgeLine($"");
-
-                headerText = readOut.ToString();
-
-                int count = 0;
                 var sortobs = new List<ISymbolDataService>(Observers.Values.Where((item) =>
                 {
                     return currentConn == -1 || item.Level3Feed == current;
                 }));
-
-                var itemTexts = new List<string>();
 
                 sortobs.Sort((a, b) =>
                 {
@@ -1138,6 +1169,44 @@ namespace KuCoinConsole
                     }
 
                 });
+
+                switch (sortmode)
+                {
+                    case 0:
+                        ordering = ($"{{White}}Volume ");
+                        break;
+                    case 1:
+                        ordering = ($"{{White}}Price ");
+                        break;
+                    case 2:
+                        ordering = ($"{{White}}Alphabetically ");
+                        break;
+                }
+
+                if (sortorder > 0)
+                    ordering += ($"{{Green}}▲ {{Yellow}}Ascending{{Reset}}");
+                else
+                    ordering += ($"{{Red}}▼ {{Yellow}}Descending{{Reset}}");
+
+                readOut.Append(MinChars(ordering, 127));
+
+                if (sortobs.FirstOrDefault() is SymbolDataService firstData)
+                {
+                    var klineStr = firstData.Level3Observation.KlineType.ToString("G");
+                    readOut.WriteToEdgeLine($"{{Reset}}Current K-Line: {{Cyan}}{klineStr}");
+                }
+                else
+                {
+                    readOut.WriteToEdgeLine($"");
+                }
+
+                readOut.WriteToEdgeLine($"");
+
+                headerText = readOut.ToString();
+
+                int count = 0;
+
+                var itemTexts = new List<string>();
 
                 int idx = scrollIndex;
                 int obscount = sortobs.Count;
@@ -1283,7 +1352,7 @@ namespace KuCoinConsole
                 ft.WriteToEdgeLine($"Transactions Per Second: ~ {{Cyan}}{tps:#,###}{{Reset}}");
                 ft.WriteToEdgeLine($"");
                 ft.WriteToEdgeLine($"{{White}}Use Arrow Up/Arrow Down, Page Up/Page Down, Home/End to navigate the feed list. Ctrl+Arrow Up/Down scrolls the message log, below.{{Reset}}");
-                ft.WriteToEdgeLine($"{{White}}Use Ctrl + Arrow Left/Arrow Right to switch between different connections.{{Reset}}");
+                ft.WriteToEdgeLine($"{{White}}Use Arrow Left/Arrow Right to switch between different connections.  Use Ctrl + Arrow Left/Arrow Right to change the K-Line.{{Reset}}");
                 ft.WriteToEdgeLine($"{{White}}Press: (A) Sort Alphabetically, (P) Price, (V) Volume. Press again to reverse order. (Q) To Quit.");
 
                 lock(messages)

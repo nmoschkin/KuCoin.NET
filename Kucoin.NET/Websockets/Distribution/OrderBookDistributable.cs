@@ -95,8 +95,19 @@ namespace Kucoin.NET.Websockets.Distribution
             {
                 if (SetProperty(ref klineType, value))
                 {
+                    var oldVol = Candle.Volume;
+                    DateTime oldEnd = Candle.Timestamp + Candle.Type.TimeSpan;
+
                     KlineTime = klineType.GetCurrentKlineStartTime();
+
                     Candle = new Candle() { Type = (KlineType)klineType, Timestamp = klineTime };
+
+                    if (Candle.Timestamp + Candle.Type.TimeSpan <= oldEnd)
+                    {
+                        Candle.Volume = oldVol;
+                    }
+
+                    OnPropertyChanged(nameof(MarketVolume));
                 }
             }
         }
