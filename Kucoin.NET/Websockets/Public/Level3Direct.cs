@@ -431,6 +431,7 @@ namespace Kucoin.NET.Websockets.Public
                                 {
                                     if (update.Sequence > 0)
                                     {
+                                        update.size = sb.Length;
                                         activeFeeds[update.Symbol].OnNext(update);
                                         update.Sequence = 0L;
                                     }

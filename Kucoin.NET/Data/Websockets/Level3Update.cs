@@ -156,6 +156,9 @@ namespace Kucoin.NET.Data.Websockets
         {
             return DataObject.ToDict(this);
         }
+
+        [JsonIgnore]
+        public int size;
     }
 
 

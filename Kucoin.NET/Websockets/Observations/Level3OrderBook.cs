@@ -50,8 +50,32 @@ namespace Kucoin.NET.Websockets.Observations
                     buffer.Add(value);
                 }
                 DoWork();
+
+                if (diagEnable)
+                {
+                    if (DateTime.UtcNow.Ticks - marktime >= 10_000_000)
+                    {
+                        marktime = DateTime.UtcNow.Ticks;
+                        throughput = bytesreceived;
+                        bytesreceived = 0;
+                    }
+                    else
+                    {
+                        bytesreceived += value.size;
+                    }
+                }
+
             }
         }
+
+        long bytesreceived;
+        long throughput;
+        long marktime = DateTime.UtcNow.Ticks;
+        public long Throughput
+        {
+            get => throughput;
+        }
+
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public override void PresentData()
