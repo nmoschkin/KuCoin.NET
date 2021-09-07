@@ -35,7 +35,7 @@ namespace Kucoin.NET.Websockets.Public
         public Level3Direct(ICredentialsProvider credentialsProvider) : base(credentialsProvider)
         {
 
-            recvBufferSize = 8388608;
+            recvBufferSize = 16777216;
             minQueueBuffer = 10000;
             chunkSize = 1024;
         }
@@ -49,7 +49,7 @@ namespace Kucoin.NET.Websockets.Public
         /// <param name="isSandbox">True if sandbox mode.</param>
         public Level3Direct(string key, string secret, string passphrase, bool isSandbox = false) : base(key, secret, passphrase, isSandbox: isSandbox)
         {
-            recvBufferSize = 8388608;
+            recvBufferSize = 16777216;
             minQueueBuffer = 10000;
             chunkSize = 1024;
         }
