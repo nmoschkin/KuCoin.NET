@@ -331,7 +331,7 @@ namespace KuCoinConsole
 
             ParallelService.MaxTenants = maxTenants;
             ParallelService.SleepDivisor = 4;
-            ParallelService.WorkRepeat = 3;
+            ParallelService.WorkRepeat = 2;
             ParallelService.WorkIdleSleepTime = 1;
 
             var ast = market.GetAllTickers().ConfigureAwait(false). GetAwaiter().GetResult();
