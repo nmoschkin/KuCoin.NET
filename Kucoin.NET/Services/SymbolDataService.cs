@@ -41,6 +41,8 @@ namespace Kucoin.NET.Services
 
         protected Level3 level3feed;
 
+        protected Level3Direct level3directfeed;
+
         protected ICredentialsProvider cred;
 
         protected Level2Depth5 level2d5;
@@ -58,6 +60,8 @@ namespace Kucoin.NET.Services
         protected bool level2enabled;
 
         protected bool level3enabled;
+        
+        protected bool level3directenabled;
 
         protected bool level2d5enabled;
 
@@ -119,7 +123,9 @@ namespace Kucoin.NET.Services
 
         public virtual ObservableStaticMarketDepthUpdate Level2Depth50Update => level2d50update;
 
-        public virtual Level3 Level3Feed => level3feed;
+        public virtual Level3 Level3Feed => level3feed ?? level3directfeed;
+
+        public virtual Level3Direct Level3DirectFeed => level3directfeed;
 
         public virtual TradingSymbol TradingSymbolInfo => symbol;
 
@@ -174,6 +180,11 @@ namespace Kucoin.NET.Services
                 if (level3enabled)
                 {
                     await level3feed?.Reconnect();
+                }
+
+                if (level3directenabled)
+                {
+                    await level3directfeed?.Reconnect();
                 }
             }
 
@@ -245,6 +256,12 @@ namespace Kucoin.NET.Services
                     level3feed = new Level3(cred);
                     level3feed.FeedDisconnected += OnLevel3Disconnected;
                 }
+
+                if (level3directfeed == null || level3directfeed.Disposed || connection != null)
+                {
+                    level3directfeed = new Level3Direct(cred);
+                    level3directfeed.FeedDisconnected += OnLevel3Disconnected;
+                }
             }
         }
 
@@ -287,6 +304,16 @@ namespace Kucoin.NET.Services
                     {
                         sym.level3feed = level3feed;
                         sym.level3enabled = true;
+                        sym.level3directfeed = null;
+                        sym.level3directenabled = false;
+                    }
+
+                    if (level3directfeed != null && level3directfeed.Connected)
+                    {
+                        sym.level3directfeed = level3directfeed;
+                        sym.level3directenabled = true;
+                        sym.level3feed = null;
+                        sym.level3enabled = false;
                     }
 
                 }
@@ -315,14 +342,16 @@ namespace Kucoin.NET.Services
                     level2enabled = false;
                 }
             }
-            if (level3enabled)
+            if (level3enabled || level3directenabled)
             {
                 level3obs?.Dispose();
 
                 if (ownmarket)
                 {
+                    level3directfeed?.Disconnect();
                     level3feed?.Disconnect();
                     level3enabled = false;
+                    level3directenabled = false;
                 }
             }
 
@@ -416,10 +445,17 @@ namespace Kucoin.NET.Services
                 level2obs = await level2feed.SubscribeOne(newSymbol);
             }
 
-            if (level3enabled)
+            if (level3enabled || level3directenabled)
             {
                 level3obs?.Dispose();
-                level3obs = await level3feed.SubscribeOne(newSymbol);
+                if (level3directenabled)
+                {
+                    level3obs = await level3directfeed.SubscribeOne(newSymbol);
+                }
+                else
+                {
+                    level3obs = await level3feed.SubscribeOne(newSymbol);
+                }
             }
 
             if (klineEnabled)
@@ -499,7 +535,7 @@ namespace Kucoin.NET.Services
         public virtual async Task EnableLevel3()
         {
             if (disposed) throw new ObjectDisposedException(this.GetType().FullName);
-            if (level3enabled) return;
+            if (level3enabled || level3directenabled) return;
 
             if (cred == null)
             {
@@ -510,6 +546,8 @@ namespace Kucoin.NET.Services
             {
                 level3feed = new Level3(cred);
             }
+
+            level3directfeed = null;
 
             if (level3feed.Connected == false)
             {
@@ -523,10 +561,42 @@ namespace Kucoin.NET.Services
             level3enabled = true;
         }
 
+        public virtual async Task EnableLevel3Direct()
+        {
+
+            if (disposed) throw new ObjectDisposedException(this.GetType().FullName);
+            if (level3enabled || level3directenabled) return;
+
+            if (cred == null)
+            {
+                throw new AuthenticationException();
+            }
+
+            if (level3directfeed == null)
+            {
+                level3directfeed = new Level3Direct(cred);
+            }
+
+            level3feed = null;
+
+            if (level3directfeed.Connected == false)
+            {
+                await level3directfeed.Connect();
+            }
+            OnPropertyChanged(nameof(Level3DirectFeed));
+            level3directfeed.FeedDisconnected += OnLevel3Disconnected;
+
+            level3obs = await level3directfeed.SubscribeOne((string)symbol);
+            OnPropertyChanged(nameof(Level3Observation));
+            level3directenabled = true;
+        }
+
         protected virtual void OnLevel3Disconnected(object sender, Kucoin.NET.Websockets.FeedDisconnectedEventArgs e)
         {
             level3enabled = false;
+            level3directenabled = false;
             level3feed = null;
+            level3directfeed = null;
             level3obs = null;
         }
 

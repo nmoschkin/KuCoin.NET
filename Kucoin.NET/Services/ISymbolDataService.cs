@@ -138,6 +138,11 @@ namespace Kucoin.NET.Services
         Level3 Level3Feed { get; }    
 
         /// <summary>
+        /// Gets the level 3 direct feed.
+        /// </summary>
+        Level3Direct Level3DirectFeed { get; }
+
+        /// <summary>
         /// Gets a value that indicates that the service is connected.
         /// </summary>
         bool Connected { get; }
@@ -173,14 +178,19 @@ namespace Kucoin.NET.Services
         /// <returns></returns>
         IDisposable SubscribeTicker(IObserver<Ticker> observer);
         /// <summary>
-        /// Enable level 3
+        /// Enable level 2
         /// </summary>
         Task EnableLevel2();
 
         /// <summary>
-        /// Enable level 2
+        /// Enable level 3
         /// </summary>
         Task EnableLevel3();
+
+        /// <summary>
+        /// Enable level 3 direct
+        /// </summary>
+        Task EnableLevel3Direct();
 
         /// <summary>
         /// Gets the 24-hour stats

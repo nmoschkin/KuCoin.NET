@@ -17,11 +17,40 @@ namespace Kucoin.NET.Websockets.Observations
 {
     public sealed class Level3OrderBook : OrderBookDistributable<KeyedAtomicOrderBook<AtomicOrderStruct>, ObservableAtomicOrderBook<ObservableAtomicOrderUnit>, Level3Update, Level3>
     {
+
+        private bool direct;
+
+        public bool DirectMode => direct;
+
+        public Level3OrderBook(Level3 parent, string symbol, bool direct) : base(parent, symbol, true)
+        {
+            this.parent = parent;
+            this.direct = direct;
+            dataProvider = parent;
+            IsPresentationDisabled = true;
+        }
+
         public Level3OrderBook(Level3 parent, string symbol) : base(parent, symbol, true)
         {
             this.parent = parent;
             dataProvider = parent;
             IsPresentationDisabled = true;
+        }
+
+        public override void OnNext(Level3Update value)
+        {
+            if (!direct)
+            {
+                base.OnNext(value);
+            }
+            else
+            {
+                lock (lockObj)
+                {
+                    buffer.Add(value);
+                }
+                DoWork();
+            }
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -214,7 +243,7 @@ namespace Kucoin.NET.Websockets.Observations
         /// <param name="changes">The changes to sequence.</param>
         /// <param name="pieces">The collection to change (either an ask or a bid collection)</param>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        protected bool SequencePieces(char subj, Level3Update change, KeyedBook<AtomicOrderStruct> pieces, KeyedBook<AtomicOrderStruct> otherPieces)
+        private bool SequencePieces(char subj, Level3Update change, KeyedBook<AtomicOrderStruct> pieces, KeyedBook<AtomicOrderStruct> otherPieces)
         {
             switch (subj)
             {

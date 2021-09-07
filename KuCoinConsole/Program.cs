@@ -327,7 +327,7 @@ namespace KuCoinConsole
 
             int maxTenants = Environment.ProcessorCount / 2;
             int maxSubscriptions = 0;
-            int maxSharedConn = maxTenants * 4;
+            int maxSharedConn = maxTenants;
 
             ParallelService.MaxTenants = maxTenants;
             ParallelService.SleepDivisor = 4;
@@ -491,12 +491,12 @@ namespace KuCoinConsole
                                     services.Add(curr);
                                 }
 
-                                await curr.EnableLevel3();
+                                await curr.EnableLevel3Direct();
                                 await Task.Delay(10);
 
                                 if (curr.Level3Feed == null) 
                                 {
-                                    await curr.EnableLevel3();
+                                    await curr.EnableLevel3Direct();
                                     await Task.Delay(10);
                                 }
 
@@ -1020,22 +1020,29 @@ namespace KuCoinConsole
 
                 sortobs.Sort((a, b) =>
                 {
-                    switch(sortmode)
+                    try
                     {
-                        case 0:
+                        switch (sortmode)
+                        {
+                            case 0:
 
-                            if (a.Level3Observation.MarketVolume > b.Level3Observation.MarketVolume) return 1 * sortorder;
-                            else if (a.Level3Observation.MarketVolume < b.Level3Observation.MarketVolume) return -1 * sortorder;
-                            else break;
+                                if (a.Level3Observation.MarketVolume > b.Level3Observation.MarketVolume) return 1 * sortorder;
+                                else if (a.Level3Observation.MarketVolume < b.Level3Observation.MarketVolume) return -1 * sortorder;
+                                else break;
 
-                        case 1:
+                            case 1:
 
-                            if (a.Level3Observation.FullDepthOrderBook.Bids[0].Price > b.Level3Observation.FullDepthOrderBook.Bids[0].Price) return 1 * sortorder;
-                            else if (a.Level3Observation.FullDepthOrderBook.Bids[0].Price < b.Level3Observation.FullDepthOrderBook.Bids[0].Price) return -1 * sortorder;
-                            else break;
+                                if (a.Level3Observation.FullDepthOrderBook.Bids[0].Price > b.Level3Observation.FullDepthOrderBook.Bids[0].Price) return 1 * sortorder;
+                                else if (a.Level3Observation.FullDepthOrderBook.Bids[0].Price < b.Level3Observation.FullDepthOrderBook.Bids[0].Price) return -1 * sortorder;
+                                else break;
+                        }
+
+                        return string.Compare(a.Symbol, b.Symbol) * sortorder;
                     }
-
-                    return string.Compare(a.Symbol, b.Symbol) * sortorder;
+                    catch
+                    {
+                        return 0;
+                    }
 
                 });
 
