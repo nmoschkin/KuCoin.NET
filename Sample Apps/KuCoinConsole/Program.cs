@@ -162,7 +162,7 @@ namespace KuCoinConsole
             Console.Clear();
 
             Console.WriteLine("Initializing KuCoin Library (Loading Symbols and Currencies)...");
-            KuCoinSystem.Initialize();
+            KuCoinSystem.InitializeAsync().ConfigureAwait(false).GetAwaiter().GetResult();
 
             market = KuCoinSystem.Market;
 
