@@ -16,7 +16,7 @@ This repository is now reduced to the core library, the console app and a creden
 
 The entire project has been retargeted to .NET 6, except for Kucoin.NET.Std, which is .NET Standard 2.0.  
 
-## Installation
+## Installation and Getting Started
 
 There are two solutions, one that contains projects that reference the .NET 6 library, and the other that contains projects that reference the .NET Standard 2.0 library.
 
@@ -25,7 +25,7 @@ __The usage guidelines are as follows:__
  * New projects targeting Desktop, Console, .NET MAUI, or Blazor should use the .NET 6.0 library.
  * Older projects targeting the .NET Framework or Xamarin, or Mono projects should use the .NET Standard 2.0 library.
 
- * _Note: Even though the projects in the .NET Standard solution reference the .NET Standard KuCoin.NET library, they are still native apps built in .NET 6._
+ _Note: Even though the projects in the .NET Standard solution reference the .NET Standard KuCoin.NET library, they are still native apps built in .NET 6._
 
 ## Creating Credentials
 
@@ -41,10 +41,12 @@ __CryptoCredentials__ class, provided, you will have to implement your own __ICr
 
 ![](docs/docimg2.png?raw=true)
 
-## REST API 
+## Using the Library
 
 The starting point for the entire system is the __Kucoin.NET.KuCoin__ static class.  From here you will be able to register credentials 
 and create and acquire __IServiceFactory__ and  __ISymbolDataService__ instances, as well as initialize market data and the dispatcher.
+
+### REST API 
 
 Inside the __Kucoin.NET.Rest__ namespace you will find three objects, __Market__, __Trade__, __Margin__, and __User__.  __Margin__, __Trade__, and __User__ require API Keys.  
 
@@ -52,7 +54,7 @@ There are two credentials providers, there is the default __MemoryEncryptedCrede
 
 The __MemoryEncryptedCredentialsProvider__ will store the credentials encrypted in memory with a random seed, until they are needed.  __CryptoCredentials__ has the ability to load and save encrypted credentials sets to disk.  A 6 digit numeric pin is required to save and load credentials.  Both of these classes implement the __ICredentialsProvider__ interface which you can use to write your own provider.
 
-## Websocket Feeds
+### Websocket Feeds
 
 Public feeds in the namespace __Kucoin.NET.Websockets.Public__:
 
