@@ -1,5 +1,7 @@
-# Kucoin.NET (v1.0 Alpha)
-KuCoin and KuCoin Futures API Libraries written in .NET 5.0 and .NET Standard 2.0
+# Kucoin.NET v1.0a
+KuCoin and KuCoin Futures API Libraries for .NET.
+
+_This library is a client for the KuCoin API as described in (https://docs.kucoin.com/#general)._
 
 __ATTENTION__: __The WPF Project has been moved to the 'legacy' branch.__
 
@@ -16,11 +18,12 @@ The entire project has been retargeted to .NET 6, except for Kucoin.NET.Std, whi
 
 ## Installation
 
-The library is being implemented as described in (https://docs.kucoin.com/#general), in .NET 6.0 and .NET Standard 2.0.  It will compile anywhere the .NET Standard library is supported (Windows/Linux/Android/MacOS/iOS/etc.)
-
-New projects targeting Desktop, Console .NET MAUI, or Blazor should use the .NET 6.0+ library.  Older projects targeting the .NET Framework or Xamarin, or Mono projects should use the .NET Standard 2.0 library.
-
 There are two solutions, one that contains projects that reference the .NET 6 library, and the other that contains projects that reference the .NET Standard 2.0 library.
+
+__The usage guidelines are as follows:__
+
+ * New projects targeting Desktop, Console, .NET MAUI, or Blazor should use the .NET 6.0 library.
+ * Older projects targeting the .NET Framework or Xamarin, or Mono projects should use the .NET Standard 2.0 library.
 
  * _Note: Even though the projects in the .NET Standard solution reference the .NET Standard KuCoin.NET library, they are still native apps built in .NET 6._
 
