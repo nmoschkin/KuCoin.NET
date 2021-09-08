@@ -71,13 +71,13 @@ All of the feeds support multiplexing.  You may create a single feed object, and
   
   * Note: You cannot multiplex a private feed onto a public feed.
 
-All of the feeds except for order book feeds implement the __IObservable<T>__ pattern.  The ViewModels in the example app implement the __IObserver<T>__ pattern where applicable.
+All of the feeds except for order book feeds implement the __IObservable<T>__ pattern.
 
 ## Other Notes
 
 The library, itself, is pretty well documented, so far.
 
-This project is epic, and there are bound to be bugs.  Feel free to open issues, and I will get to them, as I can, if I don't find the bugs, first.  I will post more updates here when the project nears completion and I plan to include a library for __KuCoin Futures__, after this one is feature complete.  
+This project is epic, and there are bound to be bugs.  Feel free to open issues, and I will get to them, as I can, if I don't find the bugs, first.
 
 ## And finally, I take donations!  
 
