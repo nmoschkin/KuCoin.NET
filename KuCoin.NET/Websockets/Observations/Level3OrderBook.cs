@@ -45,7 +45,8 @@ namespace KuCoin.NET.Websockets.Observations
                 {
                     buffer.Add(value);
                 }
-                DoWork();
+
+                if (initialized) DoWork();
 
                 if (diagEnable)
                 {

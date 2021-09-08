@@ -260,7 +260,7 @@ namespace KuCoinConsole
         {
 
             // Change this to true to enable Level3Direct or false to enable Level3 with ParallelServices
-            bool direct = false;
+            bool direct = true;
 
 
             int maxTenants = Environment.ProcessorCount / 2;
