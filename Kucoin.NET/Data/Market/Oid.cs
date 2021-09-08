@@ -11,8 +11,11 @@ using System.Threading.Tasks;
 
 namespace Kucoin.NET.Data.Market
 {
-    [StructLayout(LayoutKind.Explicit, Size = 52)]
+#if DOTNETSTD
+
+#else
     [SkipLocalsInit]
+    [StructLayout(LayoutKind.Explicit, Size = 52)]
     public struct Oid : IEquatable<Oid>, IComparable<Oid>
     {
         public string OrderId
@@ -139,4 +142,6 @@ namespace Kucoin.NET.Data.Market
         }
 
     }
+
+#endif
 }

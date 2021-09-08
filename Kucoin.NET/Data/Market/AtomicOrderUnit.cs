@@ -9,6 +9,7 @@ using System.Runtime.CompilerServices;
 using Newtonsoft.Json.Schema;
 using Kucoin.NET.Helpers;
 using System.Runtime.InteropServices;
+using System.Collections.Generic;
 
 namespace Kucoin.NET.Data.Market
 {

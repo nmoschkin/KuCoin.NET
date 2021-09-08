@@ -5,7 +5,6 @@ using Kucoin.NET.Rest;
 using Kucoin.NET.Websockets.Distribution;
 using Kucoin.NET.Websockets.Observations;
 
-using Microsoft.VisualBasic.FileIO;
 
 using System;
 using System.Collections.Generic;

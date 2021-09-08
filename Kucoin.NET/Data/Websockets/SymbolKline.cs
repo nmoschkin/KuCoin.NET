@@ -76,7 +76,11 @@ namespace Kucoin.NET.Data.Websockets
             return output;
         }
 
+#if DOTNETSTD
+        public override bool Equals(object obj)
+#else
         public override bool Equals([NotNullWhen(true)] object obj)
+#endif
         {
             if (obj is SymbolKline other)
             {

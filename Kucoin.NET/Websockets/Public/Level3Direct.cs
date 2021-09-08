@@ -17,7 +17,6 @@ using Kucoin.NET.Json;
 using System.Diagnostics;
 using System.Linq;
 using System.Runtime.CompilerServices;
-using System.Reflection.Metadata.Ecma335;
 using System.Net.WebSockets;
 using System.Runtime.ExceptionServices;
 
