@@ -43,6 +43,20 @@ __CryptoCredentials__ class, provided, you will have to implement your own __ICr
 
 ![](docs/docimg2.png?raw=true)
 
+## Running the Sample Console App
+  
+The sample app starts multiple Level3Direct feeds (see below.)
+
+When you run the sample app, it will look for credentials configured by the Windows Forms app, by default.  
+
+Program.cs includes a skeleton class implementation of __ICredentialsProvider__ if you wish to use that, instead.
+
+The user will be prompted to enter their pin, and then be asked to provide either a number to list the top _n_ feeds by 24-hr volume, or provide a list of feeds separated by commas.
+
+The console app only demonstrates the ability to track Level 3 feeds.  Other functionality is not demonstrated in the examples, at this time.
+
+![](docs/docimg1.png?raw=true)
+
 ## Using the Library
 
 The starting point for the entire system is the __Kucoin.NET.KuCoin__ static class.  From here you will be able to register credentials 
@@ -78,13 +92,6 @@ All of the feeds support multiplexing.  You may create a single feed object, and
   * Note: You cannot multiplex a private feed onto a public feed.
 
 All of the feeds except for order book feeds implement the __IObservable<T>__ pattern.
-  
-The sample app starts multiple Level3Direct feeds (user provided: either the top _n_ feeds by 24-hr volume, or a list of feeds separated by commas.)
-You will be prompted to make a selection when you start the program.
-
-_(You can change this in Program.cs.)_  
-
-![](docs/docimg1.png?raw=true)
 
 ## UI/UX Notes
 
