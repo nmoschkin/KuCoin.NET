@@ -34,7 +34,7 @@ new set of credentials.
 
 After you have created the credentials, you can run the console app and type in the same pin you used to load the credentials.
 
-The API library, itself, does not have any mechanism for peristing or storing credentials.  If you wish to use an alternative to the
+The API library, itself, does not have any mechanism for persisting or storing credentials.  If you wish to use an alternative to the
 __CryptoCredentials__ class, provided, you will have to implement your own __ICredentialsProvider__.
 
 ## REST API 
