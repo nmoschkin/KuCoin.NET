@@ -73,9 +73,9 @@ namespace KuCoin.NET.Services
 
         protected bool ownmarket = true;
 
-        public virtual Level2OrderBook Level2Observation => level2obs;
+        public virtual Level2OrderBook Level2OrderBook => level2obs;
 
-        public virtual Level3OrderBook Level3Observation => level3obs;
+        public virtual Level3OrderBook Level3OrderBook => level3obs;
 
         public virtual bool Connected
         {
@@ -193,54 +193,52 @@ namespace KuCoin.NET.Services
 
         protected virtual async Task Initialize(KucoinBaseWebsocketFeed connection = null)
         {
-            if (tickerEnabled || klineEnabled || level2d5enabled || level2d50enabled)
+            if (tickerfeed == null || tickerfeed.Disposed)
             {
-                if (tickerfeed == null || tickerfeed.Disposed)
-                {
-                    tickerfeed = new TickerFeed();
-                    tickerfeed.FeedDisconnected += OnTickerDisconnected;
-                }
+                tickerfeed = new TickerFeed();
+                tickerfeed.FeedDisconnected += OnTickerDisconnected;
+            }
 
-                if (klinefeed == null || klinefeed.Disposed || connection != null)
-                    klinefeed = new KlineFeed<Candle>();
+
+            if (klinefeed == null || klinefeed.Disposed || connection != null)
+                klinefeed = new KlineFeed<Candle>();
+
+            if (Dispatcher.Initialized)
+            {
+                if (level2d5 == null || level2d5.Disposed || connection != null)
+                    level2d5 = new Level2Depth5();
+                if (level2d50 == null || level2d50.Disposed || connection != null)
+                    level2d50 = new Level2Depth50();
+            }
+
+            if (connection != null)
+            {
+
+                await tickerfeed.MultiplexInit(connection);
+                await klinefeed.MultiplexInit(connection);
 
                 if (Dispatcher.Initialized)
                 {
-                    if (level2d5 == null || level2d5.Disposed || connection != null)
-                        level2d5 = new Level2Depth5();
-                    if (level2d50 == null || level2d50.Disposed || connection != null)
-                        level2d50 = new Level2Depth50();
+                    await level2d5.MultiplexInit(connection);
+                    await level2d50.MultiplexInit(connection);
                 }
-
-                if (connection != null)
+            }
+            else
+            {
+                if (tickerfeed.Connected)
                 {
-
-                    await tickerfeed.MultiplexInit(connection);
-                    await klinefeed.MultiplexInit(connection);
-
-                    if (Dispatcher.Initialized)
-                    {
-                        await level2d5.MultiplexInit(connection);
-                        await level2d50.MultiplexInit(connection);
-                    }
+                    tickerfeed.Disconnect();
                 }
-                else
+
+                await tickerfeed.Connect(true);
+                await klinefeed.MultiplexInit(tickerfeed);
+
+                if (Dispatcher.Initialized)
                 {
-                    if (tickerfeed.Connected)
-                    {
-                        tickerfeed.Disconnect();
-                    }
-
-                    await tickerfeed.Connect(true);
-                    await klinefeed.MultiplexInit(tickerfeed);
-
-                    if (Dispatcher.Initialized)
-                    {
-                        await level2d5?.MultiplexInit(tickerfeed);
-                        await level2d50?.MultiplexInit(tickerfeed);
-                    }
-
+                    await level2d5?.MultiplexInit(tickerfeed);
+                    await level2d50?.MultiplexInit(tickerfeed);
                 }
+
             }
 
             if (cred != null)
@@ -521,7 +519,7 @@ namespace KuCoin.NET.Services
             level2feed.FeedDisconnected += OnLevel2Disconnected;
 
             level2obs = await level2feed.SubscribeOne((string)symbol);
-            OnPropertyChanged(nameof(Level2Observation));
+            OnPropertyChanged(nameof(Level2OrderBook));
             level2enabled = true;
         }
 
@@ -557,7 +555,7 @@ namespace KuCoin.NET.Services
             level3feed.FeedDisconnected += OnLevel3Disconnected;
 
             level3obs = await level3feed.SubscribeOne((string)symbol);
-            OnPropertyChanged(nameof(Level3Observation));
+            OnPropertyChanged(nameof(Level3OrderBook));
             level3enabled = true;
         }
 
@@ -587,7 +585,7 @@ namespace KuCoin.NET.Services
             level3directfeed.FeedDisconnected += OnLevel3Disconnected;
 
             level3obs = await level3directfeed.SubscribeOne((string)symbol);
-            OnPropertyChanged(nameof(Level3Observation));
+            OnPropertyChanged(nameof(Level3OrderBook));
             level3directenabled = true;
         }
 

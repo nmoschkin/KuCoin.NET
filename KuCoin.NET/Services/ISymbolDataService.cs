@@ -100,7 +100,7 @@ namespace KuCoin.NET.Services
         /// <summary>
         /// Gets the level 2 observation, or null if not active.
         /// </summary>
-        Level2OrderBook Level2Observation { get; }
+        Level2OrderBook Level2OrderBook { get; }
 
         /// <summary>
         /// Gets the level 2 feed, or null if not active.
@@ -110,7 +110,7 @@ namespace KuCoin.NET.Services
         /// <summary>
         /// Gets the level 3 observation, or null if not active.
         /// </summary>
-        Level3OrderBook Level3Observation { get; }
+        Level3OrderBook Level3OrderBook { get; }
 
         /// <summary>
         /// Gets the level 2 static depth market feed (5 best ask/bid), or null if not active.

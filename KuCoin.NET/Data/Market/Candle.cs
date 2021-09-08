@@ -105,9 +105,9 @@ namespace KuCoin.NET.Data.Market
 
             if (time.Kind != DateTimeKind.Utc) time = time.ToUniversalTime();
 
-            dv = candle.Timestamp + candle.Type.TimeSpan;
+            dv = candle.Timestamp.ToUniversalTime() + candle.Type.TimeSpan;
 
-            if (time >= dv || time < candle.Timestamp) return false;
+            if (time >= dv || time < candle.Timestamp.ToUniversalTime()) return false;
             else return true;
         }
 

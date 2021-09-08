@@ -25,6 +25,7 @@ namespace KuCoin.NET.Websockets.Distribution.Services
         {
             bool disposed;
 
+            bool zero = true;
             bool many = false;
 
             private CancellationTokenSource cts = new CancellationTokenSource();
@@ -74,14 +75,18 @@ namespace KuCoin.NET.Websockets.Distribution.Services
 
                             if (f == 0)
                             {
+                                zero = true;
+                                many = false;
                                 return;
                             }
                             if (f == 1)
                             {
+                                zero = false;
                                 many = false;
                             }
                             else
                             {
+                                zero = false;
                                 many = true;
                                 for (x = 0; x < f; x++)
                                 {
@@ -126,7 +131,11 @@ namespace KuCoin.NET.Websockets.Distribution.Services
                         }
                     }
 
-                    if (many)
+                    if (zero)
+                    {
+                        Thread.Sleep(5);
+                    }
+                    else if (many)
                     {
                         Parallel.Invoke(arrActions);
                         if (sleepDivisor < 0) continue;
@@ -136,6 +145,7 @@ namespace KuCoin.NET.Websockets.Distribution.Services
                         Tenants[0].DoWork();
                     }
 
+                    
                     if (f == sleepDivisor)
                     {
                         Thread.Sleep(idleSleepTime);
