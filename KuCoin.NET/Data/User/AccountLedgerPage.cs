@@ -1,0 +1,16 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Text;
+
+using Newtonsoft.Json;
+
+namespace Kucoin.NET.Data.User
+{
+    /// <summary>
+    /// Page of account ledgers
+    /// </summary>
+    public class AccountLedgerPage : PaginatedData<AccountLedgerItem>
+    {
+    }
+
+}
