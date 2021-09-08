@@ -33,7 +33,6 @@ namespace KuCoin.NET.Websockets.Public
         /// <param name="credentialsProvider">API Credentials.</param>
         public Level3Direct(ICredentialsProvider credentialsProvider) : base(credentialsProvider)
         {
-            wantPump = false;
             recvBufferSize = 16777216;
             minQueueBuffer = 10000;
             chunkSize = 1024;
@@ -48,7 +47,6 @@ namespace KuCoin.NET.Websockets.Public
         /// <param name="isSandbox">True if sandbox mode.</param>
         public Level3Direct(string key, string secret, string passphrase, bool isSandbox = false) : base(key, secret, passphrase, isSandbox: isSandbox)
         {
-            wantPump = false;
             recvBufferSize = 16777216;
             minQueueBuffer = 10000;
             chunkSize = 1024;
@@ -427,18 +425,21 @@ namespace KuCoin.NET.Websockets.Public
                                 // we're back down at the root level!
                                 // we now have one whole JSON string to pass to the handler.
 
-                                if (update.Sequence > 0)
+                                lock (msgQueue)
                                 {
-                                    update.size = sb.Length;
-                                    activeFeeds[update.Symbol].OnNext(update);
-                                    update = new Level3Update();
+                                    if (update.Sequence > 0)
+                                    {
+                                        update.size = sb.Length;
+                                        activeFeeds[update.Symbol].OnNext(update);
+                                        update = new Level3Update();
+                                    }
+                                    else
+                                    {
+                                        msgQueue.Add(sb.ToString());
+                                    }
+                                    sb.Clear();
+                                    strlen = 0;
                                 }
-                                else
-                                {
-                                    msgQueue.Add(sb.ToString());
-                                }
-                                sb.Clear();
-                                strlen = 0;
                             }
                         }
                     }
