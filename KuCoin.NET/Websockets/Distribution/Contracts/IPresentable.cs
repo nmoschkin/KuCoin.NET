@@ -6,7 +6,7 @@ using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Text;
 
-namespace Kucoin.NET.Websockets.Distribution
+namespace KuCoin.NET.Websockets.Distribution
 {
     /// <summary>
     /// Presents data.

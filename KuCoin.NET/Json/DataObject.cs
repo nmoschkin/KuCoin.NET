@@ -1,12 +1,12 @@
 ﻿using System.Collections.Generic;
 using System.Reflection;
 
-using Kucoin.NET.Data;
+using KuCoin.NET.Data;
 
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
-namespace Kucoin.NET.Json
+namespace KuCoin.NET.Json
 {
     /// <summary>
     /// Base class for data objects.

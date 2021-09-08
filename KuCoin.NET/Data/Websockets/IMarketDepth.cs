@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace Kucoin.NET.Data.Websockets
+namespace KuCoin.NET.Data.Websockets
 {
     /// <summary>
     /// An object that has a market depth.

@@ -1,5 +1,5 @@
-﻿using Kucoin.NET.Data;
-using Kucoin.NET.Json;
+﻿using KuCoin.NET.Data;
+using KuCoin.NET.Json;
 
 using Newtonsoft.Json;
 
@@ -7,7 +7,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace Kucoin.NET.Futures.Data.Trade
+namespace KuCoin.NET.Futures.Data.Trade
 {
     /// <summary>
     /// Active order value information

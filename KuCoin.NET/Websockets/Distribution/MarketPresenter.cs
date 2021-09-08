@@ -1,7 +1,7 @@
-﻿using Kucoin.NET.Data;
-using Kucoin.NET.Data.Market;
-using Kucoin.NET.Data.Websockets;
-using Kucoin.NET.Websockets.Distribution.Services;
+﻿using KuCoin.NET.Data;
+using KuCoin.NET.Data.Market;
+using KuCoin.NET.Data.Websockets;
+using KuCoin.NET.Websockets.Distribution.Services;
 
 using System;
 using System.Collections.Generic;
@@ -9,7 +9,7 @@ using System.ComponentModel;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Kucoin.NET.Websockets.Distribution
+namespace KuCoin.NET.Websockets.Distribution
 {
 
     public interface IMarketPresenter

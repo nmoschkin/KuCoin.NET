@@ -1,5 +1,5 @@
-﻿using Kucoin.NET.Helpers;
-using Kucoin.NET.Json;
+﻿using KuCoin.NET.Helpers;
+using KuCoin.NET.Json;
 
 using Newtonsoft.Json;
 
@@ -7,9 +7,9 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Runtime.Serialization;
-using Kucoin.NET.Data;
+using KuCoin.NET.Data;
 
-namespace Kucoin.NET.Futures.Data.User
+namespace KuCoin.NET.Futures.Data.User
 {
     /// <summary>
     /// Transaction type

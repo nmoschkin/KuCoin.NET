@@ -7,7 +7,7 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
 
-namespace Kucoin.NET.Data.Websockets
+namespace KuCoin.NET.Data.Websockets
 {
     /// <summary>
     /// Provides information about the server associated with a websocket feed connection.

@@ -1,11 +1,11 @@
-﻿using Kucoin.NET.Data.Market;
-using Kucoin.NET.Data.Websockets;
-using Kucoin.NET.Futures.Data.Market;
-using Kucoin.NET.Futures.Websockets.Observations;
-using Kucoin.NET.Helpers;
-using Kucoin.NET.Json;
-using Kucoin.NET.Websockets;
-using Kucoin.NET.Websockets.Distribution;
+﻿using KuCoin.NET.Data.Market;
+using KuCoin.NET.Data.Websockets;
+using KuCoin.NET.Futures.Data.Market;
+using KuCoin.NET.Futures.Websockets.Observations;
+using KuCoin.NET.Helpers;
+using KuCoin.NET.Json;
+using KuCoin.NET.Websockets;
+using KuCoin.NET.Websockets.Distribution;
 
 using Newtonsoft.Json;
 
@@ -15,7 +15,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Kucoin.NET.Futures.Websockets
+namespace KuCoin.NET.Futures.Websockets
 {
     public interface IFuturesLevel2 : IMarketFeed<FuturesLevel2OrderBook, FuturesLevel2Update, KeyedOrderBook<OrderUnitStruct>, ObservableOrderBook<ObservableOrderUnit>>
     {

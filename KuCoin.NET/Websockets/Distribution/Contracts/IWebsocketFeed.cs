@@ -1,4 +1,4 @@
-﻿using Kucoin.NET.Data;
+﻿using KuCoin.NET.Data;
 
 using System;
 using System.Collections;
@@ -7,7 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Kucoin.NET.Websockets.Distribution
+namespace KuCoin.NET.Websockets.Distribution
 {
     public interface IWebsocketFeed 
     {

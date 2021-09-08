@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Kucoin.NET.Websockets.Distribution
+namespace KuCoin.NET.Websockets.Distribution
 {
     /// <summary>
     /// Enumeration values that indicate the current state of a Leve 2 or Level 3 feed.

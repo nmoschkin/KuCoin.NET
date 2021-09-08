@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Data.Common;
 using System.Text;
 
-namespace Kucoin.NET.Helpers
+namespace KuCoin.NET.Helpers
 {
     /// <summary>
     /// Represents a collection of items upon which logical operations can be performed.

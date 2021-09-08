@@ -5,7 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace Kucoin.NET.Data.Order.Margin
+namespace KuCoin.NET.Data.Order.Margin
 {
     /// <summary>
     /// Paginated repayment records

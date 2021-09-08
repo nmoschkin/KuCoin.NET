@@ -4,12 +4,12 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-using Kucoin.NET.Localization;
-using Kucoin.NET.Observable;
+using KuCoin.NET.Localization;
+using KuCoin.NET.Observable;
 
 using Newtonsoft.Json;
 
-namespace Kucoin.NET.Data.User
+namespace KuCoin.NET.Data.User
 {
     /// <summary>
     /// User account information

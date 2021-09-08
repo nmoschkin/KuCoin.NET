@@ -1,4 +1,4 @@
-﻿using Kucoin.NET.Json;
+﻿using KuCoin.NET.Json;
 
 using Newtonsoft.Json;
 
@@ -8,7 +8,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Kucoin.NET.Data.Websockets
+namespace KuCoin.NET.Data.Websockets
 {
 
     /// <summary>

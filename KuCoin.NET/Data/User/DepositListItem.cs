@@ -1,5 +1,5 @@
-﻿using Kucoin.NET.Helpers;
-using Kucoin.NET.Json;
+﻿using KuCoin.NET.Helpers;
+using KuCoin.NET.Json;
 
 using Newtonsoft.Json;
 
@@ -8,7 +8,7 @@ using System.Collections.Generic;
 using System.Runtime.Serialization;
 using System.Text;
 
-namespace Kucoin.NET.Data.User
+namespace KuCoin.NET.Data.User
 {
     /// <summary>
     /// Deposit status

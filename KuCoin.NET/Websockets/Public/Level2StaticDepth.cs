@@ -1,12 +1,12 @@
-﻿using Kucoin.NET.Data.Websockets;
+﻿using KuCoin.NET.Data.Websockets;
 
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
-using Kucoin.NET.Helpers;
+using KuCoin.NET.Helpers;
 
-namespace Kucoin.NET.Websockets.Public
+namespace KuCoin.NET.Websockets.Public
 {
 
     /// <summary>
@@ -162,7 +162,7 @@ namespace Kucoin.NET.Websockets.Public
         {
             if (!Dispatcher.Initialized)
             {
-                throw new InvalidOperationException("You must call Kucoin.NET.Helpers.Dispatcher.Initialize() with a SynchronizationContext before instantiating this class.");
+                throw new InvalidOperationException("You must call KuCoin.NET.Helpers.Dispatcher.Initialize() with a SynchronizationContext before instantiating this class.");
             }
         }
 
@@ -188,7 +188,7 @@ namespace Kucoin.NET.Websockets.Public
         {
             if (!Dispatcher.Initialized)
             {
-                throw new InvalidOperationException("You must call Kucoin.NET.Helpers.Dispatcher.Initialize() with a SynchronizationContext before instantiating this class.");
+                throw new InvalidOperationException("You must call KuCoin.NET.Helpers.Dispatcher.Initialize() with a SynchronizationContext before instantiating this class.");
             }
 
             Connect().ContinueWith(async (t) =>
@@ -213,7 +213,7 @@ namespace Kucoin.NET.Websockets.Public
         {
             if (!Dispatcher.Initialized)
             {
-                throw new InvalidOperationException("You must call Kucoin.NET.Helpers.Dispatcher.Initialize() with a SynchronizationContext before instantiating this class.");
+                throw new InvalidOperationException("You must call KuCoin.NET.Helpers.Dispatcher.Initialize() with a SynchronizationContext before instantiating this class.");
             }
 
             Connect().ContinueWith(async (t) =>
@@ -238,7 +238,7 @@ namespace Kucoin.NET.Websockets.Public
         {
             if (!Dispatcher.Initialized)
             {
-                throw new InvalidOperationException("You must call Kucoin.NET.Helpers.Dispatcher.Initialize() with a SynchronizationContext before instantiating this class.");
+                throw new InvalidOperationException("You must call KuCoin.NET.Helpers.Dispatcher.Initialize() with a SynchronizationContext before instantiating this class.");
             }
 
             Connect().ContinueWith(async (t) =>
@@ -283,7 +283,7 @@ namespace Kucoin.NET.Websockets.Public
         {
             if (!Dispatcher.Initialized)
             {
-                throw new InvalidOperationException("You must call Kucoin.NET.Helpers.Dispatcher.Initialize() with a SynchronizationContext before instantiating this class.");
+                throw new InvalidOperationException("You must call KuCoin.NET.Helpers.Dispatcher.Initialize() with a SynchronizationContext before instantiating this class.");
             }
         }
 
@@ -300,7 +300,7 @@ namespace Kucoin.NET.Websockets.Public
         {
             if (!Dispatcher.Initialized)
             {
-                throw new InvalidOperationException("You must call Kucoin.NET.Helpers.Dispatcher.Initialize() with a SynchronizationContext before instantiating this class.");
+                throw new InvalidOperationException("You must call KuCoin.NET.Helpers.Dispatcher.Initialize() with a SynchronizationContext before instantiating this class.");
             }
 
             Connect().ContinueWith(async (t) =>
@@ -323,7 +323,7 @@ namespace Kucoin.NET.Websockets.Public
         {
             if (!Dispatcher.Initialized)
             {
-                throw new InvalidOperationException("You must call Kucoin.NET.Helpers.Dispatcher.Initialize() with a SynchronizationContext before instantiating this class.");
+                throw new InvalidOperationException("You must call KuCoin.NET.Helpers.Dispatcher.Initialize() with a SynchronizationContext before instantiating this class.");
             }
 
             Connect().ContinueWith(async (t) =>

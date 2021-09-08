@@ -1,7 +1,7 @@
-﻿using Kucoin.NET.Data.Order;
-using Kucoin.NET.Data.User;
-using Kucoin.NET.Helpers;
-using Kucoin.NET.Json;
+﻿using KuCoin.NET.Data.Order;
+using KuCoin.NET.Data.User;
+using KuCoin.NET.Helpers;
+using KuCoin.NET.Json;
 
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -14,7 +14,7 @@ using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Kucoin.NET.Rest
+namespace KuCoin.NET.Rest
 {
     /// <summary>
     /// User actions

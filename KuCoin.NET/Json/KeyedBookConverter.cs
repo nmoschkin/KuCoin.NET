@@ -1,6 +1,6 @@
-﻿using Kucoin.NET.Data.Market;
-using Kucoin.NET.Data.Order;
-using Kucoin.NET.Helpers;
+﻿using KuCoin.NET.Data.Market;
+using KuCoin.NET.Data.Order;
+using KuCoin.NET.Helpers;
 
 using Newtonsoft.Json;
 
@@ -10,7 +10,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Text;
 
-namespace Kucoin.NET.Json
+namespace KuCoin.NET.Json
 {
 
 
@@ -18,7 +18,7 @@ namespace Kucoin.NET.Json
     {
         public override bool CanConvert(Type objectType)
         {
-            return objectType.FullName.Contains("Kucoin.NET.Data.Order.KeyedBook");
+            return objectType.FullName.Contains("KuCoin.NET.Data.Order.KeyedBook");
         }
 
         public override object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer)

@@ -5,9 +5,9 @@ using System.Text;
 
 using Newtonsoft.Json;
 using System.ComponentModel;
-using Kucoin.NET.Json;
+using KuCoin.NET.Json;
 
-namespace Kucoin.NET.Data.User
+namespace KuCoin.NET.Data.User
 {
     /// <summary>
     /// Account business type

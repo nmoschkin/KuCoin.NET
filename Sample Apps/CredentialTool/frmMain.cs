@@ -1,4 +1,4 @@
-﻿using Kucoin.NET;
+﻿using KuCoin.NET;
 
 using System;
 using System.Collections.Generic;

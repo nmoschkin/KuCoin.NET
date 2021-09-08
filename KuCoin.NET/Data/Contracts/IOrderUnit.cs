@@ -5,7 +5,7 @@ using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Text;
 
-namespace Kucoin.NET.Data.Market
+namespace KuCoin.NET.Data.Market
 {
     /// <summary>
     /// Ask or Bid Order Unit Interface

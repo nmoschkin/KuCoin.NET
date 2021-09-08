@@ -3,13 +3,13 @@ using System.Collections.Generic;
 using System.Runtime.Serialization;
 using System.Text;
 
-using Kucoin.NET.Helpers;
-using Kucoin.NET.Json;
-using Kucoin.NET.Rest;
+using KuCoin.NET.Helpers;
+using KuCoin.NET.Json;
+using KuCoin.NET.Rest;
 
 using Newtonsoft.Json;
 
-namespace Kucoin.NET.Data.User
+namespace KuCoin.NET.Data.User
 {
     /// <summary>
     /// Business core parameters

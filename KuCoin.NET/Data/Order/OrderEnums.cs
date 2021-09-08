@@ -3,9 +3,9 @@ using System.Collections.Generic;
 using System.Text;
 using System.Runtime.Serialization;
 using Newtonsoft.Json;
-using Kucoin.NET.Json;
+using KuCoin.NET.Json;
 
-namespace Kucoin.NET.Data.Order
+namespace KuCoin.NET.Data.Order
 {
     /// <summary>
     /// Trade type

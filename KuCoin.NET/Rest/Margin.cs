@@ -1,6 +1,6 @@
-﻿using Kucoin.NET.Data.Market;
-using Kucoin.NET.Data.Order.Margin;
-using Kucoin.NET.Helpers;
+﻿using KuCoin.NET.Data.Market;
+using KuCoin.NET.Data.Order.Margin;
+using KuCoin.NET.Helpers;
 
 using System;
 using System.Collections.Generic;
@@ -8,7 +8,7 @@ using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Kucoin.NET.Rest
+namespace KuCoin.NET.Rest
 {
     /// <summary>
     /// Margin trading

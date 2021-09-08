@@ -1,10 +1,10 @@
-﻿using Kucoin.NET.Data.Market;
+﻿using KuCoin.NET.Data.Market;
 
 using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace Kucoin.NET.Websockets.Public
+namespace KuCoin.NET.Websockets.Public
 {
     /// <summary>
     /// Market symbol price ticker feed.

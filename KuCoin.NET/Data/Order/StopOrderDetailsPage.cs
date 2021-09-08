@@ -5,7 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace Kucoin.NET.Data.Order
+namespace KuCoin.NET.Data.Order
 {
     /// <summary>
     /// Paginated stop order information

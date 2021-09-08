@@ -2,11 +2,11 @@
 using System.Collections.Generic;
 using System.Text;
 using System.Reflection;
-using Kucoin.NET.Localization;
+using KuCoin.NET.Localization;
 using Newtonsoft.Json;
-using Kucoin.NET.Json;
+using KuCoin.NET.Json;
 
-namespace Kucoin.NET.Data.User
+namespace KuCoin.NET.Data.User
 {
 
     /// <summary>

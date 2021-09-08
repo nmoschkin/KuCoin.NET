@@ -1,7 +1,7 @@
-﻿using Kucoin.NET.Data.Websockets;
-using Kucoin.NET.Futures.Data.Websockets;
-using Kucoin.NET.Helpers;
-using Kucoin.NET.Websockets;
+﻿using KuCoin.NET.Data.Websockets;
+using KuCoin.NET.Futures.Data.Websockets;
+using KuCoin.NET.Helpers;
+using KuCoin.NET.Websockets;
 
 using Newtonsoft.Json;
 
@@ -10,7 +10,7 @@ using System.Collections.Generic;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Kucoin.NET.Futures.Websockets
+namespace KuCoin.NET.Futures.Websockets
 {
 
     /// <summary>
@@ -160,7 +160,7 @@ namespace Kucoin.NET.Futures.Websockets
         {
             if (!Dispatcher.Initialized)
             {
-                throw new InvalidOperationException("You must call Kucoin.NET.Helpers.Dispatcher.Initialize() with a SynchronizationContext before instantiating this class.");
+                throw new InvalidOperationException("You must call KuCoin.NET.Helpers.Dispatcher.Initialize() with a SynchronizationContext before instantiating this class.");
             }
         }
 
@@ -186,7 +186,7 @@ namespace Kucoin.NET.Futures.Websockets
         {
             if (!Dispatcher.Initialized)
             {
-                throw new InvalidOperationException("You must call Kucoin.NET.Helpers.Dispatcher.Initialize() with a SynchronizationContext before instantiating this class.");
+                throw new InvalidOperationException("You must call KuCoin.NET.Helpers.Dispatcher.Initialize() with a SynchronizationContext before instantiating this class.");
             }
 
             Connect().ContinueWith(async (t) =>
@@ -211,7 +211,7 @@ namespace Kucoin.NET.Futures.Websockets
         {
             if (!Dispatcher.Initialized)
             {
-                throw new InvalidOperationException("You must call Kucoin.NET.Helpers.Dispatcher.Initialize() with a SynchronizationContext before instantiating this class.");
+                throw new InvalidOperationException("You must call KuCoin.NET.Helpers.Dispatcher.Initialize() with a SynchronizationContext before instantiating this class.");
             }
 
             Connect().ContinueWith(async (t) =>
@@ -236,7 +236,7 @@ namespace Kucoin.NET.Futures.Websockets
         {
             if (!Dispatcher.Initialized)
             {
-                throw new InvalidOperationException("You must call Kucoin.NET.Helpers.Dispatcher.Initialize() with a SynchronizationContext before instantiating this class.");
+                throw new InvalidOperationException("You must call KuCoin.NET.Helpers.Dispatcher.Initialize() with a SynchronizationContext before instantiating this class.");
             }
 
             Connect().ContinueWith(async (t) =>
@@ -281,7 +281,7 @@ namespace Kucoin.NET.Futures.Websockets
         {
             if (!Dispatcher.Initialized)
             {
-                throw new InvalidOperationException("You must call Kucoin.NET.Helpers.Dispatcher.Initialize() with a SynchronizationContext before instantiating this class.");
+                throw new InvalidOperationException("You must call KuCoin.NET.Helpers.Dispatcher.Initialize() with a SynchronizationContext before instantiating this class.");
             }
         }
 
@@ -298,7 +298,7 @@ namespace Kucoin.NET.Futures.Websockets
         {
             if (!Dispatcher.Initialized)
             {
-                throw new InvalidOperationException("You must call Kucoin.NET.Helpers.Dispatcher.Initialize() with a SynchronizationContext before instantiating this class.");
+                throw new InvalidOperationException("You must call KuCoin.NET.Helpers.Dispatcher.Initialize() with a SynchronizationContext before instantiating this class.");
             }
 
             Connect().ContinueWith(async (t) =>
@@ -321,7 +321,7 @@ namespace Kucoin.NET.Futures.Websockets
         {
             if (!Dispatcher.Initialized)
             {
-                throw new InvalidOperationException("You must call Kucoin.NET.Helpers.Dispatcher.Initialize() with a SynchronizationContext before instantiating this class.");
+                throw new InvalidOperationException("You must call KuCoin.NET.Helpers.Dispatcher.Initialize() with a SynchronizationContext before instantiating this class.");
             }
 
             Connect().ContinueWith(async (t) =>

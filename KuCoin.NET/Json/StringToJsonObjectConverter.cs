@@ -6,7 +6,7 @@ using System.Reflection;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
-namespace Kucoin.NET.Json
+namespace KuCoin.NET.Json
 {
     public class StringToJsonObjectConverter<T> : JsonConverter
     {

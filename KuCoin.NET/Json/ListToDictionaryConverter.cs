@@ -2,10 +2,10 @@
 using System.Collections.Generic;
 using System.Text;
 using Newtonsoft.Json;
-using Kucoin.NET.Observable;
+using KuCoin.NET.Observable;
 using System.Reflection;
 
-namespace Kucoin.NET.Json
+namespace KuCoin.NET.Json
 {
     public class ListToDictionaryConverter<TKey, TValue> : JsonConverter where TValue: class
     {

@@ -2,14 +2,14 @@
 
 using Newtonsoft.Json;
 
-using Kucoin.NET.Observable;
-using Kucoin.NET.Json;
+using KuCoin.NET.Observable;
+using KuCoin.NET.Json;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using Newtonsoft.Json.Schema;
 using System.Collections.Generic;
 
-namespace Kucoin.NET.Data.Market
+namespace KuCoin.NET.Data.Market
 {
 
     /// <summary>

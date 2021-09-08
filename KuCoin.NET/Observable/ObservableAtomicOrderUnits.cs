@@ -1,4 +1,4 @@
-﻿using Kucoin.NET.Data.Market;
+﻿using KuCoin.NET.Data.Market;
 
 using System;
 using System.Collections.Generic;
@@ -7,7 +7,7 @@ using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Text;
 
-namespace Kucoin.NET.Observable
+namespace KuCoin.NET.Observable
 {
     /// <summary>
     /// Standard implementation of a keyed, observable collection for Level 3 atomic order units

@@ -1,4 +1,4 @@
-﻿using Kucoin.NET.Helpers;
+﻿using KuCoin.NET.Helpers;
 
 using Newtonsoft.Json;
 
@@ -8,7 +8,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Kucoin.NET.Rest;
+using KuCoin.NET.Rest;
 using System.Runtime.CompilerServices;
 
 namespace CredentialTool

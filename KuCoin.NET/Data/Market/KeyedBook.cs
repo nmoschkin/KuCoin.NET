@@ -1,5 +1,5 @@
-﻿using Kucoin.NET.Helpers;
-using Kucoin.NET.Json;
+﻿using KuCoin.NET.Helpers;
+using KuCoin.NET.Json;
 
 using Newtonsoft.Json;
 
@@ -13,7 +13,7 @@ using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Text;
 
-namespace Kucoin.NET.Data.Market
+namespace KuCoin.NET.Data.Market
 {
     [JsonConverter(typeof(KeyedBookConverter))]
     public sealed class KeyedBook<TUnit> : Collection<TUnit>, IReadOnlyDictionary<string, TUnit> where TUnit : IAtomicOrderUnit, new()

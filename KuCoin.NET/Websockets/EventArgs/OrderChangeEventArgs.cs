@@ -1,10 +1,10 @@
-﻿using Kucoin.NET.Data.Websockets.User;
+﻿using KuCoin.NET.Data.Websockets.User;
 
 using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace Kucoin.NET.Websockets
+namespace KuCoin.NET.Websockets
 {
     /// <summary>
     /// Event data received for a user's order status changed events.

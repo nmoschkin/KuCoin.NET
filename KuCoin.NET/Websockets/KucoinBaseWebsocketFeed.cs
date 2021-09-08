@@ -1,5 +1,5 @@
 ﻿/*****************************************************
- * Kucoin.NET Base Websocket Feed Class
+ * KuCoin.NET Base Websocket Feed Class
  *
  * Basic structure and low-level communications for all
  * websocket feeds.
@@ -12,12 +12,12 @@
  *
  * **/
 
-using Kucoin.NET.Data;
-using Kucoin.NET.Data.Websockets;
-using Kucoin.NET.Helpers;
-using Kucoin.NET.Rest;
-using Kucoin.NET.Websockets.Distribution;
-using Kucoin.NET.Websockets.Distribution.Services;
+using KuCoin.NET.Data;
+using KuCoin.NET.Data.Websockets;
+using KuCoin.NET.Helpers;
+using KuCoin.NET.Rest;
+using KuCoin.NET.Websockets.Distribution;
+using KuCoin.NET.Websockets.Distribution.Services;
 
 using Newtonsoft.Json;
 
@@ -34,7 +34,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Kucoin.NET.Websockets
+namespace KuCoin.NET.Websockets
 {
     /// <summary>
     /// Websocket feed abstract base class.

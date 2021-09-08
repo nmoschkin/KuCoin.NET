@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Kucoin.NET.Websockets.Distribution
+namespace KuCoin.NET.Websockets.Distribution
 {
     public interface IInitializable
     {

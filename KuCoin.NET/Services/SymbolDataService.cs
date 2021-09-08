@@ -1,11 +1,11 @@
-﻿using Kucoin.NET.Data.Market;
-using Kucoin.NET.Data.Websockets;
-using Kucoin.NET.Helpers;
-using Kucoin.NET.Observable;
-using Kucoin.NET.Rest;
-using Kucoin.NET.Websockets;
-using Kucoin.NET.Websockets.Observations;
-using Kucoin.NET.Websockets.Public;
+﻿using KuCoin.NET.Data.Market;
+using KuCoin.NET.Data.Websockets;
+using KuCoin.NET.Helpers;
+using KuCoin.NET.Observable;
+using KuCoin.NET.Rest;
+using KuCoin.NET.Websockets;
+using KuCoin.NET.Websockets.Observations;
+using KuCoin.NET.Websockets.Public;
 
 using System;
 using System.Collections.Generic;
@@ -15,7 +15,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Xml;
 
-namespace Kucoin.NET.Services
+namespace KuCoin.NET.Services
 {
     /// <summary>
     /// Implements the contract for a trading symbol data provider service.
@@ -525,7 +525,7 @@ namespace Kucoin.NET.Services
             level2enabled = true;
         }
 
-        protected virtual void OnLevel2Disconnected(object sender, Kucoin.NET.Websockets.FeedDisconnectedEventArgs e)
+        protected virtual void OnLevel2Disconnected(object sender, KuCoin.NET.Websockets.FeedDisconnectedEventArgs e)
         {
             level2enabled = false;
             level2feed = null;
@@ -591,7 +591,7 @@ namespace Kucoin.NET.Services
             level3directenabled = true;
         }
 
-        protected virtual void OnLevel3Disconnected(object sender, Kucoin.NET.Websockets.FeedDisconnectedEventArgs e)
+        protected virtual void OnLevel3Disconnected(object sender, KuCoin.NET.Websockets.FeedDisconnectedEventArgs e)
         {
             level3enabled = false;
             level3directenabled = false;

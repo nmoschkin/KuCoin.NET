@@ -1,14 +1,14 @@
-﻿using Kucoin.NET.Data.Market;
-using Kucoin.NET.Futures.Data.Market;
-using Kucoin.NET.Helpers;
-using Kucoin.NET.Observable;
+﻿using KuCoin.NET.Data.Market;
+using KuCoin.NET.Futures.Data.Market;
+using KuCoin.NET.Helpers;
+using KuCoin.NET.Observable;
 
 using System;
 using System.Collections.Generic;
 using System.Net.Http;
 using System.Threading.Tasks;
 
-namespace Kucoin.NET.Futures.Rest
+namespace KuCoin.NET.Futures.Rest
 {
     /// <summary>
     /// Futures market information

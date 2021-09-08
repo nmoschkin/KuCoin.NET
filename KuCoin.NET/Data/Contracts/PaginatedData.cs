@@ -6,7 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Kucoin.NET.Data
+namespace KuCoin.NET.Data
 {
     public abstract class PaginatedData<T> : IPaginated<T> where T: class, IDataObject, new()
     {

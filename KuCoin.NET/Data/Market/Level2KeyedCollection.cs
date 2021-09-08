@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Text;
 
-namespace Kucoin.NET.Data.Market
+namespace KuCoin.NET.Data.Market
 {
     /// <summary>
     /// Keyed, sorted Level 2 order book.

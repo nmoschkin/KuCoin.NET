@@ -1,6 +1,6 @@
-using Kucoin.NET.Data;
-using Kucoin.NET.Data.Market;
-using Kucoin.NET.Websockets.Public;
+using KuCoin.NET.Data;
+using KuCoin.NET.Data.Market;
+using KuCoin.NET.Websockets.Public;
 
 using System;
 using System.Collections;
@@ -15,7 +15,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Kucoin.NET.Websockets.Distribution
+namespace KuCoin.NET.Websockets.Distribution
 {
 
 

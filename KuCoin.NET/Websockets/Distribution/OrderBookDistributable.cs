@@ -1,6 +1,6 @@
-﻿using Kucoin.NET.Data;
-using Kucoin.NET.Data.Market;
-using Kucoin.NET.Data.Websockets;
+﻿using KuCoin.NET.Data;
+using KuCoin.NET.Data.Market;
+using KuCoin.NET.Data.Websockets;
 
 using System;
 using System.Collections.Generic;
@@ -10,7 +10,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Kucoin.NET.Websockets.Distribution
+namespace KuCoin.NET.Websockets.Distribution
 {
     public abstract class OrderBookDistributable<TBookIn, TBookOut, TDistributable, TParent> 
         : MarketPresenter<TBookIn, TBookOut, TDistributable>, IFeedDiagnostics, IMarketVolume
@@ -35,11 +35,11 @@ namespace Kucoin.NET.Websockets.Distribution
 
         protected TBookOut orderBook;
 
-        protected IKlineType klineType = Kucoin.NET.Data.Market.KlineType.Min15;
+        protected IKlineType klineType = KuCoin.NET.Data.Market.KlineType.Min15;
 
-        protected DateTime klineTime = Kucoin.NET.Data.Market.KlineType.Min15.GetCurrentKlineStartTime();
+        protected DateTime klineTime = KuCoin.NET.Data.Market.KlineType.Min15.GetCurrentKlineStartTime();
 
-        protected Candle candle = new Candle() { Type = Kucoin.NET.Data.Market.KlineType.Min15, Timestamp = Kucoin.NET.Data.Market.KlineType.Min15.GetCurrentKlineStartTime() };
+        protected Candle candle = new Candle() { Type = KuCoin.NET.Data.Market.KlineType.Min15, Timestamp = KuCoin.NET.Data.Market.KlineType.Min15.GetCurrentKlineStartTime() };
 
         protected List<Candle> lastCandles = new List<Candle>();
 

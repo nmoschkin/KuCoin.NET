@@ -5,10 +5,10 @@ using System.Text;
 
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
-using Kucoin.NET.Json;
+using KuCoin.NET.Json;
 using System.Runtime.CompilerServices;
 
-namespace Kucoin.NET.Data.Websockets
+namespace KuCoin.NET.Data.Websockets
 {
     /// <summary>
     /// Websocket feed packet object

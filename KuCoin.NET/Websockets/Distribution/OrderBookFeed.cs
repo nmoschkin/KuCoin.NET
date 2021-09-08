@@ -1,10 +1,10 @@
-﻿using Kucoin.NET.Data;
-using Kucoin.NET.Data.Market;
-using Kucoin.NET.Data.Order;
-using Kucoin.NET.Data.Websockets;
-using Kucoin.NET.Helpers;
-using Kucoin.NET.Json;
-using Kucoin.NET.Websockets.Observations;
+﻿using KuCoin.NET.Data;
+using KuCoin.NET.Data.Market;
+using KuCoin.NET.Data.Order;
+using KuCoin.NET.Data.Websockets;
+using KuCoin.NET.Helpers;
+using KuCoin.NET.Json;
+using KuCoin.NET.Websockets.Observations;
 
 using Newtonsoft.Json;
 
@@ -17,7 +17,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Kucoin.NET.Websockets.Distribution
+namespace KuCoin.NET.Websockets.Distribution
 {
 
     /// <summary>

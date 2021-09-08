@@ -1,8 +1,8 @@
-﻿using Kucoin.NET.Data.Market;
-using Kucoin.NET.Helpers;
-using Kucoin.NET.Json;
-using Kucoin.NET.Websockets;
-using Kucoin.NET.Websockets.Public;
+﻿using KuCoin.NET.Data.Market;
+using KuCoin.NET.Helpers;
+using KuCoin.NET.Json;
+using KuCoin.NET.Websockets;
+using KuCoin.NET.Websockets.Public;
 
 using Newtonsoft.Json;
 
@@ -13,7 +13,7 @@ using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Text;
 
-namespace Kucoin.NET.Data.Websockets
+namespace KuCoin.NET.Data.Websockets
 {
 
     /// <summary>

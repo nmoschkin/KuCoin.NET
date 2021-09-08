@@ -3,11 +3,11 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-using Kucoin.NET.Data;
+using KuCoin.NET.Data;
 
 using Newtonsoft.Json;
 
-namespace Kucoin.NET.Futures.Data.Trade
+namespace KuCoin.NET.Futures.Data.Trade
 {
     /// <summary>
     /// Paginated order details

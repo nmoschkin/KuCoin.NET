@@ -1,4 +1,4 @@
-﻿using Kucoin.NET.Observable;
+﻿using KuCoin.NET.Observable;
 
 using Newtonsoft.Json;
 
@@ -12,7 +12,7 @@ using System.Runtime.Serialization;
 using System.Text;
 using System.Threading;
 
-namespace Kucoin.NET.Helpers
+namespace KuCoin.NET.Helpers
 {
     /// <summary>
     /// Stores credentials encrypted in memory until needed.

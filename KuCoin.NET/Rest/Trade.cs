@@ -2,15 +2,15 @@
 using System.Collections.Generic;
 using System.Text;
 
-using Kucoin.NET.Rest;
-using Kucoin.NET.Data.Order;
+using KuCoin.NET.Rest;
+using KuCoin.NET.Data.Order;
 using System.Threading.Tasks;
 using System.Net.Http;
-using Kucoin.NET.Data.Market;
-using Kucoin.NET.Json;
-using Kucoin.NET.Helpers;
+using KuCoin.NET.Data.Market;
+using KuCoin.NET.Json;
+using KuCoin.NET.Helpers;
 
-namespace Kucoin.NET.Rest
+namespace KuCoin.NET.Rest
 {
     /// <summary>
     /// View, create and manipulate orders.

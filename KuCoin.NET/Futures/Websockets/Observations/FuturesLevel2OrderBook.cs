@@ -1,7 +1,7 @@
-﻿using Kucoin.NET.Data.Market;
-using Kucoin.NET.Data.Websockets;
-using Kucoin.NET.Futures.Data.Market;
-using Kucoin.NET.Websockets.Distribution;
+﻿using KuCoin.NET.Data.Market;
+using KuCoin.NET.Data.Websockets;
+using KuCoin.NET.Futures.Data.Market;
+using KuCoin.NET.Websockets.Distribution;
 
 using System;
 using System.Collections.Generic;
@@ -10,7 +10,7 @@ using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Kucoin.NET.Futures.Websockets.Observations
+namespace KuCoin.NET.Futures.Websockets.Observations
 {
     public class FuturesLevel2OrderBook : OrderBookDistributable<KeyedOrderBook<OrderUnitStruct>, ObservableOrderBook<ObservableOrderUnit>, FuturesLevel2Update, FuturesLevel2>
     {

@@ -1,5 +1,5 @@
-﻿using Kucoin.NET.Data;
-using Kucoin.NET.Json;
+﻿using KuCoin.NET.Data;
+using KuCoin.NET.Json;
 
 using Newtonsoft.Json;
 
@@ -8,7 +8,7 @@ using System.Collections.Generic;
 using System.Runtime.Serialization;
 using System.Text;
 
-namespace Kucoin.NET.Futures.Data.Market
+namespace KuCoin.NET.Futures.Data.Market
 {
     /// <summary>
     /// KuCoin Futures Service status

@@ -1,13 +1,13 @@
-﻿using Kucoin.NET.Data;
-using Kucoin.NET.Data.Market;
-using Kucoin.NET.Websockets.Distribution;
+﻿using KuCoin.NET.Data;
+using KuCoin.NET.Data.Market;
+using KuCoin.NET.Websockets.Distribution;
 
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Text;
 
-namespace Kucoin.NET.Websockets
+namespace KuCoin.NET.Websockets
 {
 
     

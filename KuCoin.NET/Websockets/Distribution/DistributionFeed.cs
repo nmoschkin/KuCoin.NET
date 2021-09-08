@@ -1,8 +1,8 @@
-﻿using Kucoin.NET.Data;
-using Kucoin.NET.Data.Market;
-using Kucoin.NET.Helpers;
-using Kucoin.NET.Observable;
-using Kucoin.NET.Websockets.Distribution.Services;
+﻿using KuCoin.NET.Data;
+using KuCoin.NET.Data.Market;
+using KuCoin.NET.Helpers;
+using KuCoin.NET.Observable;
+using KuCoin.NET.Websockets.Distribution.Services;
 
 using System;
 using System.Collections;
@@ -13,7 +13,7 @@ using System.Net;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Kucoin.NET.Websockets.Distribution
+namespace KuCoin.NET.Websockets.Distribution
 {
 
     /// <summary>

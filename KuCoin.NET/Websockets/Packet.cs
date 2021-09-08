@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Kucoin.NET.Websockets
+namespace KuCoin.NET.Websockets
 {
     public struct Packet
     {

@@ -1,4 +1,4 @@
-﻿using Kucoin.NET.Data;
+﻿using KuCoin.NET.Data;
 
 using Newtonsoft.Json;
 
@@ -6,7 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace Kucoin.NET.Futures.Data.User
+namespace KuCoin.NET.Futures.Data.User
 {
     public class DepositList : PaginatedData<Deposit>
     {

@@ -6,7 +6,7 @@ using System.Text;
 using System.Runtime.Serialization;
 using System.Reflection;
 
-namespace Kucoin.NET.Json
+namespace KuCoin.NET.Json
 {
     public class EnumToStringConverter<T> : JsonConverter<T> where T : Enum
     {

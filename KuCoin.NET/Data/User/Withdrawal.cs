@@ -1,12 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
-using Kucoin.NET.Helpers;
-using Kucoin.NET.Json;
+using KuCoin.NET.Helpers;
+using KuCoin.NET.Json;
 
 using Newtonsoft.Json;
 
-namespace Kucoin.NET.Data.User
+namespace KuCoin.NET.Data.User
 {
     /// <summary>
     /// Withdraw order information

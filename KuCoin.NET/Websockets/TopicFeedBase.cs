@@ -1,13 +1,13 @@
-﻿using Kucoin.NET.Data;
-using Kucoin.NET.Data.Websockets;
-using Kucoin.NET.Helpers;
+﻿using KuCoin.NET.Data;
+using KuCoin.NET.Data.Websockets;
+using KuCoin.NET.Helpers;
 
 using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Kucoin.NET.Websockets
+namespace KuCoin.NET.Websockets
 {
     /// <summary>
     /// Base class for simple topic feeds.

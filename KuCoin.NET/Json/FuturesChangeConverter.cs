@@ -1,4 +1,4 @@
-﻿using Kucoin.NET.Futures.Data.Market;
+﻿using KuCoin.NET.Futures.Data.Market;
 
 using Newtonsoft.Json;
 
@@ -6,7 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace Kucoin.NET.Json
+namespace KuCoin.NET.Json
 {
     public class FuturesChangeConverter : JsonConverter<FuturesChange>
     {

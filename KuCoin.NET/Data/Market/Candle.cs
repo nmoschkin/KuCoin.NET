@@ -1,14 +1,14 @@
-﻿using Kucoin.NET.Rest;
-using Kucoin.NET.Helpers;
+﻿using KuCoin.NET.Rest;
+using KuCoin.NET.Helpers;
 
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
 using System.Text;
-using Kucoin.NET.Json;
+using KuCoin.NET.Json;
 
-namespace Kucoin.NET.Data.Market
+namespace KuCoin.NET.Data.Market
 {
 
     /// <summary>

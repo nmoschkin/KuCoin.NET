@@ -1,6 +1,6 @@
-﻿using Kucoin.NET.Helpers;
-using Kucoin.NET.Rest;
-using Kucoin.NET.Services;
+﻿using KuCoin.NET.Helpers;
+using KuCoin.NET.Rest;
+using KuCoin.NET.Services;
 
 using System;
 using System.Collections.Generic;
@@ -8,7 +8,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Kucoin.NET
+namespace KuCoin.NET
 {
 
     /// <summary>
@@ -57,12 +57,12 @@ namespace Kucoin.NET
 
 
     /// <summary>
-    /// Global Kucoin.NET library methods.
+    /// Global KuCoin.NET library methods.
     /// </summary>
     /// <remarks>
     /// This is a starting point for accessing the rest of this library's features.
     /// </remarks>
-    public static class KuCoin
+    public static class KuCoinSystem
     {
 
         /// <summary>
@@ -81,7 +81,7 @@ namespace Kucoin.NET
         /// <param name="passphrase">API passphrase.</param>
         /// <param name="sandbox">The API key is a sandbox key.</param>
         /// <param name="futures">The API key is a KuCoin Futures key.</param>
-        /// <param name="addToCache">Add these credentials to the global <see cref="KuCoin.Credentials"/> list.</param>
+        /// <param name="addToCache">Add these credentials to the global <see cref="KuCoinSystem.Credentials"/> list.</param>
         /// <returns>
         /// A new <see cref="ICredentialsProvider"/> that can be used to connect to any service that requires an API key.
         /// </returns>
@@ -125,13 +125,13 @@ namespace Kucoin.NET
         /// <summary>
         /// Gets the market.
         /// </summary>
-        /// <returns>The <see cref="Kucoin.NET.Rest.Market"/> instance.</returns>
+        /// <returns>The <see cref="KuCoinSystem.NET.Rest.Market"/> instance.</returns>
         public static Market Market => Market.Instance;
 
         /// <summary>
         /// Refresh the market data.
         /// </summary>
-        /// <returns>The <see cref="Kucoin.NET.Rest.Market"/> instance.</returns>
+        /// <returns>The <see cref="KuCoinSystem.NET.Rest.Market"/> instance.</returns>
         public static Market RefreshMarket()
         {
             Market.Instance.RefreshSymbolsAsync().ConfigureAwait(false).GetAwaiter().GetResult();

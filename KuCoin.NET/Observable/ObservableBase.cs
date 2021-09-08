@@ -9,7 +9,7 @@ using System.Runtime.ConstrainedExecution;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Kucoin.NET.Observable
+namespace KuCoin.NET.Observable
 {
 
     /// <summary>

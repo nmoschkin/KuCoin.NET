@@ -5,7 +5,7 @@ using System.Text;
 
 using Newtonsoft.Json;
 
-namespace Kucoin.NET.Data.Order
+namespace KuCoin.NET.Data.Order
 {
     /// <summary>
     /// Paginated order details

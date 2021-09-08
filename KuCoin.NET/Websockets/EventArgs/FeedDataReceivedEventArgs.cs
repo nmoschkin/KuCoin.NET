@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace Kucoin.NET.Websockets
+namespace KuCoin.NET.Websockets
 {
     public class DataReceivedEventArgs : EventArgs
     {

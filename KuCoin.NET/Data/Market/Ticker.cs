@@ -1,7 +1,7 @@
-﻿using Kucoin.NET.Helpers;
-using Kucoin.NET.Json;
-using Kucoin.NET.Observable;
-using Kucoin.NET.Rest;
+﻿using KuCoin.NET.Helpers;
+using KuCoin.NET.Json;
+using KuCoin.NET.Observable;
+using KuCoin.NET.Rest;
 
 using Newtonsoft.Json;
 
@@ -11,7 +11,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Kucoin.NET.Data.Market
+namespace KuCoin.NET.Data.Market
 {
     /// <summary>
     /// Symbol ticker.

@@ -1,16 +1,16 @@
-﻿using Kucoin.NET.Websockets.Observations;
-using Kucoin.NET.Websockets.Public;
+﻿using KuCoin.NET.Websockets.Observations;
+using KuCoin.NET.Websockets.Public;
 
 using System;
 using System.Collections.Generic;
 using System.Net.NetworkInformation;
 using System.Text;
 using System.Threading.Tasks;
-using Kucoin.NET.Helpers;
-using Kucoin.NET.Futures.Rest;
-using Kucoin.NET.Futures.Websockets;
-using Kucoin.NET.Data.Market;
-using Kucoin.NET.Services;
+using KuCoin.NET.Helpers;
+using KuCoin.NET.Futures.Rest;
+using KuCoin.NET.Futures.Websockets;
+using KuCoin.NET.Data.Market;
+using KuCoin.NET.Services;
 using System.ComponentModel;
 
 
@@ -18,20 +18,20 @@ using Microsoft.AppCenter;
 using Microsoft.AppCenter.Analytics;
 using Microsoft.AppCenter.Crashes;
 using System.Runtime.InteropServices;
-using Kucoin.NET;
+using KuCoin.NET;
 using System.Security.Cryptography.X509Certificates;
-using Kucoin.NET.Websockets;
+using KuCoin.NET.Websockets;
 
 using System.Reflection;
 using System.Threading;
-using Kucoin.NET.Websockets.Distribution;
+using KuCoin.NET.Websockets.Distribution;
 using System.Linq;
 using System.Security.AccessControl;
 using Newtonsoft.Json;
-using Kucoin.NET.Data.Websockets;
+using KuCoin.NET.Data.Websockets;
 using System.IO;
-using Kucoin.NET.Websockets.Distribution.Services;
-using Kucoin.NET.Rest;
+using KuCoin.NET.Websockets.Distribution.Services;
+using KuCoin.NET.Rest;
 
 namespace KuCoinConsole
 {
@@ -102,7 +102,7 @@ namespace KuCoinConsole
 
         static List<string> messages = new List<string>();
 
-        static Kucoin.NET.Rest.Market market;
+        static KuCoin.NET.Rest.Market market;
 
         static List<object> feeds = new List<object>();
 
@@ -895,7 +895,7 @@ namespace KuCoinConsole
             }
         }
 
-        private static void Ticker_FeedDataReceived(object sender, Kucoin.NET.Websockets.FeedDataReceivedEventArgs<Kucoin.NET.Futures.Data.Websockets.ContractMarketSnapshot> e)
+        private static void Ticker_FeedDataReceived(object sender, KuCoin.NET.Websockets.FeedDataReceivedEventArgs<KuCoin.NET.Futures.Data.Websockets.ContractMarketSnapshot> e)
         {
 
             // Console.Write($"{e.Data.Symbol}: Mark Price - {e.Data.MarkPrice:#,##0.00########}: Index Price - {e.Data.IndexPrice:#,##0.00########}                       \r");
@@ -903,7 +903,7 @@ namespace KuCoinConsole
             Console.Write($"{e.Data}          \r");
         }
 
-        private static void Ticker_DataReceived(object sender, Kucoin.NET.Websockets.DataReceivedEventArgs e)
+        private static void Ticker_DataReceived(object sender, KuCoin.NET.Websockets.DataReceivedEventArgs e)
         {
         }
         

@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Kucoin.NET.Helpers
+namespace KuCoin.NET.Helpers
 {
     public static class GCFHelper
     {

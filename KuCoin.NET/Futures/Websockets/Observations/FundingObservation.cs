@@ -1,11 +1,11 @@
-﻿using Kucoin.NET.Futures.Data.Websockets;
-using Kucoin.NET.Websockets;
+﻿using KuCoin.NET.Futures.Data.Websockets;
+using KuCoin.NET.Websockets;
 
 using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace Kucoin.NET.Futures.Websockets.Observations
+namespace KuCoin.NET.Futures.Websockets.Observations
 {
     /// <summary>
     /// Funding event observation

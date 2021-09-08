@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace Kucoin.NET.Data.Market
+namespace KuCoin.NET.Data.Market
 {
     /// <summary>
     /// Enumeration of whether the kline length is represented in seconds, or minutes.

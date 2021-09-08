@@ -5,15 +5,15 @@ using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Text;
 
-using Kucoin.NET.Data.Market;
-using Kucoin.NET.Helpers;
-using Kucoin.NET.Json;
-using Kucoin.NET.Observable;
-using Kucoin.NET.Websockets.Private;
+using KuCoin.NET.Data.Market;
+using KuCoin.NET.Helpers;
+using KuCoin.NET.Json;
+using KuCoin.NET.Observable;
+using KuCoin.NET.Websockets.Private;
 
 using Newtonsoft.Json;
 
-namespace Kucoin.NET.Data.Websockets
+namespace KuCoin.NET.Data.Websockets
 {
     /// <summary>
     /// Level 2 New Sequence Changes

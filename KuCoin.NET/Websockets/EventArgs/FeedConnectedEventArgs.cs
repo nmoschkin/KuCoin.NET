@@ -1,11 +1,11 @@
-﻿using Kucoin.NET.Data.Websockets;
+﻿using KuCoin.NET.Data.Websockets;
 
 using System;
 using System.Collections.Generic;
 using System.Net.WebSockets;
 using System.Text;
 
-namespace Kucoin.NET.Websockets
+namespace KuCoin.NET.Websockets
 {
     /// <summary>
     /// Feed IsConnected event arguments

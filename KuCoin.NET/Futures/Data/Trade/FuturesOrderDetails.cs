@@ -1,8 +1,8 @@
-﻿using Kucoin.NET.Data;
-using Kucoin.NET.Data.Market;
-using Kucoin.NET.Data.Order;
-using Kucoin.NET.Helpers;
-using Kucoin.NET.Json;
+﻿using KuCoin.NET.Data;
+using KuCoin.NET.Data.Market;
+using KuCoin.NET.Data.Order;
+using KuCoin.NET.Helpers;
+using KuCoin.NET.Json;
 
 using Newtonsoft.Json;
 
@@ -10,7 +10,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace Kucoin.NET.Futures.Data.Trade
+namespace KuCoin.NET.Futures.Data.Trade
 {
     /// <summary>
     /// Futures Order Details

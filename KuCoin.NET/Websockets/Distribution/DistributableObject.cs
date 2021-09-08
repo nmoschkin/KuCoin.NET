@@ -1,14 +1,14 @@
-using Kucoin.NET.Data;
-using Kucoin.NET.Data.Market;
-using Kucoin.NET.Observable;
-using Kucoin.NET.Websockets.Distribution.Services;
-using Kucoin.NET.Websockets.Public;
+using KuCoin.NET.Data;
+using KuCoin.NET.Data.Market;
+using KuCoin.NET.Observable;
+using KuCoin.NET.Websockets.Distribution.Services;
+using KuCoin.NET.Websockets.Public;
 
 using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace Kucoin.NET.Websockets.Distribution
+namespace KuCoin.NET.Websockets.Distribution
 {
     /// <summary>
     /// An observation that does regular work on the input feed data in a background thread.

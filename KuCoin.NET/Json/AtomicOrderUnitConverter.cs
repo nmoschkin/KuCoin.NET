@@ -1,5 +1,5 @@
-﻿using Kucoin.NET.Data.Market;
-using Kucoin.NET.Helpers;
+﻿using KuCoin.NET.Data.Market;
+using KuCoin.NET.Helpers;
 
 using Newtonsoft.Json;
 
@@ -7,7 +7,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace Kucoin.NET.Json
+namespace KuCoin.NET.Json
 {
     public class AtomicOrderUnitConverter : JsonConverter
     {

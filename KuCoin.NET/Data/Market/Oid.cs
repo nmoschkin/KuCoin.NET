@@ -1,4 +1,4 @@
-﻿using Kucoin.NET.Helpers;
+﻿using KuCoin.NET.Helpers;
 
 using System;
 using System.Collections.Generic;
@@ -9,7 +9,7 @@ using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Kucoin.NET.Data.Market
+namespace KuCoin.NET.Data.Market
 {
 #if DOTNETSTD
 

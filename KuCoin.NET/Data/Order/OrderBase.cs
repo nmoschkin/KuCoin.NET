@@ -2,12 +2,12 @@
 using System.Collections.Generic;
 using System.Text;
 
-using Kucoin.NET.Data.Market;
-using Kucoin.NET.Json;
+using KuCoin.NET.Data.Market;
+using KuCoin.NET.Json;
 
 using Newtonsoft.Json;
 
-namespace Kucoin.NET.Data.Order
+namespace KuCoin.NET.Data.Order
 {
     /// <summary>
     /// Base class for all orders.

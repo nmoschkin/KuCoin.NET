@@ -2,11 +2,11 @@
 using System.Collections.Generic;
 using System.Text;
 
-using Kucoin.NET.Helpers;
+using KuCoin.NET.Helpers;
 
 using Newtonsoft.Json;
 
-namespace Kucoin.NET.Json
+namespace KuCoin.NET.Json
 {
 
     /// <summary>

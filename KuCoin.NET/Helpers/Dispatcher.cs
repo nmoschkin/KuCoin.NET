@@ -1,7 +1,7 @@
 ﻿using System.Data;
 using System.Threading;
 
-namespace Kucoin.NET.Helpers
+namespace KuCoin.NET.Helpers
 {
     /// <summary>
     /// Synchronization dispatcher (for UI data-binding)

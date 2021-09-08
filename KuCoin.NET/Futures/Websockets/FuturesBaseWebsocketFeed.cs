@@ -1,12 +1,12 @@
-﻿using Kucoin.NET.Data;
-using Kucoin.NET.Helpers;
-using Kucoin.NET.Websockets;
+﻿using KuCoin.NET.Data;
+using KuCoin.NET.Helpers;
+using KuCoin.NET.Websockets;
 
 using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace Kucoin.NET.Futures.Websockets
+namespace KuCoin.NET.Futures.Websockets
 {
     /// <summary>
     /// Base class for most futures websocket feeds

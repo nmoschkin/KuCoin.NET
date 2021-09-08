@@ -1,5 +1,5 @@
-﻿using Kucoin.NET.Data.User;
-using Kucoin.NET.Helpers;
+﻿using KuCoin.NET.Data.User;
+using KuCoin.NET.Helpers;
 
 using System;
 using System.Collections.Generic;
@@ -8,10 +8,10 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
-using static Kucoin.NET.Helpers.GCFHelper;
+using static KuCoin.NET.Helpers.GCFHelper;
 
 
-namespace Kucoin.NET.Websockets.Distribution.Services
+namespace KuCoin.NET.Websockets.Distribution.Services
 {
 
     /// <summary>

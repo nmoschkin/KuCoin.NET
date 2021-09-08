@@ -6,15 +6,15 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
-using Kucoin.NET.Observable;
-using Kucoin.NET.Data.Market;
+using KuCoin.NET.Observable;
+using KuCoin.NET.Data.Market;
 using System.IO;
 using System.Net;
-using Kucoin.NET.Helpers;
+using KuCoin.NET.Helpers;
 using System.ComponentModel;
 using System.Threading;
 
-namespace Kucoin.NET.Rest
+namespace KuCoin.NET.Rest
 {
     public class MarketCreatedEventArgs : EventArgs
     {

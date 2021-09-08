@@ -1,4 +1,4 @@
-﻿using Kucoin.NET.Json;
+﻿using KuCoin.NET.Json;
 
 using Newtonsoft.Json;
 
@@ -7,7 +7,7 @@ using System.Collections.Generic;
 using System.Runtime.Serialization;
 using System.Text;
 
-namespace Kucoin.NET.Data.Order.Margin
+namespace KuCoin.NET.Data.Order.Margin
 {
     /// <summary>
     /// Borrow order execution type

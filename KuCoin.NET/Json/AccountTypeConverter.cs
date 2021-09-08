@@ -1,4 +1,4 @@
-﻿using Kucoin.NET.Data.User;
+﻿using KuCoin.NET.Data.User;
 
 using Newtonsoft.Json;
 
@@ -6,7 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace Kucoin.NET.Json
+namespace KuCoin.NET.Json
 {
 
     public class AccountTypeConverter : JsonConverter<AccountType>

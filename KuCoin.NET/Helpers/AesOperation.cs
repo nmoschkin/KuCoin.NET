@@ -4,7 +4,7 @@ using System.Text;
 using System.IO;
 using System.Security.Cryptography;
 
-namespace Kucoin.NET.Helpers
+namespace KuCoin.NET.Helpers
 {
     /// <summary>
     /// GUID-key based symmetric string encryption and decryption

@@ -1,7 +1,7 @@
-﻿using Kucoin.NET.Data.Market;
-using Kucoin.NET.Data.Order;
-using Kucoin.NET.Futures.Data.Trade;
-using Kucoin.NET.Helpers;
+﻿using KuCoin.NET.Data.Market;
+using KuCoin.NET.Data.Order;
+using KuCoin.NET.Futures.Data.Trade;
+using KuCoin.NET.Helpers;
 
 using System;
 using System.Collections.Generic;
@@ -10,7 +10,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Kucoin.NET.Futures.Rest
+namespace KuCoin.NET.Futures.Rest
 {
     /// <summary>
     /// Futures Trading

@@ -1,11 +1,11 @@
-﻿using Kucoin.NET.Helpers;
+﻿using KuCoin.NET.Helpers;
 
 using System;
 using System.Collections.Generic;
 using System.Net;
 using System.Text;
 
-namespace Kucoin.NET.Services
+namespace KuCoin.NET.Services
 {
     /// <summary>
     /// <see cref="ISymbolDataService"/> factory implementation.

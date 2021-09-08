@@ -1,6 +1,6 @@
-﻿using Kucoin.NET.Data;
-using Kucoin.NET.Helpers;
-using Kucoin.NET.Json;
+﻿using KuCoin.NET.Data;
+using KuCoin.NET.Helpers;
+using KuCoin.NET.Json;
 
 using Newtonsoft.Json;
 
@@ -8,7 +8,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace Kucoin.NET.Futures.Data.Websockets
+namespace KuCoin.NET.Futures.Data.Websockets
 {
     /// <summary>
     /// Funding Settlement Data

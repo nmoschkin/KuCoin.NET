@@ -1,15 +1,15 @@
-﻿using Kucoin.NET.Observable;
+﻿using KuCoin.NET.Observable;
 
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Text;
 using Newtonsoft.Json;
-using Kucoin.NET.Rest;
-using Kucoin.NET.Helpers;
-using Kucoin.NET.Json;
+using KuCoin.NET.Rest;
+using KuCoin.NET.Helpers;
+using KuCoin.NET.Json;
 
-namespace Kucoin.NET.Data.Market
+namespace KuCoin.NET.Data.Market
 {
 
     /// <summary>

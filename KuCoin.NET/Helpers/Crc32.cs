@@ -5,7 +5,7 @@ using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Kucoin.NET.Helpers
+namespace KuCoin.NET.Helpers
 {
     /// <summary>
     /// ISO 3309 CRC-32 Hash Calculator.

@@ -1,10 +1,10 @@
-﻿using Kucoin.NET.Data.Market;
+﻿using KuCoin.NET.Data.Market;
 
 using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace Kucoin.NET.Websockets
+namespace KuCoin.NET.Websockets
 {
     /// <summary>
     /// Event information for when the order book is updated from the full-depth order book.

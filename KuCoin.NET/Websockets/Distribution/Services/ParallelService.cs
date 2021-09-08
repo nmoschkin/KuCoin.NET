@@ -1,5 +1,5 @@
-using Kucoin.NET.Data.Market;
-using Kucoin.NET.Websockets.Public;
+using KuCoin.NET.Data.Market;
+using KuCoin.NET.Websockets.Public;
 
 using System;
 using System.Collections;
@@ -14,7 +14,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Kucoin.NET.Websockets.Distribution.Services
+namespace KuCoin.NET.Websockets.Distribution.Services
 {
     /// <summary>
     /// Organize distributable objects that do work in parallel.

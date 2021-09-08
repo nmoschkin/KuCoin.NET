@@ -3,13 +3,13 @@ using System.Collections.Generic;
 using System.Text;
 
 using Newtonsoft.Json;
-using Kucoin.NET.Observable;
-using Kucoin.NET.Data.Market;
-using Kucoin.NET.Rest;
-using Kucoin.NET.Helpers;
-using Kucoin.NET.Json;
+using KuCoin.NET.Observable;
+using KuCoin.NET.Data.Market;
+using KuCoin.NET.Rest;
+using KuCoin.NET.Helpers;
+using KuCoin.NET.Json;
 
-namespace Kucoin.NET.Data.Websockets
+namespace KuCoin.NET.Data.Websockets
 {
     /// <summary>
     /// K-Line websocket feed data packet

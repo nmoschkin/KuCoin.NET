@@ -1,7 +1,7 @@
-﻿using Kucoin.NET.Data.Market;
-using Kucoin.NET.Data.Websockets;
-using Kucoin.NET.Websockets.Distribution;
-using Kucoin.NET.Websockets.Public;
+﻿using KuCoin.NET.Data.Market;
+using KuCoin.NET.Data.Websockets;
+using KuCoin.NET.Websockets.Distribution;
+using KuCoin.NET.Websockets.Public;
 
 using System;
 using System.Collections.Generic;
@@ -9,7 +9,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Kucoin.NET.Websockets.Observations
+namespace KuCoin.NET.Websockets.Observations
 {
     public class KlineChart<TCandle, TCustom, TCol> : InitializableObject<SymbolKline, KlineFeedMessage<TCandle>, TCol>, IParent<KlineFeedNew<TCandle, TCustom, TCol>>
           where TCandle : IFullCandle, TCustom, new()

@@ -1,4 +1,4 @@
-# Kucoin.NET v1.0a
+# KuCoin.NET v1.0a
 KuCoin and KuCoin Futures API Libraries for .NET.
 
 _This library is a client for the KuCoin API as described in (https://docs.kucoin.com/#general)._
@@ -14,7 +14,7 @@ Going forward, I will be developing UI/UX apps with MAUI or WinUI 3 / Project Re
 
 This repository is now reduced to the core library, the console app and a credentials editing tool.
 
-The entire project has been retargeted to .NET 6, except for Kucoin.NET.Std, which is .NET Standard 2.0.  
+The entire project has been retargeted to .NET 6, except for KuCoin.NET.Std, which is .NET Standard 2.0.  
 
 ## Installation and Getting Started
 
@@ -61,14 +61,14 @@ The console app only demonstrates the ability to track Level 3 feeds.  Other fun
 
 _(Note: A Wiki will be coming soon!)_
 
-The starting point for the entire system is the __Kucoin.NET.KuCoin__ static class.  From here you will be able to register credentials 
+The starting point for the entire system is the __Kucoin.NET.KuCoinSystem__ static class.  From here you will be able to register credentials 
 and create and acquire __IServiceFactory__ and  __ISymbolDataService__ instances, as well as initialize market data and the dispatcher.
 
 ### REST API 
 
 Inside the __Kucoin.NET.Rest__ namespace you will find three objects, __Market__, __Trade__, __Margin__, and __User__.  __Margin__, __Trade__, and __User__ require API Keys.  
 
-There are two credentials providers, there is the default __MemoryEncryptedCredentialsProvider__ that is in the Kucoin.NET library, and then the __CryptoCredentials__ class in the example app and the credentials editor app.
+There are two credentials providers, there is the default __MemoryEncryptedCredentialsProvider__ that is in the KuCoin.NET library, and then the __CryptoCredentials__ class in the example app and the credentials editor app.
 
 The __MemoryEncryptedCredentialsProvider__ will store the credentials encrypted in memory with a random seed, until they are needed.  __CryptoCredentials__ has the ability to load and save encrypted credentials sets to disk.  A 6 digit numeric pin is required to save and load credentials.  Both of these classes implement the __ICredentialsProvider__ interface which you can use to write your own provider.
 

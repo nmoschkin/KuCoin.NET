@@ -2,12 +2,12 @@
 using System.Collections.Generic;
 using System.Text;
 
-using Kucoin.NET.Data.Market;
+using KuCoin.NET.Data.Market;
 
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
 
-namespace Kucoin.NET.Json
+namespace KuCoin.NET.Json
 {
     /// <summary>
     /// Global default data contract resolver for the KuCoin API.

@@ -1,5 +1,5 @@
-﻿using Kucoin.NET.Rest;
-using Kucoin.NET.Helpers;
+﻿using KuCoin.NET.Rest;
+using KuCoin.NET.Helpers;
 
 using System;
 using System.Collections.Generic;
@@ -8,7 +8,7 @@ using System.Reflection;
 using System.Text;
 using System.Data.Common;
 
-namespace Kucoin.NET.Data.Market
+namespace KuCoin.NET.Data.Market
 {
     /// <summary>
     /// A structure that represents the different supported candlestick time lengths.

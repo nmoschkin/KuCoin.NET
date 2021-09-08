@@ -17,7 +17,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Kucoin.NET.Observable
+namespace KuCoin.NET.Observable
 {
 
     /// <summary>

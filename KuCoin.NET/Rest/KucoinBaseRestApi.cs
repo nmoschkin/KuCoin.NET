@@ -1,7 +1,7 @@
-﻿using Kucoin.NET.Data;
-using Kucoin.NET.Helpers;
-using Kucoin.NET.Json;
-using Kucoin.NET.Observable;
+﻿using KuCoin.NET.Data;
+using KuCoin.NET.Helpers;
+using KuCoin.NET.Json;
+using KuCoin.NET.Observable;
 
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -14,7 +14,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Xml.XPath;
 
-namespace Kucoin.NET.Rest
+namespace KuCoin.NET.Rest
 {
     /// <summary>
     /// The base class for all KuCoin communication, including KuCoin and KuCoin Futures, REST and websocket APIs.
@@ -264,14 +264,14 @@ namespace Kucoin.NET.Rest
         }
 
         /// <summary>
-        /// Resolve the correct credentials according to the global <see cref="KuCoin.UseCredentialsMode"/> setting.
+        /// Resolve the correct credentials according to the global <see cref="KuCoinSystem.UseCredentialsMode"/> setting.
         /// </summary>
         /// <returns></returns>
         protected ICredentialsProvider ResolveCredentials()
         {
             ICredentialsProvider cred = this.cred;
 
-            var ucm = KuCoin.UseCredentialsMode;
+            var ucm = KuCoinSystem.UseCredentialsMode;
 
             if (ucm == UseCredentialsMode.Never)
             {
@@ -287,9 +287,9 @@ namespace Kucoin.NET.Rest
                 cred = null;
             }
 
-            if (KuCoin.Credentials != null && KuCoin.Credentials.Count > 0)
+            if (KuCoinSystem.Credentials != null && KuCoinSystem.Credentials.Count > 0)
             {
-                foreach (var checkCred in KuCoin.Credentials)
+                foreach (var checkCred in KuCoinSystem.Credentials)
                 {
                     if (checkCred.GetFutures() == IsFutures && checkCred.GetSandbox() == IsSandbox)
                     {
@@ -298,9 +298,9 @@ namespace Kucoin.NET.Rest
                     }
                 }
 
-                if (cred == null && KuCoin.UseCredentialsMode == UseCredentialsMode.Always)
+                if (cred == null && KuCoinSystem.UseCredentialsMode == UseCredentialsMode.Always)
                 {
-                    cred = KuCoin.Credentials[0];
+                    cred = KuCoinSystem.Credentials[0];
                 }
 
             }

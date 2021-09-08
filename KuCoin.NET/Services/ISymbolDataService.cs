@@ -1,9 +1,9 @@
-﻿using Kucoin.NET.Data.Market;
-using Kucoin.NET.Data.Websockets;
-using Kucoin.NET.Helpers;
-using Kucoin.NET.Rest;
-using Kucoin.NET.Websockets.Observations;
-using Kucoin.NET.Websockets.Public;
+﻿using KuCoin.NET.Data.Market;
+using KuCoin.NET.Data.Websockets;
+using KuCoin.NET.Helpers;
+using KuCoin.NET.Rest;
+using KuCoin.NET.Websockets.Observations;
+using KuCoin.NET.Websockets.Public;
 
 using System;
 using System.Collections.Generic;
@@ -13,7 +13,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Kucoin.NET.Services
+namespace KuCoin.NET.Services
 {
 
     public class SymbolDataServiceEventArgs : EventArgs

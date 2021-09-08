@@ -4,12 +4,12 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-using Kucoin.NET.Json;
-using Kucoin.NET.Observable;
+using KuCoin.NET.Json;
+using KuCoin.NET.Observable;
 
 using Newtonsoft.Json;
 
-namespace Kucoin.NET.Data.Market
+namespace KuCoin.NET.Data.Market
 {
     /// <summary>
     /// Trading symbol
@@ -137,7 +137,7 @@ namespace Kucoin.NET.Data.Market
         {
             if (s == null) return default;
 
-            if (Kucoin.NET.Rest.Market.Instance.Symbols != null && Kucoin.NET.Rest.Market.Instance.Symbols.Count != 0 && Kucoin.NET.Rest.Market.Instance.Symbols.TryGetValue(s, out TradingSymbol sym)) 
+            if (KuCoin.NET.Rest.Market.Instance.Symbols != null && KuCoin.NET.Rest.Market.Instance.Symbols.Count != 0 && KuCoin.NET.Rest.Market.Instance.Symbols.TryGetValue(s, out TradingSymbol sym)) 
             {
                 return sym;
             }

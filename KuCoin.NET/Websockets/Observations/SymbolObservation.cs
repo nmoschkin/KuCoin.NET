@@ -1,11 +1,11 @@
-﻿using Kucoin.NET.Data;
-using Kucoin.NET.Data.Market;
+﻿using KuCoin.NET.Data;
+using KuCoin.NET.Data.Market;
 
 using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace Kucoin.NET.Websockets
+namespace KuCoin.NET.Websockets
 {
     /// <summary>
     /// Provides symbol-level observation filtering based on trading symbols.

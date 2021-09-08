@@ -1,7 +1,7 @@
-﻿using Kucoin.NET.Data;
-using Kucoin.NET.Data.Market;
-using Kucoin.NET.Json;
-using Kucoin.NET.Observable;
+﻿using KuCoin.NET.Data;
+using KuCoin.NET.Data.Market;
+using KuCoin.NET.Json;
+using KuCoin.NET.Observable;
 
 using Newtonsoft.Json;
 
@@ -9,7 +9,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace Kucoin.NET.Futures.Data.Market
+namespace KuCoin.NET.Futures.Data.Market
 {
     /// <summary>
     /// Contains data about an open futures contract

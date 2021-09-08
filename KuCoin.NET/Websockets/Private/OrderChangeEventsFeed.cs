@@ -1,10 +1,10 @@
-﻿using Kucoin.NET.Data.Websockets.User;
-using Kucoin.NET.Helpers;
+﻿using KuCoin.NET.Data.Websockets.User;
+using KuCoin.NET.Helpers;
 
 using System;
 using System.Threading.Tasks;
 
-namespace Kucoin.NET.Websockets.Private
+namespace KuCoin.NET.Websockets.Private
 {
 
     /// <summary>

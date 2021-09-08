@@ -1,6 +1,6 @@
-﻿using Kucoin.NET.Data.Market;
-using Kucoin.NET.Helpers;
-using Kucoin.NET.Json;
+﻿using KuCoin.NET.Data.Market;
+using KuCoin.NET.Helpers;
+using KuCoin.NET.Json;
 
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
@@ -13,7 +13,7 @@ using System.Reflection;
 using System.Runtime.Serialization;
 using System.Text;
 
-namespace Kucoin.NET.Data.Websockets
+namespace KuCoin.NET.Data.Websockets
 {
     /// <summary>
     /// Order completion reasons

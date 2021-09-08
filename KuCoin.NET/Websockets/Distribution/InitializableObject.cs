@@ -1,4 +1,4 @@
-﻿using Kucoin.NET.Data;
+﻿using KuCoin.NET.Data;
 
 using System;
 using System.Collections.Generic;
@@ -7,7 +7,7 @@ using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Kucoin.NET.Websockets.Distribution
+namespace KuCoin.NET.Websockets.Distribution
 {
     public abstract class InitializableObject<TKey, TValue, TInternal> : DistributableObject<TKey, TValue>, IInitializable<TKey, TInternal>
         where TValue: IStreamableObject

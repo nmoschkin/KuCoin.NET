@@ -3,10 +3,10 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
-using Kucoin.NET.Helpers;
-using Kucoin.NET.Json;
+using KuCoin.NET.Helpers;
+using KuCoin.NET.Json;
 
-namespace Kucoin.NET.Data.Order
+namespace KuCoin.NET.Data.Order
 {
     /// <summary>
     /// Order filled data

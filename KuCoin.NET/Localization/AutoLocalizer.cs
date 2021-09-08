@@ -6,7 +6,7 @@ using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Kucoin.NET.Localization
+namespace KuCoin.NET.Localization
 {
     public static class AutoLocalizer
     {

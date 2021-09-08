@@ -1,13 +1,13 @@
-﻿using Kucoin.NET.Data.Websockets;
-using Kucoin.NET.Futures.Data.Websockets;
-using Kucoin.NET.Websockets;
+﻿using KuCoin.NET.Data.Websockets;
+using KuCoin.NET.Futures.Data.Websockets;
+using KuCoin.NET.Websockets;
 
 using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Kucoin.NET.Futures.Websockets
+namespace KuCoin.NET.Futures.Websockets
 {
     /// <summary>
     /// Futures Match Execution Event Feed

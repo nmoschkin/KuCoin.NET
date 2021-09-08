@@ -2,11 +2,11 @@
 using System.Collections.Generic;
 using System.Text;
 
-using Kucoin.NET.Data.Market;
-using Kucoin.NET.Data.Websockets;
+using KuCoin.NET.Data.Market;
+using KuCoin.NET.Data.Websockets;
 using System.Threading.Tasks;
 
-namespace Kucoin.NET.Websockets.Public
+namespace KuCoin.NET.Websockets.Public
 {
     /// <summary>
     /// A <see cref="Ticker"/> feed that pushes updates for all trading pairs (symbols).

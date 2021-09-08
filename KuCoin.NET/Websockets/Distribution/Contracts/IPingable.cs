@@ -2,10 +2,10 @@
 using System.Threading.Tasks;
 using System.Collections.Generic;
 using System.Text;
-using Kucoin.NET.Websockets.Distribution.Services;
+using KuCoin.NET.Websockets.Distribution.Services;
 using System.ComponentModel;
 
-namespace Kucoin.NET.Websockets.Distribution
+namespace KuCoin.NET.Websockets.Distribution
 {
     /// <summary>
     /// An object that can ping a remote server, and be registered with the <see cref="PingService"/>.

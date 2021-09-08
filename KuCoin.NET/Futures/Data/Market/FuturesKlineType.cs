@@ -1,4 +1,4 @@
-﻿using Kucoin.NET.Data.Market;
+﻿using KuCoin.NET.Data.Market;
 
 using System;
 using System.Collections.Generic;
@@ -6,7 +6,7 @@ using System.Linq;
 using System.Reflection;
 using System.Text;
 
-namespace Kucoin.NET.Futures.Data.Market
+namespace KuCoin.NET.Futures.Data.Market
 {
     /// <summary>
     /// Futures K-Line Type

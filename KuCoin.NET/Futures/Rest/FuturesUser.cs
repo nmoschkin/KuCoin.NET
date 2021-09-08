@@ -1,7 +1,7 @@
-﻿using Kucoin.NET.Data.User;
-using Kucoin.NET.Futures.Data.User;
-using Kucoin.NET.Helpers;
-using Kucoin.NET.Rest;
+﻿using KuCoin.NET.Data.User;
+using KuCoin.NET.Futures.Data.User;
+using KuCoin.NET.Helpers;
+using KuCoin.NET.Rest;
 
 using System;
 using System.Collections.Generic;
@@ -9,7 +9,7 @@ using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Kucoin.NET.Futures.Rest
+namespace KuCoin.NET.Futures.Rest
 {
     /// <summary>
     /// Futures user account information

@@ -1,6 +1,6 @@
-﻿using Kucoin.NET.Data.Websockets;
-using Kucoin.NET.Helpers;
-using Kucoin.NET.Json;
+﻿using KuCoin.NET.Data.Websockets;
+using KuCoin.NET.Helpers;
+using KuCoin.NET.Json;
 
 using Newtonsoft.Json;
 
@@ -8,7 +8,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace Kucoin.NET.Futures.Data.Websockets
+namespace KuCoin.NET.Futures.Data.Websockets
 {
     /// <summary>
     /// Static market depth update for KuCoin Futures Level 2 static depth market feeds

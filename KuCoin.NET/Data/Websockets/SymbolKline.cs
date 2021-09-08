@@ -1,15 +1,15 @@
-﻿using Kucoin.NET.Data.Market;
+﻿using KuCoin.NET.Data.Market;
 
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Text;
 
-namespace Kucoin.NET.Data.Websockets
+namespace KuCoin.NET.Data.Websockets
 {
 
     /// <summary>
-    /// Represents a combination trading pair (symbol) and <see cref="Kucoin.NET.Data.Market.KlineType"/>.
+    /// Represents a combination trading pair (symbol) and <see cref="KuCoinSystem.NET.Data.Market.KlineType"/>.
     /// </summary>
     public struct SymbolKline : ISymbol, IEquatable<SymbolKline>, IComparable<SymbolKline>
     {

@@ -1,14 +1,14 @@
-﻿using Kucoin.NET.Data.Market;
+﻿using KuCoin.NET.Data.Market;
 
 using System;
 using System.Collections.Generic;
 using System.Text;
 using Newtonsoft.Json;
-using Kucoin.NET.Json;
-using Kucoin.NET.Data.Order;
-using Kucoin.NET.Helpers;
+using KuCoin.NET.Json;
+using KuCoin.NET.Data.Order;
+using KuCoin.NET.Helpers;
 
-namespace Kucoin.NET.Futures.Data.Trade
+namespace KuCoin.NET.Futures.Data.Trade
 {
     /// <summary>
     /// Order list query parameters object.

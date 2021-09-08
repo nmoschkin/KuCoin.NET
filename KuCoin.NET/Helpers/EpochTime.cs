@@ -3,7 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace Kucoin.NET.Helpers
+namespace KuCoin.NET.Helpers
 {
 
     /// <summary>

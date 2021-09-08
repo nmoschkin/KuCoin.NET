@@ -4,7 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace Kucoin.NET.Data.Order.Margin
+namespace KuCoin.NET.Data.Order.Margin
 {
     /// <summary>
     /// Receipt for a borrow order returned from the REST API.

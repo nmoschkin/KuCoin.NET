@@ -1,19 +1,19 @@
-﻿using Kucoin.NET.Data.Market;
-using Kucoin.NET.Data.Websockets;
-using Kucoin.NET.Helpers;
-using Kucoin.NET.Websockets.Public;
+﻿using KuCoin.NET.Data.Market;
+using KuCoin.NET.Data.Websockets;
+using KuCoin.NET.Helpers;
+using KuCoin.NET.Websockets.Public;
 
 using System;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using System.Text;
-using Kucoin.NET.Websockets.Distribution;
+using KuCoin.NET.Websockets.Distribution;
 using System.Threading.Tasks;
 using System.Diagnostics.Contracts;
 using System.Threading;
 using System.Linq;
 
-namespace Kucoin.NET.Websockets.Observations
+namespace KuCoin.NET.Websockets.Observations
 {
     public sealed class Level3OrderBook : OrderBookDistributable<KeyedAtomicOrderBook<AtomicOrderStruct>, ObservableAtomicOrderBook<ObservableAtomicOrderUnit>, Level3Update, Level3>
     {

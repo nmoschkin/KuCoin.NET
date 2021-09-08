@@ -1,6 +1,6 @@
-﻿using Kucoin.NET.Helpers;
+﻿using KuCoin.NET.Helpers;
 
-namespace Kucoin.NET.Services
+namespace KuCoin.NET.Services
 {
     /// <summary>
     /// <see cref="ISymbolDataService"/> factory interface.

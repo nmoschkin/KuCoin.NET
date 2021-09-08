@@ -1,7 +1,7 @@
-﻿using Kucoin.NET.Data.Market;
-using Kucoin.NET.Data.Websockets;
-using Kucoin.NET.Helpers;
-using Kucoin.NET.Websockets.Public;
+﻿using KuCoin.NET.Data.Market;
+using KuCoin.NET.Data.Websockets;
+using KuCoin.NET.Helpers;
+using KuCoin.NET.Websockets.Public;
 
 using Newtonsoft.Json;
 
@@ -10,17 +10,17 @@ using System.Collections.Generic;
 using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
-using Kucoin.NET.Websockets.Distribution;
-using Kucoin.NET.Websockets.Observations;
+using KuCoin.NET.Websockets.Distribution;
+using KuCoin.NET.Websockets.Observations;
 using System.Threading;
-using Kucoin.NET.Json;
+using KuCoin.NET.Json;
 using System.Diagnostics;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Net.WebSockets;
 using System.Runtime.ExceptionServices;
 
-namespace Kucoin.NET.Websockets.Public
+namespace KuCoin.NET.Websockets.Public
 {
     public interface ILevel3 : IMarketFeed<Level3OrderBook, Level3Update, KeyedAtomicOrderBook<AtomicOrderStruct>, ObservableAtomicOrderBook<ObservableAtomicOrderUnit>>
     {

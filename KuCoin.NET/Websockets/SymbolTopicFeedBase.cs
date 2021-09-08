@@ -1,14 +1,14 @@
-﻿using Kucoin.NET.Data.Websockets;
-using Kucoin.NET.Data.Market;
+﻿using KuCoin.NET.Data.Websockets;
+using KuCoin.NET.Data.Market;
 
 using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Threading.Tasks;
-using Kucoin.NET.Helpers;
-using Kucoin.NET.Data;
+using KuCoin.NET.Helpers;
+using KuCoin.NET.Data;
 
-namespace Kucoin.NET.Websockets
+namespace KuCoin.NET.Websockets
 {
     /// <summary>
     /// Base class for live feeds supporting multiple symbols per feed.

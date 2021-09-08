@@ -1,12 +1,12 @@
-﻿using Kucoin.NET.Helpers;
-using Kucoin.NET.Rest;
+﻿using KuCoin.NET.Helpers;
+using KuCoin.NET.Rest;
 
 using System;
 using System.Collections.Generic;
 using System.Security.Authentication;
 using System.Text;
 
-namespace Kucoin.NET.Futures.Rest
+namespace KuCoin.NET.Futures.Rest
 {
     /// <summary>
     /// Base class for futures REST API classes

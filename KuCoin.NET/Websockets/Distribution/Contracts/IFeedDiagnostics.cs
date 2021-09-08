@@ -1,7 +1,7 @@
 ﻿
 
 
-namespace Kucoin.NET.Websockets.Distribution
+namespace KuCoin.NET.Websockets.Distribution
 {
     public interface IFeedDiagnostics
     {

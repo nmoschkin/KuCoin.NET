@@ -1,11 +1,11 @@
-﻿using Kucoin.NET.Futures.Data.Websockets;
-using Kucoin.NET.Websockets;
+﻿using KuCoin.NET.Futures.Data.Websockets;
+using KuCoin.NET.Websockets;
 
 using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace Kucoin.NET.Futures.Websockets
+namespace KuCoin.NET.Futures.Websockets
 {
     /// <summary>
     /// Ticker for the 24 hour market snapshot
