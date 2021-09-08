@@ -523,8 +523,10 @@ namespace KuCoinConsole
 
                                         //curr.Level3Feed.DistributionStrategy = DistributionStrategy.Link;
                                         curr.Level3Feed.MonitorThroughput = true;
-             
-                                        feeds.Add(curr.Level3Feed);
+                                        lock (feeds)
+                                        {
+                                            feeds.Add(curr.Level3Feed);
+                                        }
                                     }
 
                                     curr.Level3Observation.DiagnosticsEnabled = true;
@@ -821,28 +823,30 @@ namespace KuCoinConsole
             var msg = JsonConvert.DeserializeObject<FeedMessage>(e.Json);
             int x = 1;
 
-            foreach (var feed in feeds)
+            lock (feeds)
             {
-                if (sender == feed && feed is Level3 l3a)
+                foreach (var feed in feeds)
                 {
-                    lock (messages)
+                    if (sender == feed && feed is Level3 l3a)
                     {
-                        messages.Add($"{{Reset}}Feed {{White}}{x}{{Reset}}: {{Yellow}}{msg.Type} {{Cyan}}{msg.Subject} {msg.Topic} {{Blue}}({DateTime.Now:G}){{Reset}}");
-                        msgidx = messages.Count >= 4 ? messages.Count - 5 : messages.Count - 1;
-
-
-                        lock (fslog)
+                        lock (messages)
                         {
-                            var tstr = ($"Feed {x}: {msg.Type} {msg.Subject} {msg.Topic} ({DateTime.Now:G})\r\n");
-                            fslog?.Write(Encoding.UTF8.GetBytes(tstr));
-                            fslog?.Flush();
+                            messages.Add($"{{Reset}}Feed {{White}}{x}{{Reset}}: {{Yellow}}{msg.Type} {{Cyan}}{msg.Subject} {msg.Topic} {{Blue}}({DateTime.Now:G}){{Reset}}");
+                            msgidx = messages.Count >= 4 ? messages.Count - 5 : messages.Count - 1;
+
+
+                            lock (fslog)
+                            {
+                                var tstr = ($"Feed {x}: {msg.Type} {msg.Subject} {msg.Topic} ({DateTime.Now:G})\r\n");
+                                fslog?.Write(Encoding.UTF8.GetBytes(tstr));
+                                fslog?.Flush();
+                            }
                         }
                     }
+
+                    x++;
                 }
-
-                x++;
             }
-
         }
 
         private static void KlineRight()
