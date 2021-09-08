@@ -56,7 +56,7 @@ namespace KuCoin.NET.Websockets.Distribution
         IMarketPresenter<TInternal, TObservable, string, TValue> 
         where TValue : IStreamableObject
     {
-        public MarketPresenter(IDistributor parent, string symbol) : base(parent, symbol)
+        public MarketPresenter(IDistributor parent, string symbol, bool direct) : base(parent, symbol, direct)
         {
             Symbol = symbol;
             PresentationService.RegisterService(this);

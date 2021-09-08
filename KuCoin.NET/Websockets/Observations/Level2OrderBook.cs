@@ -15,7 +15,7 @@ namespace KuCoin.NET.Websockets.Observations
     public class Level2OrderBook : OrderBookDistributable<KeyedOrderBook<OrderUnitStruct>, ObservableOrderBook<ObservableOrderUnit>, Level2Update, Level2>
     {
 
-        public Level2OrderBook(Level2 parent, string symbol) : base(parent, symbol, false)
+        public Level2OrderBook(Level2 parent, string symbol) : base(parent, symbol, false, false)
         {
             this.parent = parent;
             base.parent = parent;

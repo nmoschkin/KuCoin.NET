@@ -35,7 +35,7 @@ namespace KuCoin.NET.Websockets.Observations
             }
         }
 
-        public KlineChart(KlineFeedNew<TCandle, TCustom, TCol> parent, SymbolKline key) : base(parent, key)
+        public KlineChart(KlineFeedNew<TCandle, TCustom, TCol> parent, SymbolKline key) : base(parent, key, false)
         {
         }
         

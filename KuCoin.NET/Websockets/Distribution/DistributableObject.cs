@@ -21,6 +21,8 @@ namespace KuCoin.NET.Websockets.Distribution
 
         protected bool disposedValue;
 
+        protected bool direct = false;
+
         protected object lockObj = new object();
 
         protected IWebsocketFeed parent;
@@ -38,6 +40,11 @@ namespace KuCoin.NET.Websockets.Distribution
         protected FeedState state;
 
         public virtual int QueueLength => buffer?.Count ?? 0;
+
+        /// <summary>
+        /// True if the feed is direct, and there is no message pump.
+        /// </summary>
+        public virtual bool DirectMode => direct;
 
         /// <summary>
         /// Gets the current run state of the feed.
@@ -62,12 +69,17 @@ namespace KuCoin.NET.Websockets.Distribution
         /// </summary>
         /// <param name="parent">The parent distributor</param>
         /// <param name="key"></param>
-        public DistributableObject(IDistributor parent, TKey key)
+        public DistributableObject(IDistributor parent, TKey key, bool direct)
         {
             this.parent = parent;
             this.key = key;
             buffer = new List<TValue>();
-            ParallelService.RegisterService(this);
+            this.direct = direct;
+
+            if (!direct)
+            {
+                ParallelService.RegisterService(this);
+            }
             State = FeedState.Subscribed;
         }
 
@@ -115,7 +127,10 @@ namespace KuCoin.NET.Websockets.Distribution
                 parent?.Release(this);
                 parent = null;
 
-                ParallelService.UnregisterService(this);
+                if (!direct)
+                {
+                    ParallelService.UnregisterService(this);
+                }
 
                 // TODO: free unmanaged resources (unmanaged objects) and override finalizer
                 // TODO: set large fields to null

@@ -48,6 +48,10 @@ namespace KuCoin.NET.Websockets
 
         #region Protected fields
 
+        // this is only disabled for direct feeds.  
+        // the code written for such a class needs to be swift and efficient.
+        protected bool wantPump = true;
+
         protected ObservableCollection<Exception> errorLog = new ObservableCollection<Exception>();
 
         protected Exception lastError;
@@ -521,11 +525,14 @@ namespace KuCoin.NET.Websockets
                 // The Reader:
                 // -----------
 
-                // message queue
-                msgQueue = new List<string>();
-                msgQueue.Capacity = minQueueBuffer;
+                if (wantPump)
+                {
+                    // message queue
+                    msgQueue = new List<string>();
+                    msgQueue.Capacity = minQueueBuffer;
 
-                EnableMessagePumpThread();
+                    EnableMessagePumpThread();
+                }
 
                 // data receiver
                 inputReaderThread = new Thread(DataReceiveThread);

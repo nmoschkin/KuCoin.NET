@@ -31,7 +31,7 @@ namespace KuCoin.NET.Websockets.Distribution
 
         public event EventHandler Initialized;
 
-        public InitializableObject(IDistributor parent, TKey key) : base(parent, key)
+        public InitializableObject(IDistributor parent, TKey key, bool direct) : base(parent, key, direct)
         {
             if (parent is IInitialDataProvider<TKey, TInternal> provParent)
             {

@@ -53,7 +53,7 @@ namespace KuCoin.NET.Websockets.Distribution
 
         protected int marketDepth = 50;
 
-        public OrderBookDistributable(TParent parent, string symbol, bool observationDisabledByDefault) : base(parent, symbol)
+        public OrderBookDistributable(TParent parent, string symbol, bool observationDisabledByDefault, bool direct) : base(parent, symbol, direct)
         {
             this.parent = parent;
             base.parent = parent;

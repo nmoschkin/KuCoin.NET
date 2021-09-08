@@ -18,11 +18,7 @@ namespace KuCoin.NET.Websockets.Observations
     public sealed class Level3OrderBook : OrderBookDistributable<KeyedAtomicOrderBook<AtomicOrderStruct>, ObservableAtomicOrderBook<ObservableAtomicOrderUnit>, Level3Update, Level3>
     {
 
-        private bool direct;
-
-        public bool DirectMode => direct;
-
-        public Level3OrderBook(Level3 parent, string symbol, bool direct) : base(parent, symbol, true)
+        public Level3OrderBook(Level3 parent, string symbol, bool direct) : base(parent, symbol, true, direct)
         {
             this.parent = parent;
             this.direct = direct;
@@ -30,7 +26,7 @@ namespace KuCoin.NET.Websockets.Observations
             IsPresentationDisabled = true;
         }
 
-        public Level3OrderBook(Level3 parent, string symbol) : base(parent, symbol, true)
+        public Level3OrderBook(Level3 parent, string symbol) : base(parent, symbol, true, false)
         {
             this.parent = parent;
             dataProvider = parent;
