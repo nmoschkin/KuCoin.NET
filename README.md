@@ -72,7 +72,7 @@ All of the feeds support multiplexing.  You may create a single feed object, and
 
 All of the feeds except for order book feeds implement the __IObservable<T>__ pattern.
   
-The sample app starts multiple Level3Direct feeds (either the top n feeds by volume that you select, or a list of feeds separated by commas.)
+The sample app starts multiple Level3Direct feeds (user provided: either the top _n_ feeds by 24-hr volume, or a list of feeds separated by commas.)
 
 _(You can change this in Program.cs.)_  
 
