@@ -50,7 +50,7 @@ namespace CredentialTool
             this.chkFutures.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
             this.chkFutures.AutoSize = true;
             this.chkFutures.Font = new System.Drawing.Font("Segoe UI", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
-            this.chkFutures.Location = new System.Drawing.Point(8, 268);
+            this.chkFutures.Location = new System.Drawing.Point(16, 259);
             this.chkFutures.Name = "chkFutures";
             this.chkFutures.Size = new System.Drawing.Size(193, 25);
             this.chkFutures.TabIndex = 0;
@@ -81,7 +81,7 @@ namespace CredentialTool
             // 
             this.label3.AutoSize = true;
             this.label3.Font = new System.Drawing.Font("Segoe UI", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
-            this.label3.Location = new System.Drawing.Point(16, 134);
+            this.label3.Location = new System.Drawing.Point(16, 135);
             this.label3.Name = "label3";
             this.label3.Size = new System.Drawing.Size(56, 21);
             this.label3.TabIndex = 3;
@@ -91,7 +91,7 @@ namespace CredentialTool
             // 
             this.label4.AutoSize = true;
             this.label4.Font = new System.Drawing.Font("Segoe UI", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
-            this.label4.Location = new System.Drawing.Point(16, 185);
+            this.label4.Location = new System.Drawing.Point(16, 181);
             this.label4.Name = "label4";
             this.label4.Size = new System.Drawing.Size(90, 21);
             this.label4.TabIndex = 4;
@@ -112,7 +112,7 @@ namespace CredentialTool
             this.txtSecret.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.txtSecret.Font = new System.Drawing.Font("Consolas", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
-            this.txtSecret.Location = new System.Drawing.Point(122, 133);
+            this.txtSecret.Location = new System.Drawing.Point(122, 134);
             this.txtSecret.Name = "txtSecret";
             this.txtSecret.Size = new System.Drawing.Size(418, 26);
             this.txtSecret.TabIndex = 6;
@@ -122,7 +122,7 @@ namespace CredentialTool
             this.txtPassphrase.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.txtPassphrase.Font = new System.Drawing.Font("Consolas", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
-            this.txtPassphrase.Location = new System.Drawing.Point(122, 184);
+            this.txtPassphrase.Location = new System.Drawing.Point(122, 180);
             this.txtPassphrase.Name = "txtPassphrase";
             this.txtPassphrase.Size = new System.Drawing.Size(418, 26);
             this.txtPassphrase.TabIndex = 7;
@@ -131,7 +131,7 @@ namespace CredentialTool
             // 
             this.btnSave.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.btnSave.Font = new System.Drawing.Font("Segoe UI", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
-            this.btnSave.Location = new System.Drawing.Point(470, 309);
+            this.btnSave.Location = new System.Drawing.Point(470, 297);
             this.btnSave.Name = "btnSave";
             this.btnSave.Size = new System.Drawing.Size(101, 31);
             this.btnSave.TabIndex = 8;
@@ -142,7 +142,7 @@ namespace CredentialTool
             // 
             this.btnDiscard.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.btnDiscard.Font = new System.Drawing.Font("Segoe UI", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
-            this.btnDiscard.Location = new System.Drawing.Point(363, 309);
+            this.btnDiscard.Location = new System.Drawing.Point(363, 297);
             this.btnDiscard.Name = "btnDiscard";
             this.btnDiscard.Size = new System.Drawing.Size(101, 31);
             this.btnDiscard.TabIndex = 9;
@@ -153,7 +153,7 @@ namespace CredentialTool
             // 
             this.btnExit.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
             this.btnExit.Font = new System.Drawing.Font("Segoe UI", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
-            this.btnExit.Location = new System.Drawing.Point(8, 309);
+            this.btnExit.Location = new System.Drawing.Point(8, 297);
             this.btnExit.Name = "btnExit";
             this.btnExit.Size = new System.Drawing.Size(101, 31);
             this.btnExit.TabIndex = 11;
@@ -165,7 +165,7 @@ namespace CredentialTool
             this.chkShow.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
             this.chkShow.AutoSize = true;
             this.chkShow.Font = new System.Drawing.Font("Segoe UI", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
-            this.chkShow.Location = new System.Drawing.Point(8, 237);
+            this.chkShow.Location = new System.Drawing.Point(16, 228);
             this.chkShow.Name = "chkShow";
             this.chkShow.Size = new System.Drawing.Size(98, 25);
             this.chkShow.TabIndex = 12;
@@ -176,7 +176,7 @@ namespace CredentialTool
             // 
             this.btnNewPin.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
             this.btnNewPin.Font = new System.Drawing.Font("Segoe UI", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
-            this.btnNewPin.Location = new System.Drawing.Point(256, 309);
+            this.btnNewPin.Location = new System.Drawing.Point(256, 297);
             this.btnNewPin.Name = "btnNewPin";
             this.btnNewPin.Size = new System.Drawing.Size(101, 31);
             this.btnNewPin.TabIndex = 13;
@@ -187,7 +187,7 @@ namespace CredentialTool
             // 
             this.btnRemove.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
             this.btnRemove.Font = new System.Drawing.Font("Segoe UI", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
-            this.btnRemove.Location = new System.Drawing.Point(149, 309);
+            this.btnRemove.Location = new System.Drawing.Point(149, 297);
             this.btnRemove.Name = "btnRemove";
             this.btnRemove.Size = new System.Drawing.Size(101, 31);
             this.btnRemove.TabIndex = 14;
@@ -198,7 +198,7 @@ namespace CredentialTool
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(583, 352);
+            this.ClientSize = new System.Drawing.Size(583, 340);
             this.Controls.Add(this.btnRemove);
             this.Controls.Add(this.btnNewPin);
             this.Controls.Add(this.chkShow);
