@@ -149,7 +149,7 @@ namespace KuCoinConsole
 
             Console.ResetColor();
             
-            KuCoin.InitializeAsync().ConfigureAwait(false).GetAwaiter().GetResult();
+            KuCoinSystem.InitializeAsync().ConfigureAwait(false).GetAwaiter().GetResult();
 
             int x, y, z;
 
@@ -232,9 +232,9 @@ namespace KuCoinConsole
             Console.Clear();
 
             Console.WriteLine("Initializing KuCoin Library (Loading Symbols and Currencies)...");
-            KuCoin.Initialize();
+            KuCoinSystem.Initialize();
 
-            market = KuCoin.Market;
+            market = KuCoinSystem.Market;
 
             foreach (var curr in market.Currencies)
             {
@@ -252,7 +252,7 @@ namespace KuCoinConsole
                 }
             }
 
-            cred = KuCoin.Credentials.FirstOrDefault();
+            cred = KuCoinSystem.Credentials.FirstOrDefault();
 
             if (cred == null)
             {
@@ -278,7 +278,7 @@ namespace KuCoinConsole
 
                 /**/
 
-                KuCoin.Credentials.Add(cred);
+                KuCoinSystem.Credentials.Add(cred);
             }
 
             //var l3 = new Level3(cred);
@@ -389,7 +389,7 @@ namespace KuCoinConsole
 
             tickers.AddRange(tickerdict.Values);
 
-            var serviceFactory = KuCoin.GetServiceFactory();
+            var serviceFactory = KuCoinSystem.GetServiceFactory();
             List<ISymbolDataService> services = new List<ISymbolDataService>();
 #if DEBUG
             int delay = 100;
