@@ -427,21 +427,18 @@ namespace KuCoin.NET.Websockets.Public
                                 // we're back down at the root level!
                                 // we now have one whole JSON string to pass to the handler.
 
-                                lock (msgQueue)
+                                if (update.Sequence > 0)
                                 {
-                                    if (update.Sequence > 0)
-                                    {
-                                        update.size = sb.Length;
-                                        activeFeeds[update.Symbol].OnNext(update);
-                                        update = new Level3Update();
-                                    }
-                                    else
-                                    {
-                                        msgQueue.Add(sb.ToString());
-                                    }
-                                    sb.Clear();
-                                    strlen = 0;
+                                    update.size = sb.Length;
+                                    activeFeeds[update.Symbol].OnNext(update);
+                                    update = new Level3Update();
                                 }
+                                else
+                                {
+                                    msgQueue.Add(sb.ToString());
+                                }
+                                sb.Clear();
+                                strlen = 0;
                             }
                         }
                     }
