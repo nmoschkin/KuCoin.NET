@@ -76,10 +76,10 @@ namespace KuCoin.NET.Websockets.Distribution
             buffer = new List<TValue>();
             this.direct = direct;
 
-            if (!direct)
-            {
+            //if (!direct)
+            //{
                 ParallelService.RegisterService(this);
-            }
+            //}
             State = FeedState.Subscribed;
         }
 
@@ -127,10 +127,10 @@ namespace KuCoin.NET.Websockets.Distribution
                 parent?.Release(this);
                 parent = null;
 
-                if (!direct)
-                {
+                //if (!direct)
+                //{
                     ParallelService.UnregisterService(this);
-                }
+                //}
 
                 // TODO: free unmanaged resources (unmanaged objects) and override finalizer
                 // TODO: set large fields to null
