@@ -36,6 +36,8 @@ After you have created the credentials, you can run the console app and type in 
 The API library, itself, does not have any mechanism for persisting or storing credentials.  If you wish to use an alternative to the
 __CryptoCredentials__ class, provided, you will have to implement your own __ICredentialsProvider__.
 
+![](docs/docimg2.png?raw=true)
+
 ## REST API 
 
 The starting point for the entire system is the __Kucoin.NET.KuCoin__ static class.  From here you will be able to register credentials 
@@ -63,6 +65,12 @@ Private feeds in the namespace __Kucoin.NET.Websockets.Private__:
   - __Level2Depth5/Level2Depth50__ - Pushes the 5/50 best ask/bid static market depth feeds.
   - __Level3__ - Level 3 Full Match Engine 
   - __Level3Direct__ - Level 3 Full Match Engine that bypasses the parallel service dispatcher and updates order books from the socket thread. 
+
+  
+  The sample app starts Level3Direct feeds.  You can change this in Program.cs.  
+
+![](docs/docimg1.png?raw=true)
+
 
 _In order to use any of the feeds in UI/UX/MVVM setting, you will need to initialize the __Kucoin.NET.Helpers.Dispatcher__ static class with a __SynchronizationContext__ from the __Dispatcher__ provided by your application (usually the App class, itself.)  Feed observations will not execute correctly without a __SynchronizationContext__, because they need to inform the UI thread. I'm currently researching alternatives to initializing a dispatcher, so these requirements may change, in the future._
 
