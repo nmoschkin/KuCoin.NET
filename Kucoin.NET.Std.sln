@@ -13,11 +13,11 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Examples", "Examples", "{68
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "API", "API", "{EC1FE9CA-54E4-436B-BDB1-34A3AEFAFD34}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "KuCoinConsole", "Sample Apps\KuCoinConsole\KuCoinConsole.csproj", "{A69E0590-2DEB-475A-A25E-48BA0C8A77E6}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "KuCoinConsole.Std", "Sample Apps\KuCoinConsole\KuCoinConsole.Std.csproj", "{A69E0590-2DEB-475A-A25E-48BA0C8A77E6}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "KuCoin.NET", "KuCoin.NET\KuCoin.NET.csproj", "{44FC4121-E439-4252-83F3-5B59943FC130}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CredentialTool.Std", "Sample Apps\CredentialTool\CredentialTool.Std.csproj", "{76E076C8-99AB-4F45-A00B-C5EC302030F0}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CredentialTool", "Sample Apps\CredentialTool\CredentialTool.csproj", "{76E076C8-99AB-4F45-A00B-C5EC302030F0}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "KuCoin.NET.Std", "KuCoin.NET\KuCoin.NET.Std.csproj", "{2B67D1BB-4736-4A32-895C-76AA578AFED8}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
