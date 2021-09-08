@@ -31,7 +31,7 @@ __The usage guidelines are as follows:__
 
 The Windows Forms-based credentials editor will let you enter your KuCoin API credentials and save them to the disk, encrypted using a 6 digit pin.
 
-_(Note: Windows Forms projects will generally compile in Linux using Gtk+ wrappers in Mono.)_
+_(Note: Windows Forms projects will generally compile without modifications in Linux, as Mono wraps the Gtk+ libs.)_
 
 You can use whatever pin you like, but the credentials you use will be loaded for that pin.  If you use another pin you will essentially create a
 new set of credentials.  
