@@ -3,7 +3,7 @@ KuCoin and KuCoin Futures API Libraries written in .NET 5.0 and .NET Standard 2.
 
 __ATTENTION__: __The WPF Project has been moved to the 'legacy' branch.__
 
-September 7th, 2021: 
+### September 7th, 2021: 
 
 After a major rewrite of a portion of the Websockets feeds to support parallel delegation and Level 3 direct feeds, I have
 decided to sunset the WPF projects and I have removed the FancyCandles submodule.
