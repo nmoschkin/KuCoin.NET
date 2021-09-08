@@ -59,6 +59,8 @@ The console app only demonstrates the ability to track Level 3 feeds.  Other fun
 
 ## Using the Library
 
+_(Note: A Wiki will be coming soon!)_
+
 The starting point for the entire system is the __Kucoin.NET.KuCoin__ static class.  From here you will be able to register credentials 
 and create and acquire __IServiceFactory__ and  __ISymbolDataService__ instances, as well as initialize market data and the dispatcher.
 
