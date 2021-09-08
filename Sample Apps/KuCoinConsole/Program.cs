@@ -32,6 +32,10 @@ using KuCoin.NET.Data.Websockets;
 using System.IO;
 using KuCoin.NET.Websockets.Distribution.Services;
 using KuCoin.NET.Rest;
+using System.Collections.Immutable;
+using System.Diagnostics.CodeAnalysis;
+using System.Collections.Specialized;
+using System.Linq.Expressions;
 
 namespace KuCoinConsole
 {
@@ -122,44 +126,9 @@ namespace KuCoinConsole
         static int feednum;
         static List<string> activeSymbols = new List<string>();
 
-        static SnapshotFeed sf;
-
         //[STAThread]
         public static void Main(string[] args)
         {
-            //Oid o, nn = new Oid();
-
-            //o = "012345678901234567890123";
-            //nn = o;
-            //string p = o;
-            //string z7 = o.ToString();
-            //var bt = p == o;
-            //bt = o == nn;
-            //int pipi = o;
-
-            //o.OrderId = "987654321098765432109876";
-            //z7 = o;
-            //z7 = o.OrderId;
-            //pipi = (int)o.Hash;
-
-            // Analytics and crash reporting.
-            //AppCenter.Start("d364ea69-c1fa-4d0d-8c37-debaa05f91bc",
-            //       typeof(Analytics), typeof(Crashes));
-            // Analytics and crash reporting.
-
-            Console.ResetColor();
-            
-            KuCoinSystem.InitializeAsync().ConfigureAwait(false).GetAwaiter().GetResult();
-
-            int x, y, z;
-
-            x = 4;
-            y = 24;
-            z = 144;
-
-
-            var r = FindGCF(-156, 32);
-
             RunProgram();
         }
 
@@ -168,54 +137,16 @@ namespace KuCoinConsole
             Console.WriteLine(e.Json);
         }
 
-        public static int FindGCF(params int[] values)
-        {
-            if (values == null || values.Length == 1) throw new ArgumentOutOfRangeException("Function takes 2 or more numbers.");
-            int found = values[0];
-
-            int i, c = values.Length;
-            int min, max, mod;
-            
-            int lastfound = -1;
-
-            for (i = 1; i < c; i++)
-            {
-                min = found;
-                max = values[i];
-
-                if (min > max)
-                {
-                    min = max;
-                    max = values[i - 1];
-                }
-
-                mod = max % min;
-
-                while (mod != 0)
-                {
-                    max = min;
-                    min = mod;
-                    mod = max % min;
-                }
-
-                found = min;
-
-                if (lastfound == -1 || lastfound > found) lastfound = found;
-                if (found == 1) break;
-            }
-
-            return lastfound;
-        }
-
         public static void RunProgram() 
         {
-            //if (GetConsoleWindow() == IntPtr.Zero)
-            //{
-            //    AllocConsole();
-            //}
-
+            
             try
             {
+                if (GetConsoleWindow() == IntPtr.Zero)
+                {
+                    AllocConsole();
+                }
+
                 Console.WindowWidth = 150;
                 Console.WindowHeight = 60;
             }
@@ -223,7 +154,6 @@ namespace KuCoinConsole
             {
 
             }
-
 
             maxRows = 11;
 
@@ -1536,6 +1466,16 @@ namespace KuCoinConsole
 
     public static class ColorConsole
     {
+        private static Dictionary<TableContext, List<int>> tableCache = new Dictionary<TableContext, List<int>>();
+
+        public static Dictionary<TableContext, List<int>> TableCache
+        {
+            get => tableCache;
+            set
+            {
+                tableCache = value;
+            }
+        }
 
         public static void WriteColor(string text, ConsoleColor color)
         {
@@ -1552,6 +1492,68 @@ namespace KuCoinConsole
             Console.WriteLine(text);
             Console.ForegroundColor = oldColor;
         }
+
+
+        public static List<int> GetCreateTableContext(TableContext context)
+        {
+            if (tableCache.ContainsKey(context))
+            {
+                return tableCache[context];
+            }
+            else
+            {
+                var n = new List<int>();
+                tableCache.Add(context, n);
+
+                return n;
+            }
+        }
+
+        public static List<int> AutoContext(params string[] columns)
+        {
+            var l = new List<int>();
+
+            foreach (var c in columns)
+            {
+                l.Add(c.Length + 1);
+            }
+
+            return l;
+        }
+
+        public static void WriteRow(TableContext context, params string[] columns)
+        {
+            List<int> cols;
+            int c = columns.Length;
+            
+            if (!tableCache.ContainsKey(context))
+            {
+                cols = AutoContext(columns);
+            }
+            else
+            {
+                cols = new List<int>(tableCache[context]);
+
+                if (cols.Count < c)
+                {
+                    var col2 = AutoContext(columns);
+
+                    for (int j = 0; j < cols.Count; j++)
+                    {
+                        col2[j] = cols[j];
+                    }
+
+                    cols = col2;
+                }
+            }
+
+            for (int i = 0; i < c; i++)
+            {
+                Write(FixedText(columns[i], cols[i]));
+            }
+
+        }
+
 
 
         public static void Write(string text)
@@ -1646,7 +1648,7 @@ namespace KuCoinConsole
             sb.AppendLine(new string(' ', d - c));
         }
 
-        private static int RealCount(string str)
+        public static int RealCount(string str)
         {
             int i, c = str.Length;
             int d = 0;
@@ -1670,6 +1672,86 @@ namespace KuCoinConsole
 
             return d;
         }
+
+        public static string FixedText(string str, int length)
+        {
+            int c = RealCount(str);
+            if (c > length) return str;
+
+            return str + new string(' ', length - c);
+        }
+
+
     }
+
+    /// <summary>
+    /// Token to use when formatting tables.
+    /// </summary>
+    public struct TableContext : IEquatable<TableContext>, IComparable<TableContext>
+    {
+        
+        /// <summary>
+        /// Represents an invalid table context.
+        /// </summary>
+        public static readonly TableContext Invalid = new TableContext()
+        {
+            Guid = Guid.Empty
+        };
+
+        private Guid Guid;
+
+        public static TableContext Create()
+        {
+            return new TableContext()
+            {
+                Guid = Guid.NewGuid()
+            };
+        }
+
+        public override bool Equals([NotNullWhen(true)] object obj)
+        {
+            if (obj is TableContext rc)
+            {
+                return Equals(rc);
+            }
+            else if (obj is Guid g)
+            {
+                return Guid.Equals(g);
+            }
+            return base.Equals(obj);
+        }
+
+        public bool Equals(TableContext obj)
+        {
+            return obj.Guid == Guid;
+        }
+
+        public int CompareTo(TableContext other)
+        {
+            return Guid.CompareTo(other.Guid);
+        }
+
+        public override int GetHashCode()
+        {
+            return Guid.GetHashCode();
+        }
+
+        public override string ToString()
+        {
+            return Guid.ToString("d");
+        }
+
+        public static bool operator ==(TableContext left, TableContext right)
+        {
+            return left.Equals(right);
+        }
+        public static bool operator !=(TableContext left, TableContext right)
+        {
+            return !left.Equals(right);
+        }
+
+    }
+
+
 
 }
