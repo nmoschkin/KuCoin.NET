@@ -20,9 +20,9 @@ The library is being implemented as described in (https://docs.kucoin.com/#gener
 
 New projects targeting Desktop, Console .NET MAUI, or Blazor should use the .NET 6.0+ library.  Older projects targeting the .NET Framework or Xamarin, or Mono projects should use the .NET Standard 2.0 library.
 
-The example projects are built on .NET 6.
+There are two solutions, one that contains projects that reference the .NET 6 library, and the other that contains projects that reference the .NET Standard 2.0 library.
 
-There are two solutions, one that contains projects that use the .NET 6 library, and the other that contains projects that use the .NET Standard 2.0 library.
+ * _Note: Even though the projects in the .NET Standard solution reference the .NET Standard KuCoin.NET library, they are still native apps built in .NET 6._
 
 ## Creating Credentials
 
