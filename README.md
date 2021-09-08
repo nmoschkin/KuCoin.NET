@@ -20,10 +20,9 @@ The library is being implemented as described in (https://docs.kucoin.com/#gener
 
 New projects targeting Desktop, Console .NET MAUI, or Blazor should use the .NET 6.0+ library.  Older projects targeting the .NET Framework or Xamarin, or Mono projects should use the .NET Standard 2.0 library.
 
-You cannot have the .NET Standard version and the .NET 6 versions of the Kucoin.NET library loaded at the same time.  Newtonsoft.Json gets confused and
-installs the wrong version of itself.  So, if you load one, you have to unload the other and then un-install and re-install Newtonsoft.Json.
+The example projects are built on .NET 6.
 
-The example console project is built in .NET 6.
+There are two solutions, one that contains projects that use the .NET 6 library, and the other that contains projects that use the .NET Standard 2.0 library.
 
 ## Creating Credentials
 
