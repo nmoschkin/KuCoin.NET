@@ -1,25 +1,50 @@
 # Kucoin.NET (v1.0 Alpha)
 KuCoin and KuCoin Futures API Libraries written in .NET 5.0 and .NET Standard 2.0
 
-__ATTENTION__: __READ INSTALLATION INSTRUCTIONS VERY CAREFULLY__
+__ATTENTION__: __The WPF Project has been moved to the 'legacy' branch.___
 
-July 17th, 2021: __Feature Complete!__ Extensive documenting of code and objects is taking place.  The final form of the library is pretty much set. Testing on trading functions has yet to begin.
+September 7th, 2021: 
+
+After a major rewrite of a portion of the Websockets feeds to support parallel delegation and Level 3 direct feeds, I have
+decided to sunset the WPF projects and I have removed the FancyCandles submodule.
+
+Going forward, I will be developing UI/UX apps with MAUI or WinUI 3 / Project Reunion, in other repositories.
+
+This repository is now reduced to the core library, the console app and a credentials editing tool.
+
+The entire project has been retargeted to .NET 6, except for Kucoin.NET.Std, which is .NET Standard 2.0.  
 
 ## Installation
 
-The library is being implemented as described in (https://docs.kucoin.com/#general), in .NET 5.0 and .NET Standard 2.0.  It will compile anywhere the .NET Standard library is supported (Windows/Linux/Android/MacOS/iOS/etc.)
+The library is being implemented as described in (https://docs.kucoin.com/#general), in .NET 6.0 and .NET Standard 2.0.  It will compile anywhere the .NET Standard library is supported (Windows/Linux/Android/MacOS/iOS/etc.)
 
-New projects targeting Desktop, Console .NET MAUI, or Blazor should use the .NET 5.0+ library.  Older projects targeting the .NET Framework or Xamarin, or Mono projects should use the .NET Standard 2.0 library.
+New projects targeting Desktop, Console .NET MAUI, or Blazor should use the .NET 6.0+ library.  Older projects targeting the .NET Framework or Xamarin, or Mono projects should use the .NET Standard 2.0 library.
 
-The example project is built in .NET 5 using WPF for Windows Desktop, and uses my fork of the __FancyCandles__ chart library. It is included via a git submodule.
+You cannot have the .NET Standard version and the .NET 6 versions of the Kucoin.NET library loaded at the same time.  Newtonsoft.Json gets confused and
+installs the wrong version of itself.  So, if you load one, you have to unload the other and then un-install and re-install Newtonsoft.Json.
 
-When you clone the project, you must run __git submodule init__ and __git submodule update__ from the root project directory to download and sync the __FancyCandles__ project.
+The example console project is built in .NET 6.
+
+## Creating Credentials
+
+The Windows Forms-based credentials editor will let you enter your KuCoin API credentials and save them to the disk, encrypted using a 6 digit pin.
+
+You can use whatever pin you like, but the credentials you use will be loaded for that pin.  If you use another pin you will essentially create a
+new set of credentials.  
+
+After you have created the credentials, you can run the console app and type in the same pin you used to load the credentials.
+
+The API library, itself, does not have any mechanism for peristing or storing credentials.  If you wish to use an alternative to the
+__CryptoCredentials__ class, provided, you will have to implement your own __ICredentialsProvider__.
 
 ## REST API 
 
+The starting point for the entire system is the __Kucoin.NET.KuCoin__ static class.  From here you will be able to register credentials 
+and create and acquire __IServiceFactory__ and  __ISymbolDataService__ instances, as well as initialize market data and the dispatcher.
+
 Inside the __Kucoin.NET.Rest__ namespace you will find three objects, __Market__, __Trade__, __Margin__, and __User__.  __Margin__, __Trade__, and __User__ require API Keys.  
 
-There are two credentials providers, there is the default __MemoryEncryptedCredentialsProvider__ that is in the Kucoin.NET library, and then the __CryptoCredentials__ class in the example app.
+There are two credentials providers, there is the default __MemoryEncryptedCredentialsProvider__ that is in the Kucoin.NET library, and then the __CryptoCredentials__ class in the example app and the credentials editor app.
 
 The __MemoryEncryptedCredentialsProvider__ will store the credentials encrypted in memory with a random seed, until they are needed.  __CryptoCredentials__ has the ability to load and save encrypted credentials sets to disk.  A 6 digit numeric pin is required to save and load credentials.  Both of these classes implement the __ICredentialsProvider__ interface which you can use to write your own provider.
 
@@ -37,37 +62,22 @@ Private feeds in the namespace __Kucoin.NET.Websockets.Private__:
 
   - __Level2__ - Pushes the full-depth Level 2 market feed (calibrated).
   - __Level2Depth5/Level2Depth50__ - Pushes the 5/50 best ask/bid static market depth feeds.
-  - __Level3__ - Level 3 Full Match Engine __(Just Implemented / Alpha)__
+  - __Level3__ - Level 3 Full Match Engine 
+  - __Level3Direct__ - Level 3 Full Match Engine that bypasses the parallel service dispatcher and updates order books from the socket thread. 
 
-_In order to use the Level2 / Level3 feeds, you will need to initialize the __Kucoin.NET.Helpers.Dispatcher__ static class with a __SynchronizationContext__ from the __Dispatcher__ provided by your application (usually the App class, itself.)  Feed observations will not execute correctly without a __SynchronizationContext__, because they need to inform the UI thread. I'm currently researching alternatives to initializing a dispatcher, so these requirements may change, in the future._
+_In order to use any of the feeds in UI/UX/MVVM setting, you will need to initialize the __Kucoin.NET.Helpers.Dispatcher__ static class with a __SynchronizationContext__ from the __Dispatcher__ provided by your application (usually the App class, itself.)  Feed observations will not execute correctly without a __SynchronizationContext__, because they need to inform the UI thread. I'm currently researching alternatives to initializing a dispatcher, so these requirements may change, in the future._
 
 All of the feeds support multiplexing.  You may create a single feed object, and use that object's connection to start sub-channels that will be served to the multiplex child classes.  Multiplexing is implemented in the __KucoinBaseWebsocketFeed__ abstract class.  
   
   * Note: You cannot multiplex a private feed onto a public feed.
 
-All of the feeds implement the __IObservable<T>__ pattern.  The ViewModels in the example app implement the __IObserver<T>__ pattern where applicable.
-
-## Running the sample app
-
-The example application will ask you for a 6 digit pin when you first start it.  Choose any pin you want, but you need to remember it to access your credentials.
-
-![](docs/Sample2.png?raw=true)
-
-Once the application starts for the first time, it will create a new random __Guid__ and save it to local storage as an encrypted file. This Guid value, together with your pin, will be used to encrypt credentials on both disk and in memory, when not in use.  
-
-Click the button on the bottom right-hand side that says 'Edit Credentials' to enter and save your credentials.  When you start the app the next time, enter the same pin to automatically load the credentials.
-
-You can use a different pin to store a different set of credentials.  
+All of the feeds except for order book feeds implement the __IObservable<T>__ pattern.  The ViewModels in the example app implement the __IObserver<T>__ pattern where applicable.
 
 ## Other Notes
 
-The library, itself, is pretty well documented, so far.  You can find plenty of usage examples in the sample app, in __Program.cs__, __MainWindowViewModel.cs__, and __AccountsWindowViewModel.cs__.
+The library, itself, is pretty well documented, so far.
 
 This project is epic, and there are bound to be bugs.  Feel free to open issues, and I will get to them, as I can, if I don't find the bugs, first.  I will post more updates here when the project nears completion and I plan to include a library for __KuCoin Futures__, after this one is feature complete.  
-
-## Screenshot Of Sample App
-
-![](docs/Sample1.png?raw=true)
 
 ## And finally, I take donations!  
 
