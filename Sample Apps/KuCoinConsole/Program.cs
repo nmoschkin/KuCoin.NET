@@ -481,8 +481,8 @@ namespace KuCoinConsole
                                         }
                                     }
 
-                                    curr.Level3Observation.DiagnosticsEnabled = true;
-                                    curr.Level3Observation.IsVolumeEnabled = true;
+                                    curr.Level3OrderBook.DiagnosticsEnabled = true;
+                                    curr.Level3OrderBook.IsVolumeEnabled = true;
 
                                     Observers.Add(sym, curr);
                                 }
@@ -685,11 +685,11 @@ namespace KuCoinConsole
                 {
                     foreach (var obs in Observers)
                     {
-                        if (obs.Value?.Level3Observation?.FullDepthOrderBook == null) continue;
+                        if (obs.Value?.Level3OrderBook?.FullDepthOrderBook == null) continue;
 
-                        if (obs.Value.Level3Observation.FullDepthOrderBook.Timestamp > ts)
+                        if (obs.Value.Level3OrderBook.FullDepthOrderBook.Timestamp > ts)
                         {
-                            ts = obs.Value.Level3Observation.FullDepthOrderBook.Timestamp;
+                            ts = obs.Value.Level3OrderBook.FullDepthOrderBook.Timestamp;
                         }
                     }
                 }
@@ -808,7 +808,7 @@ namespace KuCoinConsole
                 var obs1 = Observers.FirstOrDefault().Value ?? null;
                 if (obs1 == null) return;
 
-                IKlineType kt = obs1.Level3Observation.KlineType;
+                IKlineType kt = obs1.Level3OrderBook.KlineType;
 
                 IKlineType ktnext = KlineType.AllTypes.Where((x) => x.TimeSpan > kt.TimeSpan)?.FirstOrDefault() ?? default;
 
@@ -819,7 +819,7 @@ namespace KuCoinConsole
 
                 foreach(var obs in Observers)
                 {
-                    obs.Value.Level3Observation.KlineType = ktnext;
+                    obs.Value.Level3OrderBook.KlineType = ktnext;
                 }
             }
         }
@@ -831,7 +831,7 @@ namespace KuCoinConsole
                 var obs1 = Observers.FirstOrDefault().Value ?? null;
                 if (obs1 == null) return;
 
-                IKlineType kt = obs1.Level3Observation.KlineType;
+                IKlineType kt = obs1.Level3OrderBook.KlineType;
 
                 IKlineType ktnext = KlineType.AllTypes.Reverse().Where((x) => x.TimeSpan < kt.TimeSpan)?.FirstOrDefault() ?? default;
 
@@ -842,7 +842,7 @@ namespace KuCoinConsole
 
                 foreach (var obs in Observers)
                 {
-                    obs.Value.Level3Observation.KlineType = ktnext;
+                    obs.Value.Level3OrderBook.KlineType = ktnext;
                 }
             }
         }
@@ -916,7 +916,7 @@ namespace KuCoinConsole
                     {
                         if (currentConn == -1 || obs.Value.Level3Feed == current)
                         {
-                            var l3 = obs.Value.Level3Observation;
+                            var l3 = obs.Value.Level3OrderBook;
                             if (l3 != null)
                             {
                                 biggrand += l3.GrandTotal;
@@ -939,7 +939,7 @@ namespace KuCoinConsole
                 {
                     if (currentConn == -1 || obs.Value.Level3Feed == current)
                     {
-                        var l3 = obs.Value.Level3Observation;
+                        var l3 = obs.Value.Level3OrderBook;
 
                         if (l3 == null)
                         {
@@ -1109,14 +1109,14 @@ namespace KuCoinConsole
                         {
                             case 0:
 
-                                if (a.Level3Observation.MarketVolume > b.Level3Observation.MarketVolume) return 1 * sortorder;
-                                else if (a.Level3Observation.MarketVolume < b.Level3Observation.MarketVolume) return -1 * sortorder;
+                                if (a.Level3OrderBook.MarketVolume > b.Level3OrderBook.MarketVolume) return 1 * sortorder;
+                                else if (a.Level3OrderBook.MarketVolume < b.Level3OrderBook.MarketVolume) return -1 * sortorder;
                                 else break;
 
                             case 1:
 
-                                if (a.Level3Observation.FullDepthOrderBook.Bids[0].Price > b.Level3Observation.FullDepthOrderBook.Bids[0].Price) return 1 * sortorder;
-                                else if (a.Level3Observation.FullDepthOrderBook.Bids[0].Price < b.Level3Observation.FullDepthOrderBook.Bids[0].Price) return -1 * sortorder;
+                                if (a.Level3OrderBook.FullDepthOrderBook.Bids[0].Price > b.Level3OrderBook.FullDepthOrderBook.Bids[0].Price) return 1 * sortorder;
+                                else if (a.Level3OrderBook.FullDepthOrderBook.Bids[0].Price < b.Level3OrderBook.FullDepthOrderBook.Bids[0].Price) return -1 * sortorder;
                                 else break;
                         }
 
@@ -1151,7 +1151,7 @@ namespace KuCoinConsole
 
                 if (sortobs.FirstOrDefault() is SymbolDataService firstData)
                 {
-                    var klineStr = firstData.Level3Observation.KlineType.ToString("G");
+                    var klineStr = firstData.Level3OrderBook.KlineType.ToString("G");
                     readOut.WriteToEdgeLine($"{{Reset}}Current K-Line: {{Cyan}}{klineStr}");
                 }
                 else
@@ -1178,7 +1178,7 @@ namespace KuCoinConsole
                     if (vc >= obscount) break;
 
                     var obs = sortobs[vc];
-                    var l3 = obs.Level3Observation;
+                    var l3 = obs.Level3OrderBook;
                     var ts = DateTime.MinValue;
 
                     int fidx = 0;
@@ -1285,7 +1285,7 @@ namespace KuCoinConsole
 
                     foreach (var obs in sortobs)
                     {
-                        var l3 = obs.Level3Observation;
+                        var l3 = obs.Level3OrderBook;
                         mps += l3.MatchesPerSecond;
                         tps += l3.TransactionsPerSecond;
 
