@@ -129,6 +129,37 @@ namespace KuCoinConsole
         //[STAThread]
         public static void Main(string[] args)
         {
+
+            LargeActiveList<AtomicOrderStruct> examples = new LargeActiveList<AtomicOrderStruct>();
+            var rnd = new Random((int)(DateTime.UtcNow.Ticks & 0x7fffffff));
+            string t = "naomi";
+
+            for (int i = 0; i < 200000; i++)
+            {
+                examples.Add( new AtomicOrderStruct() { Price = (decimal)rnd.NextDouble() });
+            }
+
+            int r = rnd.Next(0, examples.Count);
+            for (int i = 0; i < r; i++)
+            {
+                examples.Insert(rnd.Next(0, examples.Count), new AtomicOrderStruct() { Price = (decimal)rnd.NextDouble() });
+            }
+
+            int r2 = rnd.Next(0, examples.Count);
+            
+            for (int i = 0; i < r2; i++)
+            {
+                examples.RemoveAt(rnd.Next(0, examples.Count));
+            }
+
+            for (int i = 0; i < 100000; i++)
+            {
+                examples.Add(new AtomicOrderStruct() { Price = (decimal)rnd.NextDouble() });
+            }
+
+            t = "gimbales";
+
+            
             RunProgram();
         }
 
