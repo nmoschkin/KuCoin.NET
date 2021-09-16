@@ -802,14 +802,14 @@ namespace KuCoin.NET.Websockets
 
 #if DOTNETSTD
             WebSocketReceiveResult result;
-            var arrSeg = new ArraySegment<byte>(inputChunk);
+            var memTarget = new ArraySegment<byte>(inputChunk);
 
             // loop forever or until the connection is broken or canceled.
             while (!ctsReceive.IsCancellationRequested && socket?.State == WebSocketState.Open)
             {
                 try
                 {
-                    result = socket.ReceiveAsync(arrSeg, ctsReceive.Token)
+                    result = socket.ReceiveAsync(memTarget, ctsReceive.Token)
                         .ConfigureAwait(false)
                         .GetAwaiter()
                         .GetResult();
@@ -820,14 +820,14 @@ namespace KuCoin.NET.Websockets
                 }
 #else
             ValueWebSocketReceiveResult result;
-            var arrSeg = new Memory<byte>(inputChunk);
+            var memTarget = new Memory<byte>(inputChunk);
 
             // loop forever or until the connection is broken or canceled.
             while (!ctsReceive.IsCancellationRequested && socket?.State == WebSocketState.Open)
             {
                 try
                 {
-                    result = socket.ReceiveAsync(arrSeg, ctsReceive.Token)
+                    result = socket.ReceiveAsync(memTarget, ctsReceive.Token)
                         .ConfigureAwait(false)
                         .GetAwaiter()
                         .GetResult();
