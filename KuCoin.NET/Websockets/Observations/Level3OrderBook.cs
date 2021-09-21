@@ -15,7 +15,7 @@ using System.Linq;
 
 namespace KuCoin.NET.Websockets.Observations
 {
-    public sealed class Level3OrderBook : OrderBookDistributable<KeyedAtomicOrderBook<AtomicOrderStruct>, ObservableAtomicOrderBook<ObservableAtomicOrderUnit>, Level3Update, Level3>
+    public sealed class Level3OrderBook : OrderBookDistributable<KeyedAtomicOrderBook<AtomicOrderUnit>, ObservableAtomicOrderBook<ObservableAtomicOrderUnit>, Level3Update, Level3>
     {
 
         public Level3OrderBook(Level3 parent, string symbol, bool direct) : base(parent, symbol, true, direct)
@@ -82,8 +82,8 @@ namespace KuCoin.NET.Websockets.Observations
                 if (fullDepth == null) return;
                 if (this.marketDepth <= 0) return;
 
-                var asks = fullDepth.Asks as IList<AtomicOrderStruct>;
-                var bids = fullDepth.Asks as IList<AtomicOrderStruct>;
+                var asks = fullDepth.Asks as IList<AtomicOrderUnit>;
+                var bids = fullDepth.Asks as IList<AtomicOrderUnit>;
 
                 if (orderBook == null)
                 {
@@ -264,7 +264,7 @@ namespace KuCoin.NET.Websockets.Observations
         /// <param name="changes">The changes to sequence.</param>
         /// <param name="pieces">The collection to change (either an ask or a bid collection)</param>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private bool SequencePieces(char subj, Level3Update change, KeyedBook<AtomicOrderStruct> pieces, KeyedBook<AtomicOrderStruct> otherPieces)
+        private bool SequencePieces(char subj, Level3Update change, KeyedBook<AtomicOrderUnit> pieces, KeyedBook<AtomicOrderUnit> otherPieces)
         {
             switch (subj)
             {
@@ -277,7 +277,7 @@ namespace KuCoin.NET.Websockets.Observations
 
                     if (change.Price == null || change.Price == 0 || change.Size == null || change.Size == 0) return true;
 
-                    var u = new AtomicOrderStruct
+                    var u = new AtomicOrderUnit
                     {
                         Price = change.Price ?? 0,
                         Size = change.Size ?? 0,
@@ -296,7 +296,7 @@ namespace KuCoin.NET.Websockets.Observations
 
                 case 'c':
 
-                    if (pieces.TryGetValue(change.OrderId, out AtomicOrderStruct piece))
+                    if (pieces.TryGetValue(change.OrderId, out AtomicOrderUnit piece))
                     {
                         pieces.Remove(piece.OrderId);
 
@@ -316,7 +316,7 @@ namespace KuCoin.NET.Websockets.Observations
                 case 'm':
 
                     if (change.Price is decimal p && change.Size is decimal csize
-                        && otherPieces.TryGetValue(change.MakerOrderId, out AtomicOrderStruct o))
+                        && otherPieces.TryGetValue(change.MakerOrderId, out AtomicOrderUnit o))
                     {
                         o.Size -= csize;
 

@@ -1207,8 +1207,8 @@ namespace KuCoinConsole
 
                     if (l3.FullDepthOrderBook is object)
                     {
-                        ba = ((IList<AtomicOrderStruct>)l3.FullDepthOrderBook.Asks)[0].Price;
-                        bb = ((IList<AtomicOrderStruct>)l3.FullDepthOrderBook.Bids)[0].Price;
+                        ba = ((IList<AtomicOrderUnit>)l3.FullDepthOrderBook.Asks)[0].Price;
+                        bb = ((IList<AtomicOrderUnit>)l3.FullDepthOrderBook.Bids)[0].Price;
                         ts = l3.FullDepthOrderBook.Timestamp;
 
                         op = l3.Candle.OpenPrice;

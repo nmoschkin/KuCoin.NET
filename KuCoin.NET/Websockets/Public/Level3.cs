@@ -22,12 +22,12 @@ using System.Runtime.ExceptionServices;
 
 namespace KuCoin.NET.Websockets.Public
 {
-    public interface ILevel3 : IMarketFeed<Level3OrderBook, Level3Update, KeyedAtomicOrderBook<AtomicOrderStruct>, ObservableAtomicOrderBook<ObservableAtomicOrderUnit>>
+    public interface ILevel3 : IMarketFeed<Level3OrderBook, Level3Update, KeyedAtomicOrderBook<AtomicOrderUnit>, ObservableAtomicOrderBook<ObservableAtomicOrderUnit>>
     {
 
     }
 
-    public class Level3 : OrderBookFeed<Level3OrderBook, Level3Update, KeyedAtomicOrderBook<AtomicOrderStruct>, ObservableAtomicOrderBook<ObservableAtomicOrderUnit>, Level3>, ILevel3
+    public class Level3 : OrderBookFeed<Level3OrderBook, Level3Update, KeyedAtomicOrderBook<AtomicOrderUnit>, ObservableAtomicOrderBook<ObservableAtomicOrderUnit>, Level3>, ILevel3
     {
 
         public const int buy = -813464969;
@@ -251,7 +251,6 @@ namespace KuCoin.NET.Websockets.Public
             bool maybenum = false;
             Level3Update update = new Level3Update();
 
-#if DOTNETSTD
             WebSocketReceiveResult result;
             var memTarget = new ArraySegment<byte>(inputChunk);
 
@@ -269,26 +268,6 @@ namespace KuCoin.NET.Websockets.Public
                 {
                     return;
                 }
-#else
-            ValueWebSocketReceiveResult result;
-            var memTarget = new Memory<byte>(inputChunk);
-
-            // loop forever or until the connection is broken or canceled.
-            while (!ctsReceive.IsCancellationRequested && socket?.State == WebSocketState.Open)
-            {
-                try
-                {
-                    result = socket.ReceiveAsync(memTarget, ctsReceive.Token)
-                        .ConfigureAwait(false)
-                        .GetAwaiter()
-                        .GetResult();
-                }
-                catch
-                {
-                    return;
-                }
-
-#endif
                 if (ctsReceive?.IsCancellationRequested ?? true) return;
 
                 c = result.Count;
