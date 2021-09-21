@@ -656,6 +656,11 @@ namespace KuCoinConsole
                                 if (sortmode == 2) sortorder = sortorder * -1;
                                 else sortmode = 2;
                             }
+                            else if (key.Key == ConsoleKey.T)
+                            {
+                                if (sortmode == 3) sortorder = sortorder * -1;
+                                else sortmode = 3;
+                            }
                             else if (key.Key == ConsoleKey.Q)
                             {
                                 Console.CursorTop = Console.WindowHeight - 1;
@@ -1118,6 +1123,12 @@ namespace KuCoinConsole
                                 if (a.Level3OrderBook.FullDepthOrderBook.Bids[0].Price > b.Level3OrderBook.FullDepthOrderBook.Bids[0].Price) return 1 * sortorder;
                                 else if (a.Level3OrderBook.FullDepthOrderBook.Bids[0].Price < b.Level3OrderBook.FullDepthOrderBook.Bids[0].Price) return -1 * sortorder;
                                 else break;
+
+                            case 3:
+
+                                if (a.Level3OrderBook.Throughput > b.Level3OrderBook.Throughput) return 1 * sortorder;
+                                else if (a.Level3OrderBook.Throughput < b.Level3OrderBook.Throughput) return -1 * sortorder;
+                                else break;
                         }
 
                         return string.Compare(a.Symbol, b.Symbol) * sortorder;
@@ -1139,6 +1150,9 @@ namespace KuCoinConsole
                         break;
                     case 2:
                         ordering = ($"{{White}}Alphabetically ");
+                        break;
+                    case 3:
+                        ordering = ($"{{White}}Throughput ");
                         break;
                 }
 
@@ -1312,7 +1326,7 @@ namespace KuCoinConsole
                 ft.WriteToEdgeLine($"");
                 ft.WriteToEdgeLine($"{{White}}Use Arrow Up/Arrow Down, Page Up/Page Down, Home/End to navigate the feed list. Ctrl+Arrow Up/Down scrolls the message log, below.{{Reset}}");
                 ft.WriteToEdgeLine($"{{White}}Use Arrow Left/Arrow Right to switch between different connections.  Use Ctrl + Arrow Left/Arrow Right to change the K-Line.{{Reset}}");
-                ft.WriteToEdgeLine($"{{White}}Press: (A) Sort Alphabetically, (P) Price, (V) Volume. Press again to reverse order. (Q) To Quit.");
+                ft.WriteToEdgeLine($"{{White}}Press: (A) Sort Alphabetically, (P) Price, (V) Volume, (T) Throughput. Press again to reverse order. (Q) To Quit.");
 
                 lock(messages)
                 {
