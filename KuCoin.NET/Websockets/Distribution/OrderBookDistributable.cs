@@ -240,7 +240,7 @@ namespace KuCoin.NET.Websockets.Distribution
 
         public virtual long TransactionsPerSecond { get; protected set; }
 
-
+        int cpass = 0;
         CancellationTokenSource cts;
         DateTime? startFetch;
 
@@ -255,7 +255,7 @@ namespace KuCoin.NET.Websockets.Distribution
                     {
                         buffer.Clear();
 
-                        if (lastFailureTime is DateTime t && (DateTime.UtcNow - t).TotalMilliseconds >= resetTimeout)
+                        if (lastFailureTime == null || (lastFailureTime is DateTime t && (DateTime.UtcNow - t).TotalMilliseconds >= resetTimeout))
                         {
                             initializing = false;
                             Reset().ConfigureAwait(false).GetAwaiter().GetResult();
@@ -263,9 +263,8 @@ namespace KuCoin.NET.Websockets.Distribution
                         else
                         {
                             OnPropertyChanged(nameof(TimeUntilNextRetry));
+                            return;
                         }
-
-                        return;
                     }
 
                     if (!initializing)
@@ -285,7 +284,7 @@ namespace KuCoin.NET.Websockets.Distribution
                             startFetch = null;
                         }, cts.Token);
                     }
-                    else if (startFetch != null && (DateTime.Now - (DateTime)startFetch).TotalMilliseconds >= (resetTimeout * 2))
+                    else if ((startFetch != null && (DateTime.Now - (DateTime)startFetch).TotalMilliseconds >= (resetTimeout * 2)))
                     {
                         cts?.Cancel();
                         startFetch = null;

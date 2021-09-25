@@ -1157,7 +1157,7 @@ namespace KuCoin.NET.Websockets
         protected async Task Send(byte[] data)
         {
             if (disposedValue) throw new ObjectDisposedException(GetType().FullName);
-
+            
             if (multiplexHost != null)
             {
                 await multiplexHost.socket.SendAsync(new ArraySegment<byte>(data), WebSocketMessageType.Text, true, multiplexHost.ctsSend.Token);
