@@ -831,7 +831,7 @@ namespace KuCoin.NET.Websockets
                 {
                     valtask = socket.ReceiveAsync(memTarget, ctsReceive.Token);
 
-                    if (valtask.IsCompleted)
+                    if (valtask.IsCompletedSuccessfully)
                     {
                         result = valtask.Result;
                     }
