@@ -26,11 +26,10 @@ namespace KuCoin.NET.Websockets.Distribution
         /// <summary>
         /// Do work.
         /// </summary>
-        /// <returns>True if work was done, otherwise false.</returns>
         void DoWork();
 
         /// <summary>
-        /// The current number of buffered waiting objects.
+        /// The current number of buffered, waiting objects.
         /// </summary>
         int QueueLength { get; }
 

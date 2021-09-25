@@ -109,7 +109,7 @@ namespace KuCoin.NET.Data.Market
     /// Interface for a class that contains keyed collections of asks and bids for level 3.
     /// </summary>
     /// <typeparam name="TUnit"></typeparam>
-    public interface ILevel3OrderUnitList<TUnit>
+    public interface IAtomicOrderUnitList<TUnit>
         : IOrderUnitList<TUnit>
         where TUnit : IAtomicOrderUnit, new()
     {
@@ -151,7 +151,7 @@ namespace KuCoin.NET.Data.Market
     }
 
 
-    public interface IKeyedAtomicOrderBook<TCol, TUnit> : IAtomicOrderBook<TUnit>, ILevel3OrderUnitList<TUnit>
+    public interface IKeyedAtomicOrderBook<TCol, TUnit> : IAtomicOrderBook<TUnit>, IAtomicOrderUnitList<TUnit>
         where TUnit : IAtomicOrderUnit, new()
     {
     }

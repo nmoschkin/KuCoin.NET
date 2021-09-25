@@ -6,6 +6,7 @@ using KuCoin.NET.Websockets.Public;
 
 using System;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 using System.Text;
 
 namespace KuCoin.NET.Websockets.Distribution
@@ -45,8 +46,15 @@ namespace KuCoin.NET.Websockets.Distribution
         public virtual int QueueLength => buffer?.Count ?? 0;
 
         /// <summary>
-        /// True if the feed is direct, and there is no message pump.
+        /// True if the feed is direct.
         /// </summary>
+        /// <remarks>
+        /// A direct feed will register with the <see cref="ParallelService"/> to initialize or re-initialize, but will 
+        /// unregister from this service after the initialization tasks are complete.<br />
+        /// <br />
+        /// While the feed is running normally, data processing tasks are handled directly on the feed's data receiving thread, and
+        /// the parallel distribution service is not used.
+        /// </remarks>
         public virtual bool DirectMode => direct;
 
         /// <summary>
@@ -101,11 +109,10 @@ namespace KuCoin.NET.Websockets.Distribution
         /// <summary>
         /// Do work.
         /// </summary>
-        /// <returns>True if work was done.</returns>
         public abstract void DoWork();
 
         /// <summary>
-        /// Process the object with internal data handling.
+        /// Process the next object.
         /// </summary>
         /// <param name="obj"></param>
         public abstract bool ProcessObject(TValue obj);
@@ -160,11 +167,25 @@ namespace KuCoin.NET.Websockets.Distribution
             Dispose(disposing: false);
         }
 
+        /// <summary>
+        /// Close the object.
+        /// </summary>
+        /// <param name="disposing"></param>
+        /// <remarks>
+        /// Calls <see cref="IWebsocketFeed.Release(IWebsocketListener)"/>, and unregisters from <see cref="ParallelService"/>. <br />
+        /// The object may not be reused.
+        /// </remarks>
         public void Dispose()
         {
             // Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method
             Dispose(disposing: true);
             GC.SuppressFinalize(this);
+        }
+
+        protected override bool SetProperty<T>(ref T backingStore, T value, [CallerMemberName] string propertyName = null)
+        {
+            if (disposedValue) throw new ObjectDisposedException(GetType().FullName);
+            return base.SetProperty(ref backingStore, value, propertyName);
         }
 
         #endregion IDisposable Pattern
