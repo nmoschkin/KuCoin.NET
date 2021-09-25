@@ -802,7 +802,7 @@ namespace KuCoin.NET.Websockets
             long tqms = tms;
 
 #if DOTNETSTD
-            WebSocketReceiveResult result;
+            WebSocketReceiveResult result;            
             var memTarget = new ArraySegment<byte>(inputChunk);
 
             // loop forever or until the connection is broken or canceled.
