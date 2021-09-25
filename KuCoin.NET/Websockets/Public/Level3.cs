@@ -269,7 +269,6 @@ namespace KuCoin.NET.Websockets.Public
                 {
                     return;
                 }
-
 #else
             ValueTask<ValueWebSocketReceiveResult> valtask;
             ValueWebSocketReceiveResult result;
