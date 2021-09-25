@@ -212,11 +212,11 @@ namespace KuCoin.NET.Websockets.Observations
                 }
                 else if (obj.Side == Side.Sell)
                 {
-                    SequencePieces(obj.sc, obj, fullDepth.Asks, fullDepth.Bids);
+                    SequencePieces(obj, fullDepth.Asks, fullDepth.Bids);
                 }
                 else if (obj.Side == Side.Buy)
                 {
-                    SequencePieces(obj.sc, obj, fullDepth.Bids, fullDepth.Asks);
+                    SequencePieces(obj, fullDepth.Bids, fullDepth.Asks);
                 }
 
                 fullDepth.Sequence = obj.Sequence;
@@ -264,9 +264,9 @@ namespace KuCoin.NET.Websockets.Observations
         /// <param name="changes">The changes to sequence.</param>
         /// <param name="pieces">The collection to change (either an ask or a bid collection)</param>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private bool SequencePieces(char subj, Level3Update change, KeyedBook<AtomicOrderUnit> pieces, KeyedBook<AtomicOrderUnit> otherPieces)
+        private bool SequencePieces(Level3Update change, KeyedBook<AtomicOrderUnit> pieces, KeyedBook<AtomicOrderUnit> otherPieces)
         {
-            switch (subj)
+            switch (change.sc)
             {
                 case 'd':
 
