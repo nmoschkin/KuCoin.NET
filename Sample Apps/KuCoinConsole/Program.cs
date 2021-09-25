@@ -1120,35 +1120,44 @@ namespace KuCoinConsole
 
                 sortobs.Sort((a, b) =>
                 {
-                    try
+
+                    lock (a.Level3OrderBook.LockObject)
                     {
-                        switch (sortmode)
+                        lock (b.Level3OrderBook.LockObject)
                         {
-                            case 0:
+                            try
+                            {
+                                switch (sortmode)
+                                {
+                                    case 0:
 
-                                if (a.Level3OrderBook.MarketVolume > b.Level3OrderBook.MarketVolume) return 1 * sortorder;
-                                else if (a.Level3OrderBook.MarketVolume < b.Level3OrderBook.MarketVolume) return -1 * sortorder;
-                                else break;
+                                        if (a.Level3OrderBook.MarketVolume > b.Level3OrderBook.MarketVolume) return 1 * sortorder;
+                                        else if (a.Level3OrderBook.MarketVolume < b.Level3OrderBook.MarketVolume) return -1 * sortorder;
+                                        else break;
 
-                            case 1:
+                                    case 1:
 
-                                if (a.Level3OrderBook.FullDepthOrderBook.Bids[0].Price > b.Level3OrderBook.FullDepthOrderBook.Bids[0].Price) return 1 * sortorder;
-                                else if (a.Level3OrderBook.FullDepthOrderBook.Bids[0].Price < b.Level3OrderBook.FullDepthOrderBook.Bids[0].Price) return -1 * sortorder;
-                                else break;
+                                        if (a.Level3OrderBook.FullDepthOrderBook.Bids[0].Price > b.Level3OrderBook.FullDepthOrderBook.Bids[0].Price) return 1 * sortorder;
+                                        else if (a.Level3OrderBook.FullDepthOrderBook.Bids[0].Price < b.Level3OrderBook.FullDepthOrderBook.Bids[0].Price) return -1 * sortorder;
+                                        else break;
 
-                            case 3:
+                                    case 3:
 
-                                if (a.Level3OrderBook.Throughput > b.Level3OrderBook.Throughput) return 1 * sortorder;
-                                else if (a.Level3OrderBook.Throughput < b.Level3OrderBook.Throughput) return -1 * sortorder;
-                                else break;
+                                        if (a.Level3OrderBook.Throughput > b.Level3OrderBook.Throughput) return 1 * sortorder;
+                                        else if (a.Level3OrderBook.Throughput < b.Level3OrderBook.Throughput) return -1 * sortorder;
+                                        else break;
+                                }
+
+                                return string.Compare(a.Symbol, b.Symbol) * sortorder;
+                            }
+                            catch
+                            {
+                                return 0;
+                            }
+
                         }
+                    }
 
-                        return string.Compare(a.Symbol, b.Symbol) * sortorder;
-                    }
-                    catch
-                    {
-                        return 0;
-                    }
 
                 });
 
