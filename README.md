@@ -70,6 +70,8 @@ The user will be prompted to enter their pin, and then be asked to provide eithe
 
 The console app only demonstrates the ability to track Level 3 feeds.  Other functionality is not demonstrated in the examples, at this time.
 
+_(Try running with 300 feeds.  Works well on an i7-10700K.  Uses about 1.4 GB of RAM)_
+
 ![](docs/docimg1.png?raw=true)
 
 ## Using the Library
