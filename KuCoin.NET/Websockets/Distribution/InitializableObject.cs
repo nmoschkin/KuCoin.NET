@@ -1,4 +1,5 @@
 ﻿using KuCoin.NET.Data;
+using KuCoin.NET.Websockets.Distribution.Services;
 
 using System;
 using System.Collections.Generic;
@@ -223,8 +224,9 @@ namespace KuCoin.NET.Websockets.Distribution
                 if (initData == null)
                 {
                     State = FeedState.Failed;
-                    LastFailureTime = DateTime.Now;
+                    LastFailureTime = DateTime.UtcNow;
                     Failure = true;
+                    FailReason = FailReason.Other;
                     OnPropertyChanged(nameof(TimeUntilNextRetry));
 
                     initializing = false;

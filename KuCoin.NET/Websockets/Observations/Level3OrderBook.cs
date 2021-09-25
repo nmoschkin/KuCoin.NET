@@ -159,7 +159,12 @@ namespace KuCoin.NET.Websockets.Observations
             {
                 if (fullDepth == null)
                 {
-                    if (!failure) Failure = true;
+                    if (!failure)
+                    {
+                        Failure = true;
+                        FailReason = FailReason.Other;
+
+                    }
                     return false;
                 }
                 else if (obj.Sequence <= fullDepth.Sequence)

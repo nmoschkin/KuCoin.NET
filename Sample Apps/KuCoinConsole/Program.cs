@@ -937,6 +937,9 @@ namespace KuCoinConsole
                 int resetting = 0;
                 int running = 0;
                 int failed = 0;
+                int failobook = 0;
+                int failother = 0;
+
                 double minresettime = 0d;
                 ccount = -1;
 
@@ -956,6 +959,15 @@ namespace KuCoinConsole
                         }
                         else if (l3.Failure)
                         {
+                            if (l3.FailReason == FailReason.OrderBookTimeout)
+                            {
+                                failobook++;
+                            }
+                            else
+                            {
+                                failother++;
+                            }
+
                             failed++;
                             if (l3.TimeUntilNextRetry is double t)
                             {
@@ -984,7 +996,7 @@ namespace KuCoinConsole
                 var failtext = $"Feeds Failed:       {{Red}}{failed}{{Reset}}";
                 if (minresettime > 0)
                 {
-                    failtext += $" (Next reset in {(minresettime/1000):#,##0} seconds)";
+                    failtext += $" (Next reset in {(minresettime/1000):#,##0} seconds. {failobook} order book timeouts. {failother} other failures.)          ";
                 }
                 failtext += "";
 

@@ -39,6 +39,9 @@ namespace KuCoin.NET.Websockets.Distribution
 
         protected FeedState state;
 
+        protected FailReason reason;
+
+
         public virtual int QueueLength => buffer?.Count ?? 0;
 
         /// <summary>
@@ -61,6 +64,18 @@ namespace KuCoin.NET.Websockets.Distribution
                         dist.RefreshState();
                     }
                 }
+            }
+        }
+
+        /// <summary>
+        /// Gives the reason for the failure of the feed.
+        /// </summary>
+        public virtual FailReason FailReason
+        {
+            get => reason;
+            protected set
+            {
+                SetProperty(ref reason, value);
             }
         }
              

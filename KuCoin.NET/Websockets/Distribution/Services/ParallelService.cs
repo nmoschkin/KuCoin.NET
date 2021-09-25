@@ -367,8 +367,6 @@ namespace KuCoin.NET.Websockets.Distribution.Services
                     Monitor.Enter(feed.LockObject);
                 }
 
-                int x = 0;
-
                 foreach (var feed in allfeeds)
                 {
                     RegisterService(feed);

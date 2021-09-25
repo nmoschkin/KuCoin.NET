@@ -1,6 +1,7 @@
 ﻿using KuCoin.NET.Data;
 using KuCoin.NET.Data.Market;
 using KuCoin.NET.Data.Websockets;
+using KuCoin.NET.Websockets.Distribution.Services;
 
 using System;
 using System.Collections.Generic;
@@ -28,8 +29,6 @@ namespace KuCoin.NET.Websockets.Distribution
         protected long matchSec = 0;
 
         protected IInitialDataProvider<string, TBookIn> dataProvider;
-
-        protected DateTime? lastFailureTime = null;
 
         protected TBookIn fullDepth;
 
@@ -240,7 +239,13 @@ namespace KuCoin.NET.Websockets.Distribution
 
         public virtual long TransactionsPerSecond { get; protected set; }
 
-        int cpass = 0;
+
+        protected override void PerformResetTasks()
+        {
+            base.PerformResetTasks();
+            if (direct) _ = Task.Run(() => ParallelService.RegisterService(this));
+        }
+
         CancellationTokenSource cts;
         DateTime? startFetch;
 
@@ -258,19 +263,20 @@ namespace KuCoin.NET.Websockets.Distribution
                         if (lastFailureTime is DateTime t && (DateTime.UtcNow - t).TotalMilliseconds >= resetTimeout)
                         {
                             initializing = false;
-                            Reset().ConfigureAwait(false).GetAwaiter().GetResult();
+                            _ = Reset();
                         }
                         else
                         {
                             OnPropertyChanged(nameof(TimeUntilNextRetry));
-                            return;
                         }
+
+                        return;
                     }
 
                     if (!initializing)
                     {
                         initializing = true;
-                        startFetch = DateTime.Now;
+                        startFetch = DateTime.UtcNow;
                         cts = new CancellationTokenSource();
                         
                         Initialize().ContinueWith((t) =>
@@ -278,18 +284,24 @@ namespace KuCoin.NET.Websockets.Distribution
                             if (t.Result)
                             {
                                 State = FeedState.Running;
+                                FailReason = FailReason.None;
+
+                                if (direct) _ = Task.Run(() => ParallelService.UnregisterService(this));
                             }
 
                             cts = null;
                             startFetch = null;
                         }, cts.Token);
                     }
-                    else if ((startFetch != null && (DateTime.Now - (DateTime)startFetch).TotalMilliseconds >= (resetTimeout * 2)))
+                    else if ((startFetch != null && (DateTime.UtcNow - (DateTime)startFetch).TotalMilliseconds >= (resetTimeout * 2)))
                     {
                         cts?.Cancel();
                         startFetch = null;
                         cts = null;
                         State = FeedState.Failed;
+
+                        FailReason = FailReason.OrderBookTimeout;
+
                         LastFailureTime = DateTime.UtcNow;
                         Failure = true;
                         OnPropertyChanged(nameof(TimeUntilNextRetry));
