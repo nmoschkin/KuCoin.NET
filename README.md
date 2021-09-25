@@ -16,6 +16,21 @@ This repository is now reduced to the core library, the console app and a creden
 
 The entire project has been retargeted to .NET 6, except for KuCoin.NET.Std, which is .NET Standard 2.0.  
 
+## Donations 
+
+If you like my work, and find it may be useful, you can donate crypto if you like!
+
+My Ethereum wallet address is: 
+  - 0xb97a29b4349cb3f66b7f2143c6ba1362b8ec4e7d
+
+My Stellar Lumens (XLM) address is:
+  - Address: GAJ4BSGJE6UQHZAZ5U5IUOABPDCYPKPS3RFS2NVNGFGFXGVQDLBQJW2P
+  - Memo: 1870588215
+
+My KCS wallet is:
+  - 0xb97a29b4349cb3f66b7f2143c6ba1362b8ec4e7d
+
+
 ## Installation and Getting Started
 
 There are two solutions, one that contains projects that reference the .NET 6 library, and the other that contains projects that reference the .NET Standard 2.0 library.
@@ -106,20 +121,6 @@ Windows Forms, WPF, and Win UI / Reunion apps all provide a __SynchronizationCon
 The library, itself, is pretty well documented, so far.
 
 This project is epic, and there are bound to be bugs.  Feel free to open issues, and I will get to them, as I can, if I don't find the bugs, first.
-
-## And finally, I take donations!  
-
-If you like my work, and find it may be useful, you can donate crypto if you like!
-
-My Ethereum wallet address is: 
-  - 0xb97a29b4349cb3f66b7f2143c6ba1362b8ec4e7d
-
-My Stellar Lumens (XLM) address is:
-  - Address: GAJ4BSGJE6UQHZAZ5U5IUOABPDCYPKPS3RFS2NVNGFGFXGVQDLBQJW2P
-  - Memo: 1870588215
-
-My KCS wallet is:
-  - 0xb97a29b4349cb3f66b7f2143c6ba1362b8ec4e7d
 
 
    
