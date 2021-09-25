@@ -772,7 +772,7 @@ namespace KuCoin.NET.Websockets
         /// <summary>
         /// The data receive thread.
         /// </summary>
-        protected virtual void DataReceiveThread()
+        protected virtual async void DataReceiveThread()
         {
             Thread.CurrentThread.Priority = recvPriority;
 
@@ -837,7 +837,7 @@ namespace KuCoin.NET.Websockets
                     }
                     else
                     {
-                        result = valtask.AsTask().ConfigureAwait(false).GetAwaiter().GetResult();
+                        result = await valtask;
                     }
                 }
                 catch
