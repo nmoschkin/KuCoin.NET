@@ -4,11 +4,21 @@ using System.Text;
 
 namespace KuCoin.NET.Websockets.Distribution
 {
-    public class SubscribtionEventArgs : EventArgs
+    /// <summary>
+    /// Subscription event args
+    /// </summary>
+    public class SubscriptionEventArgs : EventArgs
     {
-        public IInitializable Subscriber;
+        public IInitializable Subscriber { get; protected set; }
 
-        public ISubscriptionProvider Provider;
+        public ISubscriptionProvider Provider { get; protected set; }
+
+        public SubscriptionEventArgs(IInitializable subscriber, ISubscriptionProvider provider)
+        {
+            Subscriber = subscriber;
+            Provider = provider;    
+        }
+        
     }
 
     /// <summary>

@@ -15,9 +15,18 @@ using System.Linq;
 
 namespace KuCoin.NET.Websockets.Observations
 {
+
+    /// <summary>
+    /// Level 3 Market Feed Order Book.
+    /// </summary>
     public sealed class Level3OrderBook : OrderBookDistributable<KeyedAtomicOrderBook<AtomicOrderUnit>, ObservableAtomicOrderBook<ObservableAtomicOrderUnit>, Level3Update, Level3>
     {
-
+        /// <summary>
+        /// Instantiate a new level 3 order book.
+        /// </summary>
+        /// <param name="parent">The parent <see cref="Level3"/> or <see cref="Level3Direct"/> feed.</param>
+        /// <param name="symbol">The market trading symbol this order book is tracking.</param>
+        /// <param name="direct">True if the feed is direct, otherwise false.</param>
         public Level3OrderBook(Level3 parent, string symbol, bool direct) : base(parent, symbol, true, direct)
         {
             this.parent = parent;
@@ -26,7 +35,12 @@ namespace KuCoin.NET.Websockets.Observations
             IsPresentationDisabled = true;
         }
 
-        public Level3OrderBook(Level3 parent, string symbol) : base(parent, symbol, true, false)
+        /// <summary>
+        /// Instantiate a new level 3 order book.
+        /// </summary>
+        /// <param name="parent">The parent <see cref="Level3"/> or <see cref="Level3Direct"/> feed.</param>
+        /// <param name="symbol">The market trading symbol this order book is tracking.</param>
+        public Level3OrderBook(Level3 parent, string symbol) : base(parent, symbol, true, parent is Level3Direct)
         {
             this.parent = parent;
             dataProvider = parent;

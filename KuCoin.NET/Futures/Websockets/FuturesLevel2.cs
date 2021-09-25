@@ -17,11 +17,17 @@ using System.Threading.Tasks;
 
 namespace KuCoin.NET.Futures.Websockets
 {
+    /// <summary>
+    /// An object that implements an <see cref="IMarketFeed{TDistributable, TValue, TInitial, TObservable}"/> for the Level 2 futures market feed.
+    /// </summary>
     public interface IFuturesLevel2 : IMarketFeed<FuturesLevel2OrderBook, FuturesLevel2Update, KeyedOrderBook<OrderUnitStruct>, ObservableOrderBook<ObservableOrderUnit>>
     {
 
     }
 
+    /// <summary>
+    /// Level 2 Futures Market Feed
+    /// </summary>
     public class FuturesLevel2 : OrderBookFeed<FuturesLevel2OrderBook, FuturesLevel2Update, KeyedOrderBook<OrderUnitStruct>, ObservableOrderBook<ObservableOrderUnit>, FuturesLevel2>, IFuturesLevel2
     {
         /// <summary>
@@ -51,6 +57,10 @@ namespace KuCoin.NET.Futures.Websockets
             chunkSize = 1024;
 
         }
+
+        /// <summary>
+        /// Gets the reference subject for the feed subscription.
+        /// </summary>
         public string Subject => "level2";
 
         public override string InitialDataUrl => "/api/v1/level2/snapshot";
@@ -61,6 +71,10 @@ namespace KuCoin.NET.Futures.Websockets
 
         public override void Release(IWebsocketListener obj) => Release((FuturesLevel2OrderBook)obj);
 
+        /// <summary>
+        /// Release an object and unsubscribe the associated ticker symbol.
+        /// </summary>
+        /// <param name="obj">The object to release.</param>
         public void Release(FuturesLevel2OrderBook obj)
         {
             if (activeFeeds.ContainsValue(obj))

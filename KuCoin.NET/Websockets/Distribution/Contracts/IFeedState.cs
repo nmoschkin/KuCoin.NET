@@ -6,6 +6,9 @@ using System.Threading.Tasks;
 
 namespace KuCoin.NET.Websockets.Distribution
 {
+    /// <summary>
+    /// An object that has a <see cref="FeedState"/>.
+    /// </summary>
     public interface IFeedState
     {  
         /// <summary>

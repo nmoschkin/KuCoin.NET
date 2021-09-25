@@ -12,6 +12,9 @@ using System.Threading.Tasks;
 namespace KuCoin.NET.Websockets.Distribution
 {
 
+    /// <summary>
+    /// Presents market data to a UI/UX
+    /// </summary>
     public interface IMarketPresenter
     : IDistributable,
         IInitializable,
@@ -21,18 +24,27 @@ namespace KuCoin.NET.Websockets.Distribution
     {
     }
 
+    /// <summary>
+    /// Presents market data to a UI/UX
+    /// </summary>
     public interface IMarketPresenter<TKey, TValue>
     : IMarketPresenter, IDistributable<TKey, TValue>
       where TValue : IStreamableObject
     {
     }
 
+    /// <summary>
+    /// Presents market data to a UI/UX
+    /// </summary>
     public interface IMarketPresenter<TObservable, TKey, TValue> 
     :  IMarketPresenter<TKey, TValue>, IPresentable<TObservable>
        where TValue : IStreamableObject
     {
     }
 
+    /// <summary>
+    /// Presents market data to a UI/UX
+    /// </summary>
     public interface IMarketPresenter<TInternal, TObservable, TKey, TValue> 
         : IDistributable<TKey, TValue>, 
         IInitializable<TKey, TInternal>, 
@@ -43,14 +55,15 @@ namespace KuCoin.NET.Websockets.Distribution
     {
     }
 
-
-
     /// <summary>
     /// Base class for all market presentation where the raw data and the presented data are two different objects, with the presented data being data prepared from the raw data at regular intervals.
     /// </summary>
     /// <typeparam name="TInternal"></typeparam>
     /// <typeparam name="TObservable"></typeparam>
     /// <typeparam name="TValue"></typeparam>
+    /// <remarks>
+    /// <see cref="MarketPresenter{TInternal, TObservable, TValue}"/> is an <see cref="InitializableObject{TKey, TValue, TInternal}"/>.
+    /// </remarks>
     public abstract class MarketPresenter<TInternal, TObservable, TValue> : 
         InitializableObject<string, TValue, TInternal>, 
         IMarketPresenter<TInternal, TObservable, string, TValue> 

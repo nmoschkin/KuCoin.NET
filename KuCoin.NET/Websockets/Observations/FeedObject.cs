@@ -22,9 +22,7 @@ namespace KuCoin.NET.Websockets
         protected KucoinBaseWebsocketFeed<T> feed;
         protected IObserver<T> observer;
         protected bool disposed = false;
-
-        public event PropertyChangedEventHandler PropertyChanged;
-
+                
         public bool Disposed => disposed;
 
         public IObserver<T> Observer => observer;

@@ -423,17 +423,17 @@ namespace KuCoin.NET.Rest
         /// <summary>
         /// Get a customized K-Line for the specified ticker symbol and the specified time range.
         /// </summary>
-        /// <typeparam name="TCandle">The type of the K-Line objects to create that implements both <see cref="IFullCandle"/> and <typeparamref name="TCustom"/>.
+        /// <param name="symbol">The symbol</param>
+        /// <param name="type">The K-Line type (the length of time represented by a single candlestick)</param>
+        /// <param name="startTime">Start time</param>
+        /// <param name="endTime">End time</param>
+        /// <typeparam name="TCandle">The type of the K-Line objects to create that implements both <see cref="IFullCandle"/> and <typeparamref name="TCustom"/>.</typeparam>
         /// <typeparam name="TCustom">
         /// The type of the objects to return.<br />
         /// This is usually a third-party interface.<br />  
         /// Objects of this type will be returned in the newly created collection.
         /// </typeparam>
         /// <typeparam name="TCol">The type of the collection that contains <typeparamref name="TCustom"/> objects.</typeparam>
-        /// <param name="symbol">The symbol</param>
-        /// <param name="type">The K-Line type (the length of time represented by a single candlestick)</param>
-        /// <param name="startTime">Start time</param>
-        /// <param name="endTime">End time</param>
         /// <returns>A list of candlesticks</returns>
         public async Task<TCol> GetKline<TCandle, TCustom, TCol>(
             string symbol, 

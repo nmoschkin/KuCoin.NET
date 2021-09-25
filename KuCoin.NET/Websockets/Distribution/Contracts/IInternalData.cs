@@ -6,6 +6,10 @@ using System.Threading.Tasks;
 
 namespace KuCoin.NET.Websockets.Distribution
 {
+    /// <summary>
+    /// An object that contains data that is not displayed to a user.
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
     public interface IInternalData<T>
     {
 

@@ -10,7 +10,6 @@ namespace KuCoin.NET.Websockets.Distribution
     /// <summary>
     /// Provides an interface for an object that has a distributor parent.
     /// </summary>
-    /// <typeparam name="T"></typeparam>
     public interface IParent
     {
         /// <summary>
@@ -19,8 +18,15 @@ namespace KuCoin.NET.Websockets.Distribution
         IWebsocketFeed Parent { get; }
     }
 
+    /// <summary>
+    /// Provides an interface for an object that has a distributor parent.
+    /// </summary>
+    /// <typeparam name="T">The type of the parent.</typeparam>
     public interface IParent<T> : IParent where T: IWebsocketFeed
     {
+        /// <summary>
+        /// Gets the parent distributor
+        /// </summary>
         new T Parent { get; }
     }
 

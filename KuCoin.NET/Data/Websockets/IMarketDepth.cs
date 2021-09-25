@@ -5,7 +5,7 @@ using System.Text;
 namespace KuCoin.NET.Data.Websockets
 {
     /// <summary>
-    /// An object that has a market depth.
+    /// An object that has a static market depth.
     /// </summary>
     public interface IReadOnlyMarketDepth
     {
@@ -18,12 +18,12 @@ namespace KuCoin.NET.Data.Websockets
     }
 
     /// <summary>
-    /// An object that has a market depth that can change.
+    /// An object that has a mutable market depth.
     /// </summary>
     public interface IMarketDepth : IReadOnlyMarketDepth
     {
         /// <summary>
-        /// Gets or sets the market depth.
+        /// Gets or sets the market depth (the maximum number of items in the market list).
         /// </summary>
         new int MarketDepth { get; set; }
     }

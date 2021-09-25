@@ -9,7 +9,7 @@ using System.Text;
 namespace KuCoin.NET.Websockets.Distribution
 {
     /// <summary>
-    /// Presents data.
+    /// An object that presents data.
     /// </summary>
     public interface IPresentable : INotifyPropertyChanged
     {

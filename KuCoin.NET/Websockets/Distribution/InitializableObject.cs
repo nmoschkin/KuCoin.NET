@@ -10,6 +10,16 @@ using System.Threading.Tasks;
 
 namespace KuCoin.NET.Websockets.Distribution
 {
+    
+    /// <summary>
+    /// Base class for all <see cref="DistributableObject{TKey, TValue}"/> types that perform initialization work.
+    /// </summary>
+    /// <typeparam name="TKey">The key type.</typeparam>
+    /// <typeparam name="TValue">The value type.</typeparam>
+    /// <typeparam name="TInternal">The internal maintained state object.</typeparam>
+    /// <remarks>
+    /// <see cref="InitializableObject{TKey, TValue, TInternal}"/> is a type of <see cref="DistributableObject{TKey, TValue}"/>.
+    /// </remarks>
     public abstract class InitializableObject<TKey, TValue, TInternal> : DistributableObject<TKey, TValue>, IInitializable<TKey, TInternal>
         where TValue: IStreamableObject
         

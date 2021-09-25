@@ -13,6 +13,18 @@ using System.Threading.Tasks;
 
 namespace KuCoin.NET.Websockets.Distribution
 {
+    
+    /// <summary>
+    /// Abstract base class for distributable and/or presentable order books.
+    /// </summary>
+    /// <typeparam name="TBookIn">The internal, maintained order book.</typeparam>
+    /// <typeparam name="TBookOut">The presentation order book.</typeparam>
+    /// <typeparam name="TDistributable">The distributable object (must implement <see cref="ISymbol"/> and <see cref="IStreamableObject"/>.)</typeparam>
+    /// <typeparam name="TParent">The <see cref="IDistributor"/> owner of this order book.</typeparam>
+    /// <remarks>
+    /// <see cref="OrderBookDistributable{TBookIn, TBookOut, TDistributable, TParent}"/> maintains order books for Level 2 and Level 3 market feeds.<br />
+    /// It is a special tyoe of <see cref="MarketPresenter{TInternal, TObservable, TValue}"/>.
+    /// </remarks>
     public abstract class OrderBookDistributable<TBookIn, TBookOut, TDistributable, TParent> 
         : MarketPresenter<TBookIn, TBookOut, TDistributable>, IFeedDiagnostics, IMarketVolume
         where TParent: IDistributor, IInitialDataProvider<string, TBookIn>

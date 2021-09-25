@@ -29,6 +29,9 @@ namespace KuCoin.NET.Websockets.Distribution.Services
 
         private static int maxwait;
 
+        /// <summary>
+        /// The calculated wait interval.
+        /// </summary>
         public static int Wait { get; private set; } = 10;
 
         private static readonly Dictionary<int, Action[]> triggerGroups = new Dictionary<int, Action[]>();
@@ -91,7 +94,7 @@ namespace KuCoin.NET.Websockets.Distribution.Services
         }
 
         /// <summary>
-        /// Register a new pingable object.
+        /// Register a new presentable object.
         /// </summary>
         /// <param name="obj">The object to register.</param>
         /// <returns>True if the object was successfully registered, false if the object was already registered.</returns>
@@ -134,7 +137,7 @@ namespace KuCoin.NET.Websockets.Distribution.Services
         }
 
         /// <summary>
-        /// Unregister an observable object.
+        /// Unregister a presentable object.
         /// </summary>
         /// <param name="obj">The object to unregister.</param>
         /// <returns>True if the object was successfully unregistered, false if the object was not registered.</returns>
@@ -176,7 +179,7 @@ namespace KuCoin.NET.Websockets.Distribution.Services
         }
 
         /// <summary>
-        /// Observer method.
+        /// Observer thread.
         /// </summary>
         private static void IntervalMethod()
         {

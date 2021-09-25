@@ -17,7 +17,7 @@ using System.Threading.Tasks;
 namespace KuCoin.NET.Websockets.Distribution.Services
 {
     /// <summary>
-    /// Organize distributable objects that do work in parallel.
+    /// Organize and run workers on distributable objects that do work in parallel.
     /// </summary>
     public static class ParallelService
     {

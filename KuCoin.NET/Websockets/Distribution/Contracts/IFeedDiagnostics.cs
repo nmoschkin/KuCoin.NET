@@ -3,6 +3,9 @@
 
 namespace KuCoin.NET.Websockets.Distribution
 {
+    /// <summary>
+    /// Diagnostic data provider.
+    /// </summary>
     public interface IFeedDiagnostics
     {
         /// <summary>

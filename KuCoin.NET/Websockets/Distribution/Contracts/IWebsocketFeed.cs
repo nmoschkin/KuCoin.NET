@@ -9,7 +9,10 @@ using System.Threading.Tasks;
 
 namespace KuCoin.NET.Websockets.Distribution
 {
-    public interface IWebsocketFeed 
+    /// <summary>
+    /// A websocket feed.
+    /// </summary>
+    public interface IWebsocketFeed
     {
 
         /// <summary>
@@ -24,22 +27,41 @@ namespace KuCoin.NET.Websockets.Distribution
         /// <param name="obj">Object to release.</param>
         void Release(IWebsocketListener obj);
 
+        /// <summary>
+        /// Gets a value indicating the connected status.
+        /// </summary>
         bool Connected { get; }
 
+        /// <summary>
+        /// Disconnect the feed.
+        /// </summary>
         void Disconnect();
 
+
+        /// <summary>
+        /// Establish a connection to the remote server for the feed.
+        /// </summary>
+        /// <returns>True if the connection was successfully established.</returns>
         Task<bool> Connect();
 
     }
-
     
-    public interface IWebsocketFeed<T, U> : IWebsocketFeed
-        where T: IStreamableObject
-        where U: IWebsocketListener<T>
+    /// <summary>
+    /// A websocket feed that streams an object of type <typeparamref name="TObject"/> to a listener of type <typeparamref name="TListener"/>.
+    /// </summary>
+    /// <typeparam name="TObject">A <see cref="IStreamableObject"/>.</typeparam>
+    /// <typeparam name="TListener">A <see cref="IWebsocketListener"/>.</typeparam>
+    public interface IWebsocketFeed<TObject, TListener> : IWebsocketFeed
+        where TObject: IStreamableObject
+        where TListener: IWebsocketListener<TObject>
     {
-        new IEnumerable<U> GetActiveFeeds();
+        new IEnumerable<TListener> GetActiveFeeds();
     }
 
+    /// <summary>
+    /// A websocket feed that streams an object of type <typeparamref name="T"/> to a listener of type <see cref="FeedObject{T}"/>.
+    /// </summary>
+    /// <typeparam name="T">A <see cref="IStreamableObject"/>.</typeparam>
     public interface IWebsocketFeed<T> : IWebsocketFeed<T, FeedObject<T>>
         where T: class, IStreamableObject
     {

@@ -5,6 +5,9 @@ using System.Threading.Tasks;
 
 namespace KuCoin.NET.Websockets.Distribution
 {
+    /// <summary>
+    /// Interface for objects that do initialization work.
+    /// </summary>
     public interface IInitializable
     {
 
@@ -56,6 +59,11 @@ namespace KuCoin.NET.Websockets.Distribution
 
     }
 
+    /// <summary>
+    /// Interface for objects that do initialization work.
+    /// </summary>
+    /// <typeparam name="TKey">The key type.</typeparam>
+    /// <typeparam name="TValue">The value type.</typeparam>
     public interface IInitializable<TKey, TValue> : IInitializable, IInternalData<TValue>
     {
                 

@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 namespace KuCoin.NET.Websockets.Distribution
 {
     /// <summary>
-    /// Enumeration values that indicate the current state of a Leve 2 or Level 3 feed.
+    /// Enumeration values that indicate the current state of a websocket feed, or listener.
     /// </summary>
     public enum FeedState
     {
@@ -47,7 +47,7 @@ namespace KuCoin.NET.Websockets.Distribution
         Failed,
 
         /// <summary>
-        /// The feed is in multiple states.  Query each observation for the current state.
+        /// The feed is in multiple states.  Query each listener for the current state.
         /// </summary>
         Multiple
 

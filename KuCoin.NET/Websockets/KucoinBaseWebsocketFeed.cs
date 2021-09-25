@@ -1375,7 +1375,7 @@ namespace KuCoin.NET.Websockets
     }
 
     /// <summary>
-    /// Websocket feed abstract base class for <see cref="IObservable{T}"/> implementation.
+    /// Websocket feed abstract base class for <see cref="IObservable{T}"/> implementations.
     /// </summary>
     /// <typeparam name="T">The type of object to serve.</typeparam>
     public abstract class KucoinBaseWebsocketFeed<T> :
