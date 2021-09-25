@@ -21,7 +21,7 @@ namespace KuCoin.NET.Websockets.Distribution
     /// <summary>
     /// An object that can do distributed work (typically in parallel with other such objects.)
     /// </summary>
-    public interface IDistributable : IWebsocketListener // : IComparable<IDistributable>
+    public interface IDistributable : IWebsocketListener, INotifyPropertyChanged // : IComparable<IDistributable>
     {
         /// <summary>
         /// Do work.

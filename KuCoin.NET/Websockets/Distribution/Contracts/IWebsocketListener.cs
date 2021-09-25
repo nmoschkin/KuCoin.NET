@@ -9,12 +9,11 @@ using System.Threading.Tasks;
 
 namespace KuCoin.NET.Websockets.Distribution
 {
-    public interface IWebsocketListener : IParent, INotifyPropertyChanged, IDisposable
+    public interface IWebsocketListener : IParent, IDisposable
     {
     }
 
     public interface IWebsocketListener<T> : IWebsocketListener where T: IStreamableObject
     {
-
     }
 }

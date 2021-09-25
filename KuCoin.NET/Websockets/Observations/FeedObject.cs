@@ -33,7 +33,7 @@ namespace KuCoin.NET.Websockets
 
         public IWebsocketFeed Parent { get; }
 
-        internal FeedObject(KucoinBaseWebsocketFeed<T> feed, IObserver<T> observer)
+        public FeedObject(KucoinBaseWebsocketFeed<T> feed, IObserver<T> observer)
         {
             this.feed = feed;
             this.observer = observer;

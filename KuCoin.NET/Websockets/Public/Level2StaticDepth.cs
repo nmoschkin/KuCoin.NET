@@ -47,7 +47,7 @@ namespace KuCoin.NET.Websockets.Public
         /// </summary>
         /// <param name="symbol">The trading pair (symbol) to subscribe.</param>
         /// <returns>A new <see cref="Observations.ILevel2OrderBookProvider"/> implementation instance.</returns>
-        public new async Task<ObservableStaticMarketDepthUpdate> AddSymbol(string symbol)
+        public async Task<ObservableStaticMarketDepthUpdate> AddSymbol(string symbol)
         {
             var res = await AddSymbols(new string[] { symbol });
             return res[symbol];
@@ -60,7 +60,7 @@ namespace KuCoin.NET.Websockets.Public
         /// <returns>
         /// A <see cref="Dictionary{TKey, TValue}"/> containing a list of <see cref="Observations.ILevel2OrderBookProvider"/> implementation instances keyed by symbol.
         /// </returns>
-        public new async Task<Dictionary<string, ObservableStaticMarketDepthUpdate>> AddSymbols(IEnumerable<string> symbols)
+        public async Task<Dictionary<string, ObservableStaticMarketDepthUpdate>> AddSymbols(IEnumerable<string> symbols)
         {
             await base.SubscribeMany(symbols);
             var dict = new Dictionary<string, ObservableStaticMarketDepthUpdate>();

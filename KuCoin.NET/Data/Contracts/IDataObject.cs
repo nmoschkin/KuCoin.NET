@@ -4,6 +4,8 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
+using KuCoin.NET.Json;
+
 namespace KuCoin.NET.Data
 {
     public interface IDataSeries
@@ -31,6 +33,9 @@ namespace KuCoin.NET.Data
     /// <summary>
     /// A data object that is recognized as valid by the framework.
     /// </summary>
+    /// <remarks>
+    /// Usually objects are derived from the <see cref="DataObject"/> abstract class, as well.
+    /// </remarks>
     public interface IDataObject
     {
         /// <summary>

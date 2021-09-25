@@ -208,27 +208,17 @@ namespace KuCoin.NET.Rest
         public async Task<IEnumerable<TradingSymbol>> RefreshSymbolsAsync()
         {
 
-            try
-            {
-                var jobj = await MakeRequest(HttpMethod.Get, "/api/v1/symbols", 5, false);
-                var results = jobj.ToObject<List<TradingSymbol>>();
+            var jobj = await MakeRequest(HttpMethod.Get, "/api/v1/symbols", 5, false);
+            var results = jobj.ToObject<List<TradingSymbol>>();
 
 
-                Symbols = new ObservableDictionary<string, TradingSymbol>(
-                    new Comparison<TradingSymbol>((a, b) => {
-                        return string.Compare(a.Symbol, b.Symbol);
-                    }), ListSortDirection.Ascending, results);
+            Symbols = new ObservableDictionary<string, TradingSymbol>(
+                new Comparison<TradingSymbol>((a, b) => {
+                    return string.Compare(a.Symbol, b.Symbol);
+                }), ListSortDirection.Ascending, results);
 
 
-                return results;
-            }
-            catch(Exception ex)
-            {
-                throw ex;
-            }
-            finally
-            {
-            }
+            return results;
 
         }
 
@@ -239,26 +229,16 @@ namespace KuCoin.NET.Rest
         /// <returns></returns>
         public async Task<IEnumerable<MarketCurrency>> RefreshCurrenciesAsync()
         {
-            try
-            {
-                var jobj = await MakeRequest(HttpMethod.Get, "api/v1/currencies", auth: false);
+            var jobj = await MakeRequest(HttpMethod.Get, "api/v1/currencies", auth: false);
 
-                var results = jobj.ToObject<List<MarketCurrency>>();
+            var results = jobj.ToObject<List<MarketCurrency>>();
 
-                Currencies = new ObservableDictionary<string, MarketCurrency>(
-                    new Comparison<MarketCurrency>((a, b) => {
-                        return string.Compare(a.Currency, b.Currency);
-                    }), ListSortDirection.Ascending, results);
+            Currencies = new ObservableDictionary<string, MarketCurrency>(
+                new Comparison<MarketCurrency>((a, b) => {
+                    return string.Compare(a.Currency, b.Currency);
+                }), ListSortDirection.Ascending, results);
 
-                return results;
-            }
-            catch(Exception ex)
-            {
-                throw ex;
-            }
-            finally
-            {
-            }
+            return results;
 
         }
 

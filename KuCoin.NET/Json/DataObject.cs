@@ -39,8 +39,6 @@ namespace KuCoin.NET.Json
 
             var pis = obj.GetType().GetProperties(BindingFlags.Public | BindingFlags.Instance);
             string name;
-            //var jt = new JObject(this);
-            //return jt.ToObject<Dictionary<string, object>>();
 
             foreach (var pi in pis)
             {
