@@ -260,10 +260,7 @@ namespace KuCoin.NET.Websockets.Public
             {
                 try
                 {
-                    result = socket.ReceiveAsync(memTarget, ctsReceive.Token)
-                        .ConfigureAwait(false)
-                        .GetAwaiter()
-                        .GetResult();
+                    result = await socket.ReceiveAsync(memTarget, ctsReceive.Token);
                 }
                 catch
                 {
