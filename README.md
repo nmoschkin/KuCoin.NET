@@ -97,7 +97,7 @@ All of the feeds except for order book feeds implement the __IObservable<T>__ pa
 
 ## UI/UX Notes
 
-In order to use any of the feeds in UI/UX/MVVM setting, you will need to initialize the __Kucoin.NET.Helpers.Dispatcher__ static class with a __SynchronizationContext__ from the __Dispatcher__ provided by your application (usually the App class, itself.)  Feed observations will not execute correctly without a __SynchronizationContext__, because they need to inform the UI thread.
+In order to use any of the feeds in a UI/UX/MVVM setting, you will need to initialize the __Kucoin.NET.Helpers.Dispatcher__ static class with a __SynchronizationContext__ from the __Dispatcher__ provided by your application (usually the App class, itself.)  Feed observations will not execute correctly without a __SynchronizationContext__, because they need to inform the UI thread.
 
 Windows Forms, WPF, and Win UI / Reunion apps all provide a __SynchronizationContext__, so this should generally not be an issue.
 
