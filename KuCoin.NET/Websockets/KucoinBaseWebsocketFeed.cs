@@ -799,6 +799,7 @@ namespace KuCoin.NET.Websockets
             long tms = xtime.Ticks;
             long tqms = tms;
 
+#if DOTNETSTD
             WebSocketReceiveResult result;
             var memTarget = new ArraySegment<byte>(inputChunk);
 
@@ -807,9 +808,9 @@ namespace KuCoin.NET.Websockets
             {
                 try
                 {
-                    result = socket.ReceiveAsync(memTarget, ctsReceive.Token)                        
-                        .ConfigureAwait(false)                        
-                        .GetAwaiter()                        
+                    result = socket.ReceiveAsync(memTarget, ctsReceive.Token)
+                        .ConfigureAwait(false)
+                        .GetAwaiter()
                         .GetResult();
                 }
                 catch
@@ -817,6 +818,33 @@ namespace KuCoin.NET.Websockets
                     return;
                 }
 
+#else
+            ValueTask<ValueWebSocketReceiveResult> valtask;
+            ValueWebSocketReceiveResult result;
+
+            var memTarget = new Memory<byte>(inputChunk);
+
+            // loop forever or until the connection is broken or canceled.
+            while (!ctsReceive.IsCancellationRequested && socket?.State == WebSocketState.Open)
+            {
+                try
+                {
+                    valtask = socket.ReceiveAsync(memTarget, ctsReceive.Token);
+
+                    if (valtask.IsCompleted)
+                    {
+                        result = valtask.Result;
+                    }
+                    else
+                    {
+                        result = valtask.AsTask().ConfigureAwait(false).GetAwaiter().GetResult();
+                    }
+                }
+                catch
+                {
+                    return;
+                }
+#endif
                 if (ctsReceive?.IsCancellationRequested ?? true) return;
 
                 c = result.Count;

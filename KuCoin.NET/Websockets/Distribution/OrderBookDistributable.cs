@@ -258,7 +258,7 @@ namespace KuCoin.NET.Websockets.Distribution
                         if (lastFailureTime is DateTime t && (DateTime.UtcNow - t).TotalMilliseconds >= resetTimeout)
                         {
                             initializing = false;
-                            _ = Reset();
+                            Reset().ConfigureAwait(false).GetAwaiter().GetResult();
                         }
                         else
                         {

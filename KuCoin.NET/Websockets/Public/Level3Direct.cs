@@ -194,6 +194,7 @@ namespace KuCoin.NET.Websockets.Public
             bool maybenum = false;
             Level3Update update = new Level3Update();
 
+#if DOTNETSTD
             WebSocketReceiveResult result;
             var memTarget = new ArraySegment<byte>(inputChunk);
 
@@ -212,6 +213,33 @@ namespace KuCoin.NET.Websockets.Public
                     return;
                 }
 
+#else
+            ValueTask<ValueWebSocketReceiveResult> valtask;
+            ValueWebSocketReceiveResult result;
+
+            var memTarget = new Memory<byte>(inputChunk);
+
+            // loop forever or until the connection is broken or canceled.
+            while (!ctsReceive.IsCancellationRequested && socket?.State == WebSocketState.Open)
+            {
+                try
+                {
+                    valtask = socket.ReceiveAsync(memTarget, ctsReceive.Token);
+
+                    if (valtask.IsCompleted)
+                    {
+                        result = valtask.Result;
+                    }
+                    else
+                    {
+                        result = valtask.AsTask().ConfigureAwait(false).GetAwaiter().GetResult();
+                    }
+                }
+                catch
+                {
+                    return;
+                }
+#endif
                 if (ctsReceive?.IsCancellationRequested ?? true) return;
 
                 c = result.Count;

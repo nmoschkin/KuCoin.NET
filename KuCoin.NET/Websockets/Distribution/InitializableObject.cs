@@ -292,7 +292,10 @@ namespace KuCoin.NET.Websockets.Distribution
         /// </remarks>
         protected virtual void PerformResetTasks()
         {
-            InternalData = default;
+            lock (lockObj)
+            {
+                InternalData = default;
+            }
         }
 
     }
