@@ -172,6 +172,9 @@ namespace KuCoin.NET.Websockets.Public
 
             Crc32 hash = new Crc32();
 
+            char inChar;
+            byte inByte;
+
             int strlen = 0;
             int level = 0;
 
@@ -279,8 +282,8 @@ namespace KuCoin.NET.Websockets.Public
                 for (i = 0; i < c; i++)
                 {
                     // character by character is the simplest and fastest way.
-                    byte inByte = inputChunk[i];
-                    char inChar = (char)inByte;
+                    inByte = inputChunk[i];
+                    inChar = (char)inByte;
                     sb.Append(inChar);
 
                     if (inQuote)

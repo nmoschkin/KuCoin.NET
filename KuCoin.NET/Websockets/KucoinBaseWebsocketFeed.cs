@@ -780,6 +780,8 @@ namespace KuCoin.NET.Websockets
 
             StringBuilder sb = new StringBuilder();
 
+            char inChar;
+
             int strlen = 0;
             int level = 0;
 
@@ -884,7 +886,7 @@ namespace KuCoin.NET.Websockets
                 for (i = 0; i < c; i++)
                 {
                     // character by character is the simplest and fastest way.
-                    char inChar = (char)inputChunk[i];
+                    inChar = (char)inputChunk[i];
                     sb.Append(inChar);
 
                     if (inQuote)
