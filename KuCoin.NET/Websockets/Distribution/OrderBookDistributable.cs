@@ -255,7 +255,7 @@ namespace KuCoin.NET.Websockets.Distribution
                     {
                         buffer.Clear();
 
-                        if (lastFailureTime == null || (lastFailureTime is DateTime t && (DateTime.UtcNow - t).TotalMilliseconds >= resetTimeout))
+                        if (lastFailureTime is DateTime t && (DateTime.UtcNow - t).TotalMilliseconds >= resetTimeout)
                         {
                             initializing = false;
                             Reset().ConfigureAwait(false).GetAwaiter().GetResult();
@@ -290,7 +290,7 @@ namespace KuCoin.NET.Websockets.Distribution
                         startFetch = null;
                         cts = null;
                         State = FeedState.Failed;
-                        LastFailureTime = DateTime.Now;
+                        LastFailureTime = DateTime.UtcNow;
                         Failure = true;
                         OnPropertyChanged(nameof(TimeUntilNextRetry));
 
