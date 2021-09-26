@@ -1487,6 +1487,8 @@ namespace KuCoin.NET.Websockets
         protected virtual async Task PushNext(T obj)
         {
             if (disposedValue) throw new ObjectDisposedException(GetType().Name);
+
+            // TODO - This needs rewriting.
             await Task.Run(() =>
             {
                 List<Action> parallelActions = new List<Action>();
