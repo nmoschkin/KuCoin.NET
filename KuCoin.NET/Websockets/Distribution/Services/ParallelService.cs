@@ -219,10 +219,10 @@ namespace KuCoin.NET.Websockets.Distribution.Services
         /// Gets or sets amount of time to sleep for each idle sleep, in milliseconds.
         /// </summary>
         /// <remarks>
-        /// A value of 0 will yield the remainder of the time slice for the thread.</br>
-        /// A value less than zero will disable yielding completely.</br>
-        /// Values larger than 100 are not allowed.
-        /// The default value is 1.</br>
+        /// A value of 0 will yield the remainder of the time slice for the thread.<br />
+        /// A value less than zero will disable yielding completely.<br />
+        /// Values larger than 100 are not allowed.<br />
+        /// The default value is 1.
         /// </remarks>
         public static int IdleSleepTime
         {
@@ -243,9 +243,9 @@ namespace KuCoin.NET.Websockets.Distribution.Services
         /// Gets or sets amount of time to sleep for each work repeat, in milliseconds.
         /// </summary>
         /// <remarks>
-        /// A value of 0 will yield the remainder of the time slice for the thread.</br>
-        /// A value less than zero will disable yielding completely.</br>
-        /// The default value is 1.</br>
+        /// A value of 0 will yield the remainder of the time slice for the thread.<br />
+        /// A value less than zero will disable yielding completely.<br />
+        /// The default value is 1.<br />
         /// Values larger than 100 are not allowed.
         /// </remarks>
         public static int WorkIdleSleepTime

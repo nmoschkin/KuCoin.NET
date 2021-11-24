@@ -39,7 +39,7 @@ namespace KuCoin.NET.Data
     public interface IDataObject
     {
         /// <summary>
-        /// Writes the properties of this object ito a dictionary of string/object pairs.
+        /// Writes the properties of this object to a dictionary of string/object pairs.
         /// </summary>
         /// <returns></returns>
         Dictionary<string, object> ToDict();
