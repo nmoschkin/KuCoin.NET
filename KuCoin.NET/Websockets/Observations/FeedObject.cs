@@ -19,7 +19,7 @@ namespace KuCoin.NET.Websockets
     /// <typeparam name="T">The type of information the feed provides.</typeparam>
     public class FeedObject<T> : IWebsocketListener<T>, IDisposable where T: class, IStreamableObject
     {
-        protected KucoinBaseWebsocketFeed<T> feed;
+        protected IWebsocketFeed<T> feed;
         protected IObserver<T> observer;
         protected bool disposed = false;
                 
@@ -27,11 +27,11 @@ namespace KuCoin.NET.Websockets
 
         public IObserver<T> Observer => observer;
 
-        public KucoinBaseWebsocketFeed<T> Feed => feed;
+        public IWebsocketFeed<T> Feed => feed;
 
         public IWebsocketFeed Parent { get; }
 
-        public FeedObject(KucoinBaseWebsocketFeed<T> feed, IObserver<T> observer)
+        public FeedObject(IWebsocketFeed<T> feed, IObserver<T> observer)
         {
             this.feed = feed;
             this.observer = observer;
@@ -46,7 +46,7 @@ namespace KuCoin.NET.Websockets
         {
             if (disposed) return; // throw new ObjectDisposedException(GetType().FullName);
 
-            feed?.RemoveObservation(this);
+            feed?.Release(this);
 
             disposed = true;
         }
