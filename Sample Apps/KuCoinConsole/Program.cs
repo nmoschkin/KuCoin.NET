@@ -1134,6 +1134,9 @@ namespace KuCoinConsole
                     {
                         sortobs.Sort((a, b) =>
                         {
+                            if (a.Level3OrderBook.State != FeedState.Connected && b.Level3OrderBook.State != FeedState.Connected) return 0;
+                            else if (a.Level3OrderBook.State != FeedState.Connected && b.Level3OrderBook.State == FeedState.Connected) return 1;
+                            else if (a.Level3OrderBook.State == FeedState.Connected && b.Level3OrderBook.State != FeedState.Connected) return -1;
 
                             lock (a.Level3OrderBook.LockObject)
                             {

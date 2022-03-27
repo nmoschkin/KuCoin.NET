@@ -90,17 +90,19 @@ namespace KuCoin.NET.Data.Market
                 }
                 else
                 {
-                    while (z > 0 && Items[z].Price == Items[z - 1].Price)
+                    int c = Count - 1;
+                    while (z < c && Items[z].Price == Items[z + 1].Price)
                     {
-                        if (Items[z].Size > Items[z - 1].Size)
+                        if (Items[z].Size < Items[z + 1].Size)
                         {
-                            order = Items[z - 1];
-                            Items[z - 1] = Items[z];
+                            order = Items[z + 1];
+                            Items[z + 1] = Items[z];
                             Items[z] = order;
                         }
 
-                        z--;
+                        z++;
                     }
+
                 }
 
                 // SetItem(z, order);
