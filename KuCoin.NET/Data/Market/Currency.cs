@@ -50,7 +50,7 @@ namespace KuCoin.NET.Data.Market
         /// Minimum fees charged for withdrawal
         /// </summary>
         [JsonProperty("withdrawalMinFee")]
-        public decimal withdrawalMinFee { get; set; }
+        public decimal WithdrawalMinFee { get; set; }
 
         /// <summary>
         /// Support withdrawal or not

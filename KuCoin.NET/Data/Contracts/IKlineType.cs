@@ -57,7 +57,7 @@ namespace KuCoin.NET.Data.Market
         /// </summary>
         /// <param name="pieces">The number of pieces to go back.</param>
         /// <param name="endDate">The time to work back from (now is the default)</param>
-        /// <returns>The date calculated date.</returns>
+        /// <returns>The calculated start date.</returns>
         /// <remarks>
         /// The function computes the date that would need to be passed to get the specified number
         /// of pieces based on the length of the current KlineType value.
