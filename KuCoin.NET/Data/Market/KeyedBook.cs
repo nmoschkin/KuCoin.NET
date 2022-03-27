@@ -72,6 +72,7 @@ namespace KuCoin.NET.Data.Market
                 int z = FindItem(order);
                 if (z == -1) return false;
                 order = (TUnit)order.Clone();
+                orderIds[order.OrderId] = order;
                 order.Size -= match;
 
                 SetItem(z, order);
@@ -351,10 +352,7 @@ namespace KuCoin.NET.Data.Market
 
                 if (newIdx == index)
                 {
-                    if (!object.Equals(Items[index], item))
-                    {
-                        Items[index] = item;
-                    }
+                    Items[index] = item;
                     return;
                 }
                 else
