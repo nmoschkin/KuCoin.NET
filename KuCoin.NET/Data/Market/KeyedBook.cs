@@ -234,7 +234,8 @@ namespace KuCoin.NET.Data.Market
                     if (excludeSelf && object.Equals(item, unit))
                     {
                         mid--;
-                        if (mid <= 0) return 0;
+                        if (mid <= 0) return 0; 
+                        item = Items[mid];
                     }
 
                     cprice = item.Price;
@@ -296,6 +297,7 @@ namespace KuCoin.NET.Data.Market
                     {
                         mid++;
                         if (mid >= count) return count;
+                        item = Items[mid];
                     }
 
                     cprice = item.Price;
