@@ -76,10 +76,9 @@ namespace KuCoin.NET.Data.Market
 
                 if (!descending)
                 {
-                    z--;
                     while (z > 0 && Items[z].Price == Items[z - 1].Price)
                     {
-                        if (Items[z].Size > Items[z - 1].Size)
+                        if (Items[z].Size < Items[z - 1].Size)
                         {
                             order = Items[z - 1];
                             Items[z - 1] = Items[z];
@@ -92,8 +91,6 @@ namespace KuCoin.NET.Data.Market
                 else
                 {
                     int c = Count - 1;
-
-                    z++;
                     while (z < c && Items[z].Price == Items[z + 1].Price)
                     {
                         if (Items[z].Size < Items[z + 1].Size)
