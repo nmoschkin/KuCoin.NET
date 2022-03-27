@@ -66,26 +66,49 @@ namespace KuCoin.NET.Data.Market
             }
         }
 
+        /// <summary>
+        /// Match Order
+        /// </summary>
+        /// <param name="order">Order</param>
+        /// <param name="match">Match Amount</param>
+        /// <returns>True if successful.</returns>
+        public bool Match(TUnit order, decimal match)
+        {
+            lock (lockObj)
+            {
+                int z = FindItem(order);
+                if (z == -1) return false;
+
+                order.Size -= match;
+
+                SetItem(z, order);
+                return true;
+            }
+        }
+
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private int FindItem(TUnit item)
         {
-
             int z = GetInsertIndex(item);
             if (z < 0 || z >= Count) return -1;
 
             if (this[z].OrderId == item.OrderId) return z;
             int oz = z;
 
-            while (++z < Count && this[z].Price == item.Price)
+            z++;
+            while (z < Count && this[z].Price == item.Price)
             {
                 if (this[z].OrderId == item.OrderId) return z;
+                z++;
             }
 
             z = oz;
 
-            while (--z >= 0 && this[z].Price == item.Price)
+            --z;
+            while (z >= 0 && this[z].Price == item.Price)
             {
                 if (this[z].OrderId == item.OrderId) return z;
+                --z;
             }
 
             return -1;
@@ -191,7 +214,7 @@ namespace KuCoin.NET.Data.Market
         /// <param name="unit">The order unit to test.</param>
         /// <returns>The calculated insert index based on the sort direction.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private int GetInsertIndex(TUnit unit)
+        public int GetInsertIndex(TUnit unit)
         {
             if (Count == 0) return 0;
 
@@ -340,8 +363,40 @@ namespace KuCoin.NET.Data.Market
                     return;
                 }
 
-                RemoveItem(index);
-                InsertItem(index, item);
+                var newIdx = GetInsertIndex(item);
+                var col = this as Collection<TUnit>;
+
+                if (newIdx == index)
+                {
+                    if (!object.Equals(col[index], item))
+                    {
+                        Items[index] = item;
+                    }
+                    return;
+                }
+                else
+                {
+                    if (newIdx > index)
+                    {
+                        for (var i = index + 1; i <= newIdx; i++)
+                        {
+
+                            Items[i - 1] = Items[i];
+                        }
+                    }
+                    else if (newIdx < index)
+                    {
+                        for (var i = index - 1; i >= newIdx; i--)
+                        {
+                            Items[i + 1] = Items[i];
+                        }
+                    }
+
+                    Items[newIdx] = item;
+                }
+
+                //RemoveItem(index);
+                //InsertItem(index, item);
             }
         }
 

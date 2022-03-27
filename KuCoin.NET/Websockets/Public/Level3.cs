@@ -58,9 +58,9 @@ namespace KuCoin.NET.Websockets.Public
         {
             if (credentialsProvider.GetFutures()) throw new NotSupportedException("Cannot use Futures API credentials on a spot market feed.");
 
-            recvBufferSize = 4194304;
+            recvBufferSize = 512 * 1024 * 1024;
             minQueueBuffer = 10000;
-            chunkSize = 1024;
+            chunkSize = 2048;
 
             settings = new JsonSerializerSettings()
             {
@@ -80,9 +80,9 @@ namespace KuCoin.NET.Websockets.Public
         /// <param name="isSandbox">True if sandbox mode.</param>
         public Level3(string key, string secret, string passphrase, bool isSandbox = false) : base(key, secret, passphrase, isSandbox: isSandbox, futures: false)
         {
-            recvBufferSize = 4194304;
+            recvBufferSize = 512 * 1024 * 1024;
             minQueueBuffer = 10000;
-            chunkSize = 1024;
+            chunkSize = 2048;
 
             settings = new JsonSerializerSettings()
             {

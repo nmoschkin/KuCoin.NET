@@ -188,6 +188,13 @@ namespace KuCoin.NET.Data.Market
                     return;
                 }
 
+                var idx = GetInsertIndex(item);
+                if (idx == index)
+                {
+                    ((Collection<TUnit>)this)[index] = item;
+                }
+
+
                 if (Contains(item.OrderId))
                 {
                     RemoveItem(index);

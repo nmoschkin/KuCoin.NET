@@ -33,9 +33,9 @@ namespace KuCoin.NET.Websockets.Public
         /// <param name="credentialsProvider">API Credentials.</param>
         public Level3Direct(ICredentialsProvider credentialsProvider) : base(credentialsProvider)
         {
-            recvBufferSize = 16777216;
+            recvBufferSize = 1024 * 1024 * 1024;
             minQueueBuffer = 10000;
-            chunkSize = 1024;
+            chunkSize = 512;
         }
 
         /// <summary>
@@ -47,9 +47,9 @@ namespace KuCoin.NET.Websockets.Public
         /// <param name="isSandbox">True if sandbox mode.</param>
         public Level3Direct(string key, string secret, string passphrase, bool isSandbox = false) : base(key, secret, passphrase, isSandbox: isSandbox)
         {
-            recvBufferSize = 16777216;
+            recvBufferSize = 1024 * 1024 * 1024;
             minQueueBuffer = 10000;
-            chunkSize = 1024;
+            chunkSize = 512;
         }
 
         protected override Level3OrderBook CreateFeed(string sym)

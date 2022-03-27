@@ -12,6 +12,7 @@ using System.Threading.Tasks;
 using System.Diagnostics.Contracts;
 using System.Threading;
 using System.Linq;
+using System.Collections.ObjectModel;
 
 namespace KuCoin.NET.Websockets.Observations
 {
@@ -337,10 +338,18 @@ namespace KuCoin.NET.Websockets.Observations
                     if (change.Price is decimal p && change.Size is decimal csize
                         && otherPieces.TryGetValue(change.MakerOrderId, out AtomicOrderUnit o))
                     {
-                        o.Size -= csize;
 
-                        otherPieces.Remove(o.OrderId);
-                        otherPieces.Add(o);
+                        otherPieces.Match(o, csize);
+
+                        //int idx1 = otherPieces.FindItem(o);
+                        //o.Size -= csize;
+                        //int idx2 = otherPieces.GetInsertIndex(o);
+
+                        //if (idx1 != idx2)
+                        //{
+                        //    otherPieces.Remove(o.OrderId);
+                        //    otherPieces.Add(o);
+                        //}
 
                         // A match is a real component of volume.
                         // we can keep our own tally of the market volume per k-line.
