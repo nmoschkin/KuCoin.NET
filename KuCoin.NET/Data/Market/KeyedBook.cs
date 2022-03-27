@@ -53,15 +53,8 @@ namespace KuCoin.NET.Data.Market
                 lock (lockObj)
                 {
                     int i = FindItem(value);
-
-                    if (i != -1)
-                    {
-                        SetItem(i, value);
-                    }
-                    else
-                    {
-                        InsertItem(i, value);
-                    }
+                    if (i == -1) throw new KeyNotFoundException();
+                    SetItem(i, value);
                 }
             }
         }
@@ -175,15 +168,6 @@ namespace KuCoin.NET.Data.Market
                 lock (lockObj)
                 {
                     return orderIds.Keys.ToArray();
-                    //int c = orderIds.Count;
-                    //string[] output = new string[c];
-                    //Oid[] keys = orderIds.Keys.ToArray();
-
-                    //for (int i = 0; i < c; i++)
-                    //{
-                    //    output[i] = keys[i];
-                    //}
-                    //return output;
                 }
             }
         }
@@ -214,26 +198,29 @@ namespace KuCoin.NET.Data.Market
         /// <param name="unit">The order unit to test.</param>
         /// <returns>The calculated insert index based on the sort direction.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public int GetInsertIndex(TUnit unit)
+        public int GetInsertIndex(TUnit unit, bool excludeSelf = false)
         {
-            if (Count == 0) return 0;
+            var count = Count;
+            if (count == 0) return 0;
 
-            int hi = Count - 1;
+            int hi = count - 1;
             int lo = 0;
             int mid;
 
-            var uprice = (double)unit.Price;
+            var uprice = unit.Price;
 
             long utime = unit.Timestamp.Ticks;
-            var usize = (double)unit.Size;
+            var usize = unit.Size;
 
-            double cprice;
-            double csize;
+            decimal cprice;
+            decimal csize;
 
             long ctime;
 
             if (!descending)
             {
+                // ascending
+
                 while (true)
                 {
                     if (hi < lo)
@@ -242,10 +229,17 @@ namespace KuCoin.NET.Data.Market
                     }
 
                     mid = (hi + lo) / 2;
+                    var item = Items[mid];
 
-                    cprice =(double) this[mid].Price;
-                    ctime = this[mid].Timestamp.Ticks;
-                    csize = (double)this[mid].Size;
+                    if (excludeSelf && object.Equals(item, unit))
+                    {
+                        mid--;
+                        if (mid == 0) return 0;
+                    }
+
+                    cprice = item.Price;
+                    ctime = item.Timestamp.Ticks;
+                    csize = item.Size;
 
                     if (uprice > cprice)
                     {
@@ -296,9 +290,17 @@ namespace KuCoin.NET.Data.Market
 
                     mid = (hi + lo) / 2;
 
-                    cprice = (double)this[mid].Price;
-                    ctime = this[mid].Timestamp.Ticks;
-                    csize = (double)this[mid].Size;
+                    var item = Items[mid];
+
+                    if (excludeSelf && object.Equals(item, unit))
+                    {
+                        mid++;
+                        if (mid >= count) return count;
+                    }
+
+                    cprice = item.Price;
+                    ctime = item.Timestamp.Ticks;
+                    csize = item.Size;
 
                     if (uprice < cprice)
                     {
@@ -357,18 +359,11 @@ namespace KuCoin.NET.Data.Market
         {
             lock (lockObj)
             {
-                if (index >= Count)
-                {
-                    InsertItem(0, item);
-                    return;
-                }
-
-                var newIdx = GetInsertIndex(item);
-                var col = this as Collection<TUnit>;
+                var newIdx = GetInsertIndex(item, true);
 
                 if (newIdx == index)
                 {
-                    if (!object.Equals(col[index], item))
+                    if (!object.Equals(Items[index], item))
                     {
                         Items[index] = item;
                     }
@@ -394,9 +389,6 @@ namespace KuCoin.NET.Data.Market
 
                     Items[newIdx] = item;
                 }
-
-                //RemoveItem(index);
-                //InsertItem(index, item);
             }
         }
 
