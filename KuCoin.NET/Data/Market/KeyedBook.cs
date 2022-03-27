@@ -71,7 +71,7 @@ namespace KuCoin.NET.Data.Market
             {
                 int z = FindItem(order);
                 if (z == -1) return false;
-
+                order = (TUnit)order.Clone();
                 order.Size -= match;
 
                 SetItem(z, order);
@@ -198,7 +198,7 @@ namespace KuCoin.NET.Data.Market
         /// <param name="unit">The order unit to test.</param>
         /// <returns>The calculated insert index based on the sort direction.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public int GetInsertIndex(TUnit unit, bool excludeSelf = false)
+        public int GetInsertIndex(TUnit unit)
         {
             var count = Count;
             if (count == 0) return 0;
@@ -230,13 +230,6 @@ namespace KuCoin.NET.Data.Market
 
                     mid = (hi + lo) / 2;
                     var item = Items[mid];
-
-                    if (excludeSelf && object.Equals(item, unit))
-                    {
-                        mid--;
-                        if (mid <= 0) return 0; 
-                        item = Items[mid];
-                    }
 
                     cprice = item.Price;
                     ctime = item.Timestamp.Ticks;
@@ -292,14 +285,7 @@ namespace KuCoin.NET.Data.Market
                     mid = (hi + lo) / 2;
 
                     var item = Items[mid];
-
-                    if (excludeSelf && object.Equals(item, unit))
-                    {
-                        mid++;
-                        if (mid >= count) return count;
-                        item = Items[mid];
-                    }
-
+                    
                     cprice = item.Price;
                     ctime = item.Timestamp.Ticks;
                     csize = item.Size;
@@ -361,7 +347,7 @@ namespace KuCoin.NET.Data.Market
         {
             lock (lockObj)
             {
-                var newIdx = GetInsertIndex(item, true);
+                var newIdx = GetInsertIndex(item);
 
                 if (newIdx == index)
                 {
