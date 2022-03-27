@@ -128,9 +128,12 @@ namespace KuCoinConsole
         static int feednum;
         static List<string> activeSymbols = new List<string>();
 
-        //[STAThread]
+        [STAThread]
         public static void Main(string[] args)
         {
+            AppCenter.Start("6e9f9975-8980-452b-be36-b5c9b087896f",
+               typeof(Analytics), typeof(Crashes));
+
             RunProgram();
         }
 
