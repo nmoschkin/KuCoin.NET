@@ -90,6 +90,12 @@ namespace KuCoin.NET.Data.Market
                 }
                 else
                 {
+                    // so, we know that we're always reducing the size, above.  
+                    // there's never a match that adds, so we want to quickly sort out 
+                    // if this price is smaller than the next place the price should be getting smaller
+                    // and in a descending list, that direction is ahead, and not behind.
+                    // so we're still looking for the smaller value, just going in the other direction.
+
                     int c = Count - 1;
                     while (z < c && Items[z].Price == Items[z + 1].Price)
                     {
