@@ -71,11 +71,48 @@ namespace KuCoin.NET.Data.Market
             {
                 int z = FindItem(order);
                 if (z == -1) return false;
-                order = (TUnit)order.Clone();
-                orderIds[order.OrderId] = order;
+
                 order.Size -= match;
 
-                SetItem(z, order);
+                if (!descending)
+                {
+                    z--;
+                    while (z > 0 && Items[z].Price == Items[z - 1].Price)
+                    {
+                        if (Items[z].Size > Items[z - 1].Size)
+                        {
+                            order = Items[z];
+                            Items[z - 1] = Items[z];
+                            Items[z] = order;
+                        }
+
+                        z--;
+                    }
+                }
+                else
+                {
+                    int c = Count - 1;
+
+                    z++;
+                    while (z < c && Items[z].Price == Items[z + 1].Price)
+                    {
+                        if (Items[z].Size < Items[z + 1].Size)
+                        {
+                            order = Items[z];
+                            Items[z + 1] = Items[z];
+                            Items[z] = order;
+                        }
+
+                        z++;
+                    }
+
+
+
+
+                }
+
+                // SetItem(z, order);
+
                 return true;
             }
         }
@@ -157,6 +194,7 @@ namespace KuCoin.NET.Data.Market
                 orderIds.Remove(orderId);
 
                 var i = FindItem(item);
+
                 if (i != -1)
                     base.RemoveItem(i);
             }
@@ -348,33 +386,36 @@ namespace KuCoin.NET.Data.Market
         {
             lock (lockObj)
             {
-                var newIdx = GetInsertIndex(item);
+                RemoveItem(index);
+                InsertItem(index, item);
+                
+                //var newIdx = GetInsertIndex(item);
 
-                if (newIdx == index)
-                {
-                    Items[index] = item;
-                    return;
-                }
-                else
-                {
-                    if (newIdx > index)
-                    {
-                        for (var i = index + 1; i <= newIdx; i++)
-                        {
+                //if (newIdx == index)
+                //{
+                //    Items[index] = item;
+                //    return;
+                //}
+                //else
+                //{
+                //    if (newIdx > index)
+                //    {
+                //        for (var i = index + 1; i <= newIdx; i++)
+                //        {
 
-                            Items[i - 1] = Items[i];
-                        }
-                    }
-                    else if (newIdx < index)
-                    {
-                        for (var i = index - 1; i >= newIdx; i--)
-                        {
-                            Items[i + 1] = Items[i];
-                        }
-                    }
+                //            Items[i - 1] = Items[i];
+                //        }
+                //    }
+                //    else if (newIdx < index)
+                //    {
+                //        for (var i = index - 1; i >= newIdx; i--)
+                //        {
+                //            Items[i + 1] = Items[i];
+                //        }
+                //    }
 
-                    Items[newIdx] = item;
-                }
+                //    Items[newIdx] = item;
+                //}
             }
         }
 
