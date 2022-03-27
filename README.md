@@ -79,6 +79,8 @@ The console app only demonstrates the ability to track Level 3 feeds.  Other fun
 
 With a large number of feeds, the console app may appear to operate in a halting manner, in fits and starts, during the initialization process.  This is occurring because a sort operation is being attempted on a locked order book that is still being initialized.  This is normal.  Once all order books are initialized the interface will smooth out.
 
+__Note__: The list will not sort until all connections have been created.
+
 _(Try running with __300__ feeds.  Works well on an i7-10700K with a Gigabit internet connection, but it only uses about 20-30 Mbps.  Uses about 1.4 GB of RAM)_
 
 ![](docs/docimg1.png?raw=true)
