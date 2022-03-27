@@ -77,7 +77,7 @@ The user will be prompted to enter their pin, and then be asked to provide eithe
 
 The console app only demonstrates the ability to track Level 3 feeds.  Other functionality is not demonstrated in the examples, at this time.
 
-With a large number of feeds, the console app may appear to operate in a halting manner, in fits and starts.  This is occurring because a sort operation is being attempted on a locked order book that is still being initialized.  This is normal.  Once all order books are initialized the interface will smooth out.
+With a large number of feeds, the console app may appear to operate in a halting manner, in fits and starts, during the initialization process.  This is occurring because a sort operation is being attempted on a locked order book that is still being initialized.  This is normal.  Once all order books are initialized the interface will smooth out.
 
 _(Try running with __300__ feeds.  Works well on an i7-10700K with a Gigabit internet connection, but it only uses about 20-30 Mbps.  Uses about 1.4 GB of RAM)_
 
