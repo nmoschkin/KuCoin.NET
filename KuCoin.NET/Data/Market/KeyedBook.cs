@@ -81,7 +81,7 @@ namespace KuCoin.NET.Data.Market
                     {
                         if (Items[z].Size > Items[z - 1].Size)
                         {
-                            order = Items[z];
+                            order = Items[z - 1];
                             Items[z - 1] = Items[z];
                             Items[z] = order;
                         }
@@ -98,7 +98,7 @@ namespace KuCoin.NET.Data.Market
                     {
                         if (Items[z].Size < Items[z + 1].Size)
                         {
-                            order = Items[z];
+                            order = Items[z + 1];
                             Items[z + 1] = Items[z];
                             Items[z] = order;
                         }
