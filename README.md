@@ -1,9 +1,16 @@
-# KuCoin.NET v1.0 Alpha
+# KuCoin.NET v1.0.2 Beta
 KuCoin and KuCoin Futures API Libraries for .NET.
 
 _This library is a client for the KuCoin API as described in (https://docs.kucoin.com/#general)._
 
 __ATTENTION__: __The WPF Project has been moved to the 'legacy' branch.__
+
+### March 27, 2022:
+
+Heavily improved the speed of Level 3 match logic.
+
+Transitioned project to Beta.
+
 
 ### September 7th, 2021: 
 
