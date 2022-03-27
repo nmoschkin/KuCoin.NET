@@ -369,7 +369,7 @@ namespace KuCoinConsole
 
             fslog = new FileStream(".\\message_log.txt", FileMode.Append, FileAccess.Write);
 
-            sortEnabled = false;
+            //sortEnabled = false;
 
             _ = Task.Run(async () =>
             {
