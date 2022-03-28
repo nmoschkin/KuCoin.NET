@@ -15,6 +15,105 @@ using System.Text;
 
 namespace KuCoin.NET.Data.Market
 {
+    #region Atomic Order Unit Comparer (For Reference)
+    //public class AtomicComparer<TUnit> : IComparer<TUnit> where TUnit : IAtomicOrderUnit
+    //{
+    //    bool descending = false;
+
+    //    public AtomicComparer(bool descending)
+    //    {
+    //        this.descending = descending;
+    //    }
+
+    //    public int Compare(TUnit x, TUnit y)
+    //    {
+
+
+    //        if (!descending)
+    //        {
+    //            // ascending
+    //            if (x.Price > y.Price)
+    //            {
+    //                return 1;
+    //            }
+    //            else if (x.Price < y.Price)
+    //            {
+    //                return -1;
+    //            }
+    //            else
+    //            {
+    //                //return mid;
+
+    //                if (x.Size < y.Size)
+    //                {
+    //                    return 1;
+    //                }
+    //                else if (x.Size > y.Size)
+    //                {
+    //                    return -1;
+    //                }
+    //                else
+    //                {
+    //                    if (x.Timestamp < y.Timestamp)
+    //                    {
+    //                        return 1;
+    //                    }
+    //                    else if (x.Timestamp > y.Timestamp)
+    //                    {
+    //                        return -1;
+    //                    }
+    //                    else
+    //                    {
+    //                        return 0;
+    //                    }
+    //                }
+    //            }
+    //        }
+    //        else
+    //        {
+
+    //            if (x.Price < y.Price)
+    //            {
+    //                return 1;
+    //            }
+    //            else if (x.Price > y.Price)
+    //            {
+    //                return -1;
+    //            }
+    //            else
+    //            {
+    //                //return mid;
+
+    //                if (x.Size < y.Size)
+    //                {
+    //                    return 1;
+    //                }
+    //                else if (x.Size > y.Size)
+    //                {
+    //                    return -1;
+    //                }
+    //                else
+    //                {
+    //                    if (x.Timestamp < y.Timestamp)
+    //                    {
+    //                        return 1;
+    //                    }
+    //                    else if (x.Timestamp > y.Timestamp)
+    //                    {
+    //                        return -1;
+    //                    }
+    //                    else
+    //                    {
+    //                        return 0;
+    //                    }
+    //                }
+    //            }
+    //        }
+
+    //    }
+    //}
+    #endregion Atomic Order Unit Comparer (For Reference)
+
     [JsonConverter(typeof(KeyedBookConverter))]
     public sealed class KeyedBook<TUnit> : Collection<TUnit>, IReadOnlyDictionary<string, TUnit> where TUnit : IAtomicOrderUnit, new()
     {
@@ -27,6 +126,15 @@ namespace KuCoin.NET.Data.Market
 
         public KeyedBook() : this(false)
         {
+        }
+
+        /// <summary>
+        /// Gets or sets the maximum capacity of the buffer without reallocating the array.
+        /// </summary>
+        public int Capacity
+        {
+            get => ((List<TUnit>)Items).Capacity;
+            set => ((List<TUnit>)Items).Capacity = value;
         }
 
         public TUnit this[string orderId]
@@ -324,7 +432,7 @@ namespace KuCoin.NET.Data.Market
                     mid = (hi + lo) / 2;
 
                     var item = Items[mid];
-                    
+
                     cprice = item.Price;
                     ctime = item.Timestamp.Ticks;
                     csize = item.Size;
@@ -388,7 +496,7 @@ namespace KuCoin.NET.Data.Market
             {
                 RemoveItem(index);
                 InsertItem(index, item);
-                
+
                 //var newIdx = GetInsertIndex(item);
 
                 //if (newIdx == index)

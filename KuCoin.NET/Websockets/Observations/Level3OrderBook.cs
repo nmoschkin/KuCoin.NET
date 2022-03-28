@@ -311,7 +311,6 @@ namespace KuCoin.NET.Websockets.Observations
                     }
 
                     pieces.Add(u);
-
                     return true;
 
                 case 'c':
