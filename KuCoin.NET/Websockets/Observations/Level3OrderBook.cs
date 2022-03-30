@@ -97,8 +97,8 @@ namespace KuCoin.NET.Websockets.Observations
                 if (fullDepth == null) return;
                 if (this.marketDepth <= 0) return;
 
-                var asks = fullDepth.Asks as IList<AtomicOrderUnit>;
-                var bids = fullDepth.Asks as IList<AtomicOrderUnit>;
+                var asks = fullDepth.Asks ;
+                var bids = fullDepth.Asks ;
 
                 if (orderBook == null)
                 {
@@ -111,54 +111,24 @@ namespace KuCoin.NET.Websockets.Observations
 
                 if (asks.Count < marketDepth) marketDepth = asks.Count;
 
-                if (orderBook.Asks.Count != marketDepth)
+                orderBook.Asks.Clear();
+                int i = 0;
+                    
+                foreach (var ask in asks)
                 {
-                    orderBook.Asks.Clear();
-                    for (int i = 0; i < marketDepth; i++)
-                    {
-                        orderBook.Asks.Add(asks[i].Clone<ObservableAtomicOrderUnit>());
-                    }
-                }
-                else
-                {
-                    for (int i = 0; i < marketDepth; i++)
-                    {
-                        if (orderBook.Asks[i].Price == asks[i].Price)
-                        {
-                            orderBook.Asks[i].Price = asks[i].Price;
-                            orderBook.Asks[i].Size = asks[i].Size;
-                        }
-                        else
-                        {
-                            orderBook.Asks[i] = asks[i].Clone<ObservableAtomicOrderUnit>();
-                        }
-                    }
+                    if (i >= marketDepth) break;
+                    orderBook.Asks.Add(ask.Clone<ObservableAtomicOrderUnit>());
+                    i++;
                 }
 
-                if (bids.Count < marketDepth) marketDepth = bids.Count;
+                orderBook.Bids.Clear();
+                i = 0;
 
-                if (orderBook.Bids.Count != marketDepth)
+                foreach (var bid in bids)
                 {
-                    orderBook.Bids.Clear();
-                    for (int i = 0; i < marketDepth; i++)
-                    {
-                        orderBook.Bids.Add(bids[i].Clone<ObservableAtomicOrderUnit>());
-                    }
-                }
-                else
-                {
-                    for (int i = 0; i < marketDepth; i++)
-                    {
-                        if (orderBook.Bids[i].Price == bids[i].Price)
-                        {
-                            orderBook.Bids[i].Price = bids[i].Price;
-                            orderBook.Bids[i].Size = bids[i].Size;
-                        }
-                        else
-                        {
-                            orderBook.Bids[i] = bids[i].Clone<ObservableAtomicOrderUnit>();
-                        }
-                    }
+                    if (i >= marketDepth) break;
+                    orderBook.Bids.Add(bid.Clone<ObservableAtomicOrderUnit>());
+                    i++;
                 }
 
             }
@@ -244,7 +214,7 @@ namespace KuCoin.NET.Websockets.Observations
 
                 if (updVol)
                 {
-                    decimal price = (decimal)fullDepth.Bids[0].Price;
+                    decimal price = (decimal)fullDepth.Bids.First.Price;
 
                     if (!Candle.IsTimeInCandle(candle, fullDepth.Timestamp))
                     {
@@ -338,7 +308,10 @@ namespace KuCoin.NET.Websockets.Observations
                         && otherPieces.TryGetValue(change.MakerOrderId, out AtomicOrderUnit o))
                     {
 
-                        otherPieces.Match(o, csize);
+                        otherPieces.AlterItem(o, (itm) => {
+                            itm.Size -= csize;
+                            return itm;
+                        });
 
                         //int idx1 = otherPieces.FindItem(o);
                         //o.Size -= csize;

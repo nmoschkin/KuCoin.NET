@@ -1152,8 +1152,8 @@ namespace KuCoinConsole
 
                                                 case 1:
 
-                                                    if (a.Level3OrderBook.FullDepthOrderBook.Bids[0].Price > b.Level3OrderBook.FullDepthOrderBook.Bids[0].Price) return 1 * sortorder;
-                                                    else if (a.Level3OrderBook.FullDepthOrderBook.Bids[0].Price < b.Level3OrderBook.FullDepthOrderBook.Bids[0].Price) return -1 * sortorder;
+                                                    if (a.Level3OrderBook.FullDepthOrderBook.Bids.First.Price > b.Level3OrderBook.FullDepthOrderBook.Bids.First.Price) return 1 * sortorder;
+                                                    else if (a.Level3OrderBook.FullDepthOrderBook.Bids.First.Price < b.Level3OrderBook.FullDepthOrderBook.Bids.First.Price) return -1 * sortorder;
                                                     else break;
 
                                                 case 3:
@@ -1265,8 +1265,8 @@ namespace KuCoinConsole
 
                         if (l3.FullDepthOrderBook is object)
                         {
-                            ba = ((IList<AtomicOrderUnit>)l3.FullDepthOrderBook.Asks)[0].Price;
-                            bb = ((IList<AtomicOrderUnit>)l3.FullDepthOrderBook.Bids)[0].Price;
+                            ba = l3.FullDepthOrderBook.Asks.First.Price;
+                            bb = l3.FullDepthOrderBook.Bids.First.Price;
                             ts = l3.FullDepthOrderBook.Timestamp;
 
                             op = l3.Candle.OpenPrice;

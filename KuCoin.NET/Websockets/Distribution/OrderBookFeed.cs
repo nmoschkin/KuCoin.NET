@@ -1,4 +1,5 @@
-﻿using KuCoin.NET.Data;
+﻿
+using KuCoin.NET.Data;
 using KuCoin.NET.Data.Market;
 using KuCoin.NET.Data.Order;
 using KuCoin.NET.Data.Websockets;
@@ -86,7 +87,9 @@ namespace KuCoin.NET.Websockets.Distribution
                 try
                 {
                     var jobj = await MakeRequest(HttpMethod.Get, curl, auth: !IsPublic, reqParams: param);
+                    
                     var result = jobj.ToObject<TBookIn>();
+
                     GC.Collect(2);
                     return result;
                 }

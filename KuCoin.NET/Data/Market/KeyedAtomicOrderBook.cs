@@ -45,13 +45,13 @@ namespace KuCoin.NET.Data.Market
         [JsonProperty("bids")]
         public KeyedBook<T> Bids { get; set; } = new KeyedBook<T>(true);
 
-        IList<T> IOrderUnitList<T>.Asks => Asks;
+        IList<T> IOrderUnitList<T>.Asks => Asks.ToArray();
 
-        IList<T> IOrderUnitList<T>.Bids => Bids;
+        IList<T> IOrderUnitList<T>.Bids => Bids.ToArray();
 
-        IList<T> IDataSeries<T, T, IList<T>, IList<T>>.Data1 => Asks;
+        IList<T> IDataSeries<T, T, IList<T>, IList<T>>.Data1 => Asks.ToArray();
 
-        IList<T> IDataSeries<T, T, IList<T>, IList<T>>.Data2 => Bids;
+        IList<T> IDataSeries<T, T, IList<T>, IList<T>>.Data2 => Bids.ToArray();
     }
 
     /// <summary>
