@@ -88,6 +88,16 @@ namespace KuCoin.NET.Websockets.Observations
             get => throughput;
         }
 
+        protected override void OnInitialized()
+        {
+            base.OnInitialized();
+            if (fullDepth != null)
+            {
+                fullDepth.Asks.ResetMetrics();
+                fullDepth.Bids.ResetMetrics();
+            }
+        }
+
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public override void PresentData()

@@ -283,67 +283,7 @@ namespace KuCoin.NET.Data.Market
             }
         }
 
-        int hardInserts = 0;
-        int softInserts = 0;
-
-        int hardRemoves = 0;
-        int softRemoves = 0;
-
-        /// <summary>
-        /// Insert an item into the collection.
-        /// </summary>
-        /// <param name="item">The item.</param>
-        /// <exception cref="ArgumentNullException" />
-        protected virtual void InsertItem(T item)
-        {
-            if (item == null) throw new ArgumentNullException(nameof(item));
-
-            lock (syncRoot)
-            {
-                var index = Walk(item);
-
-                if (index < items.Count && items[index] == null)
-                {
-                    items[index] = item;
-                    softInserts++;
-                }
-                else
-                {
-                    if (index % 2 == 0)
-                    {
-                        arrspace[0] = item;
-                        arrspace[1] = default;
-
-                    }
-                    else
-                    {
-                        arrspace[0] = default;
-                        arrspace[1] = item;
-                    }
-
-                    items.InsertRange(index, arrspace);
-                    hardInserts++;
-                }
-
-                count++;
-            }
-        }
-
-        /// <summary>
-        /// Remove an item from the collection.
-        /// </summary>
-        /// <param name="index"></param>
-        protected virtual void RemoveItem(int index)
-        {
-            lock (syncRoot)
-            {
-                items[index] = default;
-                count--;
-                BalanceTree(index);
-            }
-        }
-
-
+    
         public void Add(T item)
         {
             InsertItem(item);
@@ -466,6 +406,15 @@ namespace KuCoin.NET.Data.Market
 
         #region Tree
 
+
+        int hardInserts = 0;
+        int softInserts = 0;
+
+        int hardRemoves = 0;
+        int softRemoves = 0;
+
+        bool metrics = true;
+
         public int HardRemoves => hardRemoves;
 
         public int SoftRemoves => softRemoves;
@@ -475,6 +424,89 @@ namespace KuCoin.NET.Data.Market
         public int SoftInserts => softInserts;
 
         public int TreeSize => items.Count;
+
+        public bool EnableMetrics
+        {
+            get => metrics;
+            set
+            {
+                if (metrics == value) return;
+
+                lock (syncRoot)
+                {
+                    metrics = value;
+                    ResetMetrics();
+                }
+            }
+        }
+
+        public void ResetMetrics()
+        {
+            lock (syncRoot)
+            {
+                hardInserts = 0;
+                softInserts = 0;
+
+                hardRemoves = 0;
+                softRemoves = 0;
+            }
+        }
+
+        /// <summary>
+        /// Insert an item into the collection.
+        /// </summary>
+        /// <param name="item">The item.</param>
+        /// <exception cref="ArgumentNullException" />
+        protected virtual void InsertItem(T item)
+        {
+            if (item == null) throw new ArgumentNullException(nameof(item));
+
+            lock (syncRoot)
+            {
+                var index = Walk(item);
+
+                if (index < items.Count && items[index] == null)
+                {
+                    items[index] = item;
+                    if (metrics) softInserts++;
+                }
+                else
+                {
+                    if (index % 2 == 0)
+                    {
+                        arrspace[0] = item;
+                        arrspace[1] = default;
+
+                    }
+                    else
+                    {
+                        arrspace[0] = default;
+                        arrspace[1] = item;
+                    }
+
+                    items.InsertRange(index, arrspace);
+                    if (metrics) hardInserts++;
+                }
+
+                count++;
+            }
+        }
+
+        /// <summary>
+        /// Remove an item from the collection.
+        /// </summary>
+        /// <param name="index"></param>
+        protected virtual void RemoveItem(int index)
+        {
+            lock (syncRoot)
+            {
+                items[index] = default;
+                count--;
+                BalanceTree(index);
+            }
+        }
+
+
         
         protected int Walk(T item1, TreeWalkMode walkMode = TreeWalkMode.InsertIndex)
         {
@@ -565,13 +597,13 @@ namespace KuCoin.NET.Data.Market
                 if (!(items[startNode] is object) && !(items[i] is object))
                 {
                     items.RemoveRange(i, 2);
-                    hardRemoves++;
+                    if (metrics) hardRemoves++;
                 }
                 else if (items[startNode] is object && !(items[i] is object))
                 {
                     items[i] = items[startNode];
                     items[startNode] = default;
-                    softRemoves++;
+                    if (metrics) softRemoves++;
                 }
             }
             else
@@ -581,13 +613,13 @@ namespace KuCoin.NET.Data.Market
                 if (!(items[startNode] is object) && !(items[i] is object))
                 {
                     items.RemoveRange(startNode, 2);
-                    hardRemoves++;
+                    if (metrics) hardRemoves++;
                 }
                 else if (!(items[startNode] is object) && (items[i] is object))
                 {
                     items[startNode] = items[i];
                     items[i] = default;
-                    softRemoves++;
+                    if (metrics) softRemoves++;
                 }
 
             }

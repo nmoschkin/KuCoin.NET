@@ -914,6 +914,7 @@ namespace KuCoinConsole
                     int ccount = -1;
                     Level3 current = null;
 
+                    long hardrem = 0, softrem = 0, hardin = 0, softin = 0, bufflen = 0, loglen = 0;
 
 
                     try
@@ -938,6 +939,30 @@ namespace KuCoinConsole
                                 {
                                     biggrand += l3.GrandTotal;
                                     matchgrand += l3.MatchTotal;
+
+                                    if (l3.FullDepthOrderBook is object)
+                                    {
+                                        hardrem += l3.FullDepthOrderBook.Asks.HardRemoves;
+                                        hardrem += l3.FullDepthOrderBook.Bids.HardRemoves;
+
+                                        softrem += l3.FullDepthOrderBook.Asks.SoftRemoves;
+                                        softrem += l3.FullDepthOrderBook.Bids.SoftRemoves;
+
+                                        hardin += l3.FullDepthOrderBook.Asks.HardInserts;
+                                        hardin += l3.FullDepthOrderBook.Bids.HardInserts;
+
+                                        softin += l3.FullDepthOrderBook.Asks.SoftInserts;
+                                        softin += l3.FullDepthOrderBook.Bids.SoftInserts;
+
+                                        bufflen += l3.FullDepthOrderBook.Asks.TreeSize;
+                                        bufflen += l3.FullDepthOrderBook.Bids.TreeSize;
+                                        
+                                        loglen += l3.FullDepthOrderBook.Asks.Count;
+                                        loglen += l3.FullDepthOrderBook.Bids.Count;
+
+
+                                    }
+
                                 }
                             }
                         }
@@ -1361,13 +1386,23 @@ namespace KuCoinConsole
                         ft.WriteToEdgeLine($"Feeds Not Shown: {{Magenta}}{obscount - maxRows}{{Reset}}");
                     }
 
+
+
                     ft.WriteToEdgeLine($"");
                     ft.WriteToEdgeLine($"Match Total: {{White}}{matchgrand:#,##0}{{Reset}}      ");
                     ft.WriteToEdgeLine($"Grand Total: {{White}}{biggrand:#,##0}{{Reset}}        ");
                     ft.WriteToEdgeLine($"                                                       ");
                     ft.WriteToEdgeLine($"Matches Per Second:      ~ {{Cyan}}{mps:#,###}{{Reset}}");
                     ft.WriteToEdgeLine($"Transactions Per Second: ~ {{Cyan}}{tps:#,###}{{Reset}}");
-                    ft.WriteToEdgeLine($"");
+                    ft.WriteToEdgeLine($"                                                       ");
+                    ft.WriteToEdgeLine($"Hard Inserts:    {{Cyan}}{hardin:#,###}{{Reset}}");
+                    ft.WriteToEdgeLine($"Soft Inserts:    {{Cyan}}{softin:#,###}{{Reset}}");
+                    ft.WriteToEdgeLine($"Hard Removes:    {{Cyan}}{hardrem:#,###}{{Reset}}");
+                    ft.WriteToEdgeLine($"Soft Removes:    {{Cyan}}{softrem:#,###}{{Reset}}");
+                    ft.WriteToEdgeLine($"                                                       ");
+                    ft.WriteToEdgeLine($"Logical Size:    {{Cyan}}{loglen:#,###}{{Reset}}");
+                    ft.WriteToEdgeLine($"Tree Size:       {{Cyan}}{bufflen:#,###}{{Reset}}");
+                    ft.WriteToEdgeLine($"                                                       ");
                     ft.WriteToEdgeLine($"{{White}}Use Arrow Up/Arrow Down, Page Up/Page Down, Home/End to navigate the feed list. Ctrl+Arrow Up/Down scrolls the message log, below.{{Reset}}");
                     ft.WriteToEdgeLine($"{{White}}Use Arrow Left/Arrow Right to switch between different connections.  Use Ctrl + Arrow Left/Arrow Right to change the K-Line.{{Reset}}");
                     ft.WriteToEdgeLine($"{{White}}Press: (A) Sort Alphabetically, (P) Price, (V) Volume, (T) Throughput. Press again to reverse order. (Q) To Quit.");
