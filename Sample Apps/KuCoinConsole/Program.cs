@@ -1134,6 +1134,8 @@ namespace KuCoinConsole
                     {
                         sortobs.Sort((a, b) =>
                         {
+
+
                             if (a.Level3OrderBook.FullDepthOrderBook is object && b.Level3OrderBook.FullDepthOrderBook is object)
                             {
                                 lock (a.Level3OrderBook.LockObject)
@@ -1265,8 +1267,8 @@ namespace KuCoinConsole
 
                         if (l3.FullDepthOrderBook is object)
                         {
-                            ba = ((IList<AtomicOrderUnit>)l3.FullDepthOrderBook.Asks)[0].Price;
-                            bb = ((IList<AtomicOrderUnit>)l3.FullDepthOrderBook.Bids)[0].Price;
+                            ba = ((IEnumerable<AtomicOrderUnit>)l3.FullDepthOrderBook.Asks).FirstOrDefault()?.Price ?? 0;
+                            bb = ((IEnumerable<AtomicOrderUnit>)l3.FullDepthOrderBook.Bids).FirstOrDefault()?.Price ?? 0;
                             ts = l3.FullDepthOrderBook.Timestamp;
 
                             op = l3.Candle.OpenPrice;
