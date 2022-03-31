@@ -38,7 +38,7 @@ namespace KuCoin.NET.Data.Market
         protected List<T> items;
         protected object syncRoot = new object();
         protected T[] arrspace;
-        private TreeWalker<T> walker;
+        protected int m;
 
         /// <summary>
         /// Gets the sort order for the current instance.
@@ -87,6 +87,14 @@ namespace KuCoin.NET.Data.Market
 
             arrspace = new T[2];
             this.sortOrder = sortOrder;
+            if (sortOrder == SortOrder.Ascending)
+            {
+                m = 1;
+            }
+            else
+            {
+                m = -1;
+            }
 
             if (comparer == null)
             {
@@ -122,7 +130,6 @@ namespace KuCoin.NET.Data.Market
 
             }
 
-            walker = new TreeWalker<T>(items, comp, sortOrder);
         }
 
         /// <summary>
@@ -216,46 +223,50 @@ namespace KuCoin.NET.Data.Market
         {
             lock (syncRoot)
             {
-                int idx = walker.Walk(item, TreeWalkMode.Locate);
+                int idx = Walk(item, TreeWalkMode.Locate);
 
                 if (idx >= count || idx < 0) throw new KeyNotFoundException();
                 if (!items[idx].Equals(item)) throw new KeyNotFoundException();
 
+                RemoveItem(idx);
+
                 var newitem = alteration(item);
 
-                int idx2 = walker.Walk(newitem);
+                InsertItem(newitem);
 
-                if (idx == idx2) return;
-                if (idx2 >= count)
-                {
-                    RemoveItem(idx);
-                    Add(newitem);
+                //int idx2 = walker.Walk(newitem);
 
-                    return;
-                }
+                //if (idx == idx2) return;
+                //if (idx2 >= count)
+                //{
+                //    RemoveItem(idx);
+                //    Add(newitem);
 
-                bool black1 = idx % 2 == 0;
-                bool black2 = idx2 % 2 == 0;
+                //    return;
+                //}
 
-                if (black1 && items[idx + 1] is object)
-                {
-                    items[idx] = items[idx + 1];
-                    items[idx + 1] = default;
-                }
-                else
-                {
-                    items[idx] = default;
-                    walker.BalanceTree(idx);
-                }
+                //bool black1 = idx % 2 == 0;
+                //bool black2 = idx2 % 2 == 0;
 
-                if (!black2 && !(items[idx2] is object))
-                {
-                    items[idx2] = newitem;
-                }
-                else
-                {
-                    InsertItem(newitem);
-                }
+                //if (black1 && items[idx + 1] is object)
+                //{
+                //    items[idx] = items[idx + 1];
+                //    items[idx + 1] = default;
+                //}
+                //else
+                //{
+                //    items[idx] = default;
+                //    walker.BalanceTree(idx);
+                //}
+
+                //if (!black2 && !(items[idx2] is object))
+                //{
+                //    items[idx2] = newitem;
+                //}
+                //else
+                //{
+                //    InsertItem(newitem);
+                //}
 
             }
         }
@@ -272,6 +283,12 @@ namespace KuCoin.NET.Data.Market
             }
         }
 
+        int hardInserts = 0;
+        int softInserts = 0;
+
+        int hardRemoves = 0;
+        int softRemoves = 0;
+
         /// <summary>
         /// Insert an item into the collection.
         /// </summary>
@@ -283,11 +300,12 @@ namespace KuCoin.NET.Data.Market
 
             lock (syncRoot)
             {
-                var index = walker.Walk(item);
+                var index = Walk(item);
 
                 if (index < items.Count && items[index] == null)
                 {
                     items[index] = item;
+                    softInserts++;
                 }
                 else
                 {
@@ -304,6 +322,7 @@ namespace KuCoin.NET.Data.Market
                     }
 
                     items.InsertRange(index, arrspace);
+                    hardInserts++;
                 }
 
                 count++;
@@ -320,7 +339,7 @@ namespace KuCoin.NET.Data.Market
             {
                 items[index] = default;
                 count--;
-                walker.BalanceTree(index);
+                BalanceTree(index);
             }
         }
 
@@ -433,7 +452,7 @@ namespace KuCoin.NET.Data.Market
         {
             lock (syncRoot)
             {
-                var idx = walker.Walk(item, TreeWalkMode.Locate);
+                var idx = Walk(item, TreeWalkMode.Locate);
                 if (idx >= count || idx < 0) return false;
 
                 if (items[idx] is object && items[idx].Equals(item))
@@ -444,6 +463,137 @@ namespace KuCoin.NET.Data.Market
                 return false;
             }
         }
+
+        #region Tree
+
+        public int HardRemoves => hardRemoves;
+
+        public int SoftRemoves => softRemoves;
+
+        public int HardInserts => hardInserts;
+
+        public int SoftInserts => softInserts;
+
+        public int TreeSize => items.Count;
+        
+        protected int Walk(T item1, TreeWalkMode walkMode = TreeWalkMode.InsertIndex)
+        {
+            int count = items.Count;
+            int lo = 0;
+            int hi = count - 1;
+            int mid = 0;
+
+            T item2, item3;
+            int r;
+
+            while (true)
+            {
+                if (hi < lo)
+                {
+                    if (walkMode == TreeWalkMode.InsertIndex && lo % 2 == 0)
+                    {
+                        if (lo < count - 1 && !(items[lo + 1] is object))
+                        {
+                            r = comp(item1, items[lo]) * m;
+                            if (r >= 0) lo++;
+                        }
+
+                        else if (lo > 0 && !(items[lo - 1] is object))
+                        {
+                            if (lo < count)
+                            {
+                                r = comp(item1, items[lo]) * m;
+                                if (r <= 0) lo--;
+                            }
+                            else
+                            {
+                                lo--;
+                            }
+                        }
+                    }
+
+                    return lo;
+                }
+
+                mid = (hi + lo) / 2;
+
+                if ((mid % 2) == 1) mid--;
+
+                item2 = items[mid];
+                item3 = items[mid + 1];
+
+                r = comp(item1, item2) * m;
+
+                if (r > 0)
+                {
+                    if (item3 is object)
+                    {
+                        r = comp(item1, item3) * m;
+
+                        if (r <= 0)
+                        {
+                            return mid + 1;
+                        }
+                    }
+
+                    lo = mid + 2;
+                }
+                else if (r < 0)
+                {
+                    hi = mid - 2;
+                }
+                else
+                {
+                    lo = mid;
+                    hi = lo - 2;
+                }
+            }
+
+        }
+
+        protected void BalanceTree(int startNode)
+        {
+            int count = items.Count;
+
+            if (startNode == -1 || startNode >= count) return;
+            var isred = startNode % 2 == 1;
+
+            if (isred)
+            {
+                int i = startNode - 1;
+
+                if (!(items[startNode] is object) && !(items[i] is object))
+                {
+                    items.RemoveRange(i, 2);
+                    hardRemoves++;
+                }
+                else if (items[startNode] is object && !(items[i] is object))
+                {
+                    items[i] = items[startNode];
+                    items[startNode] = default;
+                    softRemoves++;
+                }
+            }
+            else
+            {
+                int i = startNode + 1;
+
+                if (!(items[startNode] is object) && !(items[i] is object))
+                {
+                    items.RemoveRange(startNode, 2);
+                    hardRemoves++;
+                }
+                else if (!(items[startNode] is object) && (items[i] is object))
+                {
+                    items[startNode] = items[i];
+                    items[i] = default;
+                    softRemoves++;
+                }
+
+            }
+        }
+
+        #endregion
 
         public IEnumerator<T> GetEnumerator()
         {
@@ -518,197 +668,6 @@ namespace KuCoin.NET.Data.Market
     {
         InsertIndex,
         Locate
-    }
-
-    internal class TreeWalker<T>
-    {
-        private List<T> items;
-        private readonly SortOrder sortOrder;
-
-        protected Comparison<T> comp;
-
-        protected int lo;
-        protected int hi;
-        protected int mid;
-        protected int count;
-
-        private int m;
-
-        public IReadOnlyList<T> Items => (IReadOnlyList<T>)items;
-
-        public SortOrder SortOrder => sortOrder;
-
-        public static TreeWalker<TComp> CreateFromIComparable<TComp>(List<TComp> items, SortOrder sortOrder = SortOrder.Ascending) where TComp : IComparable<T>
-        {
-            var tw = new TreeWalker<TComp>(items);
-
-            tw.comp = new Comparison<TComp>((x, y) =>
-            {
-                if (y is T b)
-                {
-                    return x.CompareTo(b);
-                }
-                else
-                {
-                    throw new ArgumentNullException();
-                }
-            });
-
-            return tw;
-        }
-
-        protected TreeWalker(List<T> items, SortOrder sortOrder = SortOrder.Ascending)
-        {
-            this.sortOrder = sortOrder;
-            this.items = items;
-            if (sortOrder == SortOrder.Ascending)
-            {
-                m = 1;
-            }
-            else
-            {
-                m = -1;
-            }
-
-            Reset();
-        }
-
-        public TreeWalker(List<T> items, Comparison<T> comparerFunc, SortOrder sortOrder = SortOrder.Ascending) : this(items, sortOrder)
-        {
-            comp = comparerFunc;
-        }
-
-        public void Reset()
-        {
-            lo = 0;
-            hi = items.Count - 1;
-            mid = 0;
-            count = items.Count;
-        }
-
-        public int Walk(T item1, TreeWalkMode walkMode = TreeWalkMode.InsertIndex)
-        {
-            Reset();
-
-            T item2;
-            int r;
-
-            bool isred;
-            bool isrednull = false;
-            while (true)
-            {
-                if (hi < lo)
-                {
-                    if (walkMode == TreeWalkMode.InsertIndex && lo % 2 == 0)
-                    {
-                        if (lo < count - 1 && !(items[lo + 1] is object))
-                        {
-                            r = comp(item1, items[lo]) * m;
-                            if (r >= 0) lo++;
-                        }
-
-                        else if (lo > 0 && !(items[lo - 1] is object))
-                        {
-                            if (lo < count)
-                            {
-                                r = comp(item1, items[lo]) * m;
-                                if (r <= 0) lo--;
-                            }
-                            else
-                            {
-                                lo--;
-                            }
-                        }
-                    }
-
-                    return lo;
-                }
-
-                mid = (hi + lo) / 2;
-                isred = (mid % 2) == 1;
-
-                item2 = items[mid];
-
-                if (!(item2 is object))
-                {
-                    if (isred)
-                    {
-                        item2 = items[mid - 1];
-                        isrednull = true;
-                    }
-                    else
-                    {
-                        throw new TreeUnbalancedException("Black node is null!");
-                    }
-                }
-
-                if (item2 != null)
-                {
-                    r = comp(item1, item2) * m;
-
-                    if (r > 0)
-                    {
-                        lo = mid + 1;
-                    }
-                    else if (r < 0)
-                    {
-                        hi = mid - 1;
-                    }
-                    else
-                    {
-                        if (walkMode == TreeWalkMode.Locate && isrednull)
-                        {
-                            lo = mid - 1;
-                        }
-                        else
-                        {
-                            lo = mid;
-                        }
-                        hi = lo - 1;
-                    }
-                }
-            }
-
-        }
-
-
-        public void BalanceTree(int startNode)
-        {
-            count = items.Count;
-            if (startNode == -1 || startNode >= count) return;
-            var isred = startNode % 2 == 1;
-
-            if (isred)
-            {
-                int i = startNode - 1;
-
-                if (!(items[startNode] is object) && !(items[i] is object))
-                {
-                    items.RemoveRange(i, 2);
-                }
-                else if (items[startNode] is object && !(items[i] is object))
-                {
-                    items[i] = items[startNode];
-                    items[startNode] = default;
-                }
-            }
-            else
-            {
-                int i = startNode + 1;
-
-                if (!(items[startNode] is object) && !(items[i] is object))
-                {
-                    items.RemoveRange(startNode, 2);
-                }
-                else if (!(items[startNode] is object) && (items[i] is object))
-                {
-                    items[startNode] = items[i];
-                    items[i] = default;
-                }
-
-            }
-        }
-
     }
 
     public class TreeUnbalancedException : Exception
