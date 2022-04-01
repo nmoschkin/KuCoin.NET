@@ -22,6 +22,13 @@ namespace KuCoin.NET.Data.Market
         Descending,
     }
 
+    public enum RebalanceResult
+    {
+        NotPerformed,
+        Unchanged,
+        Changed
+    }
+
     /// <summary>
     /// A sorted, spatially buffered collection.
     /// </summary>
@@ -426,11 +433,14 @@ namespace KuCoin.NET.Data.Market
 
         int sixteened = 0;
 
-        int rebalances = 0;
+        int changedRebalances = 0;
+
+        int unchangedRebalances = 0;
 
         bool metrics = true;
 
-        public int Rebalances => rebalances;
+        public int ChangedRebalances => changedRebalances;
+        public int UnchangedRebalances => unchangedRebalances;
 
         public int SixteenOpt => sixteened;
 
@@ -470,7 +480,8 @@ namespace KuCoin.NET.Data.Market
                 softRemoves = 0;
 
                 sixteened = 0;
-                rebalances = 0;
+                changedRebalances = 0;
+                unchangedRebalances = 0;
 
             }
         }
@@ -567,7 +578,7 @@ namespace KuCoin.NET.Data.Market
                 {
                     if (metrics) softRemoves++;
 
-                    if (!Rebalance())
+                    if (Rebalance() == RebalanceResult.NotPerformed)
                     {
                         CheckThem(index);
                     }
@@ -576,12 +587,13 @@ namespace KuCoin.NET.Data.Market
         }
 
         /// <summary>
-        /// Rebalances the tree
+        /// Attempt to Rebalance The Tree
         /// </summary>
-        /// <returns></returns>
-        public bool Rebalance()
+        /// <param name="threshold">The ratio of the tree size over the logical count at which a rebalance should be performed. Default is 1.2 : 1</param>
+        /// <returns>A <see cref="RebalanceResult"/> of <see cref="RebalanceResult.NotPerformed"/>, <see cref="RebalanceResult.Unchanged"/>, or <see cref="RebalanceResult.Changed"/>.</returns>
+        public RebalanceResult Rebalance(float threshold = 1.2f)
         {
-            if (count > 1024 && ((float)items.Count / count) >= 1.2f)
+            if (count > 1024 && ((float)items.Count / count) >= threshold)
             {
                 bool b = false;
 
@@ -590,11 +602,19 @@ namespace KuCoin.NET.Data.Market
                     b = b | CheckThem(i, 4, true);
                 }
 
-                if (b && metrics) rebalances++;
-                return b;
+                if (b && metrics)
+                {
+                    changedRebalances++;
+                    return RebalanceResult.Changed;
+                }
+                else
+                {
+                    unchangedRebalances++;
+                    return RebalanceResult.Unchanged;
+                }
             }
 
-            return false;
+            return RebalanceResult.NotPerformed;
         }
 
         protected bool CheckThem(int index, int cadence = 16, bool rebalancing = false)

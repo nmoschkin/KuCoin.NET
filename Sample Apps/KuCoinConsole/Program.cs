@@ -1135,7 +1135,8 @@ namespace KuCoinConsole
                 long BufferSize = 0; 
                 long TreeSize = 0;
                 long SixteenOpt = 0;
-                long Rebalances = 0;
+                long ChangedRebalances = 0;
+                long UnchangedRebalances = 0;
 
                 List<ISymbolDataService> sortobs = null;
                 var sortInfo = new List<FeedsInfo>();
@@ -1165,9 +1166,13 @@ namespace KuCoinConsole
                             nf.Throughput = item.Level3OrderBook.Throughput;
                             nf.Price = ((IEnumerable<AtomicOrderUnit>)item.Level3OrderBook.FullDepthOrderBook.Bids).FirstOrDefault()?.Price ?? 0M;
 
-                            nf.Rebalances = item.Level3OrderBook.FullDepthOrderBook.Bids.Rebalances;
-                            nf.Rebalances += item.Level3OrderBook.FullDepthOrderBook.Asks.Rebalances;
-                            
+                            nf.ChangedRebalances = item.Level3OrderBook.FullDepthOrderBook.Bids.ChangedRebalances;
+                            nf.ChangedRebalances += item.Level3OrderBook.FullDepthOrderBook.Asks.ChangedRebalances;
+
+                            nf.UnchangedRebalances = item.Level3OrderBook.FullDepthOrderBook.Bids.UnchangedRebalances;
+                            nf.UnchangedRebalances += item.Level3OrderBook.FullDepthOrderBook.Asks.UnchangedRebalances;
+
+
                             nf.SixteenOpt = item.Level3OrderBook.FullDepthOrderBook.Bids.SixteenOpt;
                             nf.SixteenOpt += item.Level3OrderBook.FullDepthOrderBook.Asks.SixteenOpt;
 
@@ -1198,7 +1203,8 @@ namespace KuCoinConsole
                             TreeSize += nf.TreeSize;
 
                             SixteenOpt += nf.SixteenOpt;
-                            Rebalances += nf.Rebalances;
+                            ChangedRebalances += nf.ChangedRebalances;
+                            UnchangedRebalances += nf.UnchangedRebalances;
 
                         }
 
@@ -1448,8 +1454,9 @@ namespace KuCoinConsole
                 ft.WriteToEdgeLine($"Logical Size:    {{Cyan}}{BufferSize:#,##0}{{Reset}}        ");
                 ft.WriteToEdgeLine($"Tree Size:       {{Cyan}}{TreeSize:#,##0}{{Reset}}    ({100 * ((double)TreeSize/BufferSize):#,#0.0#}%)    ");
                 ft.WriteToEdgeLine($"                                                       ");
-                ft.WriteToEdgeLine($"Sixteen Opt:     {{Cyan}}{SixteenOpt:#,##0}{{Reset}}        ");
-                ft.WriteToEdgeLine($"Rebalances:      {{Cyan}}{Rebalances:#,##0}{{Reset}}        ");
+                ft.WriteToEdgeLine($"Local Rebalances:      {{Cyan}}{SixteenOpt:#,##0}{{Reset}}        ");
+                ft.WriteToEdgeLine($"Changed Rebalances:    {{Cyan}}{ChangedRebalances:#,##0}{{Reset}}        ");
+                ft.WriteToEdgeLine($"Unchanged Rebalances:  {{Cyan}}{UnchangedRebalances:#,##0}{{Reset}}        ");
                 ft.WriteToEdgeLine($"                                                       ");
                 ft.WriteToEdgeLine($"{{White}}Use Arrow Up/Arrow Down, Page Up/Page Down, Home/End to navigate the feed list. Ctrl+Arrow Up/Down scrolls the message log, below.{{Reset}}");
                 ft.WriteToEdgeLine($"{{White}}Use Arrow Left/Arrow Right to switch between different connections.  Use Ctrl + Arrow Left/Arrow Right to change the K-Line.{{Reset}}");
@@ -1662,7 +1669,8 @@ namespace KuCoinConsole
 
         public long SixteenOpt;
 
-        public long Rebalances;
+        public long ChangedRebalances;
 
+        public long UnchangedRebalances;
     }
 }
