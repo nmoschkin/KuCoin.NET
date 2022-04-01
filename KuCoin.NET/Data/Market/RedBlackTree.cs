@@ -424,7 +424,15 @@ namespace KuCoin.NET.Data.Market
         int hardRemoves = 0;
         int softRemoves = 0;
 
+        int sixteened = 0;
+
+        int rebalances = 0;
+
         bool metrics = true;
+
+        public int Rebalances => rebalances;
+
+        public int SixteenOpt => sixteened;
 
         public int HardRemoves => hardRemoves;
 
@@ -554,8 +562,63 @@ namespace KuCoin.NET.Data.Market
                 else
                 {
                     if (metrics) softRemoves++;
+
+                    if (count > 128 && (items.Count / count) >= 2)
+                    {
+                        for (int i = items.Count - 8; i >= 8; i -= 16)
+                        {
+                            CheckThem(i);
+                        }
+
+                        if (metrics) rebalances++;
+                    }
+                    else
+                    {
+                        CheckThem(index);
+                    }
                 }
             }
+        }
+
+        protected void CheckThem(int index)
+        {
+
+            if ((index & 1) == 1) index--;
+
+            if (index + 8 > items.Count) return;
+            if (index - 8 < 0) return;
+
+            index -= 8;
+
+            if (
+                items[index] is object && !(items[index + 1] is object) 
+                && items[index + 2] is object && !(items[index + 3] is object)
+                && items[index + 4] is object && !(items[index + 5] is object)
+                && items[index + 6] is object && !(items[index + 7] is object)
+                && items[index + 8] is object && !(items[index + 9] is object)
+                && items[index + 10] is object && !(items[index + 11] is object)
+                && items[index + 12] is object && !(items[index + 13] is object)
+                && items[index + 14] is object && !(items[index + 15] is object)
+                )
+            {
+                items[index + 1] = items[index + 2];
+                items[index + 2] = items[index + 4];
+                items[index + 3] = items[index + 6];
+                items[index + 4] = items[index + 8];
+                items[index + 5] = items[index + 10];
+                items[index + 6] = items[index + 12];
+                items[index + 7] = items[index + 14];
+
+                items.RemoveRange(index + 8, 8);
+
+                if (metrics)
+                {
+                    softRemoves--;
+                    sixteened++;
+                    hardRemoves++;
+                }
+            }
+
         }
 
         protected virtual int Walk(T item1, TreeWalkMode walkMode = TreeWalkMode.InsertIndex)

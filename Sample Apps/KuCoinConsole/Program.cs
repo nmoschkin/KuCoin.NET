@@ -1133,7 +1133,9 @@ namespace KuCoinConsole
                 long SoftInserts = 0;
                 long SoftRemoves = 0;
                 long BufferSize = 0; 
-                long TreeSize = 0;  
+                long TreeSize = 0;
+                long SixteenOpt = 0;
+                long Rebalances = 0;
 
                 List<ISymbolDataService> sortobs = null;
                 var sortInfo = new List<FeedsInfo>();
@@ -1163,6 +1165,12 @@ namespace KuCoinConsole
                             nf.Throughput = item.Level3OrderBook.Throughput;
                             nf.Price = ((IEnumerable<AtomicOrderUnit>)item.Level3OrderBook.FullDepthOrderBook.Bids).FirstOrDefault()?.Price ?? 0M;
 
+                            nf.Rebalances = item.Level3OrderBook.FullDepthOrderBook.Bids.Rebalances;
+                            nf.Rebalances += item.Level3OrderBook.FullDepthOrderBook.Asks.Rebalances;
+                            
+                            nf.SixteenOpt = item.Level3OrderBook.FullDepthOrderBook.Bids.SixteenOpt;
+                            nf.SixteenOpt += item.Level3OrderBook.FullDepthOrderBook.Asks.SixteenOpt;
+
                             nf.HardInserts = item.Level3OrderBook.FullDepthOrderBook.Bids.HardInserts;
                             nf.HardInserts += item.Level3OrderBook.FullDepthOrderBook.Asks.HardInserts;
 
@@ -1180,13 +1188,17 @@ namespace KuCoinConsole
 
                             nf.TreeSize = item.Level3OrderBook.FullDepthOrderBook.Bids.TreeSize;
                             nf.TreeSize += item.Level3OrderBook.FullDepthOrderBook.Asks.TreeSize;
-
+                            
                             HardInserts += nf.HardInserts;
                             HardRemoves += nf.HardRemoves;
                             SoftInserts += nf.SoftInserts;
                             SoftRemoves += nf.SoftRemoves;
+
                             BufferSize += nf.BufferSize;
                             TreeSize += nf.TreeSize;
+
+                            SixteenOpt += nf.SixteenOpt;
+                            Rebalances += nf.Rebalances;
 
                         }
 
@@ -1424,17 +1436,20 @@ namespace KuCoinConsole
                 ft.WriteToEdgeLine($"Match Total: {{White}}{matchgrand:#,##0}{{Reset}}      ");
                 ft.WriteToEdgeLine($"Grand Total: {{White}}{biggrand:#,##0}{{Reset}}        ");
                 ft.WriteToEdgeLine($"                                                       ");
-                ft.WriteToEdgeLine($"Matches Per Second:      ~ {{Cyan}}{mps:#,###}{{Reset}}");
-                ft.WriteToEdgeLine($"Transactions Per Second: ~ {{Cyan}}{tps:#,###}{{Reset}}");
+                ft.WriteToEdgeLine($"Matches Per Second:      ~ {{Cyan}}{mps:#,##0}{{Reset}}");
+                ft.WriteToEdgeLine($"Transactions Per Second: ~ {{Cyan}}{tps:#,##0}{{Reset}}");
                 ft.WriteToEdgeLine($"                                                       ");
-                ft.WriteToEdgeLine($"Hard Inserts:    {{Cyan}}{HardInserts:#,###}{{Reset}}        ");
-                ft.WriteToEdgeLine($"Soft Inserts:    {{Cyan}}{SoftInserts:#,###}{{Reset}}        ");
+                ft.WriteToEdgeLine($"Hard Inserts:    {{Cyan}}{HardInserts:#,##0}{{Reset}}        ");
+                ft.WriteToEdgeLine($"Soft Inserts:    {{Cyan}}{SoftInserts:#,##0}{{Reset}}        ");
                 ft.WriteToEdgeLine($"                                                       ");
-                ft.WriteToEdgeLine($"Hard Removes:    {{Cyan}}{HardRemoves:#,###}{{Reset}}        ");
-                ft.WriteToEdgeLine($"Soft Removes:    {{Cyan}}{SoftRemoves:#,###}{{Reset}}        ");
+                ft.WriteToEdgeLine($"Hard Removes:    {{Cyan}}{HardRemoves:#,##0}{{Reset}}        ");
+                ft.WriteToEdgeLine($"Soft Removes:    {{Cyan}}{SoftRemoves:#,##0}{{Reset}}        ");
                 ft.WriteToEdgeLine($"                                                       ");
-                ft.WriteToEdgeLine($"Logical Size:    {{Cyan}}{BufferSize:#,###}{{Reset}}        ");
-                ft.WriteToEdgeLine($"Tree Size:       {{Cyan}}{TreeSize:#,###}{{Reset}}    ({100 * ((double)TreeSize/BufferSize):#,#0.0#}%)    ");
+                ft.WriteToEdgeLine($"Logical Size:    {{Cyan}}{BufferSize:#,##0}{{Reset}}        ");
+                ft.WriteToEdgeLine($"Tree Size:       {{Cyan}}{TreeSize:#,##0}{{Reset}}    ({100 * ((double)TreeSize/BufferSize):#,#0.0#}%)    ");
+                ft.WriteToEdgeLine($"                                                       ");
+                ft.WriteToEdgeLine($"Sixteen Opt:     {{Cyan}}{SixteenOpt:#,##0}{{Reset}}        ");
+                ft.WriteToEdgeLine($"Rebalances:      {{Cyan}}{Rebalances:#,##0}{{Reset}}        ");
                 ft.WriteToEdgeLine($"                                                       ");
                 ft.WriteToEdgeLine($"{{White}}Use Arrow Up/Arrow Down, Page Up/Page Down, Home/End to navigate the feed list. Ctrl+Arrow Up/Down scrolls the message log, below.{{Reset}}");
                 ft.WriteToEdgeLine($"{{White}}Use Arrow Left/Arrow Right to switch between different connections.  Use Ctrl + Arrow Left/Arrow Right to change the K-Line.{{Reset}}");
@@ -1644,6 +1659,10 @@ namespace KuCoinConsole
         public long BufferSize;
 
         public long TreeSize;
+
+        public long SixteenOpt;
+
+        public long Rebalances;
 
     }
 }
