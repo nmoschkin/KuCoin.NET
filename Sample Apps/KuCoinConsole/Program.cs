@@ -1434,7 +1434,7 @@ namespace KuCoinConsole
                 ft.WriteToEdgeLine($"Soft Removes:    {{Cyan}}{SoftRemoves:#,###}{{Reset}}        ");
                 ft.WriteToEdgeLine($"                                                       ");
                 ft.WriteToEdgeLine($"Logical Size:    {{Cyan}}{BufferSize:#,###}{{Reset}}        ");
-                ft.WriteToEdgeLine($"Tree Size:       {{Cyan}}{TreeSize:#,###}{{Reset}}        ");
+                ft.WriteToEdgeLine($"Tree Size:       {{Cyan}}{TreeSize:#,###}{{Reset}}    ({100 * ((double)TreeSize/BufferSize):#,#0.0#}%)    ");
                 ft.WriteToEdgeLine($"                                                       ");
                 ft.WriteToEdgeLine($"{{White}}Use Arrow Up/Arrow Down, Page Up/Page Down, Home/End to navigate the feed list. Ctrl+Arrow Up/Down scrolls the message log, below.{{Reset}}");
                 ft.WriteToEdgeLine($"{{White}}Use Arrow Left/Arrow Right to switch between different connections.  Use Ctrl + Arrow Left/Arrow Right to change the K-Line.{{Reset}}");
