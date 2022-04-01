@@ -131,7 +131,7 @@ namespace KuCoinConsole
         [STAThread]
         public static void Main(string[] args)
         {
-            AppCenter.Start("6e9f9975-8980-452b-be36-b5c9b087896f",
+            AppCenter.Start("d364ea69-c1fa-4d0d-8c37-debaa05f91bc",
                typeof(Analytics), typeof(Crashes));
 
             RunProgram();

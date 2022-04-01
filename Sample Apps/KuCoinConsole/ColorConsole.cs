@@ -102,6 +102,7 @@ namespace KuCoinConsole
 
         public static void Write(string text)
         {
+            if (string.IsNullOrEmpty(text)) return;
 
             var stext = new StringBuilder();
             var sb = new StringBuilder();
