@@ -1128,7 +1128,15 @@ namespace KuCoinConsole
 
                 string ordering = null;
 
+                long HardInserts = 0;
+                long HardRemoves = 0;
+                long SoftInserts = 0;
+                long SoftRemoves = 0;
+                long BufferSize = 0; 
+                long TreeSize = 0;  
+
                 List<ISymbolDataService> sortobs = null;
+                var sortInfo = new List<FeedsInfo>();
 
                 lock (lockObj)
                 {
@@ -1140,7 +1148,6 @@ namespace KuCoinConsole
 
                 if (sortEnabled)
                 {
-                    var sortInfo = new List<FeedsInfo>();
 
                     foreach (var item in sortobs)
                     {
@@ -1155,6 +1162,32 @@ namespace KuCoinConsole
                             nf.MarketVolume = item.Level3OrderBook.MarketVolume;
                             nf.Throughput = item.Level3OrderBook.Throughput;
                             nf.Price = ((IEnumerable<AtomicOrderUnit>)item.Level3OrderBook.FullDepthOrderBook.Bids).FirstOrDefault()?.Price ?? 0M;
+
+                            nf.HardInserts = item.Level3OrderBook.FullDepthOrderBook.Bids.HardInserts;
+                            nf.HardInserts += item.Level3OrderBook.FullDepthOrderBook.Asks.HardInserts;
+
+                            nf.HardRemoves = item.Level3OrderBook.FullDepthOrderBook.Bids.HardRemoves;
+                            nf.HardRemoves += item.Level3OrderBook.FullDepthOrderBook.Asks.HardRemoves;
+
+                            nf.SoftInserts = item.Level3OrderBook.FullDepthOrderBook.Bids.SoftInserts;
+                            nf.SoftInserts += item.Level3OrderBook.FullDepthOrderBook.Asks.SoftInserts;
+
+                            nf.SoftRemoves = item.Level3OrderBook.FullDepthOrderBook.Bids.SoftRemoves;
+                            nf.SoftRemoves += item.Level3OrderBook.FullDepthOrderBook.Asks.SoftRemoves;
+
+                            nf.BufferSize = item.Level3OrderBook.FullDepthOrderBook.Bids.Count;
+                            nf.BufferSize += item.Level3OrderBook.FullDepthOrderBook.Asks.Count;
+
+                            nf.TreeSize = item.Level3OrderBook.FullDepthOrderBook.Bids.TreeSize;
+                            nf.TreeSize += item.Level3OrderBook.FullDepthOrderBook.Asks.TreeSize;
+
+                            HardInserts += nf.HardInserts;
+                            HardRemoves += nf.HardRemoves;
+                            SoftInserts += nf.SoftInserts;
+                            SoftRemoves += nf.SoftRemoves;
+                            BufferSize += nf.BufferSize;
+                            TreeSize += nf.TreeSize;
+
                         }
 
                         sortInfo.Add(nf);
@@ -1393,7 +1426,16 @@ namespace KuCoinConsole
                 ft.WriteToEdgeLine($"                                                       ");
                 ft.WriteToEdgeLine($"Matches Per Second:      ~ {{Cyan}}{mps:#,###}{{Reset}}");
                 ft.WriteToEdgeLine($"Transactions Per Second: ~ {{Cyan}}{tps:#,###}{{Reset}}");
-                ft.WriteToEdgeLine($"");
+                ft.WriteToEdgeLine($"                                                       ");
+                ft.WriteToEdgeLine($"Hard Inserts:    {{Cyan}}{HardInserts:#,###}{{Reset}}        ");
+                ft.WriteToEdgeLine($"Soft Inserts:    {{Cyan}}{SoftInserts:#,###}{{Reset}}        ");
+                ft.WriteToEdgeLine($"                                                       ");
+                ft.WriteToEdgeLine($"Hard Removes:    {{Cyan}}{HardRemoves:#,###}{{Reset}}        ");
+                ft.WriteToEdgeLine($"Soft Removes:    {{Cyan}}{SoftRemoves:#,###}{{Reset}}        ");
+                ft.WriteToEdgeLine($"                                                       ");
+                ft.WriteToEdgeLine($"Logical Size:    {{Cyan}}{BufferSize:#,###}{{Reset}}        ");
+                ft.WriteToEdgeLine($"Tree Size:       {{Cyan}}{TreeSize:#,###}{{Reset}}        ");
+                ft.WriteToEdgeLine($"                                                       ");
                 ft.WriteToEdgeLine($"{{White}}Use Arrow Up/Arrow Down, Page Up/Page Down, Home/End to navigate the feed list. Ctrl+Arrow Up/Down scrolls the message log, below.{{Reset}}");
                 ft.WriteToEdgeLine($"{{White}}Use Arrow Left/Arrow Right to switch between different connections.  Use Ctrl + Arrow Left/Arrow Right to change the K-Line.{{Reset}}");
                 ft.WriteToEdgeLine($"{{White}}Press: (A) Sort Alphabetically, (P) Price, (V) Volume, (T) Throughput. Press again to reverse order. (Q) To Quit.");
@@ -1590,5 +1632,18 @@ namespace KuCoinConsole
         public FeedState State;
 
         public ISymbolDataService Service;
+
+        public long HardInserts;
+
+        public long SoftInserts;
+
+        public long HardRemoves;
+
+        public long SoftRemoves;
+
+        public long BufferSize;
+
+        public long TreeSize;
+
     }
 }

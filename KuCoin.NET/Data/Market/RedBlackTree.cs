@@ -218,6 +218,15 @@ namespace KuCoin.NET.Data.Market
                 Add(item);
             }
         }
+        public bool Locate(T item)
+        {
+            int idx = Walk(item, TreeWalkMode.Locate);
+
+            if (idx >= items.Count || idx < 0) return false;
+            if (!items[idx].Equals(item)) return false;
+
+            return true;
+        }
 
         public void AlterItem(T item, Func<T, T> alteration)
         {
@@ -225,16 +234,18 @@ namespace KuCoin.NET.Data.Market
             {
                 int idx = Walk(item, TreeWalkMode.Locate);
 
-                if (idx >= count || idx < 0) throw new KeyNotFoundException();
+                if (idx >= items.Count || idx < 0) throw new KeyNotFoundException();
                 if (!items[idx].Equals(item)) throw new KeyNotFoundException();
 
                 RemoveItem(idx);
 
                 var newitem = alteration(item);
-
                 InsertItem(newitem);
+                //int idx2 = Walk(newitem);
 
-                //int idx2 = walker.Walk(newitem);
+
+
+
 
                 //if (idx == idx2) return;
                 //if (idx2 >= count)
@@ -283,7 +294,7 @@ namespace KuCoin.NET.Data.Market
             }
         }
 
-    
+
         public void Add(T item)
         {
             InsertItem(item);
@@ -464,10 +475,24 @@ namespace KuCoin.NET.Data.Market
             lock (syncRoot)
             {
                 var index = Walk(item);
+                int rc = items.Count;
 
-                if (index < items.Count && items[index] == null)
+                if (index < rc && items[index] == null)
                 {
                     items[index] = item;
+                    if (metrics) softInserts++;
+                }
+                else if (index > 0 && items[index - 1] == null)
+                {
+                    items[index - 1] = item;
+                    if (metrics) softInserts++;
+                }
+                else if (index < rc - 2 && items[index + 2] == null)
+                {
+                    items[index + 2] = items[index + 1];
+                    items[index + 1] = items[index];
+                    items[index] = item;
+
                     if (metrics) softInserts++;
                 }
                 else
@@ -502,13 +527,38 @@ namespace KuCoin.NET.Data.Market
             {
                 items[index] = default;
                 count--;
-                BalanceTree(index);
+
+                if (index % 2 == 0)
+                {
+                    if (items[index + 1] is object)
+                    {
+                        items[index] = items[index + 1];
+                        items[index + 1] = default;
+
+                        if (metrics) softRemoves++;
+                    }
+                    else if (index < items.Count - 3 && items[index + 2] is object && items[index + 3] is object)
+                    {
+                        items[index] = items[index + 2];
+                        items[index + 2] = items[index + 3];
+                        items[index + 3] = default;
+
+                        if (metrics) softRemoves++;
+                    }
+                    else
+                    {
+                        items.RemoveRange(index, 2);
+                        if (metrics) hardRemoves++;
+                    }
+                }
+                else
+                {
+                    if (metrics) softRemoves++;
+                }
             }
         }
 
-
-        
-        protected int Walk(T item1, TreeWalkMode walkMode = TreeWalkMode.InsertIndex)
+        protected virtual int Walk(T item1, TreeWalkMode walkMode = TreeWalkMode.InsertIndex)
         {
             int count = items.Count;
             int lo = 0;
@@ -583,48 +633,6 @@ namespace KuCoin.NET.Data.Market
 
         }
 
-        protected void BalanceTree(int startNode)
-        {
-            int count = items.Count;
-
-            if (startNode == -1 || startNode >= count) return;
-            var isred = startNode % 2 == 1;
-
-            if (isred)
-            {
-                int i = startNode - 1;
-
-                if (!(items[startNode] is object) && !(items[i] is object))
-                {
-                    items.RemoveRange(i, 2);
-                    if (metrics) hardRemoves++;
-                }
-                else if (items[startNode] is object && !(items[i] is object))
-                {
-                    items[i] = items[startNode];
-                    items[startNode] = default;
-                    if (metrics) softRemoves++;
-                }
-            }
-            else
-            {
-                int i = startNode + 1;
-
-                if (!(items[startNode] is object) && !(items[i] is object))
-                {
-                    items.RemoveRange(startNode, 2);
-                    if (metrics) hardRemoves++;
-                }
-                else if (!(items[startNode] is object) && (items[i] is object))
-                {
-                    items[startNode] = items[i];
-                    items[i] = default;
-                    if (metrics) softRemoves++;
-                }
-
-            }
-        }
-
         #endregion
 
         public IEnumerator<T> GetEnumerator()
@@ -688,7 +696,7 @@ namespace KuCoin.NET.Data.Market
 
             public void Reset()
             {
-                lock(syncRoot)
+                lock (syncRoot)
                 {
                     idx = -1;
                     current = default;
@@ -746,7 +754,7 @@ namespace KuCoin.NET.Data.Market
 
         protected override void InsertItem(TValue item)
         {
-            lock(syncRoot)
+            lock (syncRoot)
             {
                 keyDict.Add(ProvideKey(item), item);
                 base.InsertItem(item);
@@ -761,20 +769,14 @@ namespace KuCoin.NET.Data.Market
             }
         }
 
-        public bool TryGetValue(TKey key, [MaybeNullWhen(false)] out TValue value)
+        public bool TryGetValue(TKey key, out TValue value)
         {
             lock (syncRoot)
             {
                 return keyDict.TryGetValue(key, out value);
             }
         }
-
-        //IEnumerator<KeyValuePair<TKey, TValue>> IEnumerable<KeyValuePair<TKey, TValue>>.GetEnumerator()
-        //{
-        //    return keyDict.GetEnumerator();
-        //}
     }
-
     public class KeyedBook<TUnit> : KeyedRedBlackTree<string, TUnit> where TUnit : IAtomicOrderUnit, new()
     {
         protected override string ProvideKey(TUnit value)
