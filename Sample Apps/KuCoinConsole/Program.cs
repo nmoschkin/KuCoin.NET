@@ -114,7 +114,7 @@ namespace KuCoinConsole
 
         static int maxSymbolLen = 0;
         static int maxCurrencyLen = 0;
-        
+
         [DllImport("kernel32.dll")]
         static extern bool AllocConsole();
 
@@ -122,7 +122,7 @@ namespace KuCoinConsole
         static extern IntPtr GetConsoleWindow();
 
         static DateTime start = DateTime.Now;
-        
+
         public static event EventHandler TickersReady;
         static List<string> usersymbols = null;
         static int feednum;
@@ -142,9 +142,9 @@ namespace KuCoinConsole
             Console.WriteLine(e.Json);
         }
 
-        public static void RunProgram() 
+        public static void RunProgram()
         {
-            
+
             try
             {
                 if (GetConsoleWindow() == IntPtr.Zero)
@@ -249,7 +249,7 @@ namespace KuCoinConsole
 
                 }
 
-                if (usersymbols.Count == 0) 
+                if (usersymbols.Count == 0)
                 {
                     usersymbols = null;
                     Console.WriteLine("Couldn't figure that out, defaulting to 10.");
@@ -277,11 +277,11 @@ namespace KuCoinConsole
             ParallelService.WorkRepeat = 2;
             ParallelService.WorkIdleSleepTime = 1;
 
-            var ast = market.GetAllTickers().ConfigureAwait(false). GetAwaiter().GetResult();
+            var ast = market.GetAllTickers().ConfigureAwait(false).GetAwaiter().GetResult();
 
             var tickers = new List<AllSymbolsTickerItem>(ast.Ticker);
             Dictionary<string, AllSymbolsTickerItem> tickerdict = new Dictionary<string, AllSymbolsTickerItem>();
-            
+
             tickers.Sort((a, b) =>
             {
                 if (a.VolumeValue > b.VolumeValue) return -1;
@@ -346,7 +346,7 @@ namespace KuCoinConsole
             //var syms = new List<string>(new string[] { "DOT-USDT", "UNI-USDT", "SOL-USDT", "LINK-USDT", "ETC-USDT", "BCH-USDT", "WBTC-USDT", "FIL-USDT", "DAI-USDT", "AAVE-USDT", "ICP-USDT", "MATIC-USDT", "XRP-USDT", "DOGE-USDT", "KCS-USDT", "ETH-USDT", "XLM-USDT", "BTC-USDT", "ADA-USDT", "LTC-USDT" });
 
             int tickerCount = 0;
-                        
+
             if (usersymbols != null)
             {
                 activeSymbols = usersymbols;
@@ -448,7 +448,7 @@ namespace KuCoinConsole
 
                                 await Task.Delay(10);
 
-                                if (curr.Level3Feed == null) 
+                                if (curr.Level3Feed == null)
                                 {
                                     if (direct)
                                     {
@@ -520,7 +520,7 @@ namespace KuCoinConsole
 
                         }
                     }
-                    catch (Exception ex) 
+                    catch (Exception ex)
                     {
 
                         var s = ex.Message;
@@ -561,7 +561,7 @@ namespace KuCoinConsole
 
                 if (Console.KeyAvailable)
                 {
-                    while(Console.KeyAvailable)
+                    while (Console.KeyAvailable)
                     {
 
                         var key = Console.ReadKey();
@@ -737,7 +737,7 @@ namespace KuCoinConsole
                     maxScrollIndex = Observers.Count - maxRows;
 
                     if (scrollIndex > maxScrollIndex) scrollIndex = maxScrollIndex;
-                    
+
                     WriteOut(ref headerText, ref itemStrings, ref footerText, ts);
                 }
 
@@ -755,7 +755,7 @@ namespace KuCoinConsole
                 {
                     for (int jz = conh; jz < Console.WindowHeight; jz++)
                     {
-                        if (jz < Console.WindowHeight - 1) 
+                        if (jz < Console.WindowHeight - 1)
                             Console.WriteLine(MinChars("", Console.WindowWidth - 2));
                         else
                             Console.Write(MinChars("", Console.WindowWidth - 2));
@@ -774,7 +774,7 @@ namespace KuCoinConsole
 
             fslog?.Dispose();
             fslog = null;
-            
+
             _ = Task.Run(() =>
             {
                 Dispatcher.BeginInvokeOnMainThread((o) =>
@@ -830,7 +830,7 @@ namespace KuCoinConsole
                     ktnext = KlineType.Min1;
                 }
 
-                foreach(var obs in Observers)
+                foreach (var obs in Observers)
                 {
                     obs.Value.Level3OrderBook.KlineType = ktnext;
                 }
@@ -871,7 +871,7 @@ namespace KuCoinConsole
         private static void Ticker_DataReceived(object sender, KuCoin.NET.Websockets.DataReceivedEventArgs e)
         {
         }
-        
+
         static DateTime resetCounter = DateTime.UtcNow;
         static long tps = 0;
         static long mps = 0;
@@ -885,7 +885,7 @@ namespace KuCoinConsole
         /// <param name="timestamp">The current feed timestamp, or null for local now.</param>
         private static void WriteOut(ref string headerText, ref IEnumerable<string> itemText, ref string footerText, DateTime? timestamp = null)
         {
-          
+
             try
             {
                 if (timestamp == null) timestamp = DateTime.Now;
@@ -910,579 +910,585 @@ namespace KuCoinConsole
                 int ccount = -1;
 
                 Level3 current = null;
-
-                try
+                lock (lockObj)
                 {
-                    lock (lockObj)
+
+                    try
                     {
-                        foreach (Level3 feed in feeds)
+                        lock (lockObj)
                         {
-                            ++ccount;
-                            if (ccount == currentConn)
+                            foreach (Level3 feed in feeds)
                             {
-                                current = feed;
-                                break;
+                                ++ccount;
+                                if (ccount == currentConn)
+                                {
+                                    current = feed;
+                                    break;
+                                }
+
                             }
 
-                        }
+                            foreach (var obs in Observers)
+                            {
+                                if (currentConn == -1 || obs.Value.Level3Feed == current)
+                                {
+                                    var l3 = obs.Value.Level3OrderBook;
 
+                                    if (l3 != null)
+                                    {
+                                        biggrand += l3.GrandTotal;
+                                        matchgrand += l3.MatchTotal;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    catch { }
+
+                    pcts.Clear();
+
+                    int resetting = 0;
+                    int running = 0;
+                    int failed = 0;
+                    int failobook = 0;
+                    int failother = 0;
+
+                    double minresettime = 0d;
+                    ccount = -1;
+
+                    lock (lockObj)
+                    {
                         foreach (var obs in Observers)
                         {
                             if (currentConn == -1 || obs.Value.Level3Feed == current)
                             {
                                 var l3 = obs.Value.Level3OrderBook;
 
-                                if (l3 != null)
-                                {
-                                    biggrand += l3.GrandTotal;
-                                    matchgrand += l3.MatchTotal;
-                                }
-                            }
-                        }
-                    }
-                }
-                catch { }
-
-                pcts.Clear();
-
-                int resetting = 0;
-                int running = 0;
-                int failed = 0;
-                int failobook = 0;
-                int failother = 0;
-
-                double minresettime = 0d;
-                ccount = -1;
-
-                lock (lockObj)
-                {
-                    foreach (var obs in Observers)
-                    {
-                        if (currentConn == -1 || obs.Value.Level3Feed == current)
-                        {
-                            var l3 = obs.Value.Level3OrderBook;
-
-                            if (l3 == null)
-                            {
-                                continue;
-                            }
-                            if (l3.State == FeedState.Running)
-                            {
-                                running++;
-                            }
-                            else if (l3.Failure)
-                            {
-                                if (l3.FailReason == FailReason.OrderBookTimeout)
-                                {
-                                    failobook++;
-                                }
-                                else
-                                {
-                                    failother++;
-                                }
-
-                                failed++;
-                                if (l3.TimeUntilNextRetry is double t)
-                                {
-                                    if (t < minresettime || minresettime == 0)
-                                        minresettime = t;
-                                }
-                            }
-                            else
-                            {
-                                resetting++;
-                            }
-                            pcts.Add(((double)l3.GrandTotal / (double)biggrand) * 100d);
-                            mpcts.Add(((double)l3.MatchTotal / (double)matchgrand) * 100d);
-                        }
-                    }
-
-                }
-
-                int z = scrollIndex;
-
-                readOut.Clear();
-                readOut.WriteToEdgeLine($"Feed Time Stamp:    {{Green}}{timestamp:G}{{Reset}}");
-                readOut.WriteToEdgeLine($"Up Time:            {{Blue}}{(DateTime.Now - start):G}{{Reset}}");
-                readOut.WriteToEdgeLine($"");
-                readOut.WriteToEdgeLine($"Feeds Running:      {{Green}}{running}{{Reset}}");
-                readOut.WriteToEdgeLine($"Feeds Initializing: {{Yellow}}{resetting}{{Reset}}");
-
-                var failtext = $"Feeds Failed:       {{Red}}{failed}{{Reset}}";
-                if (minresettime > 0)
-                {
-                    failtext += $" (Next reset in {(minresettime / 1000):#,##0} seconds. {failobook} order book timeouts. {failother} other failures.)          ";
-                }
-                failtext += "";
-
-                readOut.WriteToEdgeLine(failtext);
-                readOut.WriteToEdgeLine($"");
-
-                double through = 0d;
-                int queue = 0;
-                long maxqueue = 0;
-                int linkstr = 0;
-                ccount = -1;
-
-                if (current == null)
-                {
-                    lock (lockObj)
-                    {
-                        foreach (var f in feeds)
-                        {
-                            if (f is Level3 l3a)
-                            {
-                                if (!l3a.Connected)
+                                if (l3 == null)
                                 {
                                     continue;
                                 }
-
-                                through += l3a.Throughput;
-                                if (!(f is Level3Direct))
+                                if (l3.State == FeedState.Running)
                                 {
-                                    queue += l3a.QueueLength;
-                                    if (l3a.MaxQueueLengthLast60Seconds > maxqueue)
-                                        maxqueue += l3a.MaxQueueLengthLast60Seconds;
+                                    running++;
+                                }
+                                else if (l3.Failure)
+                                {
+                                    if (l3.FailReason == FailReason.OrderBookTimeout)
+                                    {
+                                        failobook++;
+                                    }
+                                    else
+                                    {
+                                        failother++;
+                                    }
 
+                                    failed++;
+                                    if (l3.TimeUntilNextRetry is double t)
+                                    {
+                                        if (t < minresettime || minresettime == 0)
+                                            minresettime = t;
+                                    }
                                 }
                                 else
                                 {
-                                    queue = -1;
+                                    resetting++;
                                 }
+                                pcts.Add(((double)l3.GrandTotal / (double)biggrand) * 100d);
+                                mpcts.Add(((double)l3.MatchTotal / (double)matchgrand) * 100d);
                             }
                         }
-                    }
-                }
-                else
-                {
-                    through += current.Throughput;
-                    if (!(current is Level3Direct))
-                    {
-                        queue += current.QueueLength;
-                        if (current.MaxQueueLengthLast60Seconds > maxqueue)
-                            maxqueue += current.MaxQueueLengthLast60Seconds;
 
                     }
 
-                }
+                    int z = scrollIndex;
 
-                if (subscribing != null)
-                {
-                    readOut.WriteToEdgeLine($"Subscribing:                        {{White}}{subscribing} ({activeSymbols.IndexOf(subscribing)} / {activeSymbols.Count}){{Reset}}");
-                }
-
-                if (currentConn != -1)
-                {
-                    readOut.WriteToEdgeLine($"Total Connections:                  {{White}}{MinChars(feeds.Count.ToString(), 4)}{{Reset}}       ({{White}}Showing Connection: {{Blue}}@{currentConn + 1}{{Reset}}{{Reset}})");
-                }
-                else
-                {
-                    readOut.WriteToEdgeLine($"Total Connections:                  {{White}}{MinChars(feeds.Count.ToString(), 4)}{{Reset}}");
-                }
-                readOut.WriteToEdgeLine($"Throughput:                         {{Green}}{PrintFriendlySpeed((ulong)through)}{{Reset}}");
-
-                if (queue != -1)
-                {
-                    if (currentConn == -1)
-                    {
-                        if (linkstr == 0)
-                        {
-                            readOut.WriteToEdgeLine($"Combined Queue Length:              {{Yellow}}{MinChars(queue.ToString(), 8)}{{Reset}}");
-                            readOut.WriteToEdgeLine($"Max Queue Length (Last 60 Seconds): {{Red}}{maxqueue}{{Reset}}");
-                        }
-                        else if (linkstr == feeds.Count)
-                        {
-                            readOut.WriteToEdgeLine($"Combined Queue Length:              {{Green}}Link Distribution Strategy (No Main Queue){{Reset}}");
-                            readOut.WriteToEdgeLine($"Max Queue Length (Last 60 Seconds): {{Red}}{maxqueue}{{Reset}}");
-                        }
-                        else
-                        {
-                            readOut.WriteToEdgeLine($"Combined Queue Length:              {{Yellow}}{MinChars(queue.ToString(), 8)} {{Green}}({linkstr} using Link Dist.) {{Reset}}");
-                            readOut.WriteToEdgeLine($"Max Queue Length (Last 60 Seconds): {{Red}}{maxqueue}{{Reset}}");
-                        }
-                    }
-                    else
-                    {
-                        if (linkstr == 0)
-                        {
-                            readOut.WriteToEdgeLine($"Queue Length:                       {{Yellow}}{MinChars(queue.ToString(), 8)}{{Reset}}");
-                            readOut.WriteToEdgeLine($"Max Queue Length (Last 60 Seconds): {{Red}}{maxqueue}{{Reset}}");
-                        }
-                        else if (linkstr == feeds.Count)
-                        {
-                            readOut.WriteToEdgeLine($"Queue Length:                       {{Green}}Link Distribution Strategy (No Main Queue){{Reset}}");
-                            readOut.WriteToEdgeLine($"Max Queue Length (Last 60 Seconds): {{Red}}{maxqueue}{{Reset}}");
-                        }
-                        else
-                        {
-                            readOut.WriteToEdgeLine($"Queue Length:                       {{Yellow}}{MinChars(queue.ToString(), 8)} {{Green}}({linkstr} using Link Dist.) {{Reset}}");
-                            readOut.WriteToEdgeLine($"Max Queue Length (Last 60 Seconds): {{Red}}{maxqueue}{{Reset}}");
-                        }
-
-                    }
-
-                }
-
-                readOut.WriteToEdgeLine($"");
-                readOut.Append("Sort Order: ");
-
-                string ordering = null;
-
-                long HardInserts = 0;
-                long HardRemoves = 0;
-                long SoftInserts = 0;
-                long SoftRemoves = 0;
-                long BufferSize = 0; 
-                long TreeSize = 0;
-                long SixteenOpt = 0;
-                long ChangedRebalances = 0;
-                long UnchangedRebalances = 0;
-
-                List<ISymbolDataService> sortobs = null;
-                var sortInfo = new List<FeedsInfo>();
-
-                lock (lockObj)
-                {
-                    sortobs = new List<ISymbolDataService>(Observers.Values.Where((item) =>
-                    {
-                        return currentConn == -1 || item.Level3Feed == current;
-                    }));
-                }
-
-                if (sortEnabled)
-                {
-
-                    foreach (var item in sortobs)
-                    {
-                        var nf = new FeedsInfo();
-
-                        nf.Service = item;
-                        nf.State = item.Level3OrderBook.State;
-                        nf.Symbol = item.Symbol;
-
-                        if (item.Level3OrderBook.State == FeedState.Running)
-                        {
-                            nf.MarketVolume = item.Level3OrderBook.MarketVolume;
-                            nf.Throughput = item.Level3OrderBook.Throughput;
-                            nf.Price = ((IEnumerable<AtomicOrderUnit>)item.Level3OrderBook.FullDepthOrderBook.Bids).FirstOrDefault()?.Price ?? 0M;
-
-                            nf.ChangedRebalances = item.Level3OrderBook.FullDepthOrderBook.Bids.ChangedRebalances;
-                            nf.ChangedRebalances += item.Level3OrderBook.FullDepthOrderBook.Asks.ChangedRebalances;
-
-                            nf.UnchangedRebalances = item.Level3OrderBook.FullDepthOrderBook.Bids.UnchangedRebalances;
-                            nf.UnchangedRebalances += item.Level3OrderBook.FullDepthOrderBook.Asks.UnchangedRebalances;
-
-
-                            nf.SixteenOpt = item.Level3OrderBook.FullDepthOrderBook.Bids.SixteenOpt;
-                            nf.SixteenOpt += item.Level3OrderBook.FullDepthOrderBook.Asks.SixteenOpt;
-
-                            nf.HardInserts = item.Level3OrderBook.FullDepthOrderBook.Bids.HardInserts;
-                            nf.HardInserts += item.Level3OrderBook.FullDepthOrderBook.Asks.HardInserts;
-
-                            nf.HardRemoves = item.Level3OrderBook.FullDepthOrderBook.Bids.HardRemoves;
-                            nf.HardRemoves += item.Level3OrderBook.FullDepthOrderBook.Asks.HardRemoves;
-
-                            nf.SoftInserts = item.Level3OrderBook.FullDepthOrderBook.Bids.SoftInserts;
-                            nf.SoftInserts += item.Level3OrderBook.FullDepthOrderBook.Asks.SoftInserts;
-
-                            nf.SoftRemoves = item.Level3OrderBook.FullDepthOrderBook.Bids.SoftRemoves;
-                            nf.SoftRemoves += item.Level3OrderBook.FullDepthOrderBook.Asks.SoftRemoves;
-
-                            nf.BufferSize = item.Level3OrderBook.FullDepthOrderBook.Bids.Count;
-                            nf.BufferSize += item.Level3OrderBook.FullDepthOrderBook.Asks.Count;
-
-                            nf.TreeSize = item.Level3OrderBook.FullDepthOrderBook.Bids.TreeSize;
-                            nf.TreeSize += item.Level3OrderBook.FullDepthOrderBook.Asks.TreeSize;
-                            
-                            HardInserts += nf.HardInserts;
-                            HardRemoves += nf.HardRemoves;
-                            SoftInserts += nf.SoftInserts;
-                            SoftRemoves += nf.SoftRemoves;
-
-                            BufferSize += nf.BufferSize;
-                            TreeSize += nf.TreeSize;
-
-                            SixteenOpt += nf.SixteenOpt;
-                            ChangedRebalances += nf.ChangedRebalances;
-                            UnchangedRebalances += nf.UnchangedRebalances;
-
-                        }
-
-                        sortInfo.Add(nf);
-                    }
-
-                    sortInfo.Sort((a, b) =>
-                    {
-                        if (a.State == FeedState.Running && b.State == FeedState.Running)
-                        {
-                            try
-                            {
-                                switch (sortmode)
-                                {
-                                    case 0:
-
-                                        if (a.MarketVolume > b.MarketVolume) return 1 * sortorder;
-                                        else if (a.MarketVolume < b.MarketVolume) return -1 * sortorder;
-                                        else break;
-
-                                    case 1:
-
-                                        if (a.Price > b.Price) return 1 * sortorder;
-                                        else if (a.Price < b.Price) return -1 * sortorder;
-                                        else break;
-
-                                    case 3:
-
-                                        if (a.Throughput > b.Throughput) return 1 * sortorder;
-                                        else if (a.Throughput < b.Throughput) return -1 * sortorder;
-                                        else break;
-                                }
-
-                                return string.Compare(a.Symbol, b.Symbol) * sortorder;
-                            }
-                            catch
-                            {
-                                return 0;
-                            }
-
-                        }
-
-                        else if (a.State != FeedState.Running && b.State == FeedState.Running) return 1;
-                        else if (b.State != FeedState.Running && a.State == FeedState.Running) return -1;
-
-                        return 0;
-
-                    });
-
-                    sortobs = new List<ISymbolDataService>();
-                    foreach (var info in sortInfo)
-                    {
-                        sortobs.Add(info.Service);
-                    }
-                }
-
-                switch (sortmode)
-                {
-                    case 0:
-                        ordering = ($"{{White}}Volume ");
-                        break;
-                    case 1:
-                        ordering = ($"{{White}}Price ");
-                        break;
-                    case 2:
-                        ordering = ($"{{White}}Alphabetically ");
-                        break;
-                    case 3:
-                        ordering = ($"{{White}}Throughput ");
-                        break;
-                }
-
-                if (sortorder > 0)
-                    ordering += ($"{{Green}}▲ {{Yellow}}Ascending{{Reset}}");
-                else
-                    ordering += ($"{{Red}}▼ {{Yellow}}Descending{{Reset}}");
-
-                readOut.Append(MinChars(ordering, 127));
-
-                if (sortobs.FirstOrDefault() is SymbolDataService firstData)
-                {
-                    var klineStr = firstData.Level3OrderBook.KlineType.ToString("G");
-                    readOut.WriteToEdgeLine($"{{Reset}}Current K-Line: {{Cyan}}{klineStr}");
-                }
-                else
-                {
+                    readOut.Clear();
+                    readOut.WriteToEdgeLine($"Feed Time Stamp:    {{Green}}{timestamp:G}{{Reset}}");
+                    readOut.WriteToEdgeLine($"Up Time:            {{Blue}}{(DateTime.Now - start):G}{{Reset}}");
                     readOut.WriteToEdgeLine($"");
-                }
+                    readOut.WriteToEdgeLine($"Feeds Running:      {{Green}}{running}{{Reset}}");
+                    readOut.WriteToEdgeLine($"Feeds Initializing: {{Yellow}}{resetting}{{Reset}}");
 
-                readOut.WriteToEdgeLine($"");
-
-                headerText = readOut.ToString();
-
-                int count = 0;
-
-                var itemTexts = new List<string>();
-
-                int idx = scrollIndex;
-                int obscount = sortobs.Count;
-
-                if (idx > obscount - maxRows) idx = obscount - maxRows;
-                if (idx < 0) idx = 0;
-                z = idx;
-                for (int vc = idx; vc < idx + maxRows; vc++)
-                {
-                    if (vc >= obscount) break;
-
-                    var obs = sortobs[vc];
-                    var l3 = obs.Level3OrderBook;
-                    var ts = DateTime.MinValue;
-
-                    int fidx = 0;
-                    int cidx = 0;
-
-                    if (currentConn == -1)
+                    var failtext = $"Feeds Failed:       {{Red}}{failed}{{Reset}}";
+                    if (minresettime > 0)
                     {
-                        foreach (var feed in feeds)
+                        failtext += $" (Next reset in {(minresettime / 1000):#,##0} seconds. {failobook} order book timeouts. {failother} other failures.)          ";
+                    }
+                    failtext += "";
+
+                    readOut.WriteToEdgeLine(failtext);
+                    readOut.WriteToEdgeLine($"");
+
+                    double through = 0d;
+                    int queue = 0;
+                    long maxqueue = 0;
+                    int linkstr = 0;
+                    ccount = -1;
+
+                    if (current == null)
+                    {
+                        lock (lockObj)
                         {
-                            if (feed is Level3 l3b)
+                            foreach (var f in feeds)
                             {
-                                if (l3b.ActiveFeeds.ContainsKey(obs.Symbol))
+                                if (f is Level3 l3a)
                                 {
-                                    fidx = cidx + 1;
-                                    break;
+                                    if (!l3a.Connected)
+                                    {
+                                        continue;
+                                    }
+
+                                    through += l3a.Throughput;
+                                    if (!(f is Level3Direct))
+                                    {
+                                        queue += l3a.QueueLength;
+                                        if (l3a.MaxQueueLengthLast60Seconds > maxqueue)
+                                            maxqueue += l3a.MaxQueueLengthLast60Seconds;
+
+                                    }
+                                    else
+                                    {
+                                        queue = -1;
+                                    }
                                 }
                             }
-                            cidx++;
+                        }
+                    }
+                    else
+                    {
+                        through += current.Throughput;
+                        if (!(current is Level3Direct))
+                        {
+                            queue += current.QueueLength;
+                            if (current.MaxQueueLengthLast60Seconds > maxqueue)
+                                maxqueue += current.MaxQueueLengthLast60Seconds;
+
                         }
 
                     }
-                    else
+
+                    if (subscribing != null)
                     {
-                        fidx = currentConn + 1;
+                        readOut.WriteToEdgeLine($"Subscribing:                        {{White}}{subscribing} ({activeSymbols.IndexOf(subscribing)} / {activeSymbols.Count}){{Reset}}");
                     }
 
-                    if (l3.FullDepthOrderBook is object)
+                    if (currentConn != -1)
                     {
-                        ba = ((IEnumerable<AtomicOrderUnit>)l3.FullDepthOrderBook.Asks).FirstOrDefault()?.Price ?? 0;
-                        bb = ((IEnumerable<AtomicOrderUnit>)l3.FullDepthOrderBook.Bids).FirstOrDefault()?.Price ?? 0;
-                        ts = l3.FullDepthOrderBook.Timestamp;
-
-                        op = l3.Candle.OpenPrice;
-                        cp = l3.Candle.ClosePrice;
-
+                        readOut.WriteToEdgeLine($"Total Connections:                  {{White}}{MinChars(feeds.Count.ToString(), 4)}{{Reset}}       ({{White}}Showing Connection: {{Blue}}@{currentConn + 1}{{Reset}}{{Reset}})");
                     }
                     else
                     {
-                        op = cp = ba = bb = 0;
+                        readOut.WriteToEdgeLine($"Total Connections:                  {{White}}{MinChars(feeds.Count.ToString(), 4)}{{Reset}}");
                     }
+                    readOut.WriteToEdgeLine($"Throughput:                         {{Green}}{PrintFriendlySpeed((ulong)through)}{{Reset}}");
 
-                    var currname = "";
-                    var bc = market.Symbols[obs.Symbol].BaseCurrency;
-
-                    if (market.Currencies.Contains(bc))
+                    if (queue != -1)
                     {
-                        currname = market.Currencies[bc].FullName;
-                    }
-                    else
-                    {
-                        currname = bc;
-                    }
-
-                    itsb.Clear();
-
-                    var zt = "{Reset}-";
-                    var t = "▲▼";
-
-                    if (op > cp)
-                    {
-                        zt = "{Red}▼{Reset}";
-                    }
-                    else if (cp > op)
-                    {
-                        zt = "{Green}▲{Reset}";
-                    }
-
-                    itsb.WriteToEdgeLine($"{MinChars(obs.Symbol, maxSymbolLen)} {zt} Best Ask: {{Red}}{MinChars(ba.ToString("#,##0.00######"), 12)}{{Reset}} Best Bid: {{Green}}{MinChars(bb.ToString("#,##0.00######"), 12)}{{Reset}} {{Yellow}}{MinChars(currname, maxCurrencyLen)}{{Reset}}          Volume: {{Cyan}}{MinChars(l3.MarketVolume.ToString("#,##0.00##"), 14)}{{Reset}}");
-
-
-                    if (l3.Parent.Connected == false)
-                    {
-                        itsb.WriteToEdgeLine($"{MinChars($"{{White}}{vc + 1} {{Red}}Feed Disconnected{{Reset}}", maxSymbolLen + 22)}");
-                    }
-                    else if (ba == 0)
-                    {
-                        itsb.WriteToEdgeLine($"{MinChars($"{{White}}{vc + 1} {{Yellow}}Initializing{{Reset}}", maxSymbolLen + 22)}");
-                    }
-                    else
-                    {
-                        if (queue == -1)
+                        if (currentConn == -1)
                         {
-                            itsb.WriteToEdgeLine($"{MinChars($"{{White}}{vc + 1} {{Blue}}@{fidx}{{Reset}}", maxSymbolLen + 20)}   Match Share: {MinChars(mpcts[z].ToString("##0.##") + "%", 7)}   Total Share: {MinChars(pcts[z++].ToString("##0.##") + "%", 7)}   State: " + MinChars(l3.State.ToString(), 10) + "  Throughput: " + MinChars(PrintFriendlySpeed((ulong)l3.Throughput), 16) + $"{{Reset}} Timestamp: {{Blue}}{ts:G}{{Reset}}");
+                            if (linkstr == 0)
+                            {
+                                readOut.WriteToEdgeLine($"Combined Queue Length:              {{Yellow}}{MinChars(queue.ToString(), 8)}{{Reset}}");
+                                readOut.WriteToEdgeLine($"Max Queue Length (Last 60 Seconds): {{Red}}{maxqueue}{{Reset}}");
+                            }
+                            else if (linkstr == feeds.Count)
+                            {
+                                readOut.WriteToEdgeLine($"Combined Queue Length:              {{Green}}Link Distribution Strategy (No Main Queue){{Reset}}");
+                                readOut.WriteToEdgeLine($"Max Queue Length (Last 60 Seconds): {{Red}}{maxqueue}{{Reset}}");
+                            }
+                            else
+                            {
+                                readOut.WriteToEdgeLine($"Combined Queue Length:              {{Yellow}}{MinChars(queue.ToString(), 8)} {{Green}}({linkstr} using Link Dist.) {{Reset}}");
+                                readOut.WriteToEdgeLine($"Max Queue Length (Last 60 Seconds): {{Red}}{maxqueue}{{Reset}}");
+                            }
                         }
                         else
                         {
-                            itsb.WriteToEdgeLine($"{MinChars($"{{White}}{vc + 1} {{Blue}}@{fidx}{{Reset}}", maxSymbolLen + 20)}   Match Share: {MinChars(mpcts[z].ToString("##0.##") + "%", 7)}   Total Share: {MinChars(pcts[z++].ToString("##0.##") + "%", 7)}   State: " + MinChars(l3.State.ToString(), 14) + "  Queue Length: " + MinChars(l3.QueueLength.ToString(), 10) + $"{{Reset}} Timestamp: {{Blue}}{ts:G}{{Reset}}");
+                            if (linkstr == 0)
+                            {
+                                readOut.WriteToEdgeLine($"Queue Length:                       {{Yellow}}{MinChars(queue.ToString(), 8)}{{Reset}}");
+                                readOut.WriteToEdgeLine($"Max Queue Length (Last 60 Seconds): {{Red}}{maxqueue}{{Reset}}");
+                            }
+                            else if (linkstr == feeds.Count)
+                            {
+                                readOut.WriteToEdgeLine($"Queue Length:                       {{Green}}Link Distribution Strategy (No Main Queue){{Reset}}");
+                                readOut.WriteToEdgeLine($"Max Queue Length (Last 60 Seconds): {{Red}}{maxqueue}{{Reset}}");
+                            }
+                            else
+                            {
+                                readOut.WriteToEdgeLine($"Queue Length:                       {{Yellow}}{MinChars(queue.ToString(), 8)} {{Green}}({linkstr} using Link Dist.) {{Reset}}");
+                                readOut.WriteToEdgeLine($"Max Queue Length (Last 60 Seconds): {{Red}}{maxqueue}{{Reset}}");
+                            }
+
                         }
-                        //itsb.WriteToEdgeLine($"{MinChars($"{{White}}{vc + 1} ", maxSymbolLen + 7)} - Match Share: {MinChars(mpcts[z].ToString("##0") + "%", 4)}   Total Share: {MinChars(pcts[z++].ToString("##0") + "%", 4)}   State: " + MinChars(l3.State.ToString(), 14) + "  Queue Length: " + MinChars(l3.QueueLength.ToString(), 10) + $" {{Reset}}Feed: {{White}}{MinChars((fidx == 0) ? "N/A" : fidx.ToString(), 4)}");
-                    }
-
-                    itsb.WriteToEdge("");
-                    itemTexts.Add(itsb.ToString());
-                }
-
-                // trades per second:
-
-                if ((DateTime.UtcNow - resetCounter).TotalSeconds >= 1)
-                {
-                    mps = 0;
-                    tps = 0;
-
-                    resetCounter = DateTime.UtcNow;
-
-                    foreach (var obs in sortobs)
-                    {
-                        var l3 = obs.Level3OrderBook;
-                        mps += l3.MatchesPerSecond;
-                        tps += l3.TransactionsPerSecond;
 
                     }
-                }
 
-                itemText = itemTexts;
+                    readOut.WriteToEdgeLine($"");
+                    readOut.Append("Sort Order: ");
 
-                var ft = new StringBuilder();
+                    string ordering = null;
 
-                ft.WriteToEdgeLine("");
+                    long HardInserts = 0;
+                    long HardRemoves = 0;
+                    long SoftInserts = 0;
+                    long SoftRemoves = 0;
+                    long BufferSize = 0;
+                    long TreeSize = 0;
+                    long SixteenOpt = 0;
+                    long ChangedRebalances = 0;
+                    long UnchangedRebalances = 0;
 
-                if (obscount - count > 0)
-                {
-                    ft.WriteToEdgeLine($"Feeds Not Shown: {{Magenta}}{obscount - maxRows}{{Reset}}");
-                }
+                    List<ISymbolDataService> sortobs = null;
+                    var sortInfo = new List<FeedsInfo>();
 
-                ft.WriteToEdgeLine($"");
-                ft.WriteToEdgeLine($"Match Total: {{White}}{matchgrand:#,##0}{{Reset}}      ");
-                ft.WriteToEdgeLine($"Grand Total: {{White}}{biggrand:#,##0}{{Reset}}        ");
-                ft.WriteToEdgeLine($"                                                       ");
-                ft.WriteToEdgeLine($"Matches Per Second:      ~ {{Cyan}}{mps:#,##0}{{Reset}}");
-                ft.WriteToEdgeLine($"Transactions Per Second: ~ {{Cyan}}{tps:#,##0}{{Reset}}");
-                ft.WriteToEdgeLine($"                                                       ");
-                ft.WriteToEdgeLine($"Hard Inserts:    {{Cyan}}{HardInserts:#,##0}{{Reset}}        ");
-                ft.WriteToEdgeLine($"Soft Inserts:    {{Cyan}}{SoftInserts:#,##0}{{Reset}}        ");
-                ft.WriteToEdgeLine($"                                                       ");
-                ft.WriteToEdgeLine($"Hard Removes:    {{Cyan}}{HardRemoves:#,##0}{{Reset}}        ");
-                ft.WriteToEdgeLine($"Soft Removes:    {{Cyan}}{SoftRemoves:#,##0}{{Reset}}        ");
-                ft.WriteToEdgeLine($"                                                       ");
-                ft.WriteToEdgeLine($"Logical Size:    {{Cyan}}{BufferSize:#,##0}{{Reset}}        ");
-                ft.WriteToEdgeLine($"Tree Size:       {{Cyan}}{TreeSize:#,##0}{{Reset}}    ({100 * ((double)TreeSize/BufferSize):#,#0.0#}%)    ");
-                ft.WriteToEdgeLine($"                                                       ");
-                ft.WriteToEdgeLine($"Local Rebalances:            {{Cyan}}{SixteenOpt:#,##0}{{Reset}}        ");
-                ft.WriteToEdgeLine($"                                                       ");
-                ft.WriteToEdgeLine($"Global Rebalances:           {{Cyan}}{ChangedRebalances:#,##0}{{Reset}}        ");
-                ft.WriteToEdgeLine($"Declined Global Rebalances:  {{Cyan}}{UnchangedRebalances:#,##0}{{Reset}}        ");
-                ft.WriteToEdgeLine($"                                                       ");
-                ft.WriteToEdgeLine($"{{White}}Use Arrow Up/Arrow Down, Page Up/Page Down, Home/End to navigate the feed list. Ctrl+Arrow Up/Down scrolls the message log, below.{{Reset}}");
-                ft.WriteToEdgeLine($"{{White}}Use Arrow Left/Arrow Right to switch between different connections.  Use Ctrl + Arrow Left/Arrow Right to change the K-Line.{{Reset}}");
-                ft.WriteToEdgeLine($"{{White}}Press: (A) Sort Alphabetically, (P) Price, (V) Volume, (T) Throughput. Press again to reverse order. (Q) To Quit.");
-
-                lock (messages)
-                {
-                    if (messages.Count > 0)
+                    lock (lockObj)
                     {
-                        if (msgidx < 0) msgidx = 0;
-                        int mc = messages.Count, mi, mg;
-                        mg = msgidx;
-
-                        ft.WriteToEdgeLine("");
-
-                        for (mi = mg; mi < mc; mi++)
+                        sortobs = new List<ISymbolDataService>(Observers.Values.Where((item) =>
                         {
-                            ft.WriteToEdgeLine(messages[mi]);
-                            if (mi - mg >= 4) break;
+                            return currentConn == -1 || item.Level3Feed == current;
+                        }));
+
+                        if (sortEnabled)
+                        {
+
+                            foreach (var item in sortobs)
+                            {
+                                lock(item.Level3OrderBook.LockObject)
+                                {
+                                    var nf = new FeedsInfo();
+
+                                    nf.Service = item;
+                                    nf.State = item.Level3OrderBook.State;
+                                    nf.Symbol = item.Symbol;
+
+                                    if (item.Level3OrderBook.State == FeedState.Running)
+                                    {
+                                        nf.MarketVolume = item.Level3OrderBook.MarketVolume;
+                                        nf.Throughput = item.Level3OrderBook.Throughput;
+                                        nf.Price = ((IEnumerable<AtomicOrderUnit>)item.Level3OrderBook.FullDepthOrderBook.Bids).FirstOrDefault()?.Price ?? 0M;
+
+                                        nf.ChangedRebalances = item.Level3OrderBook.FullDepthOrderBook.Bids.ChangedRebalances;
+                                        nf.ChangedRebalances += item.Level3OrderBook.FullDepthOrderBook.Asks.ChangedRebalances;
+
+                                        nf.UnchangedRebalances = item.Level3OrderBook.FullDepthOrderBook.Bids.UnchangedRebalances;
+                                        nf.UnchangedRebalances += item.Level3OrderBook.FullDepthOrderBook.Asks.UnchangedRebalances;
+
+
+                                        nf.SixteenOpt = item.Level3OrderBook.FullDepthOrderBook.Bids.SixteenOpt;
+                                        nf.SixteenOpt += item.Level3OrderBook.FullDepthOrderBook.Asks.SixteenOpt;
+
+                                        nf.HardInserts = item.Level3OrderBook.FullDepthOrderBook.Bids.HardInserts;
+                                        nf.HardInserts += item.Level3OrderBook.FullDepthOrderBook.Asks.HardInserts;
+
+                                        nf.HardRemoves = item.Level3OrderBook.FullDepthOrderBook.Bids.HardRemoves;
+                                        nf.HardRemoves += item.Level3OrderBook.FullDepthOrderBook.Asks.HardRemoves;
+
+                                        nf.SoftInserts = item.Level3OrderBook.FullDepthOrderBook.Bids.SoftInserts;
+                                        nf.SoftInserts += item.Level3OrderBook.FullDepthOrderBook.Asks.SoftInserts;
+
+                                        nf.SoftRemoves = item.Level3OrderBook.FullDepthOrderBook.Bids.SoftRemoves;
+                                        nf.SoftRemoves += item.Level3OrderBook.FullDepthOrderBook.Asks.SoftRemoves;
+
+                                        nf.BufferSize = item.Level3OrderBook.FullDepthOrderBook.Bids.Count;
+                                        nf.BufferSize += item.Level3OrderBook.FullDepthOrderBook.Asks.Count;
+
+                                        nf.TreeSize = item.Level3OrderBook.FullDepthOrderBook.Bids.TreeSize;
+                                        nf.TreeSize += item.Level3OrderBook.FullDepthOrderBook.Asks.TreeSize;
+
+                                        HardInserts += nf.HardInserts;
+                                        HardRemoves += nf.HardRemoves;
+                                        SoftInserts += nf.SoftInserts;
+                                        SoftRemoves += nf.SoftRemoves;
+
+                                        BufferSize += nf.BufferSize;
+                                        TreeSize += nf.TreeSize;
+
+                                        SixteenOpt += nf.SixteenOpt;
+                                        ChangedRebalances += nf.ChangedRebalances;
+                                        UnchangedRebalances += nf.UnchangedRebalances;
+
+                                    }
+
+                                    sortInfo.Add(nf);
+                                }
+
+                            }
+                        }
+
+                        sortInfo.Sort((a, b) =>
+                        {
+                            if (a.State == FeedState.Running && b.State == FeedState.Running)
+                            {
+                                try
+                                {
+                                    switch (sortmode)
+                                    {
+                                        case 0:
+
+                                            if (a.MarketVolume > b.MarketVolume) return 1 * sortorder;
+                                            else if (a.MarketVolume < b.MarketVolume) return -1 * sortorder;
+                                            else break;
+
+                                        case 1:
+
+                                            if (a.Price > b.Price) return 1 * sortorder;
+                                            else if (a.Price < b.Price) return -1 * sortorder;
+                                            else break;
+
+                                        case 3:
+
+                                            if (a.Throughput > b.Throughput) return 1 * sortorder;
+                                            else if (a.Throughput < b.Throughput) return -1 * sortorder;
+                                            else break;
+                                    }
+
+                                    return string.Compare(a.Symbol, b.Symbol) * sortorder;
+                                }
+                                catch
+                                {
+                                    return 0;
+                                }
+
+                            }
+
+                            else if (a.State != FeedState.Running && b.State == FeedState.Running) return 1;
+                            else if (b.State != FeedState.Running && a.State == FeedState.Running) return -1;
+
+                            return 0;
+
+                        });
+
+                        sortobs = new List<ISymbolDataService>();
+                        foreach (var info in sortInfo)
+                        {
+                            sortobs.Add(info.Service);
                         }
                     }
+
+                    switch (sortmode)
+                    {
+                        case 0:
+                            ordering = ($"{{White}}Volume ");
+                            break;
+                        case 1:
+                            ordering = ($"{{White}}Price ");
+                            break;
+                        case 2:
+                            ordering = ($"{{White}}Alphabetically ");
+                            break;
+                        case 3:
+                            ordering = ($"{{White}}Throughput ");
+                            break;
+                    }
+
+                    if (sortorder > 0)
+                        ordering += ($"{{Green}}▲ {{Yellow}}Ascending{{Reset}}");
+                    else
+                        ordering += ($"{{Red}}▼ {{Yellow}}Descending{{Reset}}");
+
+                    readOut.Append(MinChars(ordering, 127));
+
+                    if (sortobs.FirstOrDefault() is SymbolDataService firstData)
+                    {
+                        var klineStr = firstData.Level3OrderBook.KlineType.ToString("G");
+                        readOut.WriteToEdgeLine($"{{Reset}}Current K-Line: {{Cyan}}{klineStr}");
+                    }
+                    else
+                    {
+                        readOut.WriteToEdgeLine($"");
+                    }
+
+                    readOut.WriteToEdgeLine($"");
+
+                    headerText = readOut.ToString();
+
+                    int count = 0;
+
+                    var itemTexts = new List<string>();
+
+                    int idx = scrollIndex;
+                    int obscount = sortobs.Count;
+
+                    if (idx > obscount - maxRows) idx = obscount - maxRows;
+                    if (idx < 0) idx = 0;
+                    z = idx;
+                    for (int vc = idx; vc < idx + maxRows; vc++)
+                    {
+                        if (vc >= obscount) break;
+
+                        var obs = sortobs[vc];
+                        var l3 = obs.Level3OrderBook;
+                        var ts = DateTime.MinValue;
+
+                        int fidx = 0;
+                        int cidx = 0;
+
+                        if (currentConn == -1)
+                        {
+                            foreach (var feed in feeds)
+                            {
+                                if (feed is Level3 l3b)
+                                {
+                                    if (l3b.ActiveFeeds.ContainsKey(obs.Symbol))
+                                    {
+                                        fidx = cidx + 1;
+                                        break;
+                                    }
+                                }
+                                cidx++;
+                            }
+
+                        }
+                        else
+                        {
+                            fidx = currentConn + 1;
+                        }
+
+                        if (l3.FullDepthOrderBook is object)
+                        {
+                            ba = ((IEnumerable<AtomicOrderUnit>)l3.FullDepthOrderBook.Asks).FirstOrDefault()?.Price ?? 0;
+                            bb = ((IEnumerable<AtomicOrderUnit>)l3.FullDepthOrderBook.Bids).FirstOrDefault()?.Price ?? 0;
+                            ts = l3.FullDepthOrderBook.Timestamp;
+
+                            op = l3.Candle.OpenPrice;
+                            cp = l3.Candle.ClosePrice;
+
+                        }
+                        else
+                        {
+                            op = cp = ba = bb = 0;
+                        }
+
+                        var currname = "";
+                        var bc = market.Symbols[obs.Symbol].BaseCurrency;
+
+                        if (market.Currencies.Contains(bc))
+                        {
+                            currname = market.Currencies[bc].FullName;
+                        }
+                        else
+                        {
+                            currname = bc;
+                        }
+
+                        itsb.Clear();
+
+                        var zt = "{Reset}-";
+                        var t = "▲▼";
+
+                        if (op > cp)
+                        {
+                            zt = "{Red}▼{Reset}";
+                        }
+                        else if (cp > op)
+                        {
+                            zt = "{Green}▲{Reset}";
+                        }
+
+                        itsb.WriteToEdgeLine($"{MinChars(obs.Symbol, maxSymbolLen)} {zt} Best Ask: {{Red}}{MinChars(ba.ToString("#,##0.00######"), 12)}{{Reset}} Best Bid: {{Green}}{MinChars(bb.ToString("#,##0.00######"), 12)}{{Reset}} {{Yellow}}{MinChars(currname, maxCurrencyLen)}{{Reset}}          Volume: {{Cyan}}{MinChars(l3.MarketVolume.ToString("#,##0.00##"), 14)}{{Reset}}");
+
+
+                        if (l3.Parent.Connected == false)
+                        {
+                            itsb.WriteToEdgeLine($"{MinChars($"{{White}}{vc + 1} {{Red}}Feed Disconnected{{Reset}}", maxSymbolLen + 22)}");
+                        }
+                        else if (ba == 0)
+                        {
+                            itsb.WriteToEdgeLine($"{MinChars($"{{White}}{vc + 1} {{Yellow}}Initializing{{Reset}}", maxSymbolLen + 22)}");
+                        }
+                        else
+                        {
+                            if (queue == -1)
+                            {
+                                itsb.WriteToEdgeLine($"{MinChars($"{{White}}{vc + 1} {{Blue}}@{fidx}{{Reset}}", maxSymbolLen + 20)}   Match Share: {MinChars(mpcts[z].ToString("##0.##") + "%", 7)}   Total Share: {MinChars(pcts[z++].ToString("##0.##") + "%", 7)}   State: " + MinChars(l3.State.ToString(), 10) + "  Throughput: " + MinChars(PrintFriendlySpeed((ulong)l3.Throughput), 16) + $"{{Reset}} Timestamp: {{Blue}}{ts:G}{{Reset}}");
+                            }
+                            else
+                            {
+                                itsb.WriteToEdgeLine($"{MinChars($"{{White}}{vc + 1} {{Blue}}@{fidx}{{Reset}}", maxSymbolLen + 20)}   Match Share: {MinChars(mpcts[z].ToString("##0.##") + "%", 7)}   Total Share: {MinChars(pcts[z++].ToString("##0.##") + "%", 7)}   State: " + MinChars(l3.State.ToString(), 14) + "  Queue Length: " + MinChars(l3.QueueLength.ToString(), 10) + $"{{Reset}} Timestamp: {{Blue}}{ts:G}{{Reset}}");
+                            }
+                            //itsb.WriteToEdgeLine($"{MinChars($"{{White}}{vc + 1} ", maxSymbolLen + 7)} - Match Share: {MinChars(mpcts[z].ToString("##0") + "%", 4)}   Total Share: {MinChars(pcts[z++].ToString("##0") + "%", 4)}   State: " + MinChars(l3.State.ToString(), 14) + "  Queue Length: " + MinChars(l3.QueueLength.ToString(), 10) + $" {{Reset}}Feed: {{White}}{MinChars((fidx == 0) ? "N/A" : fidx.ToString(), 4)}");
+                        }
+
+                        itsb.WriteToEdge("");
+                        itemTexts.Add(itsb.ToString());
+                    }
+
+                    // trades per second:
+
+                    if ((DateTime.UtcNow - resetCounter).TotalSeconds >= 1)
+                    {
+                        mps = 0;
+                        tps = 0;
+
+                        resetCounter = DateTime.UtcNow;
+
+                        foreach (var obs in sortobs)
+                        {
+                            var l3 = obs.Level3OrderBook;
+                            mps += l3.MatchesPerSecond;
+                            tps += l3.TransactionsPerSecond;
+
+                        }
+                    }
+
+                    itemText = itemTexts;
+
+                    var ft = new StringBuilder();
+
+                    ft.WriteToEdgeLine("");
+
+                    if (obscount - count > 0)
+                    {
+                        ft.WriteToEdgeLine($"Feeds Not Shown: {{Magenta}}{obscount - maxRows}{{Reset}}");
+                    }
+
+                    ft.WriteToEdgeLine($"");
+                    ft.WriteToEdgeLine($"Match Total: {{White}}{matchgrand:#,##0}{{Reset}}      ");
+                    ft.WriteToEdgeLine($"Grand Total: {{White}}{biggrand:#,##0}{{Reset}}        ");
+                    ft.WriteToEdgeLine($"                                                       ");
+                    ft.WriteToEdgeLine($"Matches Per Second:      ~ {{Cyan}}{mps:#,##0}{{Reset}}");
+                    ft.WriteToEdgeLine($"Transactions Per Second: ~ {{Cyan}}{tps:#,##0}{{Reset}}");
+                    ft.WriteToEdgeLine($"                                                       ");
+                    ft.WriteToEdgeLine($"Hard Inserts:    {{Cyan}}{HardInserts:#,##0}{{Reset}}        ");
+                    ft.WriteToEdgeLine($"Soft Inserts:    {{Cyan}}{SoftInserts:#,##0}{{Reset}}        ");
+                    ft.WriteToEdgeLine($"                                                       ");
+                    ft.WriteToEdgeLine($"Hard Removes:    {{Cyan}}{HardRemoves:#,##0}{{Reset}}        ");
+                    ft.WriteToEdgeLine($"Soft Removes:    {{Cyan}}{SoftRemoves:#,##0}{{Reset}}        ");
+                    ft.WriteToEdgeLine($"                                                       ");
+                    ft.WriteToEdgeLine($"Logical Size:    {{Cyan}}{BufferSize:#,##0}{{Reset}}        ");
+                    ft.WriteToEdgeLine($"Tree Size:       {{Cyan}}{TreeSize:#,##0}{{Reset}}    ({100 * ((double)TreeSize / BufferSize):#,#0.0#}%)    ");
+                    ft.WriteToEdgeLine($"                                                       ");
+                    ft.WriteToEdgeLine($"Local Rebalances:            {{Cyan}}{SixteenOpt:#,##0}{{Reset}}        ");
+                    ft.WriteToEdgeLine($"                                                       ");
+                    ft.WriteToEdgeLine($"Global Rebalances:           {{Cyan}}{ChangedRebalances:#,##0}{{Reset}}        ");
+                    ft.WriteToEdgeLine($"Declined Global Rebalances:  {{Cyan}}{UnchangedRebalances:#,##0}{{Reset}}        ");
+                    ft.WriteToEdgeLine($"                                                       ");
+                    ft.WriteToEdgeLine($"{{White}}Use Arrow Up/Arrow Down, Page Up/Page Down, Home/End to navigate the feed list. Ctrl+Arrow Up/Down scrolls the message log, below.{{Reset}}");
+                    ft.WriteToEdgeLine($"{{White}}Use Arrow Left/Arrow Right to switch between different connections.  Use Ctrl + Arrow Left/Arrow Right to change the K-Line.{{Reset}}");
+                    ft.WriteToEdgeLine($"{{White}}Press: (A) Sort Alphabetically, (P) Price, (V) Volume, (T) Throughput. Press again to reverse order. (Q) To Quit.");
+
+                    lock (messages)
+                    {
+                        if (messages.Count > 0)
+                        {
+                            if (msgidx < 0) msgidx = 0;
+                            int mc = messages.Count, mi, mg;
+                            mg = msgidx;
+
+                            ft.WriteToEdgeLine("");
+
+                            for (mi = mg; mi < mc; mi++)
+                            {
+                                ft.WriteToEdgeLine(messages[mi]);
+                                if (mi - mg >= 4) break;
+                            }
+                        }
+                    }
+
+                    footerText = ft.ToString();
                 }
-
-                footerText = ft.ToString();
-
             }
             catch
             {
