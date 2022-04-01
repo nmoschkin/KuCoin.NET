@@ -1454,9 +1454,10 @@ namespace KuCoinConsole
                 ft.WriteToEdgeLine($"Logical Size:    {{Cyan}}{BufferSize:#,##0}{{Reset}}        ");
                 ft.WriteToEdgeLine($"Tree Size:       {{Cyan}}{TreeSize:#,##0}{{Reset}}    ({100 * ((double)TreeSize/BufferSize):#,#0.0#}%)    ");
                 ft.WriteToEdgeLine($"                                                       ");
-                ft.WriteToEdgeLine($"Local Rebalances:      {{Cyan}}{SixteenOpt:#,##0}{{Reset}}        ");
-                ft.WriteToEdgeLine($"Changed Rebalances:    {{Cyan}}{ChangedRebalances:#,##0}{{Reset}}        ");
-                ft.WriteToEdgeLine($"Unchanged Rebalances:  {{Cyan}}{UnchangedRebalances:#,##0}{{Reset}}        ");
+                ft.WriteToEdgeLine($"Local Rebalances:            {{Cyan}}{SixteenOpt:#,##0}{{Reset}}        ");
+                ft.WriteToEdgeLine($"                                                       ");
+                ft.WriteToEdgeLine($"Global Rebalances:           {{Cyan}}{ChangedRebalances:#,##0}{{Reset}}        ");
+                ft.WriteToEdgeLine($"Declined Global Rebalances:  {{Cyan}}{UnchangedRebalances:#,##0}{{Reset}}        ");
                 ft.WriteToEdgeLine($"                                                       ");
                 ft.WriteToEdgeLine($"{{White}}Use Arrow Up/Arrow Down, Page Up/Page Down, Home/End to navigate the feed list. Ctrl+Arrow Up/Down scrolls the message log, below.{{Reset}}");
                 ft.WriteToEdgeLine($"{{White}}Use Arrow Left/Arrow Right to switch between different connections.  Use Ctrl + Arrow Left/Arrow Right to change the K-Line.{{Reset}}");

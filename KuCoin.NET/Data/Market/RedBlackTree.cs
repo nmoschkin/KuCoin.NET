@@ -601,15 +601,15 @@ namespace KuCoin.NET.Data.Market
                 {
                     b = b | CheckThem(i, 4, true);
                 }
-
-                if (b && metrics)
+                
+                if (b)
                 {
-                    changedRebalances++;
+                    if (metrics) changedRebalances++;
                     return RebalanceResult.Changed;
                 }
                 else
                 {
-                    unchangedRebalances++;
+                    if (metrics) unchangedRebalances++;
                     return RebalanceResult.Unchanged;
                 }
             }
