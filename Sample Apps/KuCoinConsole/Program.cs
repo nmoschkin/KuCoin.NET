@@ -743,7 +743,7 @@ namespace KuCoinConsole
 
                 Console.ResetColor();
                 ColorConsole.Write(headerText);
-
+                itemStrings = itemStrings.Where((s) => s is object).ToArray();
                 foreach (var sitem in itemStrings)
                 {
                     ColorConsole.WriteLine(sitem);
