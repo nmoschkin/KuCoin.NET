@@ -956,8 +956,6 @@ namespace KuCoin.NET.Data.Market
                 if (keyDict.ContainsKey(key))
                 {
                     var item = keyDict[key];
-
-                    keyDict.Remove(key);
                     Remove(item);
                 }
             }
