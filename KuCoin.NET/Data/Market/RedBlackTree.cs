@@ -565,7 +565,7 @@ namespace KuCoin.NET.Data.Market
 
                     if (count > 128 && (items.Count / count) >= 2)
                     {
-                        for (int i = items.Count - 8; i >= 8; i -= 16)
+                        for (int i = items.Count - 8; i >= 8; i -= 8)
                         {
                             CheckThem(i);
                         }
