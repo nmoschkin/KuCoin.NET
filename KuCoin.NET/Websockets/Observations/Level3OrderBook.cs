@@ -215,11 +215,19 @@ namespace KuCoin.NET.Websockets.Observations
                 }
                 else if (obj.Side == Side.Sell)
                 {
-                    if (!SequencePieces(obj, fullDepth.Asks, fullDepth.Bids)) return false;
+                    if (!SequencePieces(obj, fullDepth.Asks, fullDepth.Bids))
+                    {
+                        _ = Reset();
+                        return false;
+                    }
                 }
                 else if (obj.Side == Side.Buy)
                 {
-                    if (!SequencePieces(obj, fullDepth.Bids, fullDepth.Asks)) return false;
+                    if (!SequencePieces(obj, fullDepth.Bids, fullDepth.Asks))
+                    {
+                        _ = Reset();
+                        return false;
+                    }
                 }
 
                 fullDepth.Sequence = obj.Sequence;
