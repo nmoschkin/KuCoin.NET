@@ -329,7 +329,12 @@ namespace KuCoin.NET.Websockets.Distribution
 
                 for(int i = 0; i < c; i++)
                 {
-                    ProcessObject(buffer[i]);
+                    if (!ProcessObject(buffer[i]))
+                    {
+                        buffer.Clear();
+                        _ = Reset();
+                        
+                    }
                 }
 
                 buffer.Clear();

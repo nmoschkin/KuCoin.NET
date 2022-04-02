@@ -215,11 +215,11 @@ namespace KuCoin.NET.Websockets.Observations
                 }
                 else if (obj.Side == Side.Sell)
                 {
-                    SequencePieces(obj, fullDepth.Asks, fullDepth.Bids);
+                    if (!SequencePieces(obj, fullDepth.Asks, fullDepth.Bids)) return false;
                 }
                 else if (obj.Side == Side.Buy)
                 {
-                    SequencePieces(obj, fullDepth.Bids, fullDepth.Asks);
+                    if (!SequencePieces(obj, fullDepth.Bids, fullDepth.Asks)) return false;
                 }
 
                 fullDepth.Sequence = obj.Sequence;
@@ -293,20 +293,37 @@ namespace KuCoin.NET.Websockets.Observations
                         return false;
                     }
 
-                    pieces.Add(u);
+                    try
+                    {
+                        pieces.Add(u);
+                    }
+                    catch
+                    {
+                        return false;
+                    }
+
                     return true;
 
                 case 'c':
 
                     if (pieces.TryGetValue(change.OrderId, out AtomicOrderUnit piece))
                     {
-                        pieces.Remove(piece.OrderId);
+                        try
+                        {
+                            pieces.AlterItem(piece, (p) =>
+                            {
+                                p.Size = change.Size ?? 0;
+                                p.Timestamp = change.Timestamp ?? DateTime.Now;
+                                p.Price = change.Price ?? 0;
 
-                        piece.Size = change.Size ?? 0;
-                        piece.Timestamp = change.Timestamp ?? DateTime.Now;
-                        piece.Price = change.Price ?? 0;
+                                return p;
+                            });
+                        }
+                        catch
+                        {
+                            return false;
+                        }
 
-                        pieces.Add(piece);
                     }
                     else
                     {
@@ -321,10 +338,17 @@ namespace KuCoin.NET.Websockets.Observations
                         && otherPieces.TryGetValue(change.MakerOrderId, out AtomicOrderUnit o))
                     {
 
-                        otherPieces.AlterItem(o, (itm) => {
-                            itm.Size -= csize;
-                            return itm;
-                        });
+                        try
+                        {
+                            otherPieces.AlterItem(o, (itm) => {
+                                itm.Size -= csize;
+                                return itm;
+                            });
+                        }
+                        catch
+                        {
+                            return false;
+                        }
 
                         //int idx1 = otherPieces.FindItem(o);
                         //o.Size -= csize;

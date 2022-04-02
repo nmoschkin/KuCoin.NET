@@ -280,6 +280,7 @@ namespace KuCoin.NET.Websockets.Distribution
 
                     initialized = failure = false;
                     LastFailureTime = null;
+                    state = FeedState.Connected;
 
                     _ = Task.Run(() =>
                     {
