@@ -163,11 +163,11 @@ namespace KuCoin.NET.Websockets.Observations
                         FailReason = FailReason.Other;
 
                     }
-                    return false;
+                    return true;
                 }
                 else if (obj.Sequence <= fullDepth.Sequence)
                 {
-                    return false;
+                    return true;
                 }
                 else if (obj.Sequence - fullDepth.Sequence > 1)
                 {
@@ -301,44 +301,27 @@ namespace KuCoin.NET.Websockets.Observations
                         return false;
                     }
 
-                    try
-                    {
-                        pieces.Add(u);
-                    }
-                    catch
-                    {
-                        return false;
-                    }
-
+                    pieces.Add(u);
                     return true;
 
                 case 'c':
 
                     if (pieces.TryGetValue(change.OrderId, out AtomicOrderUnit piece))
                     {
-                        try
+                        if (pieces.TryAlterItem(piece, (p) =>
                         {
-                            pieces.AlterItem(piece, (p) =>
-                            {
-                                p.Size = change.Size ?? 0;
-                                p.Timestamp = change.Timestamp ?? DateTime.Now;
-                                p.Price = change.Price ?? 0;
+                            p.Size = change.Size ?? 0;
+                            p.Timestamp = change.Timestamp ?? DateTime.Now;
+                            p.Price = change.Price ?? 0;
 
-                                return p;
-                            });
-                        }
-                        catch
+                            return p;
+                        }))
                         {
-                            return false;
+                            return true;
                         }
-
-                    }
-                    else
-                    {
-                        return false;
                     }
 
-                    return true;
+                    return false;
 
                 case 'm':
 
@@ -346,27 +329,13 @@ namespace KuCoin.NET.Websockets.Observations
                         && otherPieces.TryGetValue(change.MakerOrderId, out AtomicOrderUnit o))
                     {
 
-                        try
-                        {
-                            otherPieces.AlterItem(o, (itm) => {
-                                itm.Size -= csize;
-                                return itm;
-                            });
-                        }
-                        catch
+                        if (!otherPieces.TryAlterItem(o, (itm) => {
+                            itm.Size -= csize;
+                            return itm;
+                        }))
                         {
                             return false;
                         }
-
-                        //int idx1 = otherPieces.FindItem(o);
-                        //o.Size -= csize;
-                        //int idx2 = otherPieces.GetInsertIndex(o);
-
-                        //if (idx1 != idx2)
-                        //{
-                        //    otherPieces.Remove(o.OrderId);
-                        //    otherPieces.Add(o);
-                        //}
 
                         // A match is a real component of volume.
                         // we can keep our own tally of the market volume per k-line.

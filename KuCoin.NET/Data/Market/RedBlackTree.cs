@@ -227,29 +227,32 @@ namespace KuCoin.NET.Data.Market
         }
         public virtual bool Locate(T item)
         {
-            int idx = Walk(item, TreeWalkMode.Locate);
-
-            if (idx >= items.Count || idx < 0) return false;
-            if (!items[idx].Equals(item)) return false;
-
-            return true;
+            return Walk(item, TreeWalkMode.Locate) != -1;
+        }
+        
+        protected virtual bool Locate(T item, out int index)
+        {
+            index = Walk(item, TreeWalkMode.Locate);
+            return index != -1; 
         }
 
-        public virtual void AlterItem(T item, Func<T, T> alteration)
+        public bool TryAlterItem(T item, Func<T, T> alteration)
+        {
+            if (Locate(item, out int idx))
+            {
+                AlterItem(item, alteration, idx);
+                return true;
+            }
+
+            return false;
+        }
+
+        public void AlterItem(T item, Func<T, T> alteration)
         {
             lock (syncRoot)
             {
                 int idx = Walk(item, TreeWalkMode.Locate);
-
-                if (idx >= items.Count || idx < 0)
-                {
-                    string err = $"{idx} Out Of Bounds!";
-                    
-                    Console.WriteLine(err);
-                
-                    throw new KeyNotFoundException(err);
-                }
-                if (!items[idx].Equals(item))
+                if (idx == -1)
                 {
                     int c = items.Count;
                     string err = $"{idx} for {item} Is Incorrect!";
@@ -267,52 +270,20 @@ namespace KuCoin.NET.Data.Market
                     }
 
                     if (err == null) err += "\r\nKey Not Found!";
-
                     throw new KeyNotFoundException(err);
                 }
 
-                RemoveItem(idx);
+                AlterItem(item, alteration, idx);
+            }
+        }
 
+        protected virtual void AlterItem(T item, Func<T, T> alteration, int idx)
+        {
+            lock (syncRoot)
+            {
+                RemoveItem(idx);
                 var newitem = alteration(item);
                 InsertItem(newitem);
-                //int idx2 = Walk(newitem);
-
-
-
-
-
-                //if (idx == idx2) return;
-                //if (idx2 >= count)
-                //{
-                //    RemoveItem(idx);
-                //    Add(newitem);
-
-                //    return;
-                //}
-
-                //bool black1 = (idx & 1) == 0;
-                //bool black2 = (idx2 & 1) == 0;
-
-                //if (black1 && items[idx + 1] is object)
-                //{
-                //    items[idx] = items[idx + 1];
-                //    items[idx + 1] = default;
-                //}
-                //else
-                //{
-                //    items[idx] = default;
-                //    walker.BalanceTree(idx);
-                //}
-
-                //if (!black2 && !(items[idx2] is object))
-                //{
-                //    items[idx2] = newitem;
-                //}
-                //else
-                //{
-                //    InsertItem(newitem);
-                //}
-
             }
         }
 
@@ -791,6 +762,12 @@ namespace KuCoin.NET.Data.Market
                                 lo--;
                             }
                         }
+                    }
+                    else
+                    {
+                        if (lo < 0 || lo >= count) return -1;
+                        else if (!(items[lo] is object)) return -1;
+                        else if (!Equals(item1, items[lo])) return -1;
                     }
 
                     return lo;
