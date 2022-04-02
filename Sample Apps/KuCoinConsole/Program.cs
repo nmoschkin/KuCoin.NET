@@ -807,29 +807,29 @@ namespace KuCoinConsole
         private static void Level3Feed_DataReceived(object sender, DataReceivedEventArgs e)
         {
             var msg = JsonConvert.DeserializeObject<FeedMessage>(e.Json);
-            int x = 1;
-            object feed;
+            
+            int x = 0;
 
             lock (feeds)
             {
-                feed = feeds.Where((x) => x == sender).FirstOrDefault();
-                if (feed == null) return;
+                x++;
+                foreach (var feed in feeds)
+                {
+                    if (feed == sender) break;
+                }
             }
 
-            if (feed is Level3 l3a)
+            lock (messages)
             {
-                lock (messages)
-                {
-                    messages.Add($"{{Reset}}Feed {{White}}{x}{{Reset}}: {{Yellow}}{msg.Type} {{Cyan}}{msg.Subject} {msg.Topic} {{Blue}}({DateTime.Now:G}){{Reset}}");
-                    msgidx = messages.Count >= 4 ? messages.Count - 5 : messages.Count - 1;
-                }
+                messages.Add($"{{Reset}}Feed {{White}}{x}{{Reset}}: {{Yellow}}{msg.Type} {{Cyan}}{msg.Subject} {msg.Topic} {{Blue}}({DateTime.Now:G}){{Reset}}");
+                msgidx = messages.Count >= 4 ? messages.Count - 5 : messages.Count - 1;
+            }
 
-                lock (fslog)
-                {
-                    var tstr = ($"Feed {x}: {msg.Type} {msg.Subject} {msg.Topic} ({DateTime.Now:G})\r\n");
-                    fslog?.Write(Encoding.UTF8.GetBytes(tstr));
-                    fslog?.Flush();
-                }
+            lock (fslog)
+            {
+                var tstr = ($"Feed {x}: {msg.Type} {msg.Subject} {msg.Topic} ({DateTime.Now:G})\r\n");
+                fslog?.Write(Encoding.UTF8.GetBytes(tstr));
+                fslog?.Flush();
             }
         }
 
