@@ -812,9 +812,9 @@ namespace KuCoinConsole
 
             lock (feeds)
             {
-                x++;
                 foreach (var feed in feeds)
                 {
+                    x++;
                     if (feed == sender) break;
                 }
             }
