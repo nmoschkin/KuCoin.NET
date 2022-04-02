@@ -1195,8 +1195,8 @@ namespace KuCoinConsole
                                         nf.UnchangedRebalances += item.Level3OrderBook.FullDepthOrderBook.Asks.UnchangedRebalances;
 
 
-                                        nf.SixteenOpt = item.Level3OrderBook.FullDepthOrderBook.Bids.SixteenOpt;
-                                        nf.SixteenOpt += item.Level3OrderBook.FullDepthOrderBook.Asks.SixteenOpt;
+                                        nf.SixteenOpt = item.Level3OrderBook.FullDepthOrderBook.Bids.LocalRebalances;
+                                        nf.SixteenOpt += item.Level3OrderBook.FullDepthOrderBook.Asks.LocalRebalances;
 
                                         nf.HardInserts = item.Level3OrderBook.FullDepthOrderBook.Bids.HardInserts;
                                         nf.HardInserts += item.Level3OrderBook.FullDepthOrderBook.Asks.HardInserts;

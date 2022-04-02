@@ -93,8 +93,8 @@ namespace KuCoin.NET.Websockets.Observations
             base.OnInitialized();
             if (fullDepth != null)
             {
-                fullDepth.Asks.Rebalance();
-                fullDepth.Bids.Rebalance();
+                fullDepth.Asks.TryRebalance();
+                fullDepth.Bids.TryRebalance();
 
                 fullDepth.Asks.ResetMetrics();
                 fullDepth.Bids.ResetMetrics();

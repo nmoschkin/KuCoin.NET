@@ -140,7 +140,7 @@ namespace KuCoin.NET.Websockets.Distribution.Services
                         Parallel.Invoke(arrActions);
                         if (sleepDivisor < 0) continue;
                     }
-                    else if (Tenants.Count > 0)
+                    else
                     {
                         Tenants[0].DoWork();
                     }

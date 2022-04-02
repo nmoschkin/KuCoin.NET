@@ -15,7 +15,7 @@ using System.Text;
 
 namespace KuCoin.NET.Data.Market
 {
-    #region Atomic Order Unit Comparer (For Reference)
+    #region Atomic Order Unit Comparer 
     public class AtomicComparer<TUnit> : IComparer<TUnit> where TUnit : IAtomicOrderUnit
     {
         bool descending = false;
@@ -27,8 +27,6 @@ namespace KuCoin.NET.Data.Market
 
         public int Compare(TUnit x, TUnit y)
         {
-
-
             if (!descending)
             {
                 // ascending
@@ -112,9 +110,68 @@ namespace KuCoin.NET.Data.Market
 
         }
     }
-    #endregion Atomic Order Unit Comparer (For Reference)
+    #endregion Atomic Order Unit Comparer 
 
-    //#region KeyedBook
+
+    /// <summary>
+    /// Keyed Atomic Order Book
+    /// </summary>
+    /// <typeparam name="TUnit">Any <see cref="IAtomicOrderUnit"/> implementation.</typeparam>
+    public class KeyedBook<TUnit> : KeyedRedBlackTree<string, TUnit> where TUnit : IAtomicOrderUnit, new()
+    {
+        #region Public Constructors
+
+        /// <summary>
+        /// Instantiate a new keyed atomic (Level 3) orders book.
+        /// </summary>
+        /// <param name="sortOrder">The sort order</param>
+        public KeyedBook(SortOrder sortOrder) : base(new AtomicComparer<TUnit>(sortOrder == SortOrder.Descending), sortOrder)
+        {
+            //rebalanceThreshold = 1.5f;
+        }
+
+        public KeyedBook() : base(new AtomicComparer<TUnit>(false), SortOrder.Ascending)
+        {
+            //rebalanceThreshold = 1.5f;
+        }
+
+        public KeyedBook(bool descending) : base(new AtomicComparer<TUnit>(false), descending ? SortOrder.Descending : SortOrder.Ascending)
+        {
+            //rebalanceThreshold = 1.5f;
+        }
+
+        #endregion Public Constructors
+
+        #region Public Methods
+
+        public void Remove(string key)
+        {
+            lock (syncRoot)
+            {
+                if (keyDict.ContainsKey(key))
+                {
+                    var item = keyDict[key];
+                    Remove(item);
+                }
+            }
+        }
+
+        #endregion Public Methods
+
+        #region Protected Methods
+
+        protected override string ProvideKey(TUnit value)
+        {
+            return value.OrderId;
+        }
+
+        #endregion Protected Methods
+    }
+
+
+
+
+    #region Old KeyedBook
 
     //[JsonConverter(typeof(KeyedBookConverter))]
     //public sealed class KeyedBook<TUnit> : Collection<TUnit>, IReadOnlyDictionary<string, TUnit> where TUnit : IAtomicOrderUnit, new()
@@ -561,6 +618,6 @@ namespace KuCoin.NET.Data.Market
 
     //}
 
-    //#endregion
+    #endregion Old KeyedBook
 
 }

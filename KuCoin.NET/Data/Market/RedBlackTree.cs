@@ -15,70 +15,210 @@ using System.Xml.Linq;
 //using DataTools.Text;
 
 namespace KuCoin.NET.Data.Market 
-{ 
-    public enum SortOrder
-    {
-        Ascending,
-        Descending,
-    }
-
+{
+    /// <summary>
+    /// The result of the rebalance activity.
+    /// </summary>
     public enum RebalanceResult
     {
+        /// <summary>
+        /// The tree was not walked.
+        /// </summary>
         NotPerformed,
+
+        /// <summary>
+        /// The was walked but not rebalanced.
+        /// </summary>
         Unchanged,
+
+        /// <summary>
+        /// The tree was walked and changed.
+        /// </summary>
         Changed
     }
 
     /// <summary>
-    /// A sorted, spatially buffered collection.
+    /// Rebalance strategies
+    /// </summary>
+    public enum RebalanceStrategy : int
+    {
+        /// <summary>
+        /// Examine 4 nodes locally.
+        /// </summary>
+        Cadance4 = 4,
+
+        /// <summary>
+        /// Examine 8 nodes locally.
+        /// </summary>
+        Cadence8 = 8,
+
+        /// <summary>
+        /// Examine 16 nodes locally.
+        /// </summary>
+        Cadence16 = 16
+    }
+
+    /// <summary>
+    /// The sorting direction of the tree.
+    /// </summary>
+    public enum SortOrder
+    {
+        /// <summary>
+        /// Ascending sort order.
+        /// </summary>
+        Ascending,
+
+        /// <summary>
+        /// Descending sort order.
+        /// </summary>
+        Descending,
+    }
+
+    /// <summary>
+    /// The method to use to walk the tree.
+    /// </summary>
+    public enum TreeWalkMode
+    {
+        /// <summary>
+        /// Find a suitable insert index for the specified item.
+        /// </summary>
+        InsertIndex,
+
+        /// <summary>
+        /// Locate the specified item.
+        /// </summary>
+        Locate
+    }
+
+    /// <summary>
+    /// A version of red/black tree with an additional buffer for keys.
+    /// </summary>
+    /// <typeparam name="TKey">The type of key.</typeparam>
+    /// <typeparam name="TValue">The type of value.</typeparam>
+    public abstract class KeyedRedBlackTree<TKey, TValue> : RedBlackTree<TValue> // Do not implement: IReadOnlyDictionary<TKey, TValue>
+    {
+        #region Protected Fields
+
+        protected SortedDictionary<TKey, TValue> keyDict = new SortedDictionary<TKey, TValue>();
+
+        #endregion Protected Fields
+
+        #region Public Constructors
+
+        public KeyedRedBlackTree(SortOrder sortOrder) : base(sortOrder)
+        {
+        }
+
+        public KeyedRedBlackTree(IComparer<TValue> comparer, SortOrder sortOrder) : base(comparer, sortOrder)
+        {
+        }
+
+        #endregion Public Constructors
+
+        #region Public Properties
+
+        public IEnumerable<TKey> Keys => keyDict.Keys;
+        public IEnumerable<TValue> Values => keyDict.Values;
+
+        #endregion Public Properties
+
+        #region Public Indexers
+
+        public TValue this[TKey key] => keyDict[key];
+
+        #endregion Public Indexers
+
+        #region Public Methods
+
+        public bool ContainsKey(TKey key)
+        {
+            lock (syncRoot)
+            {
+                return keyDict.ContainsKey(key);
+            }
+        }
+
+        public bool TryGetValue(TKey key, out TValue value)
+        {
+            lock (syncRoot)
+            {
+                return keyDict.TryGetValue(key, out value);
+            }
+        }
+
+        #endregion Public Methods
+
+        #region Protected Methods
+
+        protected override void InsertItem(TValue item)
+        {
+            lock (syncRoot)
+            {
+                keyDict.Add(ProvideKey(item), item);
+                base.InsertItem(item);
+            }
+        }
+
+        protected abstract TKey ProvideKey(TValue value);
+        protected override void RemoveItem(int index)
+        {
+            lock (syncRoot)
+            {
+                var item = items[index];
+                keyDict.Remove(ProvideKey(item));
+                base.RemoveItem(index);
+            }
+        }
+
+        #endregion Protected Methods
+    }
+
+    /// <summary>
+    /// A red/black tree implementation.
     /// </summary>
     /// <typeparam name="T">The type of the collection (must be a class)</typeparam>
     /// <remarks>
-    /// Items cannot be <see cref="null"/>.  Null is reserved for buffer space.
+    /// Items cannot be <see cref="null"/>.
     /// </remarks>
     public class RedBlackTree<T> : ICollection<T>
     {
-        protected SortOrder sortOrder;
-        protected int count = 0;
+        #region Protected Fields
+
+        protected T[] arrspace;
         protected Comparison<T> comp;
         protected IComparer<T> comparer;
+        protected int count = 0;
+        protected RebalanceStrategy globalStrategy = RebalanceStrategy.Cadance4;
         protected List<T> items;
-        protected object syncRoot = new object();
-        protected T[] arrspace;
+        protected RebalanceStrategy localStrategy = RebalanceStrategy.Cadence16;
         protected int m;
+        protected float rebalanceThreshold = 1.2f;
+        protected SortOrder sortOrder;
+        protected object syncRoot = new object();
 
-        /// <summary>
-        /// Gets the sort order for the current instance.
-        /// </summary>
-        public SortOrder SortOrder => sortOrder;
+        #endregion Protected Fields
 
-        /// <summary>
-        /// Gets the total number of actual elements.
-        /// </summary>
-        public int Count => count;
+        #region Private Fields
 
-        public bool IsReadOnly { get; } = false;
+        int changedRebalances = 0;
 
-        public T First
-        {
-            get => count == 0 ? default : items[0];
-        }
+        int hardInserts = 0;
 
-        public T Last
-        {
-            get
-            {
-                if (count == 0) return default;
-                if (items[count - 1] is object)
-                {
-                    return items[count - 1];
-                }
-                else
-                {
-                    return items[count - 2];
-                }
-            }
-        }
+        int hardRemoves = 0;
+
+        bool metrics = true;
+
+        int localRebalances = 0;
+
+        int softInserts = 0;
+
+        int softRemoves = 0;
+
+        int unchangedRebalances = 0;
+
+        #endregion Private Fields
+
+        #region Public Constructors
 
         /// <summary>
         /// Creates a new instance of <see cref="RedBlackTree{T}"/>.
@@ -88,8 +228,12 @@ namespace KuCoin.NET.Data.Market
         /// <param name="sortOrder">The sort order.</param>
         /// <exception cref="ArgumentOutOfRangeException"></exception>
         /// <exception cref="ArgumentException"></exception>
-        public RedBlackTree(IComparer<T> comparer, SortOrder sortOrder) : base()
+        public RedBlackTree(IComparer<T> comparer, SortOrder sortOrder, float threshold = 1.2f, RebalanceStrategy globStrategy = RebalanceStrategy.Cadance4, RebalanceStrategy locStrategy = RebalanceStrategy.Cadence16) : base()
         {
+            rebalanceThreshold = threshold;
+            globalStrategy = globStrategy;
+            localStrategy = locStrategy;
+
             items = new List<T>();
 
             arrspace = new T[2];
@@ -152,7 +296,7 @@ namespace KuCoin.NET.Data.Market
         /// <param name="sortOrder">The sort order.</param>
         /// <exception cref="ArgumentOutOfRangeException"></exception>
         /// <exception cref="ArgumentException"></exception>
-        public RedBlackTree(SortOrder sortOrder) : this((IComparer<T>)null, sortOrder)
+        public RedBlackTree(SortOrder sortOrder, float threshold = 1.2f, RebalanceStrategy globStrategy = RebalanceStrategy.Cadance4, RebalanceStrategy locStrategy = RebalanceStrategy.Cadence16) : this((IComparer<T>)null, sortOrder, threshold, globStrategy, locStrategy)
         {
         }
 
@@ -162,17 +306,7 @@ namespace KuCoin.NET.Data.Market
         /// <param name="comparer">The comparer class.</param>
         /// <exception cref="ArgumentOutOfRangeException"></exception>
         /// <exception cref="ArgumentException"></exception>
-        public RedBlackTree(IComparer<T> comparer) : this(comparer, SortOrder.Ascending)
-        {
-        }
-
-        /// <summary>
-        /// Creates a new instance of <see cref="RedBlackTree{T}"/>.
-        /// </summary>
-        /// <param name="space">The number of total new elements to insert for each single new element inserted.</param>
-        /// <exception cref="ArgumentOutOfRangeException"></exception>
-        /// <exception cref="ArgumentException"></exception>
-        public RedBlackTree(byte space) : this((IComparer<T>)null, SortOrder.Ascending)
+        public RedBlackTree(IComparer<T> comparer, float threshold = 1.2f, RebalanceStrategy globStrategy = RebalanceStrategy.Cadance4, RebalanceStrategy locStrategy = RebalanceStrategy.Cadence16) : this(comparer, SortOrder.Ascending, threshold, globStrategy, locStrategy)
         {
         }
 
@@ -184,7 +318,7 @@ namespace KuCoin.NET.Data.Market
         /// <param name="sortOrder">The sort order.</param>
         /// <exception cref="ArgumentOutOfRangeException"></exception>
         /// <exception cref="ArgumentException"></exception>
-        public RedBlackTree(IEnumerable<T> initialItems, IComparer<T> comparer, SortOrder sortOrder) : this(comparer, sortOrder)
+        public RedBlackTree(IEnumerable<T> initialItems, IComparer<T> comparer, SortOrder sortOrder, float threshold = 1.2f, RebalanceStrategy globStrategy = RebalanceStrategy.Cadance4, RebalanceStrategy locStrategy = RebalanceStrategy.Cadence16) : this(comparer, sortOrder, threshold, globStrategy, locStrategy)
         {
             AddRange(initialItems);
         }
@@ -196,7 +330,7 @@ namespace KuCoin.NET.Data.Market
         /// <param name="comparer">The comparer class.</param>
         /// <exception cref="ArgumentOutOfRangeException"></exception>
         /// <exception cref="ArgumentException"></exception>
-        public RedBlackTree(IEnumerable<T> initialItems, IComparer<T> comparer) : this(comparer, SortOrder.Ascending)
+        public RedBlackTree(IEnumerable<T> initialItems, IComparer<T> comparer, float threshold = 1.2f, RebalanceStrategy globStrategy = RebalanceStrategy.Cadance4, RebalanceStrategy locStrategy = RebalanceStrategy.Cadence16) : this(comparer, SortOrder.Ascending, threshold, globStrategy, locStrategy)
         {
             AddRange(initialItems);
         }
@@ -208,11 +342,178 @@ namespace KuCoin.NET.Data.Market
         /// <param name="sortOrder">The sort order.</param>
         /// <exception cref="ArgumentOutOfRangeException"></exception>
         /// <exception cref="ArgumentException"></exception>
-        public RedBlackTree(IEnumerable<T> initialItems, SortOrder sortOrder) : this((IComparer<T>)null, sortOrder)
+        public RedBlackTree(IEnumerable<T> initialItems, SortOrder sortOrder, float threshold = 1.2f, RebalanceStrategy globStrategy = RebalanceStrategy.Cadance4, RebalanceStrategy locStrategy = RebalanceStrategy.Cadence16) : this((IComparer<T>)null, sortOrder, threshold, globStrategy, locStrategy)
         {
             AddRange(initialItems);
         }
 
+        #endregion Public Constructors
+
+        #region Public Properties
+
+        /// <summary>
+        /// Gets or sets a value that determines whether metrics are recorded.
+        /// </summary>
+        /// <remarks>
+        /// Setting this value will reset all metrics to 0.
+        /// </remarks>
+        public bool EnableMetrics
+        {
+            get => metrics;
+            set
+            {
+                if (metrics == value) return;
+
+                lock (syncRoot)
+                {
+                    metrics = value;
+                    ResetMetrics();
+                }
+            }
+        }
+
+
+        /// <summary>
+        /// (Metrics) Number of inserts performed by resizing the tree.
+        /// </summary>
+        public int HardInserts => hardInserts;
+
+        /// <summary>
+        /// (Metrics) Number of removes performed by resizing the tree.
+        /// </summary>
+        public int HardRemoves => hardRemoves;
+
+        /// <summary>
+        /// (Metrics) Number of local rebalances.
+        /// </summary>
+        public int LocalRebalances => localRebalances;
+
+        /// <summary>
+        /// (Metrics) Number of inserts performed without resizing the tree.
+        /// </summary>
+        public int SoftInserts => softInserts;
+
+        /// <summary>
+        /// (Metrics) Number of removes performed without resizing the tree.
+        /// </summary>
+        public int SoftRemoves => softRemoves;
+
+        /// <summary>
+        /// (Metrics) Number of global rebalances that resulted in changes to the tree.
+        /// </summary>
+        public int ChangedRebalances => changedRebalances;
+
+        /// <summary>
+        /// (Metrics) Number of global rebalances that were attempted but resulted in no changes to the tree.
+        /// </summary>
+        public int UnchangedRebalances => unchangedRebalances;
+
+
+        /// <summary>
+        /// Gets the total number of actual elements.
+        /// </summary>
+        public int Count => count;
+
+        /// <summary>
+        /// Gets the actual size of the tree.
+        /// </summary>
+        public int TreeSize => items.Count;
+
+        /// <summary>
+        /// Gets the sort order for the current instance.
+        /// </summary>
+        public SortOrder SortOrder => sortOrder;
+
+        public bool IsReadOnly { get; } = false;
+
+        /// <summary>
+        /// Gets the first element in the sorted collection.
+        /// </summary>
+        public T First
+        {
+            get => count == 0 ? default : items[0];
+        }
+
+        /// <summary>
+        /// Gets the last element in the sorted collection.
+        /// </summary>
+        public T Last
+        {
+            get
+            {
+                if (count == 0) return default;
+                if (items[count - 1] is object)
+                {
+                    return items[count - 1];
+                }
+                else
+                {
+                    return items[count - 2];
+                }
+            }
+        }
+
+        /// <summary>
+        /// The rebalance strategy to use when performing a global rebalance.
+        /// </summary>
+        public virtual RebalanceStrategy GlobalStrategy
+        {
+            get => globalStrategy;
+            set
+            {
+                lock (syncRoot)
+                {
+                    globalStrategy = value;
+                }
+            }
+        }
+
+        /// <summary>
+        /// The rebalance strategy to use when performing a local rebalance.
+        /// </summary>
+        public virtual RebalanceStrategy LocalStrategy
+        {
+            get => localStrategy;
+            set
+            {
+                lock (syncRoot)
+                {
+                    localStrategy = value;
+                }
+            }
+        }
+
+        /// <summary>
+        /// The size tolerance difference between the logical size and the tree size before a global rebalance is triggered.
+        /// </summary>
+        /// <remarks>
+        /// Must be a value between 1 ans 2.<br/><br/>
+        /// The default value is 1.2f.<br/><br/>
+        /// Setting this value below 1.2f is not recommended.
+        /// </remarks>
+        public virtual float RebalanceThreshold
+        {
+            get => rebalanceThreshold;
+            set
+            {
+                if (value < 1f || value > 2f) throw new ArgumentOutOfRangeException();
+
+                lock (syncRoot)
+                {
+                    rebalanceThreshold = value;
+                }
+            }
+        }
+
+       
+        #endregion Public Properties
+
+        #region Public Methods
+
+        public void Add(T item)
+        {
+            InsertItem(item);
+        }
 
         /// <summary>
         /// Adds multiple items to the <see cref="RedBlackTree{T}"/> at once.
@@ -225,30 +526,12 @@ namespace KuCoin.NET.Data.Market
                 Add(item);
             }
         }
-        public virtual bool Locate(T item)
-        {
-            return Walk(item, TreeWalkMode.Locate) != -1;
-        }
-        
-        protected virtual bool Locate(T item, out int index)
-        {
-            index = Walk(item, TreeWalkMode.Locate);
-            return index != -1; 
-        }
 
-        public bool TryAlterItem(T item, Func<T, T> alteration)
-        {
-            var idx = Walk(item, TreeWalkMode.Locate);
-
-            if (idx != -1)
-            {
-                AlterItem(item, alteration, idx);
-                return true;
-            }
-
-            return false;
-        }
-
+        /// <summary>
+        /// Alter an item.
+        /// </summary>
+        /// <param name="item">The item to alter.</param>
+        /// <param name="alteration">The alteration function that returns the changed item.</param>
         public void AlterItem(T item, Func<T, T> alteration)
         {
             lock (syncRoot)
@@ -279,34 +562,6 @@ namespace KuCoin.NET.Data.Market
             }
         }
 
-        protected virtual void AlterItem(T item, Func<T, T> alteration, int idx)
-        {
-            lock (syncRoot)
-            {
-                RemoveItem(idx);
-                var newitem = alteration(item);
-                InsertItem(newitem);
-            }
-        }
-
-        /// <summary>
-        /// Clear the collection.
-        /// </summary>
-        protected virtual void ClearItems()
-        {
-            lock (syncRoot)
-            {
-                items.Clear();
-                count = 0;
-            }
-        }
-
-
-        public void Add(T item)
-        {
-            InsertItem(item);
-        }
-
         public void Clear()
         {
             ClearItems();
@@ -316,7 +571,7 @@ namespace KuCoin.NET.Data.Market
         {
             lock (syncRoot)
             {
-                return items.Contains(item);
+                return Locate(item);
             }
         }
 
@@ -361,10 +616,76 @@ namespace KuCoin.NET.Data.Market
             }
         }
 
+        public IEnumerator<T> GetEnumerator()
+        {
+            foreach(var item in items)
+            {
+                if (item is object) yield return item;
+            }
+
+            yield break;
+        }
+
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            foreach (var item in items)
+            {
+                if (item is object) yield return item;
+            }
+
+            yield break;
+        }
+
         /// <summary>
-        /// Create a new <see cref="Array"/> of the items in this <see cref="RedBlackTree{T}"/>.
+        /// Validate that an item exists in the collection.
         /// </summary>
-        /// <returns>A new <see cref="Array"/> with all the actual items.</returns>
+        /// <param name="item">The item to locate.</param>
+        /// <returns>True if the item exists in the collection.</returns>
+        public virtual bool Locate(T item)
+        {
+            return Walk(item, TreeWalkMode.Locate) != -1;
+        }
+
+        public bool Remove(T item)
+        {
+            lock (syncRoot)
+            {
+                var idx = Walk(item, TreeWalkMode.Locate);
+                if (idx >= count || idx < 0) return false;
+
+                if (items[idx] is object && items[idx].Equals(item))
+                {
+                    RemoveItem(idx);
+                    return true;
+                }
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// Reset all metrics to 0.
+        /// </summary>
+        public void ResetMetrics()
+        {
+            lock (syncRoot)
+            {
+                hardInserts = 0;
+                softInserts = 0;
+
+                hardRemoves = 0;
+                softRemoves = 0;
+
+                localRebalances = 0;
+                changedRebalances = 0;
+                unchangedRebalances = 0;
+
+            }
+        }
+
+        /// <summary>
+        /// Return a new <see cref="Array"/> of the items in this <see cref="RedBlackTree{T}"/>.
+        /// </summary>
+        /// <returns>A new <see cref="Array"/>.</returns>
         public T[] ToArray()
         {
             lock (syncRoot)
@@ -373,7 +694,7 @@ namespace KuCoin.NET.Data.Market
 
                 foreach (var item in items)
                 {
-                    if (item != null)
+                    if (item is object)
                     {
                         l.Add(item);
                     }
@@ -383,6 +704,10 @@ namespace KuCoin.NET.Data.Market
             }
         }
 
+        /// <summary>
+        /// Return a new <see cref="Array"/> of at most <paramref name="elementCount"/> items in this <see cref="RedBlackTree{T}"/>.
+        /// </summary>
+        /// <returns>A new <see cref="Array"/> with at most <paramref name="elementCount"/> items.</returns>
         public T[] ToArray(int elementCount)
         {
             lock (syncRoot)
@@ -405,84 +730,93 @@ namespace KuCoin.NET.Data.Market
             }
         }
 
+        /// <summary>
+        /// Try to alter an item.
+        /// </summary>
+        /// <param name="item">The item to alter.</param>
+        /// <param name="alteration">The alteration function that returns the changed item.</param>
+        /// <returns>True if successful.</returns>
+        public bool TryAlterItem(T item, Func<T, T> alteration)
+        {
+            var idx = Walk(item, TreeWalkMode.Locate);
 
-        public bool Remove(T item)
+            if (idx != -1)
+            {
+                AlterItem(item, alteration, idx);
+                return true;
+            }
+
+            return false;
+        }
+
+        /// <summary>
+        /// Attempt to Rebalance The Tree
+        /// </summary>
+        /// <param name="threshold">The ratio of the tree size over the logical count at which a rebalance should be performed. Default is 1.2 : 1</param>
+        /// <returns>A <see cref="RebalanceResult"/> of <see cref="RebalanceResult.NotPerformed"/>, <see cref="RebalanceResult.Unchanged"/>, or <see cref="RebalanceResult.Changed"/>.</returns>
+        public RebalanceResult TryRebalance()
         {
             lock (syncRoot)
             {
-                var idx = Walk(item, TreeWalkMode.Locate);
-                if (idx >= count || idx < 0) return false;
-
-                if (items[idx] is object && items[idx].Equals(item))
+                if (count > 1024 && ((float)items.Count / count) >= rebalanceThreshold)
                 {
-                    RemoveItem(idx);
-                    return true;
+                    bool b = false;
+
+                    for (int i = items.Count - 2; i >= 2; i -= 2)
+                    {
+                        b = b | LocalRebalance(i, globalStrategy, true);
+                    }
+
+                    if (b)
+                    {
+                        if (metrics) changedRebalances++;
+                        return RebalanceResult.Changed;
+                    }
+                    else
+                    {
+                        if (metrics) unchangedRebalances++;
+                        return RebalanceResult.Unchanged;
+                    }
                 }
-                return false;
+
+                return RebalanceResult.NotPerformed;
             }
         }
 
-        #region Tree
+        #endregion Public Methods
 
+        #region Protected Methods
 
-        int hardInserts = 0;
-        int softInserts = 0;
-
-        int hardRemoves = 0;
-        int softRemoves = 0;
-
-        int sixteened = 0;
-
-        int changedRebalances = 0;
-
-        int unchangedRebalances = 0;
-
-        bool metrics = true;
-
-        public int ChangedRebalances => changedRebalances;
-        public int UnchangedRebalances => unchangedRebalances;
-
-        public int SixteenOpt => sixteened;
-
-        public int HardRemoves => hardRemoves;
-
-        public int SoftRemoves => softRemoves;
-
-        public int HardInserts => hardInserts;
-
-        public int SoftInserts => softInserts;
-
-        public int TreeSize => items.Count;
-
-        public bool EnableMetrics
-        {
-            get => metrics;
-            set
-            {
-                if (metrics == value) return;
-
-                lock (syncRoot)
-                {
-                    metrics = value;
-                    ResetMetrics();
-                }
-            }
-        }
-
-        public void ResetMetrics()
+        /// <summary>
+        /// Alter an item.
+        /// </summary>
+        /// <param name="item">The item to alter.</param>
+        /// <param name="alteration">The alteration function that returns the changed item.</param>
+        /// <param name="idx">The index of the item.</param>
+        /// <remarks>
+        /// This function should only be used in conjunction with a call to either <see cref="Locate(T, out int)"/> or <see cref="Walk(T, TreeWalkMode)"/>.
+        /// </remarks>
+        protected virtual void AlterItem(T item, Func<T, T> alteration, int idx)
         {
             lock (syncRoot)
             {
-                hardInserts = 0;
-                softInserts = 0;
 
-                hardRemoves = 0;
-                softRemoves = 0;
+                // TODO See about soft moving the item.
+                RemoveItem(idx);
+                var newitem = alteration(item);
+                InsertItem(newitem);
+            }
+        }
 
-                sixteened = 0;
-                changedRebalances = 0;
-                unchangedRebalances = 0;
-
+        /// <summary>
+        /// Clear the collection.
+        /// </summary>
+        protected virtual void ClearItems()
+        {
+            lock (syncRoot)
+            {
+                items.Clear();
+                count = 0;
             }
         }
 
@@ -541,6 +875,134 @@ namespace KuCoin.NET.Data.Market
         }
 
         /// <summary>
+        /// Rebalance the tree locally. This usually happens after item removal, but can be performed at any time.
+        /// </summary>
+        /// <param name="index">The index in the tree that defines the locality.</param>
+        /// <param name="strategy">The rebalance strategy to use.</param>
+        /// <param name="globalRebalanceOperation">True to indicate this function is being called by <see cref="TryRebalance"/>.</param>
+        /// <returns></returns>
+        protected bool LocalRebalance(int index, RebalanceStrategy strategy, bool globalRebalanceOperation)
+        {
+            lock (syncRoot)
+            {
+                if (strategy == RebalanceStrategy.Cadence16)
+                {
+                    if ((index & 1) == 1) index--;
+
+                    if (index + 8 > items.Count) return false;
+                    if (index - 8 < 0) return false;
+
+                    index -= 8;
+
+                    if (
+                        items[index] is object && !(items[index + 1] is object)
+                        && items[index + 2] is object && !(items[index + 3] is object)
+                        && items[index + 4] is object && !(items[index + 5] is object)
+                        && items[index + 6] is object && !(items[index + 7] is object)
+                        && items[index + 8] is object && !(items[index + 9] is object)
+                        && items[index + 10] is object && !(items[index + 11] is object)
+                        && items[index + 12] is object && !(items[index + 13] is object)
+                        && items[index + 14] is object && !(items[index + 15] is object)
+                        )
+                    {
+                        items[index + 1] = items[index + 2];
+                        items[index + 2] = items[index + 4];
+                        items[index + 3] = items[index + 6];
+                        items[index + 4] = items[index + 8];
+                        items[index + 5] = items[index + 10];
+                        items[index + 6] = items[index + 12];
+                        items[index + 7] = items[index + 14];
+
+                        items.RemoveRange(index + 8, 8);
+
+                        if (metrics && !globalRebalanceOperation)
+                        {
+                            softRemoves--;
+                            localRebalances++;
+                            hardRemoves++;
+                        }
+
+                        return true;
+                    }
+                }
+                else if (strategy == RebalanceStrategy.Cadence8)
+                {
+                    if ((index & 1) == 1) index--;
+
+                    if (index + 4 > items.Count) return false;
+                    if (index - 4 < 0) return false;
+
+                    index -= 4;
+
+                    if (
+                        items[index] is object && !(items[index + 1] is object)
+                        && items[index + 2] is object && !(items[index + 3] is object)
+                        && items[index + 4] is object && !(items[index + 5] is object)
+                        && items[index + 6] is object && !(items[index + 7] is object)
+                        )
+                    {
+                        items[index + 1] = items[index + 2];
+                        items[index + 2] = items[index + 4];
+                        items[index + 3] = items[index + 6];
+
+                        items.RemoveRange(index + 4, 4);
+
+                        if (metrics && !globalRebalanceOperation)
+                        {
+                            softRemoves--;
+                            localRebalances++;
+                            hardRemoves++;
+                        }
+
+                        return true;
+                    }
+
+                }
+                else if (strategy == RebalanceStrategy.Cadance4)
+                {
+                    if ((index & 1) == 1) index--;
+
+                    if (index + 2 > items.Count) return false;
+                    if (index - 2 < 0) return false;
+
+                    index -= 2;
+
+                    if (
+                        items[index] is object && !(items[index + 1] is object)
+                        && items[index + 2] is object && !(items[index + 3] is object)
+                        )
+                    {
+                        items[index + 1] = items[index + 2];
+                        items.RemoveRange(index + 2, 2);
+
+                        if (metrics && !globalRebalanceOperation)
+                        {
+                            softRemoves--;
+                            localRebalances++;
+                            hardRemoves++;
+                        }
+
+                        return true;
+                    }
+                }
+
+                return false;
+
+            }
+        }
+
+        /// <summary>
+        /// Returns true if the item exists in the collection, and provides the current index for that item.
+        /// </summary>
+        /// <param name="item">The item to locate.</param>
+        /// <param name="index">The current index in the tree.</param>
+        /// <returns>True if the item exists.</returns>
+        protected virtual bool Locate(T item, out int index)
+        {
+            index = Walk(item, TreeWalkMode.Locate);
+            return index != -1; 
+        }
+        /// <summary>
         /// Remove an item from the collection.
         /// </summary>
         /// <param name="index"></param>
@@ -578,158 +1040,20 @@ namespace KuCoin.NET.Data.Market
                 {
                     if (metrics) softRemoves++;
 
-                    if (Rebalance() == RebalanceResult.NotPerformed)
+                    if (TryRebalance() == RebalanceResult.NotPerformed)
                     {
-                        CheckThem(index);
+                        LocalRebalance(index, localStrategy, false);
                     }
                 }
             }
         }
 
         /// <summary>
-        /// Attempt to Rebalance The Tree
+        /// Walk the tree and look for the appropriate index for the specified item.
         /// </summary>
-        /// <param name="threshold">The ratio of the tree size over the logical count at which a rebalance should be performed. Default is 1.2 : 1</param>
-        /// <returns>A <see cref="RebalanceResult"/> of <see cref="RebalanceResult.NotPerformed"/>, <see cref="RebalanceResult.Unchanged"/>, or <see cref="RebalanceResult.Changed"/>.</returns>
-        public RebalanceResult Rebalance(float threshold = 1.2f)
-        {
-            lock (syncRoot)
-            {
-                if (count > 1024 && ((float)items.Count / count) >= threshold)
-                {
-                    bool b = false;
-
-                    for (int i = items.Count - 2; i >= 2; i -= 2)
-                    {
-                        b = b | CheckThem(i, 4, true);
-                    }
-
-                    if (b)
-                    {
-                        if (metrics) changedRebalances++;
-                        return RebalanceResult.Changed;
-                    }
-                    else
-                    {
-                        if (metrics) unchangedRebalances++;
-                        return RebalanceResult.Unchanged;
-                    }
-                }
-
-                return RebalanceResult.NotPerformed;
-            }
-        }
-
-        protected bool CheckThem(int index, int cadence = 16, bool rebalancing = false)
-        {
-            lock(syncRoot)
-            {
-                if (cadence == 16)
-                {
-                    if ((index & 1) == 1) index--;
-
-                    if (index + 8 > items.Count) return false;
-                    if (index - 8 < 0) return false;
-
-                    index -= 8;
-
-                    if (
-                        items[index] is object && !(items[index + 1] is object)
-                        && items[index + 2] is object && !(items[index + 3] is object)
-                        && items[index + 4] is object && !(items[index + 5] is object)
-                        && items[index + 6] is object && !(items[index + 7] is object)
-                        && items[index + 8] is object && !(items[index + 9] is object)
-                        && items[index + 10] is object && !(items[index + 11] is object)
-                        && items[index + 12] is object && !(items[index + 13] is object)
-                        && items[index + 14] is object && !(items[index + 15] is object)
-                        )
-                    {
-                        items[index + 1] = items[index + 2];
-                        items[index + 2] = items[index + 4];
-                        items[index + 3] = items[index + 6];
-                        items[index + 4] = items[index + 8];
-                        items[index + 5] = items[index + 10];
-                        items[index + 6] = items[index + 12];
-                        items[index + 7] = items[index + 14];
-
-                        items.RemoveRange(index + 8, 8);
-
-                        if (metrics && !rebalancing)
-                        {
-                            softRemoves--;
-                            sixteened++;
-                            hardRemoves++;
-                        }
-
-                        return true;
-                    }
-                }
-                else if (cadence == 8)
-                {
-                    if ((index & 1) == 1) index--;
-
-                    if (index + 4 > items.Count) return false;
-                    if (index - 4 < 0) return false;
-
-                    index -= 4;
-
-                    if (
-                        items[index] is object && !(items[index + 1] is object)
-                        && items[index + 2] is object && !(items[index + 3] is object)
-                        && items[index + 4] is object && !(items[index + 5] is object)
-                        && items[index + 6] is object && !(items[index + 7] is object)
-                        )
-                    {
-                        items[index + 1] = items[index + 2];
-                        items[index + 2] = items[index + 4];
-                        items[index + 3] = items[index + 6];
-
-                        items.RemoveRange(index + 4, 4);
-
-                        if (metrics && !rebalancing)
-                        {
-                            softRemoves--;
-                            sixteened++;
-                            hardRemoves++;
-                        }
-
-                        return true;
-                    }
-
-                }
-                else if (cadence == 4)
-                {
-                    if ((index & 1) == 1) index--;
-
-                    if (index + 2 > items.Count) return false;
-                    if (index - 2 < 0) return false;
-
-                    index -= 2;
-
-                    if (
-                        items[index] is object && !(items[index + 1] is object)
-                        && items[index + 2] is object && !(items[index + 3] is object)
-                        )
-                    {
-                        items[index + 1] = items[index + 2];
-                        items.RemoveRange(index + 2, 2);
-
-                        if (metrics && !rebalancing)
-                        {
-                            softRemoves--;
-                            sixteened++;
-                            hardRemoves++;
-                        }
-
-                        return true;
-                    }
-                }
-
-                return false;
-
-            }
-        }
-
+        /// <param name="item1">The item to look for.</param>
+        /// <param name="walkMode">The type of walk (either for insert or locate)</param>
+        /// <returns>The index where the item is or should be.</returns>
         protected virtual int Walk(T item1, TreeWalkMode walkMode = TreeWalkMode.InsertIndex)
         {
             int count = items.Count;
@@ -811,85 +1135,21 @@ namespace KuCoin.NET.Data.Market
 
         }
 
-        #endregion
+        #endregion Protected Methods
 
-        public IEnumerator<T> GetEnumerator()
-        {
-            return new RedBlackTreeEnumerator(this);
-        }
-
-        IEnumerator IEnumerable.GetEnumerator()
-        {
-            return new RedBlackTreeEnumerator(this);
-        }
-
-        /// <summary>
-        /// <see cref="RedBlackTree{T}"/> enumerator.
-        /// </summary>
-        public class RedBlackTreeEnumerator : IEnumerator<T>
-        {
-            RedBlackTree<T> collection;
-            T current = default;
-
-            int idx = -1;
-            int count = 0;
-            private object syncRoot;
-
-            public RedBlackTreeEnumerator(RedBlackTree<T> collection)
-            {
-                this.collection = collection;
-                count = collection.items.Count;
-                syncRoot = collection.syncRoot;
-            }
-
-            public T Current => current;
-            object IEnumerator.Current => current;
-
-            public void Dispose()
-            {
-                Reset();
-
-                collection = null;
-                syncRoot = null;
-            }
-
-            public bool MoveNext()
-            {
-                lock (syncRoot)
-                {
-                    idx++;
-                    while (idx < count)
-                    {
-                        current = collection.items[idx];
-                        if (current is object)
-                        {
-                            break;
-                        }
-                        idx++;
-                    }
-
-                    return idx < count;
-                }
-            }
-
-            public void Reset()
-            {
-                lock (syncRoot)
-                {
-                    idx = -1;
-                    current = default;
-                }
-            }
-        }
-    }
-    public enum TreeWalkMode
-    {
-        InsertIndex,
-        Locate
     }
 
+    /// <summary>
+    /// An exception that is thrown when a black node in a red/black tree is null or empty.
+    /// </summary>
+    /// <remarks>
+    /// This is only used for debugging. In production, if the tree cannot be walked in every case, it should not be in production.<br /><br />
+    /// This exception indicates an untenable bug.
+    /// </remarks>
     public class TreeUnbalancedException : Exception
     {
+        #region Public Constructors
+
         public TreeUnbalancedException() : base()
         {
 
@@ -898,94 +1158,7 @@ namespace KuCoin.NET.Data.Market
         {
         }
 
-    }
-
-    public abstract class KeyedRedBlackTree<TKey, TValue> : RedBlackTree<TValue> //, IReadOnlyDictionary<TKey, TValue>
-    {
-        protected SortedDictionary<TKey, TValue> keyDict = new SortedDictionary<TKey, TValue>();
-
-        public TValue this[TKey key] => keyDict[key];
-
-        public IEnumerable<TKey> Keys => keyDict.Keys;
-
-        public IEnumerable<TValue> Values => keyDict.Values;
-
-        protected abstract TKey ProvideKey(TValue value);
-
-        public KeyedRedBlackTree(SortOrder sortOrder) : base(sortOrder)
-        {
-        }
-
-        public KeyedRedBlackTree(IComparer<TValue> comparer, SortOrder sortOrder) : base(comparer, sortOrder)
-        {
-        }
-
-        protected override void RemoveItem(int index)
-        {
-            lock (syncRoot)
-            {
-                var item = items[index];
-                keyDict.Remove(ProvideKey(item));
-                base.RemoveItem(index);
-            }
-        }
-
-        protected override void InsertItem(TValue item)
-        {
-            lock (syncRoot)
-            {
-                keyDict.Add(ProvideKey(item), item);
-                base.InsertItem(item);
-            }
-        }
-
-        public bool ContainsKey(TKey key)
-        {
-            lock (syncRoot)
-            {
-                return keyDict.ContainsKey(key);
-            }
-        }
-
-        public bool TryGetValue(TKey key, out TValue value)
-        {
-            lock (syncRoot)
-            {
-                return keyDict.TryGetValue(key, out value);
-            }
-        }
-    }
-    public class KeyedBook<TUnit> : KeyedRedBlackTree<string, TUnit> where TUnit : IAtomicOrderUnit, new()
-    {
-        protected override string ProvideKey(TUnit value)
-        {
-            return value.OrderId;
-        }
-
-        public void Remove(string key)
-        {
-            lock (syncRoot)
-            {
-                if (keyDict.ContainsKey(key))
-                {
-                    var item = keyDict[key];
-                    Remove(item);
-                }
-            }
-        }
-
-        public KeyedBook(SortOrder sortOrder) : base(new AtomicComparer<TUnit>(sortOrder == SortOrder.Descending), sortOrder)
-        {
-        }
-
-        public KeyedBook() : base(new AtomicComparer<TUnit>(false), SortOrder.Ascending)
-        {
-        }
-
-        public KeyedBook(bool descending) : base(new AtomicComparer<TUnit>(false), descending ? SortOrder.Descending : SortOrder.Ascending)
-        {
-        }
+        #endregion Public Constructors
 
     }
-
 }
