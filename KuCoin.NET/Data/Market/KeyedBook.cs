@@ -18,96 +18,26 @@ namespace KuCoin.NET.Data.Market
     #region Atomic Order Unit Comparer 
     public class AtomicComparer<TUnit> : IComparer<TUnit> where TUnit : IAtomicOrderUnit
     {
-        bool descending = false;
+        bool descending;
+        int m = 1;
+
+        public bool Descending => descending;
 
         public AtomicComparer(bool descending)
         {
             this.descending = descending;
+            if (descending) m = -1;
         }
 
         public int Compare(TUnit x, TUnit y)
         {
-            if (!descending)
-            {
-                // ascending
-                if (x.Price > y.Price)
-                {
-                    return 1;
-                }
-                else if (x.Price < y.Price)
-                {
-                    return -1;
-                }
-                else
-                {
-                    //return mid;
+            int r;
 
-                    if (x.Size < y.Size)
-                    {
-                        return 1;
-                    }
-                    else if (x.Size > y.Size)
-                    {
-                        return -1;
-                    }
-                    else
-                    {
-                        if (x.Timestamp < y.Timestamp)
-                        {
-                            return 1;
-                        }
-                        else if (x.Timestamp > y.Timestamp)
-                        {
-                            return -1;
-                        }
-                        else
-                        {
-                            return 0;
-                        }
-                    }
-                }
-            }
-            else
-            {
+            r = decimal.Compare(x.Price, y.Price) * m;
+            if (r == 0) r = decimal.Compare(x.Size, y.Size);
+            if (r == 0) r = DateTime.Compare(x.Timestamp, y.Timestamp);
 
-                if (x.Price < y.Price)
-                {
-                    return 1;
-                }
-                else if (x.Price > y.Price)
-                {
-                    return -1;
-                }
-                else
-                {
-                    //return mid;
-
-                    if (x.Size < y.Size)
-                    {
-                        return 1;
-                    }
-                    else if (x.Size > y.Size)
-                    {
-                        return -1;
-                    }
-                    else
-                    {
-                        if (x.Timestamp < y.Timestamp)
-                        {
-                            return 1;
-                        }
-                        else if (x.Timestamp > y.Timestamp)
-                        {
-                            return -1;
-                        }
-                        else
-                        {
-                            return 0;
-                        }
-                    }
-                }
-            }
-
+            return r;
         }
     }
     #endregion Atomic Order Unit Comparer 
@@ -125,7 +55,7 @@ namespace KuCoin.NET.Data.Market
         /// Instantiate a new keyed atomic (Level 3) orders book.
         /// </summary>
         /// <param name="sortOrder">The sort order</param>
-        public KeyedBook(SortOrder sortOrder) : base(new AtomicComparer<TUnit>(sortOrder == SortOrder.Descending), sortOrder)
+        public KeyedBook(SortOrder sortOrder) : base(new AtomicComparer<TUnit>(sortOrder == SortOrder.Descending), SortOrder.Ascending)
         {
         }
 
@@ -133,7 +63,7 @@ namespace KuCoin.NET.Data.Market
         {
         }
 
-        public KeyedBook(bool descending) : base(new AtomicComparer<TUnit>(false), descending ? SortOrder.Descending : SortOrder.Ascending)
+        public KeyedBook(bool descending) : base(new AtomicComparer<TUnit>(descending), SortOrder.Ascending)
         {
         }
 

@@ -216,6 +216,8 @@ namespace KuCoin.NET.Data.Market
 
         int unchangedRebalances = 0;
 
+        float averageInsertIndex = 0f;
+
         #endregion Private Fields
 
         #region Public Constructors
@@ -266,18 +268,19 @@ namespace KuCoin.NET.Data.Market
             else
             {
                 this.comparer = comparer;
+                comp = comparer.Compare;
 
-                comp = new Comparison<T>((x, y) =>
-                {
-                    if (x is object && y is object)
-                    {
-                        return this.comparer.Compare(x, y);
-                    }
-                    else
-                    {
-                        throw new ArgumentNullException();
-                    }
-                });
+                //comp = new Comparison<T>((x, y) =>
+                //{
+                //    if (x is object && y is object)
+                //    {
+                //        return this.comparer.Compare(x, y);
+                //    }
+                //    else
+                //    {
+                //        throw new ArgumentNullException();
+                //    }
+                //});
 
             }
 
@@ -372,6 +375,10 @@ namespace KuCoin.NET.Data.Market
             }
         }
 
+        /// <summary>
+        /// (Metrics) The average insert index.
+        /// </summary>
+        public float AverageInsertIndex => averageInsertIndex;
 
         /// <summary>
         /// (Metrics) Number of inserts performed by resizing the tree.
@@ -676,9 +683,11 @@ namespace KuCoin.NET.Data.Market
                 softRemoves = 0;
 
                 localRebalances = 0;
+        
                 changedRebalances = 0;
                 unchangedRebalances = 0;
 
+                averageInsertIndex = 0f;
             }
         }
 
@@ -870,9 +879,15 @@ namespace KuCoin.NET.Data.Market
                     if (metrics) hardInserts++;
                 }
 
+                if (metrics)
+                {
+                    var ins = softInserts + hardInserts;
+                    averageInsertIndex = ((averageInsertIndex * (ins - 1)) + index) / ins;
+                }
+
                 count++;
             }
-        }
+        }        
 
         /// <summary>
         /// Rebalance the tree locally. This usually happens after item removal, but can be performed at any time.

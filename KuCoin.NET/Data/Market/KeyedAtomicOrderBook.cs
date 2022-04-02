@@ -37,7 +37,7 @@ namespace KuCoin.NET.Data.Market
         /// The keyed list of asks (sell)
         /// </summary>
         [JsonProperty("asks")]
-        public KeyedBook<T> Asks { get; set; } = new KeyedBook<T>();
+        public KeyedBook<T> Asks { get; set; } = new KeyedBook<T>(false);
 
         /// <summary>
         /// The keyed list of bids (buy)

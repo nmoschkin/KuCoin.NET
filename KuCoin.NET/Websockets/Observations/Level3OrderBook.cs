@@ -91,13 +91,17 @@ namespace KuCoin.NET.Websockets.Observations
         protected override void OnInitialized()
         {
             base.OnInitialized();
-            if (fullDepth != null)
-            {
-                fullDepth.Asks.TryRebalance();
-                fullDepth.Bids.TryRebalance();
 
-                fullDepth.Asks.ResetMetrics();
-                fullDepth.Bids.ResetMetrics();
+            lock (lockObj)
+            {
+                if (fullDepth != null)
+                {
+                    fullDepth.Asks.TryRebalance();
+                    fullDepth.Bids.TryRebalance();
+
+                    fullDepth.Asks.ResetMetrics();
+                    fullDepth.Bids.ResetMetrics();
+                }
             }
         }
 
@@ -202,15 +206,8 @@ namespace KuCoin.NET.Websockets.Observations
                 {
                     if (obj.sc == 'd')
                     {
-                        if (fullDepth.Asks.ContainsKey(obj.OrderId))
-                        {
-                            fullDepth.Asks.Remove(obj.OrderId);
-                        }
-
-                        if (fullDepth.Bids.ContainsKey(obj.OrderId))
-                        {
-                            fullDepth.Bids.Remove(obj.OrderId);
-                        }
+                        fullDepth.Asks.Remove(obj.OrderId);
+                        fullDepth.Bids.Remove(obj.OrderId);
                     }
                 }
                 else if (obj.Side == Side.Sell)

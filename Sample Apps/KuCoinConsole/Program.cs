@@ -1163,9 +1163,10 @@ namespace KuCoinConsole
                     long SoftRemoves = 0;
                     long BufferSize = 0;
                     long TreeSize = 0;
-                    long SixteenOpt = 0;
+                    long LocalRebalances = 0;
                     long ChangedRebalances = 0;
                     long UnchangedRebalances = 0;
+                    float AverageInsertIndex = 0f;
 
                     List<ISymbolDataService> sortobs = null;
                     var sortInfo = new List<FeedsInfo>();
@@ -1194,7 +1195,7 @@ namespace KuCoinConsole
                                     {
                                         nf.MarketVolume = item.Level3OrderBook.MarketVolume;
                                         nf.Throughput = item.Level3OrderBook.Throughput;
-                                        nf.Price = ((IEnumerable<AtomicOrderUnit>)item.Level3OrderBook.FullDepthOrderBook.Bids).FirstOrDefault()?.Price ?? 0M;
+                                        nf.Price = item.Level3OrderBook.FullDepthOrderBook.Bids.First.Price;
 
                                         nf.ChangedRebalances = item.Level3OrderBook.FullDepthOrderBook.Bids.ChangedRebalances;
                                         nf.ChangedRebalances += item.Level3OrderBook.FullDepthOrderBook.Asks.ChangedRebalances;
@@ -1203,8 +1204,8 @@ namespace KuCoinConsole
                                         nf.UnchangedRebalances += item.Level3OrderBook.FullDepthOrderBook.Asks.UnchangedRebalances;
 
 
-                                        nf.SixteenOpt = item.Level3OrderBook.FullDepthOrderBook.Bids.LocalRebalances;
-                                        nf.SixteenOpt += item.Level3OrderBook.FullDepthOrderBook.Asks.LocalRebalances;
+                                        nf.LocalRebalances = item.Level3OrderBook.FullDepthOrderBook.Bids.LocalRebalances;
+                                        nf.LocalRebalances += item.Level3OrderBook.FullDepthOrderBook.Asks.LocalRebalances;
 
                                         nf.HardInserts = item.Level3OrderBook.FullDepthOrderBook.Bids.HardInserts;
                                         nf.HardInserts += item.Level3OrderBook.FullDepthOrderBook.Asks.HardInserts;
@@ -1224,6 +1225,11 @@ namespace KuCoinConsole
                                         nf.TreeSize = item.Level3OrderBook.FullDepthOrderBook.Bids.TreeSize;
                                         nf.TreeSize += item.Level3OrderBook.FullDepthOrderBook.Asks.TreeSize;
 
+                                        nf.AverageInsertIndex = item.Level3OrderBook.FullDepthOrderBook.Bids.AverageInsertIndex;
+                                        nf.AverageInsertIndex += item.Level3OrderBook.FullDepthOrderBook.Asks.AverageInsertIndex;
+
+                                        nf.AverageInsertIndex /= 2f;
+
                                         HardInserts += nf.HardInserts;
                                         HardRemoves += nf.HardRemoves;
                                         SoftInserts += nf.SoftInserts;
@@ -1232,9 +1238,11 @@ namespace KuCoinConsole
                                         BufferSize += nf.BufferSize;
                                         TreeSize += nf.TreeSize;
 
-                                        SixteenOpt += nf.SixteenOpt;
+                                        LocalRebalances += nf.LocalRebalances;
                                         ChangedRebalances += nf.ChangedRebalances;
                                         UnchangedRebalances += nf.UnchangedRebalances;
+
+                                        AverageInsertIndex += nf.AverageInsertIndex;
 
                                     }
 
@@ -1242,6 +1250,9 @@ namespace KuCoinConsole
                                 }
 
                             }
+
+
+                            AverageInsertIndex /= sortInfo.Count;
                         }
 
                         sortInfo.Sort((a, b) =>
@@ -1375,8 +1386,8 @@ namespace KuCoinConsole
 
                         if (l3.FullDepthOrderBook is object)
                         {
-                            ba = ((IEnumerable<AtomicOrderUnit>)l3.FullDepthOrderBook.Asks).FirstOrDefault()?.Price ?? 0;
-                            bb = ((IEnumerable<AtomicOrderUnit>)l3.FullDepthOrderBook.Bids).FirstOrDefault()?.Price ?? 0;
+                            ba = l3.FullDepthOrderBook.Asks.First.Price;
+                            bb = l3.FullDepthOrderBook.Bids.First.Price;
                             ts = l3.FullDepthOrderBook.Timestamp;
 
                             op = l3.Candle.OpenPrice;
@@ -1481,13 +1492,15 @@ namespace KuCoinConsole
                     ft.WriteToEdgeLine($"Hard Inserts:    {{Cyan}}{HardInserts:#,##0}{{Reset}}        ");
                     ft.WriteToEdgeLine($"Soft Inserts:    {{Cyan}}{SoftInserts:#,##0}{{Reset}}        ");
                     ft.WriteToEdgeLine($"                                                       ");
+                    ft.WriteToEdgeLine($"Average Index:   {{Cyan}}{AverageInsertIndex:#,##0}{{Reset}}        ");
+                    ft.WriteToEdgeLine($"                                                       ");
                     ft.WriteToEdgeLine($"Hard Removes:    {{Cyan}}{HardRemoves:#,##0}{{Reset}}        ");
                     ft.WriteToEdgeLine($"Soft Removes:    {{Cyan}}{SoftRemoves:#,##0}{{Reset}}        ");
                     ft.WriteToEdgeLine($"                                                       ");
                     ft.WriteToEdgeLine($"Logical Size:    {{Cyan}}{BufferSize:#,##0}{{Reset}}        ");
                     ft.WriteToEdgeLine($"Tree Size:       {{Cyan}}{TreeSize:#,##0}{{Reset}}    ({100 * ((double)TreeSize / BufferSize):#,#0.0#}%)    ");
                     ft.WriteToEdgeLine($"                                                       ");
-                    ft.WriteToEdgeLine($"Local Rebalances:            {{Cyan}}{SixteenOpt:#,##0}{{Reset}}        ");
+                    ft.WriteToEdgeLine($"Local Rebalances:            {{Cyan}}{LocalRebalances:#,##0}{{Reset}}        ");
                     ft.WriteToEdgeLine($"                                                       ");
                     ft.WriteToEdgeLine($"Global Rebalances:           {{Cyan}}{ChangedRebalances:#,##0}{{Reset}}        ");
                     ft.WriteToEdgeLine($"Declined Global Rebalances:  {{Cyan}}{UnchangedRebalances:#,##0}{{Reset}}        ");
@@ -1701,10 +1714,12 @@ namespace KuCoinConsole
 
         public long TreeSize;
 
-        public long SixteenOpt;
+        public long LocalRebalances;
 
         public long ChangedRebalances;
 
         public long UnchangedRebalances;
+
+        public float AverageInsertIndex;
     }
 }
