@@ -238,7 +238,9 @@ namespace KuCoin.NET.Data.Market
 
         public bool TryAlterItem(T item, Func<T, T> alteration)
         {
-            if (Locate(item, out int idx))
+            var idx = Walk(item, TreeWalkMode.Locate);
+
+            if (idx != -1)
             {
                 AlterItem(item, alteration, idx);
                 return true;
