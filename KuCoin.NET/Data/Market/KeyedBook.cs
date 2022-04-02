@@ -127,17 +127,14 @@ namespace KuCoin.NET.Data.Market
         /// <param name="sortOrder">The sort order</param>
         public KeyedBook(SortOrder sortOrder) : base(new AtomicComparer<TUnit>(sortOrder == SortOrder.Descending), sortOrder)
         {
-            //rebalanceThreshold = 1.5f;
         }
 
         public KeyedBook() : base(new AtomicComparer<TUnit>(false), SortOrder.Ascending)
         {
-            //rebalanceThreshold = 1.5f;
         }
 
         public KeyedBook(bool descending) : base(new AtomicComparer<TUnit>(false), descending ? SortOrder.Descending : SortOrder.Ascending)
         {
-            //rebalanceThreshold = 1.5f;
         }
 
         #endregion Public Constructors
