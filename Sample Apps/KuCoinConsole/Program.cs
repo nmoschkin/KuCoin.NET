@@ -149,10 +149,6 @@ namespace KuCoinConsole
             rbb.Add("Gerbafanta");
 
 
-            rbb.Locate("Gerbafanta");
-            rbb.Locate("Isqu");
-
-
             RunProgram();
         }
 
