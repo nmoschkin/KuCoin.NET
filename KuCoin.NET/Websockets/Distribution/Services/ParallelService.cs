@@ -128,6 +128,7 @@ namespace KuCoin.NET.Websockets.Distribution.Services
 
                             f = 0;
                             arrActions = actions.ToArray();
+                            continue;
                         }
                     }
 
