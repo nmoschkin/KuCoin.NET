@@ -50,20 +50,12 @@ namespace KuCoin.NET.Data.Market
     public class KeyedBook<TUnit> : KeyedRedBlackTree<string, TUnit> where TUnit : IAtomicOrderUnit, new()
     {
         #region Public Constructors
-
-        /// <summary>
-        /// Instantiate a new keyed atomic (Level 3) orders book.
-        /// </summary>
-        /// <param name="sortOrder">The sort order</param>
-        public KeyedBook(SortOrder sortOrder) : base(new AtomicComparer<TUnit>(sortOrder == SortOrder.Descending), SortOrder.Ascending)
+      
+        public KeyedBook() : base(new AtomicComparer<TUnit>(false))
         {
         }
 
-        public KeyedBook() : base(new AtomicComparer<TUnit>(false), SortOrder.Ascending)
-        {
-        }
-
-        public KeyedBook(bool descending) : base(new AtomicComparer<TUnit>(descending), SortOrder.Ascending)
+        public KeyedBook(bool descending) : base(new AtomicComparer<TUnit>(descending))
         {
         }
 
