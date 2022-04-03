@@ -1,5 +1,4 @@
 ﻿
-
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -14,7 +13,7 @@ using System.Xml.Linq;
 
 //using DataTools.Text;
 
-namespace KuCoin.NET.Data.Market 
+namespace KuCoin.NET.Helpers
 {
     /// <summary>
     /// The result of the rebalance activity.
@@ -221,7 +220,7 @@ namespace KuCoin.NET.Data.Market
             items = new List<T>();
 
             arrspace = new T[2];
-     
+
             if (comparer == null)
             {
                 typeof(T).GetInterfaceMap(typeof(IComparable<T>));
@@ -374,17 +373,10 @@ namespace KuCoin.NET.Data.Market
         {
             get
             {
-                var ic = items.Count;
-
-                if (ic == 0) return default;
-                if (items[ic - 1] is object)
-                {
-                    return items[ic - 1];
-                }
-                else
-                {
-                    return items[ic - 2];
-                }
+                var ic = items.Count - 1;
+                if (ic == -1) return default;
+                if (items[ic] is object) return items[ic];
+                else return items[ic - 1];
             }
         }
 
@@ -440,7 +432,7 @@ namespace KuCoin.NET.Data.Market
             }
         }
 
-       
+
         #endregion Public Properties
 
         #region Public Methods
@@ -589,7 +581,7 @@ namespace KuCoin.NET.Data.Market
                 softRemoves = 0;
 
                 localRebalances = 0;
-        
+
                 changedRebalances = 0;
                 unchangedRebalances = 0;
 
@@ -669,7 +661,7 @@ namespace KuCoin.NET.Data.Market
         {
             lock (syncRoot)
             {
-                if (count > 1024 && ((float)items.Count / count) >= rebalanceThreshold)
+                if (count > 1024 && (float)items.Count / count >= rebalanceThreshold)
                 {
                     bool b = false;
 
@@ -784,12 +776,12 @@ namespace KuCoin.NET.Data.Market
                 if (metrics)
                 {
                     var ins = softInserts + hardInserts;
-                    averageInsertIndex = ((averageInsertIndex * (ins - 1)) + index) / ins;
+                    averageInsertIndex = (averageInsertIndex * (ins - 1) + index) / ins;
                 }
 
                 count++;
             }
-        }        
+        }
 
         /// <summary>
         /// Rebalance the tree locally. This usually happens after item removal, but can be performed at any time.
@@ -917,7 +909,7 @@ namespace KuCoin.NET.Data.Market
         protected virtual bool Locate(T item, out int index)
         {
             index = Walk(item, TreeWalkMode.Locate);
-            return index != -1; 
+            return index != -1;
         }
 
         /// <summary>
@@ -1019,7 +1011,7 @@ namespace KuCoin.NET.Data.Market
 
                 mid = (hi + lo) / 2;
 
-                if (((mid & 1)) == 1) mid--;
+                if ((mid & 1) == 1) mid--;
 
                 item2 = items[mid];
                 item3 = items[mid + 1];
