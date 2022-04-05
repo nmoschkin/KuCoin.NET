@@ -35,8 +35,8 @@ namespace KuCoin.NET.Data.Market
             int r;
 
             r = decimal.Compare(x.Price, y.Price) * m;
-            if (r == 0) r = decimal.Compare(x.Size, y.Size);
-            if (r == 0) r = DateTime.Compare(x.Timestamp, y.Timestamp);
+            if (r == 0) r = decimal.Compare(x.Size, y.Size) * -1;
+            if (r == 0) r = DateTime.Compare(x.Timestamp, y.Timestamp) * -1;
 
             return r;
         }
