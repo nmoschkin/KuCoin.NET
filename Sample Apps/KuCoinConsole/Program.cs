@@ -88,6 +88,8 @@ namespace KuCoinConsole
 
         static object lockObj = new object();
         public static ICredentialsProvider cred;
+        
+        static bool metrics = true;
 
         static ISymbolDataService service;
         static StringBuilder readOut = new StringBuilder();
@@ -488,7 +490,7 @@ namespace KuCoinConsole
                                     }
                                 }
 
-                                curr.Level3OrderBook.DiagnosticsEnabled = true;
+                                curr.Level3OrderBook.DiagnosticsEnabled = metrics;
                                 curr.Level3OrderBook.IsVolumeEnabled = true;
 
                                 lock (lockObj)
@@ -670,6 +672,23 @@ namespace KuCoinConsole
                             {
                                 if (sortmode == 3) sortorder = sortorder * -1;
                                 else sortmode = 3;
+                            }
+                            else if (key.Key == ConsoleKey.M)
+                            {
+                                metrics = !metrics;
+
+                                lock (lockObj)
+                                {
+                                    foreach (var obs in Observers)
+                                    {
+                                        if (obs.Value.Level3OrderBook != null)
+                                        {
+                                            obs.Value.Level3OrderBook.DiagnosticsEnabled = metrics;
+                                        }
+                                    }
+                                }
+
+                                Console.Clear();
                             }
                             else if (key.Key == ConsoleKey.Q)
                             {
@@ -1463,32 +1482,36 @@ namespace KuCoinConsole
                         ft.WriteToEdgeLine($"Feeds Not Shown: {{Magenta}}{obscount - maxRows}{{Reset}}");
                     }
 
-                    ft.WriteToEdgeLine($"");
-                    ft.WriteToEdgeLine($"Match Total: {{White}}{matchgrand:#,##0}{{Reset}}      ");
-                    ft.WriteToEdgeLine($"Grand Total: {{White}}{biggrand:#,##0}{{Reset}}        ");
-                    ft.WriteToEdgeLine($"                                                       ");
-                    ft.WriteToEdgeLine($"Matches Per Second:      ~ {{Cyan}}{mps:#,##0}{{Reset}}");
-                    ft.WriteToEdgeLine($"Transactions Per Second: ~ {{Cyan}}{tps:#,##0}{{Reset}}");
-                    ft.WriteToEdgeLine($"                                                       ");
-                    ft.WriteToEdgeLine($"Hard Inserts:    {{Cyan}}{HardInserts:#,##0}{{Reset}}        ");
-                    ft.WriteToEdgeLine($"Soft Inserts:    {{Cyan}}{SoftInserts:#,##0}{{Reset}}        ");
-                    ft.WriteToEdgeLine($"                                                       ");
-                    ft.WriteToEdgeLine($"Average Index:   {{Cyan}}{AverageInsertIndex:#,##0}{{Reset}}        ");
-                    ft.WriteToEdgeLine($"                                                       ");
-                    ft.WriteToEdgeLine($"Hard Removes:    {{Cyan}}{HardRemoves:#,##0}{{Reset}}        ");
-                    ft.WriteToEdgeLine($"Soft Removes:    {{Cyan}}{SoftRemoves:#,##0}{{Reset}}        ");
-                    ft.WriteToEdgeLine($"                                                       ");
-                    ft.WriteToEdgeLine($"Logical Size:    {{Cyan}}{BufferSize:#,##0}{{Reset}}        ");
-                    ft.WriteToEdgeLine($"Tree Size:       {{Cyan}}{TreeSize:#,##0}{{Reset}}    ({100 * ((double)TreeSize / BufferSize):#,#0.0#}%)    ");
-                    ft.WriteToEdgeLine($"                                                       ");
-                    ft.WriteToEdgeLine($"Local Rebalances:            {{Cyan}}{LocalRebalances:#,##0}{{Reset}}        ");
-                    ft.WriteToEdgeLine($"                                                       ");
-                    ft.WriteToEdgeLine($"Global Rebalances:           {{Cyan}}{ChangedRebalances:#,##0}{{Reset}}        ");
-                    ft.WriteToEdgeLine($"Declined Global Rebalances:  {{Cyan}}{UnchangedRebalances:#,##0}{{Reset}}        ");
+                    if (metrics)
+                    {
+                        ft.WriteToEdgeLine($"");
+                        ft.WriteToEdgeLine($"Match Total: {{White}}{matchgrand:#,##0}{{Reset}}      ");
+                        ft.WriteToEdgeLine($"Grand Total: {{White}}{biggrand:#,##0}{{Reset}}        ");
+                        ft.WriteToEdgeLine($"                                                       ");
+                        ft.WriteToEdgeLine($"Matches Per Second:      ~ {{Cyan}}{mps:#,##0}{{Reset}}");
+                        ft.WriteToEdgeLine($"Transactions Per Second: ~ {{Cyan}}{tps:#,##0}{{Reset}}");
+                        ft.WriteToEdgeLine($"                                                       ");
+                        ft.WriteToEdgeLine($"Hard Inserts:    {{Cyan}}{HardInserts:#,##0}{{Reset}}        ");
+                        ft.WriteToEdgeLine($"Soft Inserts:    {{Cyan}}{SoftInserts:#,##0}{{Reset}}        ");
+                        ft.WriteToEdgeLine($"                                                       ");
+                        ft.WriteToEdgeLine($"Average Index:   {{Cyan}}{AverageInsertIndex:#,##0}{{Reset}}        ");
+                        ft.WriteToEdgeLine($"                                                       ");
+                        ft.WriteToEdgeLine($"Hard Removes:    {{Cyan}}{HardRemoves:#,##0}{{Reset}}        ");
+                        ft.WriteToEdgeLine($"Soft Removes:    {{Cyan}}{SoftRemoves:#,##0}{{Reset}}        ");
+                        ft.WriteToEdgeLine($"                                                       ");
+                        ft.WriteToEdgeLine($"Logical Size:    {{Cyan}}{BufferSize:#,##0}{{Reset}}        ");
+                        ft.WriteToEdgeLine($"Tree Size:       {{Cyan}}{TreeSize:#,##0}{{Reset}}    ({100 * ((double)TreeSize / BufferSize):#,#0.0#}%)    ");
+                        ft.WriteToEdgeLine($"                                                       ");
+                        ft.WriteToEdgeLine($"Local Rebalances:            {{Cyan}}{LocalRebalances:#,##0}{{Reset}}        ");
+                        ft.WriteToEdgeLine($"                                                       ");
+                        ft.WriteToEdgeLine($"Global Rebalances:           {{Cyan}}{ChangedRebalances:#,##0}{{Reset}}        ");
+                        ft.WriteToEdgeLine($"Declined Global Rebalances:  {{Cyan}}{UnchangedRebalances:#,##0}{{Reset}}        ");
+                    }
+
                     ft.WriteToEdgeLine($"                                                       ");
                     ft.WriteToEdgeLine($"{{White}}Use Arrow Up/Arrow Down, Page Up/Page Down, Home/End to navigate the feed list. Ctrl+Arrow Up/Down scrolls the message log, below.{{Reset}}");
                     ft.WriteToEdgeLine($"{{White}}Use Arrow Left/Arrow Right to switch between different connections.  Use Ctrl + Arrow Left/Arrow Right to change the K-Line.{{Reset}}");
-                    ft.WriteToEdgeLine($"{{White}}Press: (A) Sort Alphabetically, (P) Price, (V) Volume, (T) Throughput. Press again to reverse order. (Q) To Quit.");
+                    ft.WriteToEdgeLine($"{{White}}Press: (A) Sort Alphabetically, (P) Price, (V) Volume, (T) Throughput. Press again to reverse order. (M) Toggle Metrics. (Q) To Quit.");
 
                     lock (messages)
                     {
