@@ -36,6 +36,7 @@ using System.Collections.Immutable;
 using System.Diagnostics.CodeAnalysis;
 using System.Collections.Specialized;
 using System.Linq.Expressions;
+using System.Windows.Forms;
 
 namespace KuCoinConsole
 {
@@ -104,6 +105,9 @@ namespace KuCoinConsole
         static int scrollIndex = 0;
 
         static int maxScrollIndex = 0;
+
+        static int itemIndex = -1;
+
         static int currentConn = -1;
 
         static string subscribing = null;
@@ -570,21 +574,21 @@ namespace KuCoinConsole
 
                         if (key.Modifiers == ConsoleModifiers.Control)
                         {
-                            if (key.Key == ConsoleKey.DownArrow)
+                            if (key.Key == ConsoleKey.Home)
                             {
                                 if (msgidx < messages.Count - 5)
                                 {
                                     ++msgidx;
                                 }
                             }
-                            else if (key.Key == ConsoleKey.UpArrow)
+                            else if (key.Key == ConsoleKey.End)
                             {
                                 if (msgidx > 0)
                                 {
                                     --msgidx;
                                 }
                             }
-                            if (key.Key == ConsoleKey.LeftArrow)
+                            else if (key.Key == ConsoleKey.LeftArrow)
                             {
                                 KlineLeft();
                             }
@@ -593,10 +597,26 @@ namespace KuCoinConsole
                                 KlineRight();
                             }
 
+                            else if (key.Key == ConsoleKey.PageDown)
+                            {
+                                if (itemIndex == -1) itemIndex = scrollIndex;
+                                else itemIndex++;
+                            }
+                            else if (key.Key == ConsoleKey.PageUp)
+                            {
+                                if (itemIndex > 0)
+                                {
+                                    itemIndex--;
+                                }
+                            }
                         }
                         else
                         {
-                            if (key.Key == ConsoleKey.RightArrow)
+                            if (key.Key == ConsoleKey.Escape)
+                            {
+                                itemIndex = -1;
+                            }
+                            else if (key.Key == ConsoleKey.RightArrow)
                             {
                                 currentConn++;
                                 if (currentConn >= feeds.Count)
@@ -604,6 +624,7 @@ namespace KuCoinConsole
                                     currentConn = -1;
                                 }
                                 scrollIndex = 0;
+                                itemIndex = -1;
                                 Console.Clear();
                                 continue;
                             }
@@ -612,6 +633,7 @@ namespace KuCoinConsole
                                 currentConn--;
                                 if (currentConn < -1) currentConn = feeds.Count - 1;
                                 scrollIndex = 0;
+                                itemIndex = -1;
                                 Console.Clear();
                                 continue;
                             }
@@ -954,7 +976,9 @@ namespace KuCoinConsole
                                 }
 
                             }
-
+                            
+                            int zx = 0;
+                            
                             foreach (var obs in Observers)
                             {
                                 if (currentConn == -1 || obs.Value.Level3Feed == current)
@@ -1303,6 +1327,25 @@ namespace KuCoinConsole
                         {
                             sortobs.Add(info.Service);
                         }
+
+                        if (itemIndex > -1)
+                        {
+                            if (itemIndex > sortInfo.Count - 1) itemIndex = sortInfo.Count - 1;
+
+                            HardInserts = sortInfo[itemIndex].HardInserts;
+                            HardRemoves = sortInfo[itemIndex].HardRemoves;
+                            SoftInserts = sortInfo[itemIndex].SoftInserts;
+                            SoftRemoves = sortInfo[itemIndex].SoftRemoves;
+                            BufferSize = sortInfo[itemIndex].BufferSize;
+                            TreeSize = sortInfo[itemIndex].TreeSize;
+                            LocalRebalances = sortInfo[itemIndex].LocalRebalances;
+                            ChangedRebalances = sortInfo[itemIndex].ChangedRebalances;
+                            UnchangedRebalances = sortInfo[itemIndex].UnchangedRebalances;
+                            AverageInsertIndex = sortInfo[itemIndex].AverageInsertIndex;
+                            biggrand = sortInfo[itemIndex].Service.Level3OrderBook?.GrandTotal ?? 0;
+                            matchgrand = sortInfo[itemIndex].Service.Level3OrderBook?.MatchTotal ?? 0;
+                        }
+
                     }
 
                     switch (sortmode)
@@ -1346,12 +1389,26 @@ namespace KuCoinConsole
 
                     var itemTexts = new List<string>();
 
+                    if (itemIndex != -1 && itemIndex < scrollIndex)
+                    {
+                        scrollIndex = itemIndex;
+                    }
+
                     int idx = scrollIndex;
                     int obscount = sortobs.Count;
 
                     if (idx > obscount - maxRows) idx = obscount - maxRows;
+
                     if (idx < 0) idx = 0;
+
+                    if (itemIndex != -1 && ((idx + maxRows) - 1) < itemIndex)
+                    {
+                        scrollIndex += (itemIndex - ((idx + maxRows) - 1));
+                        idx = scrollIndex;
+                    }
+
                     z = idx;
+
                     for (int vc = idx; vc < idx + maxRows; vc++)
                     {
                         if (vc >= obscount) break;
@@ -1413,43 +1470,55 @@ namespace KuCoinConsole
 
                         itsb.Clear();
 
-                        var zt = "{Reset}-";
+                        var zt = "{ForegroundReset}-";
                         var t = "▲▼";
 
                         if (op > cp)
                         {
-                            zt = "{Red}▼{Reset}";
+                            zt = "{Red}▼{ForegroundReset}";
                         }
                         else if (cp > op)
                         {
-                            zt = "{Green}▲{Reset}";
+                            zt = "{Green}▲{ForegroundReset}";
                         }
 
-                        itsb.WriteToEdgeLine($"{MinChars(obs.Symbol, maxSymbolLen)} {zt} Best Ask: {{Red}}{MinChars(ba.ToString("#,##0.00######"), 12)}{{Reset}} Best Bid: {{Green}}{MinChars(bb.ToString("#,##0.00######"), 12)}{{Reset}} {{Yellow}}{MinChars(currname, maxCurrencyLen)}{{Reset}}          Volume: {{Cyan}}{MinChars(l3.MarketVolume.ToString("#,##0.00##"), 14)}{{Reset}}");
 
+
+                        if (itemIndex == vc)
+                        {
+                            itsb.Append("{BackgroundDarkBlue}");
+                        }
+
+                        itsb.WriteToEdgeLine($"{MinChars(obs.Symbol, maxSymbolLen)} {zt} Best Ask: {{Red}}{MinChars(ba.ToString("#,##0.00######"), 12)}{{ForegroundReset}} Best Bid: {{Green}}{MinChars(bb.ToString("#,##0.00######"), 12)}{{ForegroundReset}} {{Yellow}}{MinChars(currname, maxCurrencyLen)}{{ForegroundReset}}          Volume: {{Cyan}}{MinChars(l3.MarketVolume.ToString("#,##0.00##"), 14)}{{ForegroundReset}}");
 
                         if (l3.Parent.Connected == false)
                         {
-                            itsb.WriteToEdgeLine($"{MinChars($"{{White}}{vc + 1} {{Red}}Feed Disconnected{{Reset}}", maxSymbolLen + 22)}");
+                            itsb.WriteToEdgeLine($"{MinChars($"{{White}}{vc + 1} {{Red}}Feed Disconnected{{ForegroundReset}}", maxSymbolLen + 22)}");
                         }
                         else if (ba == 0)
                         {
-                            itsb.WriteToEdgeLine($"{MinChars($"{{White}}{vc + 1} {{Yellow}}Initializing{{Reset}}", maxSymbolLen + 22)}");
+                            itsb.WriteToEdgeLine($"{MinChars($"{{White}}{vc + 1} {{Yellow}}Initializing{{ForegroundReset}}", maxSymbolLen + 22)}");
                         }
                         else
                         {
                             if (queue == -1)
                             {
-                                itsb.WriteToEdgeLine($"{MinChars($"{{White}}{vc + 1} {{Blue}}@{fidx}{{Reset}}", maxSymbolLen + 20)}   Match Share: {MinChars(metrics ? mpcts[z].ToString("##0.##") + "%" : "Off", 7)}   Total Share: {MinChars(metrics ? pcts[z++].ToString("##0.##") + "%" : "Off", 7)}   State: " + MinChars(l3.State.ToString(), 10) + "  Throughput: " + MinChars(metrics ? PrintFriendlySpeed((ulong)l3.Throughput) : "Off", 16) + $"{{Reset}} Timestamp: {{Blue}}{ts:G}{{Reset}}");
+                                itsb.WriteToEdgeLine($"{MinChars($"{{White}}{vc + 1} {{Blue}}@{fidx}{{ForegroundReset}}", maxSymbolLen + 20)}   Match Share: {MinChars(metrics ? mpcts[z].ToString("##0.##") + "%" : "Off", 7)}   Total Share: {MinChars(metrics ? pcts[z++].ToString("##0.##") + "%" : "Off", 7)}   State: " + MinChars(l3.State.ToString(), 10) + "  Throughput: " + MinChars(metrics ? PrintFriendlySpeed((ulong)l3.Throughput) : "Off", 16) + $"{{ForegroundReset}} Timestamp: {{Blue}}{ts:G}{{ForegroundReset}}");
                             }
                             else
                             {
-                                itsb.WriteToEdgeLine($"{MinChars($"{{White}}{vc + 1} {{Blue}}@{fidx}{{Reset}}", maxSymbolLen + 20)}   Match Share: {MinChars(metrics ? mpcts[z].ToString("##0.##") + "%" : "Off", 7)}   Total Share: {MinChars(metrics ? pcts[z++].ToString("##0.##") + "%" : "Off", 7)}   State: " + MinChars(l3.State.ToString(), 14) + "  Queue Length: " + MinChars(metrics ? l3.QueueLength.ToString() : "Off", 10) + $"{{Reset}} Timestamp: {{Blue}}{ts:G}{{Reset}}");
+                                itsb.WriteToEdgeLine($"{MinChars($"{{White}}{vc + 1} {{Blue}}@{fidx}{{ForegroundReset}}", maxSymbolLen + 20)}   Match Share: {MinChars(metrics ? mpcts[z].ToString("##0.##") + "%" : "Off", 7)}   Total Share: {MinChars(metrics ? pcts[z++].ToString("##0.##") + "%" : "Off", 7)}   State: " + MinChars(l3.State.ToString(), 14) + "  Queue Length: " + MinChars(metrics ? l3.QueueLength.ToString() : "Off", 10) + $"{{ForegroundReset}} Timestamp: {{Blue}}{ts:G}{{ForegroundReset}}");
                             }
-                            //itsb.WriteToEdgeLine($"{MinChars($"{{White}}{vc + 1} ", maxSymbolLen + 7)} - Match Share: {MinChars(mpcts[z].ToString("##0") + "%", 4)}   Total Share: {MinChars(pcts[z++].ToString("##0") + "%", 4)}   State: " + MinChars(l3.State.ToString(), 14) + "  Queue Length: " + MinChars(l3.QueueLength.ToString(), 10) + $" {{Reset}}Feed: {{White}}{MinChars((fidx == 0) ? "N/A" : fidx.ToString(), 4)}");
+                            //itsb.WriteToEdgeLine($"{MinChars($"{{White}}{vc + 1} ", maxSymbolLen + 7)} - Match Share: {MinChars(mpcts[z].ToString("##0") + "%", 4)}   Total Share: {MinChars(pcts[z++].ToString("##0") + "%", 4)}   State: " + MinChars(l3.State.ToString(), 14) + "  Queue Length: " + MinChars(l3.QueueLength.ToString(), 10) + $" {{ForegroundReset}}Feed: {{White}}{MinChars((fidx == 0) ? "N/A" : fidx.ToString(), 4)}");
                         }
 
                         itsb.WriteToEdge("");
+
+                        if (itemIndex == vc)
+                        {
+                            itsb.Append("{BackgroundReset}");
+                        }
+
                         itemTexts.Add(itsb.ToString());
                     }
 
@@ -1461,13 +1530,24 @@ namespace KuCoinConsole
                         tps = 0;
 
                         resetCounter = DateTime.UtcNow;
-
+                        var x = 0;
                         foreach (var obs in sortobs)
                         {
-                            var l3 = obs.Level3OrderBook;
-                            mps += l3.MatchesPerSecond;
-                            tps += l3.TransactionsPerSecond;
+                            if (itemIndex == -1)
+                            {
+                                var l3 = obs.Level3OrderBook;
+                                mps += l3.MatchesPerSecond;
+                                tps += l3.TransactionsPerSecond;
+                            }
+                            else if (itemIndex == x)
+                            {
+                                var l3 = obs.Level3OrderBook;
+                                mps = l3.MatchesPerSecond;
+                                tps = l3.TransactionsPerSecond;
 
+                                break;
+                            }
+                            x++;
                         }
                     }
 
@@ -1484,12 +1564,46 @@ namespace KuCoinConsole
 
                     if (metrics)
                     {
-                        ft.WriteToEdgeLine($"");
-                        ft.WriteToEdgeLine($"Match Total: {{White}}{matchgrand:#,##0}{{Reset}}      ");
-                        ft.WriteToEdgeLine($"Grand Total: {{White}}{biggrand:#,##0}{{Reset}}        ");
-                        ft.WriteToEdgeLine($"                                                       ");
-                        ft.WriteToEdgeLine($"Matches Per Second:      ~ {{Cyan}}{mps:#,##0}{{Reset}}");
-                        ft.WriteToEdgeLine($"Transactions Per Second: ~ {{Cyan}}{tps:#,##0}{{Reset}}");
+                        if (itemIndex != -1 && sortobs[itemIndex]?.Level3OrderBook?.FullDepthOrderBook != null)
+                        {
+                            var bids = new List<AtomicOrderUnit>();
+                            var asks = new List<AtomicOrderUnit>();
+                        
+                            int i = 0;
+
+                            foreach(var xitem in sortobs[itemIndex].Level3OrderBook.FullDepthOrderBook.Asks)
+                            {
+                                asks.Add(xitem);
+                                i++;
+                                if (i >= 5) break;
+                            }
+                            i = 0;
+                            foreach (var xitem in sortobs[itemIndex].Level3OrderBook.FullDepthOrderBook.Bids)
+                            {
+                                bids.Add(xitem);
+                                i++;
+                                if (i >= 5) break;
+                            }
+
+                            ft.WriteToEdgeLine("");
+                            ft.WriteToEdgeLine($"{{White}}{MinChars($"{sortobs[itemIndex].Symbol} - {sortobs[itemIndex].BaseCurrency.Name}", 40)}    Best Asks                 Best Bids{{Reset}}");
+                            ft.WriteToEdgeLine($"");
+                            ft.WriteToEdgeLine($"Match Total: {{White}}{MinChars($"{matchgrand:#,##0}", 28)}{{Reset}}   {{Red}}{MinChars(asks[0].Price.ToString(), 10)}   {MinChars(asks[0].Size.ToString(), 10)}   {{Green}}{MinChars(bids[0].Price.ToString(), 10)}   {MinChars(bids[0].Size.ToString(), 10)}{{Reset}}");
+                            ft.WriteToEdgeLine($"Grand Total: {{White}}{MinChars($"{biggrand:#,##0}", 28)}{{Reset}}   {{Red}}{MinChars(asks[1].Price.ToString(), 10)}   {MinChars(asks[1].Size.ToString(), 10)}   {{Green}}{MinChars(bids[1].Price.ToString(), 10)}   {MinChars(bids[1].Size.ToString(), 10)}{{Reset}}");
+                            ft.WriteToEdgeLine($"                                            {{Red}}{MinChars(asks[2].Price.ToString(), 10)}   {MinChars(asks[2].Size.ToString(), 10)}   {{Green}}{MinChars(bids[2].Price.ToString(), 10)}   {MinChars(bids[2].Size.ToString(), 10)}{{Reset}}");
+                            ft.WriteToEdgeLine($"Matches Per Second:      ~ {{Cyan}}{MinChars($"{mps:#,##0}", 15)}{{Reset}}  {{Red}}{MinChars(asks[3].Price.ToString(), 10)}   {MinChars(asks[3].Size.ToString(), 10)}   {{Green}}{MinChars(bids[3].Price.ToString(), 10)}   {MinChars(bids[3].Size.ToString(), 10)}{{Reset}}");
+                            ft.WriteToEdgeLine($"Transactions Per Second: ~ {{Cyan}}{MinChars($"{tps:#,##0}", 15)}{{Reset}}  {{Red}}{MinChars(asks[4].Price.ToString(), 10)}   {MinChars(asks[4].Size.ToString(), 10)}   {{Green}}{MinChars(bids[4].Price.ToString(), 10)}   {MinChars(bids[4].Size.ToString(), 10)}{{Reset}}");
+                        }
+                        else
+                        {
+                            ft.WriteToEdgeLine($"");
+                            ft.WriteToEdgeLine($"Match Total: {{White}}{matchgrand:#,##0}{{Reset}}      ");
+                            ft.WriteToEdgeLine($"Grand Total: {{White}}{biggrand:#,##0}{{Reset}}        ");
+                            ft.WriteToEdgeLine($"                                                       ");
+                            ft.WriteToEdgeLine($"Matches Per Second:      ~ {{Cyan}}{mps:#,##0}{{Reset}}");
+                            ft.WriteToEdgeLine($"Transactions Per Second: ~ {{Cyan}}{tps:#,##0}{{Reset}}");
+                        }
+
                         ft.WriteToEdgeLine($"                                                       ");
                         ft.WriteToEdgeLine($"Hard Inserts:    {{Cyan}}{HardInserts:#,##0}{{Reset}}        ");
                         ft.WriteToEdgeLine($"Soft Inserts:    {{Cyan}}{SoftInserts:#,##0}{{Reset}}        ");

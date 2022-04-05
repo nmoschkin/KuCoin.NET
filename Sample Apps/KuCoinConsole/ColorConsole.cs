@@ -21,20 +21,37 @@ namespace KuCoinConsole
             }
         }
 
-        public static void WriteColor(string text, ConsoleColor color)
+        public static void WriteColor(string text, ConsoleColor color, ConsoleColor? backgroundColor = null)
         {
             var oldColor = Console.ForegroundColor;
+            var oldBack = Console.BackgroundColor;
+
             Console.ForegroundColor = color;
+            if (backgroundColor != null)
+            {
+                Console.BackgroundColor = (ConsoleColor)backgroundColor;
+            }
             Console.Write(text);
+
             Console.ForegroundColor = oldColor;
+            Console.BackgroundColor = oldBack;
         }
 
-        public static void WriteColorLine(string text, ConsoleColor color)
+        public static void WriteColorLine(string text, ConsoleColor color, ConsoleColor? backgroundColor = null)
         {
             var oldColor = Console.ForegroundColor;
+            var oldBack = Console.BackgroundColor;
+
             Console.ForegroundColor = color;
+            if (backgroundColor != null)
+            {
+                Console.BackgroundColor = (ConsoleColor)backgroundColor;
+            }
+
             Console.WriteLine(text);
+
             Console.ForegroundColor = oldColor;
+            Console.BackgroundColor = oldBack;
         }
 
 
@@ -129,8 +146,30 @@ namespace KuCoinConsole
 
                     var color = sb.ToString();
                     if (color == "Reset")
-                    {
+                    {                        
                         Console.ResetColor();
+                    }
+                    else if (color == "ForegroundReset")
+                    {
+                        var oldBack = Console.BackgroundColor;
+                        Console.ResetColor();
+                        Console.BackgroundColor = oldBack;
+                    }
+                    else if (color == "BackgroundReset")
+                    {
+                        var oldFore = Console.ForegroundColor;
+                        Console.ResetColor();
+                        Console.ForegroundColor = oldFore;
+                    }
+                    else if (color.StartsWith("Background"))
+                    {
+                        color = color.Substring(10);
+                        var val = (ConsoleColor?)typeof(ConsoleColor).GetField(color)?.GetValue(null);
+
+                        if (val is ConsoleColor cc)
+                        {
+                            Console.BackgroundColor = cc;
+                        }
                     }
                     else
                     {

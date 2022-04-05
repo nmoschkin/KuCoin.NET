@@ -186,6 +186,8 @@ namespace KuCoin.NET.Websockets.Observations
         {
             lock (lockObj)
             {
+                if (orderBook == null) return;
+
                 if (fullDepth == null) return;
                 if (this.marketDepth <= 0) return;
 
