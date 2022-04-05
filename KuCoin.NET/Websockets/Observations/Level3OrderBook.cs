@@ -309,7 +309,12 @@ namespace KuCoin.NET.Websockets.Observations
 
                     if (pieces.ContainsKey(u.OrderId))
                     {
+                        var pfail = pieces[u.OrderId];  
+                        
                         parent.Logger.Log($"{Symbol} {u.OrderId} already exists!");
+                        parent.Logger.Log($"{Symbol} Existing Order: {pfail}");
+                        parent.Logger.Log($"{Symbol} New Order:      {u}");
+
                         return false;
                     }
 

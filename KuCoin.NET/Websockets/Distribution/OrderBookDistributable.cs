@@ -287,6 +287,8 @@ namespace KuCoin.NET.Websockets.Distribution
 
                     if (!initializing)
                     {
+                        if (buffer.Count < 1) return;
+
                         initializing = true;
                         startFetch = DateTime.UtcNow;
                         cts = new CancellationTokenSource();
