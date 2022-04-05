@@ -144,8 +144,8 @@ namespace KuCoin.NET.Websockets.Public
                     var asks = jobj["asks"] as JArray;
                     var bids = jobj["bids"] as JArray;
 
-                    orderbook.Asks.Capacity = asks.Count * 2;
-                    orderbook.Bids.Capacity = bids.Count * 2;
+                    orderbook.Asks.Capacity = asks.Count * 4;
+                    orderbook.Bids.Capacity = bids.Count * 4;
 
                     jobj.Populate(orderbook);
 

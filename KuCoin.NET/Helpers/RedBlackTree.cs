@@ -80,6 +80,8 @@ namespace KuCoin.NET.Helpers
     /// <typeparam name="TValue">The type of value.</typeparam>
     public abstract class KeyedRedBlackTree<TKey, TValue> : RedBlackTree<TValue> // Do not implement: IReadOnlyDictionary<TKey, TValue>
     {
+        List<TValue> items;
+
         #region Protected Fields
 
         protected SortedDictionary<TKey, TValue> keyDict = new SortedDictionary<TKey, TValue>();
@@ -90,10 +92,12 @@ namespace KuCoin.NET.Helpers
 
         public KeyedRedBlackTree() : base()
         {
+            items = (List<TValue>)base.Items;
         }
 
         public KeyedRedBlackTree(IComparer<TValue> comparer) : base(comparer)
         {
+            items = (List<TValue>)base.Items;
         }
 
         #endregion Public Constructors
@@ -173,9 +177,7 @@ namespace KuCoin.NET.Helpers
         protected T[] arrspace;
         protected Comparison<T> comp;
         protected IComparer<T> comparer;
-        protected int count = 0;
         protected RebalanceStrategy globalStrategy = RebalanceStrategy.Cadance4;
-        protected List<T> items;
         protected RebalanceStrategy localStrategy = RebalanceStrategy.Cadence16;
         protected float rebalanceThreshold = 1.2f;
         protected object syncRoot = new object();
@@ -184,13 +186,17 @@ namespace KuCoin.NET.Helpers
 
         #region Private Fields
 
+        private List<T> items;
+        private int count = 0;
+        private int treeSize = 0;
+
         int changedRebalances = 0;
 
         int hardInserts = 0;
 
         int hardRemoves = 0;
 
-        bool metrics = true;
+        bool metrics = false;
 
         int localRebalances = 0;
 
@@ -370,7 +376,7 @@ namespace KuCoin.NET.Helpers
         /// <summary>
         /// Gets the actual size of the tree.
         /// </summary>
-        public int TreeSize => items.Count;
+        public int TreeSize => treeSize;
 
         public bool IsReadOnly { get; } = false;
 
@@ -389,7 +395,7 @@ namespace KuCoin.NET.Helpers
         {
             get
             {
-                var ic = items.Count - 1;
+                var ic = treeSize - 1;
                 if (ic == -1) return default;
                 if (items[ic] is object) return items[ic];
                 else return items[ic - 1];
@@ -483,7 +489,7 @@ namespace KuCoin.NET.Helpers
                 int idx = Walk(item, TreeWalkMode.Locate);
                 if (idx == -1)
                 {
-                    int c = items.Count;
+                    int c = treeSize;
                     string err = $"{idx} for {item} Is Incorrect!";
 
                     Console.WriteLine(err);
@@ -678,11 +684,11 @@ namespace KuCoin.NET.Helpers
         {
             lock (syncRoot)
             {
-                if (count > 1024 && (float)items.Count / count >= rebalanceThreshold)
+                if (count > 1024 && (float)treeSize / count >= rebalanceThreshold)
                 {
                     bool b = false;
 
-                    for (int i = items.Count - 2; i >= 2; i -= 2)
+                    for (int i = treeSize - 2; i >= 2; i -= 2)
                     {
                         b = b | LocalRebalance(i, globalStrategy, true);
                     }
@@ -704,6 +710,12 @@ namespace KuCoin.NET.Helpers
         }
 
         #endregion Public Methods
+
+        #region Protected Properties
+
+        protected IList<T> Items => items;
+
+        #endregion Protected Properties
 
         #region Protected Methods
 
@@ -754,9 +766,8 @@ namespace KuCoin.NET.Helpers
             lock (syncRoot)
             {
                 var index = Walk(item);
-                int rc = items.Count;
 
-                if (index < rc && items[index] == null)
+                if (index < treeSize && items[index] == null)
                 {
                     items[index] = item;
                     if (metrics) softInserts++;
@@ -766,7 +777,7 @@ namespace KuCoin.NET.Helpers
                     items[index - 1] = item;
                     if (metrics) softInserts++;
                 }
-                else if (index < rc - 2 && items[index + 2] == null)
+                else if (index < treeSize - 2 && items[index + 2] == null)
                 {
                     items[index + 2] = items[index + 1];
                     items[index + 1] = items[index];
@@ -789,6 +800,8 @@ namespace KuCoin.NET.Helpers
                     }
 
                     items.InsertRange(index, arrspace);
+                    this.treeSize += 2;
+
                     if (metrics) hardInserts++;
                 }
 
@@ -818,7 +831,7 @@ namespace KuCoin.NET.Helpers
                 {
                     if ((index & 1) == 1) index--;
 
-                    if (index + 8 > items.Count) return false;
+                    if (index + 8 > treeSize) return false;
                     if (index - 8 < 0) return false;
 
                     index -= 8;
@@ -843,6 +856,7 @@ namespace KuCoin.NET.Helpers
                         items[index + 7] = items[index + 14];
 
                         items.RemoveRange(index + 8, 8);
+                        treeSize -= 8;
 
                         if (metrics && !globalRebalanceOperation)
                         {
@@ -858,7 +872,7 @@ namespace KuCoin.NET.Helpers
                 {
                     if ((index & 1) == 1) index--;
 
-                    if (index + 4 > items.Count) return false;
+                    if (index + 4 > treeSize) return false;
                     if (index - 4 < 0) return false;
 
                     index -= 4;
@@ -875,6 +889,7 @@ namespace KuCoin.NET.Helpers
                         items[index + 3] = items[index + 6];
 
                         items.RemoveRange(index + 4, 4);
+                        treeSize -= 4;
 
                         if (metrics && !globalRebalanceOperation)
                         {
@@ -891,7 +906,7 @@ namespace KuCoin.NET.Helpers
                 {
                     if ((index & 1) == 1) index--;
 
-                    if (index + 2 > items.Count) return false;
+                    if (index + 2 > treeSize) return false;
                     if (index - 2 < 0) return false;
 
                     index -= 2;
@@ -903,6 +918,7 @@ namespace KuCoin.NET.Helpers
                     {
                         items[index + 1] = items[index + 2];
                         items.RemoveRange(index + 2, 2);
+                        treeSize -= 2;
 
                         if (metrics && !globalRebalanceOperation)
                         {
@@ -953,7 +969,7 @@ namespace KuCoin.NET.Helpers
 
                         if (metrics) softRemoves++;
                     }
-                    else if (index < items.Count - 3 && items[index + 2] is object && items[index + 3] is object)
+                    else if (index < treeSize - 3 && items[index + 2] is object && items[index + 3] is object)
                     {
                         items[index] = items[index + 2];
                         items[index + 2] = items[index + 3];
@@ -964,6 +980,7 @@ namespace KuCoin.NET.Helpers
                     else
                     {
                         items.RemoveRange(index, 2);
+                        treeSize -= 2;
                         if (metrics) hardRemoves++;
                     }
                 }
@@ -988,9 +1005,8 @@ namespace KuCoin.NET.Helpers
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         protected virtual int Walk(T item1, TreeWalkMode walkMode = TreeWalkMode.InsertIndex)
         {
-            int count = items.Count;
             int lo = 0;
-            int hi = count - 1;
+            int hi = treeSize - 1;
             int mid = 0;
 
             T item2, item3;
@@ -1004,7 +1020,7 @@ namespace KuCoin.NET.Helpers
                     {
                         if ((lo & 1) == 0)
                         {
-                            if (lo < count - 1 && !(items[lo + 1] is object))
+                            if (lo < treeSize - 1 && !(items[lo + 1] is object))
                             {
                                 r = comp(item1, items[lo]);
                                 if (r >= 0) lo++;
@@ -1012,7 +1028,7 @@ namespace KuCoin.NET.Helpers
 
                             else if (lo > 0 && !(items[lo - 1] is object))
                             {
-                                if (lo < count)
+                                if (lo < treeSize)
                                 {
                                     r = comp(item1, items[lo]);
                                     if (r <= 0) lo--;
@@ -1030,7 +1046,7 @@ namespace KuCoin.NET.Helpers
                     }
                     else
                     {
-                        if (lo < 0 || lo >= count) return -1;
+                        if (lo < 0 || lo >= treeSize) return -1;
                         else if (!(items[lo] is object)) return -1;
                         else if (comp(item1, items[lo]) != 0) return -1;
                     }

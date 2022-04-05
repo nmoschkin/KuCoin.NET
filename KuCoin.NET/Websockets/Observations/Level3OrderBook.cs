@@ -63,7 +63,7 @@ namespace KuCoin.NET.Websockets.Observations
                 }
 
                 if (initialized) DoWork();
-                else Task.Delay(0).ConfigureAwait(false).GetAwaiter().GetResult();
+                else Thread.Sleep(0);
 
                 if (diagEnable)
                 {
@@ -85,6 +85,29 @@ namespace KuCoin.NET.Websockets.Observations
         long bytesreceived;
         long throughput;
         long marktime = DateTime.UtcNow.Ticks;
+
+        public override bool DiagnosticsEnabled 
+        {
+            get => base.DiagnosticsEnabled; 
+            set
+            {
+                if (diagEnable != value)
+                {
+                    base.DiagnosticsEnabled = value;
+
+                    bytesreceived = 0;
+                    throughput = 0;
+                    marktime = 0;
+
+                    if (fullDepth != null)
+                    {
+                        fullDepth.Asks.EnableMetrics = value;
+                        fullDepth.Bids.EnableMetrics = value;
+                    }
+                }
+            }
+        }
+
         public long Throughput
         {
             get => throughput;
@@ -98,11 +121,17 @@ namespace KuCoin.NET.Websockets.Observations
             {
                 if (fullDepth != null)
                 {
+                    fullDepth.Asks.EnableMetrics = diagEnable;
+                    fullDepth.Bids.EnableMetrics = diagEnable;
+
                     fullDepth.Asks.TryRebalance();
                     fullDepth.Bids.TryRebalance();
 
-                    fullDepth.Asks.ResetMetrics();
-                    fullDepth.Bids.ResetMetrics();
+                    if (diagEnable)
+                    {
+                        fullDepth.Asks.ResetMetrics();
+                        fullDepth.Bids.ResetMetrics();
+                    }
 
                     parent.Logger.Log($"{Symbol} Initialized. Market Depth: {fullDepth.Asks.Count:#,##0} Asks, {fullDepth.Bids.Count:#,##0} Bids.");
                 }
@@ -160,8 +189,8 @@ namespace KuCoin.NET.Websockets.Observations
                 if (fullDepth == null) return;
                 if (this.marketDepth <= 0) return;
 
-                var asks = fullDepth.Asks ;
-                var bids = fullDepth.Asks ;
+                var asks = fullDepth.Asks;
+                var bids = fullDepth.Asks;
 
                 CopyObservable(asks, orderBook.Asks);
                 CopyObservable(bids, orderBook.Bids);

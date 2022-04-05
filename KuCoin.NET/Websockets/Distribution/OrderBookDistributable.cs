@@ -239,7 +239,13 @@ namespace KuCoin.NET.Websockets.Distribution
             get => diagEnable;
             set
             {
-                SetProperty(ref diagEnable, value);
+                if (SetProperty(ref diagEnable, value))
+                {
+                    GrandTotal = 0;
+                    MatchesPerSecond = 0;
+                    MatchTotal = 0;
+                    TransactionsPerSecond = 0;
+                }
             }
         }
 
