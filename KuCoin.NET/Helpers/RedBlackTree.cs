@@ -972,38 +972,45 @@ namespace KuCoin.NET.Helpers
             int mid = 0;
 
             T item2, item3;
-            int r;
+            int r = 0;
 
             while (true)
             {
                 if (hi < lo)
                 {
-                    if (walkMode == TreeWalkMode.InsertIndex && (lo & 1) == 0)
+                    if (walkMode == TreeWalkMode.InsertIndex)
                     {
-                        if (lo < count - 1 && !(items[lo + 1] is object))
+                        if ((lo & 1) == 0)
                         {
-                            r = comp(item1, items[lo]);
-                            if (r >= 0) lo++;
-                        }
-
-                        else if (lo > 0 && !(items[lo - 1] is object))
-                        {
-                            if (lo < count)
+                            if (lo < count - 1 && !(items[lo + 1] is object))
                             {
                                 r = comp(item1, items[lo]);
-                                if (r <= 0) lo--;
+                                if (r >= 0) lo++;
                             }
-                            else
+
+                            else if (lo > 0 && !(items[lo - 1] is object))
                             {
-                                lo--;
+                                if (lo < count)
+                                {
+                                    r = comp(item1, items[lo]);
+                                    if (r <= 0) lo--;
+                                }
+                                else
+                                {
+                                    lo--;
+                                }
                             }
                         }
+                    }
+                    else if (r == 0)
+                    {
+                        return lo;
                     }
                     else
                     {
                         if (lo < 0 || lo >= count) return -1;
                         else if (!(items[lo] is object)) return -1;
-                        else if (!Equals(item1, items[lo])) return -1;
+                        else if (comp(item1, items[lo]) != 0) return -1;
                     }
 
                     return lo;
