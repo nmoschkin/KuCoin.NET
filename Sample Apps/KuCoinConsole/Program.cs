@@ -134,21 +134,6 @@ namespace KuCoinConsole
             AppCenter.Start("d364ea69-c1fa-4d0d-8c37-debaa05f91bc",
                typeof(Analytics), typeof(Crashes));
 
-            var rbb = new RedBlackTree<string>();
-
-            rbb.Add("One");
-            rbb.Add("Two");
-            rbb.Add("Five");
-            rbb.Add("Seven");
-
-            rbb.Add("Turquoise");
-            rbb.Add("Bluequoise");
-            rbb.Add("Collossal");
-
-            rbb.Add("Hemingway");
-            rbb.Add("Gerbafanta");
-
-
             RunProgram();
         }
 
@@ -185,7 +170,7 @@ namespace KuCoinConsole
 #if DOTNETSTD
             KuCoinSystem.Initialize();
 #else
-            KuCoinSystem.InitializeAsync().ConfigureAwait(false).GetAwaiter().GetResult();
+            KuCoinSystem.InitializeAsync(true).ConfigureAwait(false).GetAwaiter().GetResult();
 #endif
 
             market = KuCoinSystem.Market;

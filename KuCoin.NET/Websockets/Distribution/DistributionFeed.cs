@@ -2,6 +2,7 @@
 using KuCoin.NET.Data.Market;
 using KuCoin.NET.Helpers;
 using KuCoin.NET.Observable;
+using KuCoin.NET.Websockets.Distribution.Contracts;
 using KuCoin.NET.Websockets.Distribution.Services;
 
 using System;
@@ -58,13 +59,24 @@ namespace KuCoin.NET.Websockets.Distribution
         KucoinBaseWebsocketFeed, 
         IInitialDataProvider<TKey, TInitial>, 
         IAsyncUnsubscribableSubscriptionProvider<TKey, TDistributable>, 
-        IDistributor<TKey, TDistributable, TValue> 
+        IDistributor<TKey, TDistributable, TValue>,
+        IMutableLogProvider
         where TDistributable : DistributableObject<TKey, TValue> 
         where TValue : IStreamableObject
     {
 
         protected SortedDictionary<TKey, TDistributable> activeFeeds = new SortedDictionary<TKey, TDistributable>();
         protected FeedState state;
+        protected SimpleLog log = KuCoinSystem.Logger;
+
+        public virtual SimpleLog Logger
+        {
+            get => log;
+            set
+            {
+                SetProperty(ref log, value);
+            }
+        }
 
         public virtual FeedState State
         {
@@ -117,7 +129,7 @@ namespace KuCoin.NET.Websockets.Distribution
         public DistributionFeed(string key, string secret, string passphrase, bool isSandbox = false, bool futures = false) : base(key, secret, passphrase, isSandbox: isSandbox, futures: futures)
         {
         }
-        
+
         /// <summary>
         /// Gets the relative URL used to acquire the initial data.
         /// </summary>

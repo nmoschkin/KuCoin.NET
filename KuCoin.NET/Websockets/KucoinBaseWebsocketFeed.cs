@@ -17,6 +17,7 @@ using KuCoin.NET.Data.Websockets;
 using KuCoin.NET.Helpers;
 using KuCoin.NET.Rest;
 using KuCoin.NET.Websockets.Distribution;
+using KuCoin.NET.Websockets.Distribution.Contracts;
 using KuCoin.NET.Websockets.Distribution.Services;
 
 using Newtonsoft.Json;

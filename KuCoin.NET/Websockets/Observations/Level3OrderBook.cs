@@ -22,6 +22,7 @@ namespace KuCoin.NET.Websockets.Observations
     /// </summary>
     public sealed class Level3OrderBook : OrderBookDistributable<KeyedAtomicOrderBook<AtomicOrderUnit>, ObservableAtomicOrderBook<ObservableAtomicOrderUnit>, Level3Update, Level3>
     {
+
         /// <summary>
         /// Instantiate a new level 3 order book.
         /// </summary>
@@ -62,6 +63,7 @@ namespace KuCoin.NET.Websockets.Observations
                 }
 
                 if (initialized) DoWork();
+                else Task.Delay(0).ConfigureAwait(false).GetAwaiter().GetResult();
 
                 if (diagEnable)
                 {
@@ -101,6 +103,8 @@ namespace KuCoin.NET.Websockets.Observations
 
                     fullDepth.Asks.ResetMetrics();
                     fullDepth.Bids.ResetMetrics();
+
+                    parent.Logger.Log($"{Symbol} Initialized. Market Depth: {fullDepth.Asks.Count} Asks, {fullDepth.Bids.Count} Bids.");
                 }
             }
         }
@@ -152,6 +156,8 @@ namespace KuCoin.NET.Websockets.Observations
 
         }
         
+        bool rose = false;
+
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public override bool ProcessObject(Level3Update obj)
         {
@@ -175,6 +181,12 @@ namespace KuCoin.NET.Websockets.Observations
                 }
                 else if (obj.Sequence - fullDepth.Sequence > 1)
                 {
+                    if (!rose)
+                    {
+                        parent.Logger.Log($"{Symbol} is resetting because the order book is out of sequence at {fullDepth.Sequence} versus incoming sequence {obj.Sequence}.");
+                        rose = true;
+                    }
+
                     _ = Reset();
                     return false;
                 }
@@ -214,6 +226,7 @@ namespace KuCoin.NET.Websockets.Observations
                 {
                     if (!SequencePieces(obj, fullDepth.Asks, fullDepth.Bids))
                     {
+                        parent.Logger.Log($"{Symbol} is resetting because of a bad Sell packet.");
                         _ = Reset();
                         return false;
                     }
@@ -222,6 +235,7 @@ namespace KuCoin.NET.Websockets.Observations
                 {
                     if (!SequencePieces(obj, fullDepth.Bids, fullDepth.Asks))
                     {
+                        parent.Logger.Log($"{Symbol} is resetting because of a bad Buy packet.");
                         _ = Reset();
                         return false;
                     }
@@ -261,7 +275,7 @@ namespace KuCoin.NET.Websockets.Observations
                     }
 
                 }
-
+                if (rose) rose = false;
                 return true;
             }
         }
@@ -295,6 +309,7 @@ namespace KuCoin.NET.Websockets.Observations
 
                     if (pieces.ContainsKey(u.OrderId))
                     {
+                        parent.Logger.Log($"{Symbol} {u.OrderId} already exists!");
                         return false;
                     }
 
@@ -318,6 +333,7 @@ namespace KuCoin.NET.Websockets.Observations
                         }
                     }
 
+                    parent.Logger.Log($"{Symbol} Change {change.OrderId} did not succeed.");
                     return false;
 
                 case 'm':
@@ -331,6 +347,7 @@ namespace KuCoin.NET.Websockets.Observations
                             return itm;
                         }))
                         {
+                            parent.Logger.Log($"{Symbol} Match {change.OrderId} did not succeed.");
                             return false;
                         }
 

@@ -64,6 +64,13 @@ namespace KuCoin.NET
     /// </remarks>
     public static class KuCoinSystem
     {
+        /// <summary>
+        /// Gets the system logger.
+        /// </summary>
+        /// <remarks>
+        /// In addition to logging, <see cref="SimpleLog"/> can also be used to open or close the log, or to set a different filename.
+        /// </remarks>
+        public static SimpleLog Logger { get; } = new SimpleLog(".\\KuCoinNET.log", false);
 
         /// <summary>
         /// Global application-domain credentials utilization mode.
@@ -170,12 +177,26 @@ namespace KuCoin.NET
         /// <summary>
         /// Capture the dispatcher, and create and refresh market data.
         /// </summary>
+        /// <param name="openLog">True to open the KuCoin.NET system log file.</param>
+        /// <param name="logFile">Optional log file name (default is '.\KuCoinNET.log')</param>
         /// <returns>A new see <see cref="IServiceFactory"/> that can be used to retrieve symbol data and subscribe to tickers.</returns>
         /// <remarks>
         /// This method should be called from the primary (dispatcher or UI) thread of an application, most ideally on application startup.
         /// </remarks>
-        public static async Task<IServiceFactory> InitializeAsync()
+        public static async Task<IServiceFactory> InitializeAsync(bool openLog = false, string logFile = null) 
         {
+            if (openLog)
+            {
+                if (logFile != null)
+                {
+                    Logger.OpenLog(logFile);
+                }
+                else
+                {
+                    Logger.OpenLog();
+                }
+            }
+
             InitializeDispatcher();
             await CreateMarket();
 
@@ -185,12 +206,27 @@ namespace KuCoin.NET
         /// <summary>
         /// Initialize the dispatcher with a <see cref="SynchronizationContext"/>, and create and refresh market data.
         /// </summary>
+        /// <param name="context">The <see cref="SynchronizationContext"/> object to initialize from.</param>
+        /// <param name="openLog">True to open the KuCoin.NET system log file.</param>
+        /// <param name="logFile">Optional log file name (default is '.\KuCoinNET.log')</param>
         /// <returns>A new see <see cref="IServiceFactory"/> that can be used to retrieve symbol data and subscribe to tickers.</returns>
         /// <remarks>
         /// This method must be called with a valid <see cref="SynchronizationContext"/> (usually acquired from the dispatch/UI thread).
         /// </remarks>
-        public static async Task<IServiceFactory> InitializeAsync(SynchronizationContext context)
+        public static async Task<IServiceFactory> InitializeAsync(SynchronizationContext context, bool openLog = false, string logFile = null)
         {
+            if (openLog)
+            {
+                if (logFile != null)
+                {
+                    Logger.OpenLog(logFile);
+                }
+                else
+                {
+                    Logger.OpenLog();
+                }
+            }
+
             InitializeDispatcher(context);
             await CreateMarket();
 
@@ -201,12 +237,26 @@ namespace KuCoin.NET
         /// <summary>
         /// Capture the dispatcher, and create and refresh market data.
         /// </summary>
+        /// <param name="openLog">True to open the KuCoin.NET system log file.</param>
+        /// <param name="logFile">Optional log file name (default is '.\KuCoinNET.log')</param>
         /// <returns>A new see <see cref="IServiceFactory"/> that can be used to retrieve symbol data and subscribe to tickers.</returns>
         /// <remarks>
         /// This method should be called from the primary (dispatcher or UI) thread of an application, most ideally on application startup.
         /// </remarks>
-        public static IServiceFactory Initialize()
+        public static IServiceFactory Initialize(bool openLog = false, string logFile = null)
         {
+            if (openLog)
+            {
+                if (logFile != null)
+                {
+                    Logger.OpenLog(logFile);
+                }
+                else
+                {
+                    Logger.OpenLog();
+                }
+            }
+
             InitializeDispatcher();
             _ = CreateMarket();
 
@@ -216,12 +266,27 @@ namespace KuCoin.NET
         /// <summary>
         /// Initialize the dispatcher with a <see cref="SynchronizationContext"/>, and create and refresh market data.
         /// </summary>
+        /// <param name="context">The <see cref="SynchronizationContext"/> object to initialize from.</param>
+        /// <param name="openLog">True to open the KuCoin.NET system log file.</param>
+        /// <param name="logFile">Optional log file name (default is '.\KuCoinNET.log')</param>
         /// <returns>A new see <see cref="IServiceFactory"/> that can be used to retrieve symbol data and subscribe to tickers.</returns>
         /// <remarks>
         /// This method must be called with a valid <see cref="SynchronizationContext"/> (usually acquired from the dispatch/UI thread).
         /// </remarks>
-        public static IServiceFactory Initialize(SynchronizationContext context)
+        public static IServiceFactory Initialize(SynchronizationContext context, bool openLog = false, string logFile = null)
         {
+            if (openLog)
+            {
+                if (logFile != null)
+                {
+                    Logger.OpenLog(logFile);
+                }
+                else
+                {
+                    Logger.OpenLog();
+                }
+            }
+
             InitializeDispatcher(context);
             _ = CreateMarket();
 
