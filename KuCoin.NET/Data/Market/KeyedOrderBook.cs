@@ -44,13 +44,13 @@ namespace KuCoin.NET.Data.Market
         [JsonConverter(typeof(AutoTimeConverter), TimeTypes.InMilliseconds)]
         public virtual DateTime Timestamp { get; set; }
 
-        IList<T> IOrderUnitList<T>.Asks => Asks;
+        ICollection<T> IOrderUnitCollection<T>.Asks => Asks;
 
-        IList<T> IOrderUnitList<T>.Bids => Bids;
+        ICollection<T> IOrderUnitCollection<T>.Bids => Bids;
 
-        IList<T> IDataSeries<T, T, IList<T>, IList<T>>.Data1 => Asks;
+        ICollection<T> IDataSeries<T, T, ICollection<T>, ICollection<T>>.Data1 => Asks;
 
-        IList<T> IDataSeries<T, T, IList<T>, IList<T>>.Data2 => Bids;
+        ICollection<T> IDataSeries<T, T, ICollection<T>, ICollection<T>>.Data2 => Bids;
     }
 
     /// <summary>
@@ -121,13 +121,13 @@ namespace KuCoin.NET.Data.Market
             }
         }
 
-        IList<T> IOrderUnitList<T>.Asks => Asks;
+        ICollection<T> IOrderUnitCollection<T>.Asks => Asks;
 
-        IList<T> IOrderUnitList<T>.Bids => Bids;
+        ICollection<T> IOrderUnitCollection<T>.Bids => Bids;
 
-        IList<T> IDataSeries<T, T, IList<T>, IList<T>>.Data1 => Asks;
+        ICollection<T> IDataSeries<T, T, ICollection<T>, ICollection<T>>.Data1 => Asks;
 
-        IList<T> IDataSeries<T, T, IList<T>, IList<T>>.Data2 => Bids;
+        ICollection<T> IDataSeries<T, T, ICollection<T>, ICollection<T>>.Data2 => Bids;
     }
 
 }

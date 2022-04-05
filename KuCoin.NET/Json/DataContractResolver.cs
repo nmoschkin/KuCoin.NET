@@ -4,7 +4,6 @@ using System.Text;
 
 using KuCoin.NET.Data.Market;
 
-using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
 
 namespace KuCoin.NET.Json

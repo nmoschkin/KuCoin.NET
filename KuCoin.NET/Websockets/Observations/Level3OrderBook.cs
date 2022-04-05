@@ -104,7 +104,49 @@ namespace KuCoin.NET.Websockets.Observations
                     fullDepth.Asks.ResetMetrics();
                     fullDepth.Bids.ResetMetrics();
 
-                    parent.Logger.Log($"{Symbol} Initialized. Market Depth: {fullDepth.Asks.Count} Asks, {fullDepth.Bids.Count} Bids.");
+                    parent.Logger.Log($"{Symbol} Initialized. Market Depth: {fullDepth.Asks.Count:#,##0} Asks, {fullDepth.Bids.Count:#,##0} Bids.");
+                }
+            }
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private void CopyObservable(ICollection<AtomicOrderUnit> src, ObservableCollection<ObservableAtomicOrderUnit> dest)
+        {
+            int md = this.marketDepth;
+
+            if (src.Count < md) md = src.Count;
+
+            if (dest.Count != md)
+            {
+                dest.Clear();
+
+                int i = 0;
+                foreach (var item in src)
+                {
+                    dest.Add(item.Clone<ObservableAtomicOrderUnit>());
+                    i++;
+                    if (i >= md) break;
+                }
+            }
+            else
+            {
+                int i = 0;
+                foreach (var item in src)
+                {
+                    if (dest[i].OrderId == item.OrderId)
+                    {
+                        dest[i].Price = item.Price;
+                        dest[i].Size = item.Size;
+                        dest[i].Timestamp = item.Timestamp;
+                        dest[i].Sequence = item.Sequence;
+                    }
+                    else
+                    {
+                        dest[i] = item.Clone<ObservableAtomicOrderUnit>();
+                    }
+
+                    i++;
+                    if (i >= md) break;
                 }
             }
         }
@@ -121,39 +163,10 @@ namespace KuCoin.NET.Websockets.Observations
                 var asks = fullDepth.Asks ;
                 var bids = fullDepth.Asks ;
 
-                if (orderBook == null)
-                {
-                    OrderBook = new ObservableAtomicOrderBook<ObservableAtomicOrderUnit>();
-                    orderBook.Sequence = fullDepth.Sequence;
-                    orderBook.Timestamp = fullDepth.Timestamp;
-                }
-
-                int marketDepth = this.marketDepth;
-
-                if (asks.Count < marketDepth) marketDepth = asks.Count;
-
-                orderBook.Asks.Clear();
-                int i = 0;
-                    
-                foreach (var ask in asks)
-                {
-                    if (i >= marketDepth) break;
-                    orderBook.Asks.Add(ask.Clone<ObservableAtomicOrderUnit>());
-                    i++;
-                }
-
-                orderBook.Bids.Clear();
-                i = 0;
-
-                foreach (var bid in bids)
-                {
-                    if (i >= marketDepth) break;
-                    orderBook.Bids.Add(bid.Clone<ObservableAtomicOrderUnit>());
-                    i++;
-                }
+                CopyObservable(asks, orderBook.Asks);
+                CopyObservable(bids, orderBook.Bids);
 
             }
-
         }
         
         bool rose = false;
@@ -227,6 +240,7 @@ namespace KuCoin.NET.Websockets.Observations
                     if (!SequencePieces(obj, fullDepth.Asks, fullDepth.Bids))
                     {
                         parent.Logger.Log($"{Symbol} is resetting because of a bad Sell packet.");
+                        rose = true;
                         _ = Reset();
                         return false;
                     }
@@ -236,6 +250,7 @@ namespace KuCoin.NET.Websockets.Observations
                     if (!SequencePieces(obj, fullDepth.Bids, fullDepth.Asks))
                     {
                         parent.Logger.Log($"{Symbol} is resetting because of a bad Buy packet.");
+                        rose = true;
                         _ = Reset();
                         return false;
                     }
@@ -275,6 +290,7 @@ namespace KuCoin.NET.Websockets.Observations
                     }
 
                 }
+
                 if (rose) rose = false;
                 return true;
             }
@@ -304,18 +320,27 @@ namespace KuCoin.NET.Websockets.Observations
                         Price = change.Price ?? 0,
                         Size = change.Size ?? 0,
                         Timestamp = change.Timestamp ?? DateTime.Now,
-                        OrderId = change.OrderId
+                        OrderId = change.OrderId,
+                        Sequence = change.Sequence
                     };
 
                     if (pieces.ContainsKey(u.OrderId))
                     {
                         var pfail = pieces[u.OrderId];  
                         
-                        parent.Logger.Log($"{Symbol} {u.OrderId} already exists!");
-                        parent.Logger.Log($"{Symbol} Existing Order: {pfail}");
-                        parent.Logger.Log($"{Symbol} New Order:      {u}");
+                        if (pfail.Size == 0)
+                        {
+                            parent.Logger.Log($"{Symbol} {u.OrderId} already exists but is zero. Replacing.");
+                            pieces.Remove(pfail);
+                        }
+                        else
+                        {
+                            parent.Logger.Log($"{Symbol} {u.OrderId} already exists!");
+                            parent.Logger.Log($"{Symbol} Existing Order: {pfail}");
+                            parent.Logger.Log($"{Symbol} New Order:      {u}");
 
-                        return false;
+                            return false;
+                        }
                     }
 
                     pieces.Add(u);
@@ -330,6 +355,7 @@ namespace KuCoin.NET.Websockets.Observations
                             p.Size = change.Size ?? 0;
                             p.Timestamp = change.Timestamp ?? DateTime.Now;
                             p.Price = change.Price ?? 0;
+                            p.Sequence = change.Sequence;
 
                             return p;
                         }))
@@ -349,6 +375,7 @@ namespace KuCoin.NET.Websockets.Observations
 
                         if (!otherPieces.TryAlterItem(o, (itm) => {
                             itm.Size -= csize;
+                            itm.Sequence = change.Sequence;
                             return itm;
                         }))
                         {

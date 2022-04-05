@@ -14,14 +14,11 @@ namespace KuCoin.NET.Json
 {
 
 
-    public class KeyedBookConverter : JsonConverter
+    public class KeyedBookConverter<TBook, TItem> : JsonConverter<TBook> 
+        where TItem: class, IAtomicOrderUnit, new() 
+        where TBook: KeyedBook<TItem>, new()
     {
-        public override bool CanConvert(Type objectType)
-        {
-            return objectType.FullName.Contains("KuCoin.NET.Data.Order.KeyedBook");
-        }
-
-        public override object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer)
+        public override TBook ReadJson(JsonReader reader, Type objectType, TBook existingValue, bool hasExistingValue, JsonSerializer serializer)
         {
             if (reader.TokenType == JsonToken.StartArray)
             {
@@ -31,14 +28,16 @@ namespace KuCoin.NET.Json
                 var mtd = d.GetConstructor(new Type[] { typeof(object[]) });
                 bool gconst = mtd != null;
 
-                var output = (existingValue ?? Activator.CreateInstance(objectType)) as IList;
-                IAtomicOrderUnit dest;
+                var output = (existingValue ?? new TBook());
+                TItem dest;
+
+                output.Capacity = alldata.Length * 2;
 
                 if (gconst)
                 {
                     foreach (var input in alldata)
                     {
-                        dest = (IAtomicOrderUnit)mtd.Invoke(new object[] { input });
+                        dest = (TItem)mtd.Invoke(new object[] { input });
                         output.Add(dest);
                     }
                 }
@@ -46,7 +45,7 @@ namespace KuCoin.NET.Json
                 {
                     foreach (var input in alldata)
                     {
-                        dest = (IAtomicOrderUnit)Activator.CreateInstance(d);
+                        dest = new TItem();
                         dest.OrderId = (string)reader.Value;
                         dest.Price = decimal.Parse((string)reader.Value);
                         dest.Size = decimal.Parse((string)reader.Value);
@@ -61,7 +60,7 @@ namespace KuCoin.NET.Json
             else throw new NotImplementedException();
         }
 
-        public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer)
+        public override void WriteJson(JsonWriter writer, TBook value, JsonSerializer serializer)
         {
             var list = value as IList;
             var l = new List<object[]>();

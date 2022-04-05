@@ -133,6 +133,7 @@ namespace KuCoin.NET.Helpers
 
         #region Protected Methods
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         protected override void InsertItem(TValue item)
         {
             lock (syncRoot)
@@ -143,6 +144,8 @@ namespace KuCoin.NET.Helpers
         }
 
         protected abstract TKey ProvideKey(TValue value);
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         protected override void RemoveItem(int index)
         {
             lock (syncRoot)
@@ -283,6 +286,19 @@ namespace KuCoin.NET.Helpers
         #endregion Public Constructors
 
         #region Public Properties
+
+
+        /// <summary>
+        /// Gets or sets the capacity of the internal list.
+        /// </summary>
+        /// <remarks>
+        /// If you know you are about to import a large amount of data at once, it might be a good idea to set this to a high value.
+        /// </remarks>
+        public int Capacity
+        {
+            get => items.Capacity;
+            set => items.Capacity = value;
+        }
 
         /// <summary>
         /// Gets or sets a value that determines whether metrics are recorded.
@@ -459,6 +475,7 @@ namespace KuCoin.NET.Helpers
         /// </summary>
         /// <param name="item">The item to alter.</param>
         /// <param name="alteration">The alteration function that returns the changed item.</param>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void AlterItem(T item, Func<T, T> alteration)
         {
             lock (syncRoot)
@@ -699,6 +716,7 @@ namespace KuCoin.NET.Helpers
         /// <remarks>
         /// This function should only be used in conjunction with a call to either <see cref="Locate(T, out int)"/> or <see cref="Walk(T, TreeWalkMode)"/>.
         /// </remarks>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         protected virtual void AlterItem(T item, Func<T, T> alteration, int idx)
         {
             lock (syncRoot)
@@ -728,6 +746,7 @@ namespace KuCoin.NET.Helpers
         /// </summary>
         /// <param name="item">The item.</param>
         /// <exception cref="ArgumentNullException" />
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         protected virtual void InsertItem(T item)
         {
             if (item == null) throw new ArgumentNullException(nameof(item));
@@ -790,6 +809,7 @@ namespace KuCoin.NET.Helpers
         /// <param name="strategy">The rebalance strategy to use.</param>
         /// <param name="globalRebalanceOperation">True to indicate this function is being called by <see cref="TryRebalance"/>.</param>
         /// <returns></returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         protected bool LocalRebalance(int index, RebalanceStrategy strategy, bool globalRebalanceOperation)
         {
             lock (syncRoot)
@@ -916,6 +936,7 @@ namespace KuCoin.NET.Helpers
         /// Remove an item from the collection.
         /// </summary>
         /// <param name="index"></param>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         protected virtual void RemoveItem(int index)
         {
             lock (syncRoot)
@@ -964,6 +985,7 @@ namespace KuCoin.NET.Helpers
         /// <param name="item1">The item to look for.</param>
         /// <param name="walkMode">The type of walk (either for insert or locate)</param>
         /// <returns>The index where the item is or should be.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         protected virtual int Walk(T item1, TreeWalkMode walkMode = TreeWalkMode.InsertIndex)
         {
             int count = items.Count;

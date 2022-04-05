@@ -13,6 +13,7 @@ using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Text;
 
+
 namespace KuCoin.NET.Data.Market
 {
     #region Atomic Order Unit Comparer 
@@ -63,6 +64,7 @@ namespace KuCoin.NET.Data.Market
 
         #region Public Methods
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void Remove(string key)
         {
             lock (syncRoot)
@@ -79,6 +81,7 @@ namespace KuCoin.NET.Data.Market
 
         #region Protected Methods
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         protected override string ProvideKey(TUnit value)
         {
             return value.OrderId;

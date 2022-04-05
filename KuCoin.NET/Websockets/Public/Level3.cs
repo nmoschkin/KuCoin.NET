@@ -19,6 +19,7 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Net.WebSockets;
 using System.Runtime.ExceptionServices;
+using Newtonsoft.Json.Linq;
 
 namespace KuCoin.NET.Websockets.Public
 {
@@ -121,6 +122,63 @@ namespace KuCoin.NET.Websockets.Public
             return new Level3OrderBook(this, sym);
         }
         
+        public override async Task<KeyedAtomicOrderBook<AtomicOrderUnit>> ProvideInitialData(string key)
+        {
+            Exception err = null;
+
+            var cts = new CancellationTokenSource();
+
+            var ft = Task.Run(async () =>
+            {
+                var curl = InitialDataUrl;
+                var param = new Dictionary<string, object>();
+
+                param.Add("symbol", key);
+
+                try
+                {
+                    var jobj = await MakeRequest(HttpMethod.Get, curl, auth: !IsPublic, reqParams: param);
+
+                    var orderbook = new KeyedAtomicOrderBook<AtomicOrderUnit>();
+
+                    var asks = jobj["asks"] as JArray;
+                    var bids = jobj["bids"] as JArray;
+
+                    orderbook.Asks.Capacity = asks.Count * 2;
+                    orderbook.Bids.Capacity = bids.Count * 2;
+
+                    jobj.Populate(orderbook);
+
+
+                    GC.Collect(2);
+                    return orderbook;
+                }
+                catch (Exception ex)
+                {
+                    err = ex;
+                    return null;
+                }
+
+            }, cts.Token);
+
+            DateTime start = DateTime.UtcNow;
+
+            while ((DateTime.UtcNow - start).TotalSeconds < 60)
+            {
+                await Task.Delay(10);
+
+                if (ft.IsCompleted)
+                {
+                    return ft.Result;
+                }
+            }
+
+            cts.Cancel();
+
+            if (err != null) throw err;
+
+            return null;
+        }
         
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
