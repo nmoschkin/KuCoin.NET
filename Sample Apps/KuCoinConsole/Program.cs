@@ -1586,7 +1586,7 @@ namespace KuCoinConsole
                             }
 
                             ft.WriteToEdgeLine("");
-                            ft.WriteToEdgeLine($"{{White}}{MinChars($"{sortobs[itemIndex].Symbol} - {sortobs[itemIndex].BaseCurrency.Name}", 40)}    Best Asks                      Best Bids{{Reset}}");
+                            ft.WriteToEdgeLine($"{{White}}{MinChars($"{sortobs[itemIndex].Symbol} - {sortobs[itemIndex].BaseCurrency.FullName}", 40)}    Best Asks                      Best Bids{{Reset}}");
                             ft.WriteToEdgeLine($"");
                             ft.WriteToEdgeLine($"Match Total: {{White}}{MinChars($"{matchgrand:#,##0}", 28)}{{Reset}}   {{Red}}{MinChars($"{asks[0].Price:#,##0.00######}", 10)}   {MinChars(asks[0].Size.ToString(), 10)}        {{Green}}{MinChars($"{bids[0].Price:#,##0.00######}", 10)}   {MinChars(bids[0].Size.ToString(), 10)}{{Reset}}");
                             ft.WriteToEdgeLine($"Grand Total: {{White}}{MinChars($"{biggrand:#,##0}", 28)}{{Reset}}   {{Red}}{MinChars($"{asks[1].Price:#,##0.00######}", 10)}   {MinChars(asks[1].Size.ToString(), 10)}        {{Green}}{MinChars($"{bids[1].Price:#,##0.00######}", 10)}   {MinChars(bids[1].Size.ToString(), 10)}{{Reset}}");
