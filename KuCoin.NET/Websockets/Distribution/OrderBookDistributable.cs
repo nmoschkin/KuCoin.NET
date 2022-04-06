@@ -299,7 +299,7 @@ namespace KuCoin.NET.Websockets.Distribution
                         startFetch = DateTime.UtcNow;
                         cts = new CancellationTokenSource();
                         
-                        Initialize().ContinueWith((t) =>
+                        _ = Initialize().ContinueWith((t) =>
                         {
                             if (t.Result)
                             {

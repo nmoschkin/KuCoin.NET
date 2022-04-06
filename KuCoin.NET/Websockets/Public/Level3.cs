@@ -165,7 +165,7 @@ namespace KuCoin.NET.Websockets.Public
 
             while ((DateTime.UtcNow - start).TotalSeconds < 60)
             {
-                await Task.Delay(10);
+                Thread.Sleep(10);
 
                 if (ft.IsCompleted)
                 {

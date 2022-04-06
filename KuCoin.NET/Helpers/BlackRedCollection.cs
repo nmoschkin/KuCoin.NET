@@ -78,7 +78,7 @@ namespace KuCoin.NET.Helpers
     /// </summary>
     /// <typeparam name="TKey">The type of key.</typeparam>
     /// <typeparam name="TValue">The type of value.</typeparam>
-    public abstract class KeyedRedBlackTree<TKey, TValue> : RedBlackCollection<TValue> // Do not implement: IReadOnlyDictionary<TKey, TValue>
+    public abstract class KeyedRedBlackTree<TKey, TValue> : BlackRedCollection<TValue> // Do not implement: IReadOnlyDictionary<TKey, TValue>
     {
         List<TValue> items;
 
@@ -164,13 +164,13 @@ namespace KuCoin.NET.Helpers
     }
 
     /// <summary>
-    /// A red/black tree implementation.
+    /// A sorted, discontiguous collection implementing a black/red node pattern.
     /// </summary>
     /// <typeparam name="T">The type of the collection (must be a class)</typeparam>
     /// <remarks>
     /// Items cannot be <see cref="null"/>.
     /// </remarks>
-    public class RedBlackCollection<T> : ComparingBase<T>, ICollection<T>
+    public class BlackRedCollection<T> : ComparingBase<T>, ICollection<T>
     {
         #region Protected Fields
 
@@ -211,14 +211,14 @@ namespace KuCoin.NET.Helpers
         #region Public Constructors
 
         /// <summary>
-        /// Creates a new instance of <see cref="RedBlackCollection{T}"/>.
+        /// Creates a new instance of <see cref="BlackRedCollection{T}"/>.
         /// </summary>
         /// <param name="space">The number of total new elements to insert for each single new element inserted.</param>
         /// <param name="comparer">The comparer class.</param>
         /// <param name="sortOrder">The sort order.</param>
         /// <exception cref="ArgumentOutOfRangeException"></exception>
         /// <exception cref="ArgumentException"></exception>
-        public RedBlackCollection(IComparer<T> comparer, float threshold = 1.2f, RebalanceStrategy globStrategy = RebalanceStrategy.Cadance4, RebalanceStrategy locStrategy = RebalanceStrategy.Cadence16) : base(comparer)
+        public BlackRedCollection(IComparer<T> comparer, float threshold = 1.2f, RebalanceStrategy globStrategy = RebalanceStrategy.Cadance4, RebalanceStrategy locStrategy = RebalanceStrategy.Cadence16) : base(comparer)
         {
             rebalanceThreshold = threshold;
             globalStrategy = globStrategy;
@@ -231,36 +231,36 @@ namespace KuCoin.NET.Helpers
         }
 
         /// <summary>
-        /// Creates a new instance of <see cref="RedBlackCollection{T}"/>.
+        /// Creates a new instance of <see cref="BlackRedCollection{T}"/>.
         /// </summary>
         /// <param name="sortOrder">The sort order.</param>
         /// <exception cref="ArgumentOutOfRangeException"></exception>
         /// <exception cref="ArgumentException"></exception>
-        public RedBlackCollection(float threshold = 1.2f, RebalanceStrategy globStrategy = RebalanceStrategy.Cadance4, RebalanceStrategy locStrategy = RebalanceStrategy.Cadence16) : this((IComparer<T>)null, threshold, globStrategy, locStrategy)
+        public BlackRedCollection(float threshold = 1.2f, RebalanceStrategy globStrategy = RebalanceStrategy.Cadance4, RebalanceStrategy locStrategy = RebalanceStrategy.Cadence16) : this((IComparer<T>)null, threshold, globStrategy, locStrategy)
         {
         }
 
         /// <summary>
-        /// Creates a new instance of <see cref="RedBlackCollection{T}"/>.
+        /// Creates a new instance of <see cref="BlackRedCollection{T}"/>.
         /// </summary>
         /// <param name="initialItems">The initial items used to populate the collection.</param>
         /// <param name="comparer">The comparer class.</param>
         /// <param name="sortOrder">The sort order.</param>
         /// <exception cref="ArgumentOutOfRangeException"></exception>
         /// <exception cref="ArgumentException"></exception>
-        public RedBlackCollection(IEnumerable<T> initialItems, IComparer<T> comparer, float threshold = 1.2f, RebalanceStrategy globStrategy = RebalanceStrategy.Cadance4, RebalanceStrategy locStrategy = RebalanceStrategy.Cadence16) : this(comparer, threshold, globStrategy, locStrategy)
+        public BlackRedCollection(IEnumerable<T> initialItems, IComparer<T> comparer, float threshold = 1.2f, RebalanceStrategy globStrategy = RebalanceStrategy.Cadance4, RebalanceStrategy locStrategy = RebalanceStrategy.Cadence16) : this(comparer, threshold, globStrategy, locStrategy)
         {
             AddRange(initialItems);
         }
 
         /// <summary>
-        /// Creates a new instance of <see cref="RedBlackCollection{T}"/>.
+        /// Creates a new instance of <see cref="BlackRedCollection{T}"/>.
         /// </summary>
         /// <param name="initialItems">The initial items used to populate the collection.</param>
         /// <param name="sortOrder">The sort order.</param>
         /// <exception cref="ArgumentOutOfRangeException"></exception>
         /// <exception cref="ArgumentException"></exception>
-        public RedBlackCollection(IEnumerable<T> initialItems, float threshold = 1.2f, RebalanceStrategy globStrategy = RebalanceStrategy.Cadance4, RebalanceStrategy locStrategy = RebalanceStrategy.Cadence16) : this((IComparer<T>)null, threshold, globStrategy, locStrategy)
+        public BlackRedCollection(IEnumerable<T> initialItems, float threshold = 1.2f, RebalanceStrategy globStrategy = RebalanceStrategy.Cadance4, RebalanceStrategy locStrategy = RebalanceStrategy.Cadence16) : this((IComparer<T>)null, threshold, globStrategy, locStrategy)
         {
             AddRange(initialItems);
         }
@@ -441,7 +441,7 @@ namespace KuCoin.NET.Helpers
         }
 
         /// <summary>
-        /// Adds multiple items to the <see cref="RedBlackCollection{T}"/> at once.
+        /// Adds multiple items to the <see cref="BlackRedCollection{T}"/> at once.
         /// </summary>
         /// <param name="newItems"></param>
         public void AddRange(IEnumerable<T> newItems)
@@ -514,7 +514,7 @@ namespace KuCoin.NET.Helpers
         }
 
         /// <summary>
-        /// Copies <paramref name="count"/> elements of the <see cref="RedBlackCollection{T}"/> to an <see cref="Array"/>, starting at a particular <see cref="Array"/> index.
+        /// Copies <paramref name="count"/> elements of the <see cref="BlackRedCollection{T}"/> to an <see cref="Array"/>, starting at a particular <see cref="Array"/> index.
         /// </summary>
         /// <param name="array"></param>
         /// <param name="arrayIndex"></param>
@@ -589,7 +589,7 @@ namespace KuCoin.NET.Helpers
         }
 
         /// <summary>
-        /// Return a new <see cref="Array"/> of the items in this <see cref="RedBlackCollection{T}"/>.
+        /// Return a new <see cref="Array"/> of the items in this <see cref="BlackRedCollection{T}"/>.
         /// </summary>
         /// <returns>A new <see cref="Array"/>.</returns>
         public T[] ToArray()
@@ -608,7 +608,7 @@ namespace KuCoin.NET.Helpers
         }
 
         /// <summary>
-        /// Return a new <see cref="Array"/> of at most <paramref name="elementCount"/> items in this <see cref="RedBlackCollection{T}"/>.
+        /// Return a new <see cref="Array"/> of at most <paramref name="elementCount"/> items in this <see cref="BlackRedCollection{T}"/>.
         /// </summary>
         /// <returns>A new <see cref="Array"/> with at most <paramref name="elementCount"/> items.</returns>
         public T[] ToArray(int elementCount)

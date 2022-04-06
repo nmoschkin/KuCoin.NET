@@ -101,6 +101,8 @@ namespace KuCoinConsole
         static int sortorder = -1;
 
         static bool sortEnabled = true;
+        
+        static bool msgEnabled = true;
 
         static int scrollIndex = 0;
 
@@ -377,7 +379,7 @@ namespace KuCoinConsole
 
             //sortEnabled = false;
 
-            _ = Task.Run(async () =>
+            var th = new Thread(async () =>
             {
                 ISymbolDataService curr = service;
                 var ass = activeSymbols.ToArray();
@@ -413,10 +415,12 @@ namespace KuCoinConsole
                     try
                     {
                         bool pass;
+
                         lock (lockObj)
                         {
                             pass = Observers.ContainsKey(sym);
                         }
+
                         if (!pass)
                         {
                             try
@@ -452,7 +456,7 @@ namespace KuCoinConsole
                                     await curr.EnableLevel3();
                                 }
 
-                                await Task.Delay(10);
+                                Thread.Sleep(10);
 
                                 if (curr.Level3Feed == null)
                                 {
@@ -464,7 +468,8 @@ namespace KuCoinConsole
                                     {
                                         await curr.EnableLevel3();
                                     }
-                                    await Task.Delay(10);
+                                    
+                                    Thread.Sleep(10);
                                 }
 
                             }
@@ -478,7 +483,6 @@ namespace KuCoinConsole
                                 }
 
                             }
-
 
                             if (curr.Level3Feed != null)
                             {
@@ -548,6 +552,11 @@ namespace KuCoinConsole
                 TickersReady?.Invoke(services, new EventArgs());
 
             });
+
+
+            th.IsBackground = true;
+            th.SetApartmentState(ApartmentState.MTA);
+            th.Start();
 
             // loop until the connection is broken or the program is exited.
             while (true)
@@ -697,6 +706,10 @@ namespace KuCoinConsole
                             }
                             else if (key.Key == ConsoleKey.M)
                             {
+                                msgEnabled = !msgEnabled;
+                            }
+                            else if (key.Key == ConsoleKey.D)
+                            {
                                 metrics = !metrics;
 
                                 lock (lockObj)
@@ -737,9 +750,9 @@ namespace KuCoinConsole
 
                 DateTime ts = DateTime.MinValue;
 
-                try
+                foreach (var obs in Observers)
                 {
-                    foreach (var obs in Observers)
+                    try
                     {
                         if (obs.Value?.Level3OrderBook?.FullDepthOrderBook == null) continue;
 
@@ -748,14 +761,14 @@ namespace KuCoinConsole
                             ts = obs.Value.Level3OrderBook.FullDepthOrderBook.Timestamp;
                         }
                     }
-                }
-                catch
-                {
-                    continue;
+                    catch
+                    {
+                    }
                 }
 
                 string headerText = null;
                 string footerText = null;
+
                 IEnumerable<string> itemStrings = null;
                 // create the text.
 
@@ -784,6 +797,7 @@ namespace KuCoinConsole
 
                 Console.ResetColor();
                 ColorConsole.Write(headerText);
+                
                 try
                 {
                     itemStrings = itemStrings.Where((s) => s is object).ToArray();
@@ -799,7 +813,9 @@ namespace KuCoinConsole
                 }
 
                 ColorConsole.WriteLine(footerText);
+                
                 conh = Console.CursorTop;
+                
                 if (conh < Console.WindowHeight)
                 {
                     for (int jz = conh; jz < Console.WindowHeight; jz++)
@@ -1588,7 +1604,7 @@ namespace KuCoinConsole
                             ft.WriteToEdgeLine("");
                             ft.WriteToEdgeLine($"{{White}}{MinChars($"{sortobs[itemIndex].Symbol} - {sortobs[itemIndex].BaseCurrency.FullName}", 40)}    Best Asks                      Best Bids{{Reset}}");
                             ft.WriteToEdgeLine($"");
-                            ft.WriteToEdgeLine($"Match Total: {{White}}{MinChars($"{matchgrand:#,##0}", 28)}{{Reset}}   {{Red}}{MinChars($"{asks[0].Price:#,##0.00######}", 10)}   {MinChars(asks[0].Size.ToString(), 10)}        {{Green}}{MinChars($"{bids[0].Price:#,##0.00######}", 10)}   {MinChars(bids[0].Size.ToString(), 10)}{{Reset}}");
+                            ft.WriteToEdgeLine($"Match Total: {{White}}{MinChars($"{matchgrand:#,##0}", 28)}{{Reset}}   {{BackgroundDarkBlue}}{{Red}}{MinChars($"{asks[0].Price:#,##0.00######}", 10)}   {MinChars(asks[0].Size.ToString(), 10)}        {{Green}}{MinChars($"{bids[0].Price:#,##0.00######}", 10)}   {MinChars(bids[0].Size.ToString(), 10)}{{Reset}}");
                             ft.WriteToEdgeLine($"Grand Total: {{White}}{MinChars($"{biggrand:#,##0}", 28)}{{Reset}}   {{Red}}{MinChars($"{asks[1].Price:#,##0.00######}", 10)}   {MinChars(asks[1].Size.ToString(), 10)}        {{Green}}{MinChars($"{bids[1].Price:#,##0.00######}", 10)}   {MinChars(bids[1].Size.ToString(), 10)}{{Reset}}");
                             ft.WriteToEdgeLine($"                                            {{Red}}{MinChars($"{asks[2].Price:#,##0.00######}", 10)}   {MinChars(asks[2].Size.ToString(), 10)}        {{Green}}{MinChars($"{bids[2].Price:#,##0.00######}", 10)}   {MinChars(bids[2].Size.ToString(), 10)}{{Reset}}");
                             ft.WriteToEdgeLine($"Matches Per Second:      ~ {{Cyan}}{MinChars($"{mps:#,##0}", 15)}{{Reset}}  {{Red}}{MinChars($"{asks[3].Price:#,##0.00######}", 10)}   {MinChars(asks[3].Size.ToString(), 10)}        {{Green}}{MinChars($"{bids[3].Price:#,##0.00######}", 10)}   {MinChars(bids[3].Size.ToString(), 10)}{{Reset}}");
@@ -1623,13 +1639,13 @@ namespace KuCoinConsole
                     }
 
                     ft.WriteToEdgeLine($"                                                       ");
-                    ft.WriteToEdgeLine($"{{White}}Use Arrow Up/Arrow Down, Page Up/Page Down, Home/End to navigate the feed list. Ctrl+Arrow Up/Down scrolls the message log, below.{{Reset}}");
+                    ft.WriteToEdgeLine($"{{White}}Use Arrow Up/Arrow Down, Page Up/Page Down, Home/End to navigate the feed list. Ctrl+Arrow Up/Down to select an item. Esc to clear selection.{{Reset}}");
                     ft.WriteToEdgeLine($"{{White}}Use Arrow Left/Arrow Right to switch between different connections.  Use Ctrl + Arrow Left/Arrow Right to change the K-Line.{{Reset}}");
-                    ft.WriteToEdgeLine($"{{White}}Press: (A) Sort Alphabetically, (P) Price, (V) Volume, (T) Throughput. Press again to reverse order. (M) Toggle Metrics. (Q) To Quit.");
+                    ft.WriteToEdgeLine($"{{White}}Press: (A) Sort Alphabetically, (P) Price, (V) Volume, (T) Throughput. Press again to reverse order. (D) Diagnostics. (M) Messages (Q) To Quit.");
 
                     lock (messages)
                     {
-                        if (messages.Count > 0)
+                        if (msgEnabled && messages.Count > 0)
                         {
                             if (msgidx < 0) msgidx = 0;
                             int mc = messages.Count, mi, mg;
