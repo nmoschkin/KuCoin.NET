@@ -468,7 +468,7 @@ namespace KuCoinConsole
                                     {
                                         await curr.EnableLevel3();
                                     }
-                                    
+
                                     Thread.Sleep(10);
                                 }
 
