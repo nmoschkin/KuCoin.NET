@@ -48,7 +48,7 @@ namespace KuCoin.NET.Data.Market
     /// Keyed Atomic Order Book
     /// </summary>
     /// <typeparam name="TUnit">Any <see cref="IAtomicOrderUnit"/> implementation.</typeparam>
-    public class KeyedBook<TUnit> : KeyedRedBlackTree<string, TUnit> where TUnit : IAtomicOrderUnit, new()
+    public class KeyedBook<TUnit> : KeyedBlackRedCollection<string, TUnit> where TUnit : IAtomicOrderUnit, new()
     {
         #region Public Constructors
       

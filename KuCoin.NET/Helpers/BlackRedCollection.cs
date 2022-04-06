@@ -74,11 +74,11 @@ namespace KuCoin.NET.Helpers
     }
 
     /// <summary>
-    /// A version of red/black tree with an additional buffer for keys.
+    /// A version of <see cref="BlackRedCollection{T}"/> with an additional cross-reference for keys.
     /// </summary>
     /// <typeparam name="TKey">The type of key.</typeparam>
     /// <typeparam name="TValue">The type of value.</typeparam>
-    public abstract class KeyedRedBlackTree<TKey, TValue> : BlackRedCollection<TValue> // Do not implement: IReadOnlyDictionary<TKey, TValue>
+    public abstract class KeyedBlackRedCollection<TKey, TValue> : BlackRedCollection<TValue> // Do not implement: IReadOnlyDictionary<TKey, TValue>
     {
         List<TValue> items;
 
@@ -90,12 +90,12 @@ namespace KuCoin.NET.Helpers
 
         #region Public Constructors
 
-        public KeyedRedBlackTree() : base()
+        public KeyedBlackRedCollection() : base()
         {
             items = (List<TValue>)base.Items;
         }
 
-        public KeyedRedBlackTree(IComparer<TValue> comparer) : base(comparer)
+        public KeyedBlackRedCollection(IComparer<TValue> comparer) : base(comparer)
         {
             items = (List<TValue>)base.Items;
         }
