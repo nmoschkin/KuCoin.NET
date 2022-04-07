@@ -134,20 +134,23 @@ namespace KuCoin.NET.Websockets.Distribution.Services
                         }
                     }
 
-                    if (zero)
+                    lock (lockObj)
                     {
-                        Thread.Sleep(5);
+                        if (Tenants.Count == 0)
+                        {
+                            Thread.Sleep(5);
+                        }
+                        else if (many)
+                        {
+                            Parallel.Invoke(arrActions);
+                            if (sleepDivisor < 0) continue;
+                        }
+                        else
+                        {
+                            Tenants[0].DoWork();
+                        }
                     }
-                    else if (many)
-                    {
-                        Parallel.Invoke(arrActions);
-                        if (sleepDivisor < 0) continue;
-                    }
-                    else if (Tenants.Count > 0)
-                    {
-                        Tenants[0].DoWork();
-                    }
-                    
+
                     if (f == sleepDivisor)
                     {
                         Thread.Sleep(idleSleepTime);

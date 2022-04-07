@@ -561,280 +561,289 @@ namespace KuCoinConsole
             // loop until the connection is broken or the program is exited.
             while (true)
             {
-                Console.CursorVisible = false;
-
-                if (lwidth != Console.WindowWidth || lheight != Console.WindowHeight)
-                {
-                    lwidth = Console.WindowWidth;
-                    lheight = Console.WindowHeight;
-
-                    Console.BufferHeight = Console.WindowHeight;
-                    Console.Clear();
-
-                    continue;
-                }
-
-                if (Console.KeyAvailable)
-                {
-                    while (Console.KeyAvailable)
-                    {
-
-                        var key = Console.ReadKey();
-
-                        if (key.Modifiers == ConsoleModifiers.Control)
-                        {
-                            if (key.Key == ConsoleKey.Home)
-                            {
-                                if (msgidx < messages.Count - 5)
-                                {
-                                    ++msgidx;
-                                }
-                            }
-                            else if (key.Key == ConsoleKey.End)
-                            {
-                                if (msgidx > 0)
-                                {
-                                    --msgidx;
-                                }
-                            }
-                            else if (key.Key == ConsoleKey.LeftArrow)
-                            {
-                                KlineLeft();
-                            }
-                            else if (key.Key == ConsoleKey.RightArrow)
-                            {
-                                KlineRight();
-                            }
-
-                            else if (key.Key == ConsoleKey.PageDown)
-                            {
-                                if (itemIndex == -1) itemIndex = scrollIndex;
-                                else itemIndex++;
-                            }
-                            else if (key.Key == ConsoleKey.PageUp)
-                            {
-                                if (itemIndex > 0)
-                                {
-                                    itemIndex--;
-                                }
-                            }
-                        }
-                        else
-                        {
-                            if (key.Key == ConsoleKey.Escape)
-                            {
-                                itemIndex = -1;
-                            }
-                            else if (key.Key == ConsoleKey.RightArrow)
-                            {
-                                currentConn++;
-                                if (currentConn >= feeds.Count)
-                                {
-                                    currentConn = -1;
-                                }
-                                scrollIndex = 0;
-                                itemIndex = -1;
-                                Console.Clear();
-                                continue;
-                            }
-                            else if (key.Key == ConsoleKey.LeftArrow)
-                            {
-                                currentConn--;
-                                if (currentConn < -1) currentConn = feeds.Count - 1;
-                                scrollIndex = 0;
-                                itemIndex = -1;
-                                Console.Clear();
-                                continue;
-                            }
-                            else if (key.Key == ConsoleKey.DownArrow)
-                            {
-                                if (scrollIndex < maxScrollIndex)
-                                {
-                                    ++scrollIndex;
-                                }
-                            }
-                            else if (key.Key == ConsoleKey.UpArrow)
-                            {
-                                if (scrollIndex > 0)
-                                {
-                                    --scrollIndex;
-                                }
-                            }
-                            else if (key.Key == ConsoleKey.PageDown)
-                            {
-                                if (scrollIndex < maxScrollIndex)
-                                {
-                                    scrollIndex += 10;
-                                    if (scrollIndex > maxScrollIndex) scrollIndex = maxScrollIndex;
-                                }
-                            }
-                            else if (key.Key == ConsoleKey.PageUp)
-                            {
-                                if (scrollIndex > 0)
-                                {
-                                    scrollIndex -= 10;
-                                    if (scrollIndex < 0) scrollIndex = 0;
-                                }
-                            }
-                            else if (key.Key == ConsoleKey.Home)
-                            {
-                                scrollIndex = 0;
-                            }
-                            else if (key.Key == ConsoleKey.End)
-                            {
-                                scrollIndex = maxScrollIndex;
-                            }
-                            else if (key.Key == ConsoleKey.V)
-                            {
-                                if (sortmode == 0) sortorder = sortorder * -1;
-                                else sortmode = 0;
-                            }
-                            else if (key.Key == ConsoleKey.P)
-                            {
-                                if (sortmode == 1) sortorder = sortorder * -1;
-                                else sortmode = 1;
-                            }
-                            else if (key.Key == ConsoleKey.A)
-                            {
-                                if (sortmode == 2) sortorder = sortorder * -1;
-                                else sortmode = 2;
-                            }
-                            else if (key.Key == ConsoleKey.T)
-                            {
-                                if (sortmode == 3) sortorder = sortorder * -1;
-                                else sortmode = 3;
-                            }
-                            else if (key.Key == ConsoleKey.M)
-                            {
-                                msgEnabled = !msgEnabled;
-                            }
-                            else if (key.Key == ConsoleKey.D)
-                            {
-                                metrics = !metrics;
-
-                                lock (lockObj)
-                                {
-                                    foreach (var obs in Observers)
-                                    {
-                                        if (obs.Value.Level3OrderBook != null)
-                                        {
-                                            obs.Value.Level3OrderBook.DiagnosticsEnabled = metrics;
-                                        }
-                                    }
-                                }
-
-                                Console.Clear();
-                            }
-                            else if (key.Key == ConsoleKey.Q)
-                            {
-                                Console.CursorTop = Console.WindowHeight - 1;
-                                Console.CursorVisible = true;
-                                Environment.Exit(0);
-                            }
-
-                        }
-
-                    }
-
-                }
-
-                Task.Delay(delay).ConfigureAwait(false).GetAwaiter().GetResult();
-
-
-                // remember the cursor position on the screen
-                int lpos = Console.CursorTop;
-                Console.CursorTop = 0;
-                Console.CursorLeft = 0;
-
-                // let's find the most current update date/time from all feeds
-
-                DateTime ts = DateTime.MinValue;
-
-                foreach (var obs in Observers)
-                {
-                    try
-                    {
-                        if (obs.Value?.Level3OrderBook?.FullDepthOrderBook == null) continue;
-
-                        if (obs.Value.Level3OrderBook.FullDepthOrderBook.Timestamp > ts)
-                        {
-                            ts = obs.Value.Level3OrderBook.FullDepthOrderBook.Timestamp;
-                        }
-                    }
-                    catch
-                    {
-                    }
-                }
-
-                string headerText = null;
-                string footerText = null;
-
-                IEnumerable<string> itemStrings = null;
-                // create the text.
-
-                WriteOut(ref headerText, ref itemStrings, ref footerText, ts);
-
-                if (headerText == "DISCONNECTED") break;
-
-                var headlines = headerText?.Split("\r\n")?.Length ?? 0;
-                var footerlines = footerText?.Split("\r\n")?.Length ?? 0;
-
-                var itemlines = itemStrings?.FirstOrDefault()?.Split("\r\n")?.Length ?? 3;
-
-                int conh = Console.WindowHeight - (headlines + footerlines + 2);
-                int maxitems = conh / itemlines;
-                if (maxitems > Observers.Count) maxitems = Observers.Count;
-
-                if (maxRows != maxitems)
-                {
-                    maxRows = maxitems;
-                    maxScrollIndex = Observers.Count - maxRows;
-
-                    if (scrollIndex > maxScrollIndex) scrollIndex = maxScrollIndex;
-
-                    WriteOut(ref headerText, ref itemStrings, ref footerText, ts);
-                }
-
-                Console.ResetColor();
-                ColorConsole.Write(headerText);
                 
                 try
                 {
-                    itemStrings = itemStrings.Where((s) => s is object).ToArray();
-                }
-                catch
-                {                    
-                    continue;
-                }
 
-                foreach (var sitem in itemStrings)
-                {
-                    ColorConsole.WriteLine(sitem);
-                }
+                    Console.CursorVisible = false;
 
-                ColorConsole.WriteLine(footerText);
-                
-                conh = Console.CursorTop;
-                
-                if (conh < Console.WindowHeight)
-                {
-                    for (int jz = conh; jz < Console.WindowHeight; jz++)
+                    if (lwidth != Console.WindowWidth || lheight != Console.WindowHeight)
                     {
-                        if (jz < Console.WindowHeight - 1)
-                            Console.WriteLine(MinChars("", Console.WindowWidth - 2));
-                        else
-                            Console.Write(MinChars("", Console.WindowWidth - 2));
+                        lwidth = Console.WindowWidth;
+                        lheight = Console.WindowHeight;
+
+                        Console.BufferHeight = Console.WindowHeight;
+                        Console.Clear();
+
+                        continue;
                     }
+
+                    if (Console.KeyAvailable)
+                    {
+                        while (Console.KeyAvailable)
+                        {
+
+                            var key = Console.ReadKey();
+
+                            if (key.Modifiers == ConsoleModifiers.Control)
+                            {
+                                if (key.Key == ConsoleKey.Home)
+                                {
+                                    if (msgidx < messages.Count - 5)
+                                    {
+                                        ++msgidx;
+                                    }
+                                }
+                                else if (key.Key == ConsoleKey.End)
+                                {
+                                    if (msgidx > 0)
+                                    {
+                                        --msgidx;
+                                    }
+                                }
+                                else if (key.Key == ConsoleKey.LeftArrow)
+                                {
+                                    KlineLeft();
+                                }
+                                else if (key.Key == ConsoleKey.RightArrow)
+                                {
+                                    KlineRight();
+                                }
+
+                                else if (key.Key == ConsoleKey.PageDown)
+                                {
+                                    if (itemIndex == -1) itemIndex = scrollIndex;
+                                    else itemIndex++;
+                                }
+                                else if (key.Key == ConsoleKey.PageUp)
+                                {
+                                    if (itemIndex > 0)
+                                    {
+                                        itemIndex--;
+                                    }
+                                }
+                            }
+                            else
+                            {
+                                if (key.Key == ConsoleKey.Escape)
+                                {
+                                    itemIndex = -1;
+                                }
+                                else if (key.Key == ConsoleKey.RightArrow)
+                                {
+                                    currentConn++;
+                                    if (currentConn >= feeds.Count)
+                                    {
+                                        currentConn = -1;
+                                    }
+                                    scrollIndex = 0;
+                                    itemIndex = -1;
+                                    Console.Clear();
+                                    continue;
+                                }
+                                else if (key.Key == ConsoleKey.LeftArrow)
+                                {
+                                    currentConn--;
+                                    if (currentConn < -1) currentConn = feeds.Count - 1;
+                                    scrollIndex = 0;
+                                    itemIndex = -1;
+                                    Console.Clear();
+                                    continue;
+                                }
+                                else if (key.Key == ConsoleKey.DownArrow)
+                                {
+                                    if (scrollIndex < maxScrollIndex)
+                                    {
+                                        ++scrollIndex;
+                                    }
+                                }
+                                else if (key.Key == ConsoleKey.UpArrow)
+                                {
+                                    if (scrollIndex > 0)
+                                    {
+                                        --scrollIndex;
+                                    }
+                                }
+                                else if (key.Key == ConsoleKey.PageDown)
+                                {
+                                    if (scrollIndex < maxScrollIndex)
+                                    {
+                                        scrollIndex += 10;
+                                        if (scrollIndex > maxScrollIndex) scrollIndex = maxScrollIndex;
+                                    }
+                                }
+                                else if (key.Key == ConsoleKey.PageUp)
+                                {
+                                    if (scrollIndex > 0)
+                                    {
+                                        scrollIndex -= 10;
+                                        if (scrollIndex < 0) scrollIndex = 0;
+                                    }
+                                }
+                                else if (key.Key == ConsoleKey.Home)
+                                {
+                                    scrollIndex = 0;
+                                }
+                                else if (key.Key == ConsoleKey.End)
+                                {
+                                    scrollIndex = maxScrollIndex;
+                                }
+                                else if (key.Key == ConsoleKey.V)
+                                {
+                                    if (sortmode == 0) sortorder = sortorder * -1;
+                                    else sortmode = 0;
+                                }
+                                else if (key.Key == ConsoleKey.P)
+                                {
+                                    if (sortmode == 1) sortorder = sortorder * -1;
+                                    else sortmode = 1;
+                                }
+                                else if (key.Key == ConsoleKey.A)
+                                {
+                                    if (sortmode == 2) sortorder = sortorder * -1;
+                                    else sortmode = 2;
+                                }
+                                else if (key.Key == ConsoleKey.T)
+                                {
+                                    if (sortmode == 3) sortorder = sortorder * -1;
+                                    else sortmode = 3;
+                                }
+                                else if (key.Key == ConsoleKey.M)
+                                {
+                                    msgEnabled = !msgEnabled;
+                                }
+                                else if (key.Key == ConsoleKey.D)
+                                {
+                                    metrics = !metrics;
+
+                                    lock (lockObj)
+                                    {
+                                        foreach (var obs in Observers)
+                                        {
+                                            if (obs.Value.Level3OrderBook != null)
+                                            {
+                                                obs.Value.Level3OrderBook.DiagnosticsEnabled = metrics;
+                                            }
+                                        }
+                                    }
+
+                                    Console.Clear();
+                                }
+                                else if (key.Key == ConsoleKey.Q)
+                                {
+                                    Console.CursorTop = Console.WindowHeight - 1;
+                                    Console.CursorVisible = true;
+                                    Environment.Exit(0);
+                                }
+
+                            }
+
+                        }
+
+                    }
+
+                    Task.Delay(delay).ConfigureAwait(false).GetAwaiter().GetResult();
+
+
+                    // remember the cursor position on the screen
+                    int lpos = Console.CursorTop;
+                    Console.CursorTop = 0;
+                    Console.CursorLeft = 0;
+
+                    // let's find the most current update date/time from all feeds
+
+                    DateTime ts = DateTime.MinValue;
+
+                    foreach (var obs in Observers)
+                    {
+                        try
+                        {
+                            if (obs.Value?.Level3OrderBook?.FullDepthOrderBook == null) continue;
+
+                            if (obs.Value.Level3OrderBook.FullDepthOrderBook.Timestamp > ts)
+                            {
+                                ts = obs.Value.Level3OrderBook.FullDepthOrderBook.Timestamp;
+                            }
+                        }
+                        catch
+                        {
+                        }
+                    }
+
+                    string headerText = null;
+                    string footerText = null;
+
+                    IEnumerable<string> itemStrings = null;
+                    // create the text.
+
+                    WriteOut(ref headerText, ref itemStrings, ref footerText, ts);
+
+                    if (headerText == "DISCONNECTED") break;
+
+                    var headlines = headerText?.Split("\r\n")?.Length ?? 0;
+                    var footerlines = footerText?.Split("\r\n")?.Length ?? 0;
+
+                    var itemlines = itemStrings?.FirstOrDefault()?.Split("\r\n")?.Length ?? 3;
+
+                    int conh = Console.WindowHeight - (headlines + footerlines + 2);
+                    int maxitems = conh / itemlines;
+                    if (maxitems > Observers.Count) maxitems = Observers.Count;
+
+                    if (maxRows != maxitems)
+                    {
+                        maxRows = maxitems;
+                        maxScrollIndex = Observers.Count - maxRows;
+
+                        if (scrollIndex > maxScrollIndex) scrollIndex = maxScrollIndex;
+
+                        WriteOut(ref headerText, ref itemStrings, ref footerText, ts);
+                    }
+
+                    Console.ResetColor();
+                    ColorConsole.Write(headerText);
+                
+                    try
+                    {
+                        itemStrings = itemStrings.Where((s) => s is object).ToArray();
+                    }
+                    catch
+                    {                    
+                        continue;
+                    }
+
+                    foreach (var sitem in itemStrings)
+                    {
+                        ColorConsole.WriteLine(sitem);
+                    }
+
+                    ColorConsole.WriteLine(footerText);
+                
+                    conh = Console.CursorTop;
+                
+                    if (conh < Console.WindowHeight)
+                    {
+                        for (int jz = conh; jz < Console.WindowHeight; jz++)
+                        {
+                            if (jz < Console.WindowHeight - 1)
+                                Console.WriteLine(MinChars("", Console.WindowWidth - 2));
+                            else
+                                Console.Write(MinChars("", Console.WindowWidth - 2));
+                        }
+                    }
+                    // write the text to the console.
+                    //var text = readOut.ToString();
+
+                    //Console.Write(text);
+
+                    // restore the cursor position.
+                    if (Console.CursorTop != lpos) Console.CursorTop = lpos;
+                    if (Console.CursorLeft != 0) Console.CursorLeft = 0;
                 }
-                // write the text to the console.
-                //var text = readOut.ToString();
-
-                //Console.Write(text);
-
-                // restore the cursor position.
-                if (Console.CursorTop != lpos) Console.CursorTop = lpos;
-                if (Console.CursorLeft != 0) Console.CursorLeft = 0;
-
+                catch (Exception ex)
+                {
+                    KuCoinSystem.Logger.Log(ex.Message);
+                    Environment.Exit(-1);
+                }
             }
 
             fslog?.Dispose();

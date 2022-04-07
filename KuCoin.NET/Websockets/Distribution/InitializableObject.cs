@@ -222,8 +222,9 @@ namespace KuCoin.NET.Websockets.Distribution
                         if (initData != null) break;
                     }
                 }
-                catch
+                catch (Exception ex)
                 {
+                    KuCoinSystem.Logger.Log(ex.Message);
                     initData = default;
                     break;
                 }
@@ -231,12 +232,12 @@ namespace KuCoin.NET.Websockets.Distribution
 
             lock (lockObj)
             {
-                if (initData == null)
+                if (!(initData is object))
                 {
                     State = FeedState.Failed;
                     LastFailureTime = DateTime.UtcNow;
                     Failure = true;
-                    FailReason = FailReason.Other;
+                    FailReason = FailReason.OrderBookTimeout;
                     OnPropertyChanged(nameof(TimeUntilNextRetry));
 
                     initializing = false;

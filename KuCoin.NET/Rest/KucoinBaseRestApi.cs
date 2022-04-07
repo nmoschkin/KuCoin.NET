@@ -11,6 +11,7 @@ using System.Collections.Generic;
 using System.Net.Http;
 using System.Security.Cryptography;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Xml.XPath;
 
@@ -529,7 +530,7 @@ namespace KuCoin.NET.Rest
                 {
                     if (nt - lastTime < 2_500_000)
                     {
-                        Task.Delay(250).ConfigureAwait(false).GetAwaiter().GetResult();
+                        Thread.Sleep(250);
                     }
 
                     lastTime = nt;

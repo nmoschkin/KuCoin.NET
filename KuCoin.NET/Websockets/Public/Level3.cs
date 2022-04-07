@@ -175,7 +175,11 @@ namespace KuCoin.NET.Websockets.Public
 
             cts.Cancel();
 
-            if (err != null) throw err;
+            if (err != null)
+            {
+                Logger.Log(err.Message);
+                throw err;
+            }
 
             return null;
         }
