@@ -1,8 +1,6 @@
 # KuCoin.NET v2.0 Experimental
 KuCoin and KuCoin Futures API Libraries for .NET.
 
-_Experimental Branch_
-
 _This library is a client for the KuCoin API as described in (https://docs.kucoin.com/#general)._
 
 __ATTENTION__: __The WPF Project has been moved to the 'legacy' branch.__
