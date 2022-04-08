@@ -22,6 +22,11 @@ namespace KuCoin.NET.Websockets.Distribution
 
     }
 
+    /// <summary>
+    /// Provides initial data to a websocket feed observation with the results then passed to a callback function.
+    /// </summary>
+    /// <typeparam name="TKey">The type of key that identifies the data.</typeparam>
+    /// <typeparam name="TData">The type of data.</typeparam>
     public interface IInitialDataProviderCallback<TKey, TData> 
     {
         /// <summary>

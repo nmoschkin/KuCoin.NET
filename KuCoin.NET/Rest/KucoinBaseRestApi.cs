@@ -420,7 +420,29 @@ namespace KuCoin.NET.Rest
             return l;
         }
 
+        
+        /// <summary>
+        /// Gets the last error encountered by the most recent invocation of <see cref="BeginMakeRequest(Action{JToken}, HttpMethod, string, int, bool, IDictionary{string, object}, bool)"/>.
+        /// </summary>
+        public Exception LastCallBackError { get; protected set; }
 
+
+        /// <summary>
+        /// Make a new request to the API endpoint with a callback function.
+        /// </summary>
+        /// <param name="callback">The callback function to execute after the connection has returned or timed out.</param>
+        /// <param name="method">The <see cref="HttpMethod"/> of the new call.</param>
+        /// <param name="uri">The relative path of the endpoint.</param>
+        /// <param name="timeout">Timeout value, in seconds.</param>
+        /// <param name="auth">True if the call is authenticated.</param>
+        /// <param name="reqParams">Optional parameters for the call.</param>
+        /// <param name="wholeResponseJson">True to return the whole response, or false to just return the 'data' portion.</param>
+        /// <remarks>
+        /// A <see cref="JToken"/> object that can be deserialized to suit members in the derived class will be passed to the <paramref name="callback"/> function.
+        /// <br /><br />This function returns immediately. Results should be handled by the <paramref name="callback"/> function.
+        /// <br /><br />In case of error, a null value is returned. The exception can be retrieved from the <see cref="LastCallBackError"/> property.
+        /// </remarks>
+        /// 
         protected void BeginMakeRequest(
             Action<JToken> callback,
             HttpMethod method,
@@ -437,8 +459,9 @@ namespace KuCoin.NET.Rest
                     var result = await MakeRequest(method, uri, timeout, auth, reqParams, wholeResponseJson);
                     callback(result);
                 }
-                catch
-                {
+                catch (Exception ex)
+                {                   
+                    LastCallBackError = ex;
                     callback(null);
                 }
             });
@@ -561,8 +584,8 @@ namespace KuCoin.NET.Rest
                 }
 
                 var resp = await httpClient.SendAsync(req);
-                var result = await CheckResponseData(resp, wholeResponseJson);
 
+                var result = await CheckResponseData(resp, wholeResponseJson);
                 return result;
             }
         }
