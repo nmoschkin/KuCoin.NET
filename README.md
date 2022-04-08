@@ -102,8 +102,6 @@ The user will be prompted to enter their pin, and then be asked to provide eithe
 
 The console app only demonstrates the ability to track __Level3Direct__ feeds.  Other functionality is not demonstrated in the examples, at this time.
 
-__Note__: The list will not sort until all connections have been created.
-
 _(Try running with __300__ feeds.  Works well on an i7-10700K with a Gigabit internet connection, but it only uses about 20-30 Mbps.  Uses about 1.4 GB of RAM)_
 
 ![](docs/docimg1.png?raw=true)
