@@ -122,30 +122,27 @@ namespace KuCoin.NET.Websockets.Public
             return new Level3OrderBook(this, sym);
         }
 
-        public void BeginProvideInitialData(string key, Action<KeyedAtomicOrderBook<AtomicOrderUnit>> callback)
-        {
-            BeginProvideInitialData(0, key, callback);
-        }
-
-        protected void BeginProvideInitialData(int tries, string key, Action<KeyedAtomicOrderBook<AtomicOrderUnit>> callback)
+        protected override void BeginProvideInitialData(string key, Action<KeyedAtomicOrderBook<AtomicOrderUnit>> callback, int tryCount)
         {
             var curl = InitialDataUrl;
-            var param = new Dictionary<string, object>();
             KeyedAtomicOrderBook<AtomicOrderUnit> orderbook = null;
 
-            param.Add("symbol", key);
+            var param = new Dictionary<string, object>
+            {
+                { "symbol", key }
+            };
 
             BeginMakeRequest((jobj) =>
             {
                 if (jobj == null)
                 {
-                    if (tries >= 3)
+                    if (tryCount >= 3)
                     {
                         callback(null);
                         return;
                     }
 
-                    BeginProvideInitialData(tries + 1, key, callback);
+                    BeginProvideInitialData(key, callback, tryCount + 1);
                     return;
                 }
 
@@ -161,7 +158,6 @@ namespace KuCoin.NET.Websockets.Public
                 callback(orderbook);
 
             }, HttpMethod.Get, curl, auth: !IsPublic, reqParams: param);
-
         }
 
         public override async Task<KeyedAtomicOrderBook<AtomicOrderUnit>> ProvideInitialData(string key)
@@ -169,10 +165,12 @@ namespace KuCoin.NET.Websockets.Public
             Exception err = null;
 
             var curl = InitialDataUrl;
-            var param = new Dictionary<string, object>();
             KeyedAtomicOrderBook<AtomicOrderUnit> orderbook = null;
 
-            param.Add("symbol", key);
+            var param = new Dictionary<string, object>
+            {
+                { "symbol", key }
+            };
 
             int tries, maxtries = 3;
 
@@ -198,10 +196,8 @@ namespace KuCoin.NET.Websockets.Public
                 catch (Exception ex)
                 {
                     err = ex;
-                    break;
                 }
             }
-
 
             if (err != null)
             {
