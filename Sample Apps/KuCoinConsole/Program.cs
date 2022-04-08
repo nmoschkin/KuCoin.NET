@@ -141,6 +141,8 @@ namespace KuCoinConsole
         {
             AppCenter.Start("d364ea69-c1fa-4d0d-8c37-debaa05f91bc",
                typeof(Analytics), typeof(Crashes));
+            
+            Console.Title = "KuCoin.NET Sample Console App";
 
             RunProgram();
         }
