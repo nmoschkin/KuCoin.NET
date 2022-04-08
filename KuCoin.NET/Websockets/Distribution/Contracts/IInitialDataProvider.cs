@@ -21,4 +21,10 @@ namespace KuCoin.NET.Websockets.Distribution
         Task<TData> ProvideInitialData(TKey key);
 
     }
+
+    public interface IInitialDataProviderCallback<TKey, TData> 
+    {
+        void BeginProvideInitialData(TKey key, Action<TData> callback);
+    }
+
 }

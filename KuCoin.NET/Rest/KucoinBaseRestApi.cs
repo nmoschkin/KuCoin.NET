@@ -190,20 +190,20 @@ namespace KuCoin.NET.Rest
                 // with a new default data contract resolver.
                 // This is set specifically for cases where we must deserialize decimal entities from strings.
                 ContractResolver = DataContractResolver.Instance,
-                
+
                 // We want to overwrite observable entities with new data
                 DefaultValueHandling = DefaultValueHandling.IgnoreAndPopulate,
 
                 // We don't care about nothing
                 NullValueHandling = NullValueHandling.Ignore,
 
-                Converters = new JsonConverter[] 
+                Converters = new JsonConverter[]
                 {
                     new StringToDecimalConverter()
                 },
 
                 FloatParseHandling = FloatParseHandling.Decimal
-                
+
             };
 
             // Set the new global default behavior for the JSON library.
@@ -418,6 +418,30 @@ namespace KuCoin.NET.Rest
             }
 
             return l;
+        }
+
+
+        protected void BeginMakeRequest(
+            Action<JToken> callback,
+            HttpMethod method,
+            string uri,
+            int timeout = 10,
+            bool auth = true,
+            IDictionary<string, object> reqParams = null,
+            bool wholeResponseJson = false)
+        {
+            _ = Task.Run(async () =>
+            {
+                try
+                {
+                    var result = await MakeRequest(method, uri, timeout, auth, reqParams, wholeResponseJson);
+                    callback(result);
+                }
+                catch
+                {
+                    callback(null);
+                }
+            });
         }
 
         /// <summary>

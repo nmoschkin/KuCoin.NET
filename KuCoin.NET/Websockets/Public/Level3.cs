@@ -28,7 +28,7 @@ namespace KuCoin.NET.Websockets.Public
 
     }
 
-    public class Level3 : OrderBookFeed<Level3OrderBook, Level3Update, KeyedAtomicOrderBook<AtomicOrderUnit>, ObservableAtomicOrderBook<ObservableAtomicOrderUnit>, Level3>, ILevel3
+    public class Level3 : OrderBookFeed<Level3OrderBook, Level3Update, KeyedAtomicOrderBook<AtomicOrderUnit>, ObservableAtomicOrderBook<ObservableAtomicOrderUnit>, Level3>, ILevel3, IInitialDataProviderCallback<string, KeyedAtomicOrderBook<AtomicOrderUnit>>
     {
 
         public const int buy = -813464969;
@@ -121,25 +121,68 @@ namespace KuCoin.NET.Websockets.Public
         {
             return new Level3OrderBook(this, sym);
         }
-        
+
+        public void BeginProvideInitialData(string key, Action<KeyedAtomicOrderBook<AtomicOrderUnit>> callback)
+        {
+            BeginProvideInitialData(0, key, callback);
+        }
+
+        protected void BeginProvideInitialData(int tries, string key, Action<KeyedAtomicOrderBook<AtomicOrderUnit>> callback)
+        {
+            var curl = InitialDataUrl;
+            var param = new Dictionary<string, object>();
+            KeyedAtomicOrderBook<AtomicOrderUnit> orderbook = null;
+
+            param.Add("symbol", key);
+
+            BeginMakeRequest((jobj) =>
+            {
+                if (jobj == null)
+                {
+                    if (tries >= 3)
+                    {
+                        callback(null);
+                        return;
+                    }
+
+                    BeginProvideInitialData(tries + 1, key, callback);
+                    return;
+                }
+
+                orderbook = new KeyedAtomicOrderBook<AtomicOrderUnit>();
+
+                var asks = jobj["asks"] as JArray;
+                var bids = jobj["bids"] as JArray;
+
+                orderbook.Asks.Capacity = asks.Count * 4;
+                orderbook.Bids.Capacity = bids.Count * 4;
+
+                jobj.Populate(orderbook);
+                callback(orderbook);
+
+            }, HttpMethod.Get, curl, auth: !IsPublic, reqParams: param);
+
+        }
+
         public override async Task<KeyedAtomicOrderBook<AtomicOrderUnit>> ProvideInitialData(string key)
         {
             Exception err = null;
 
-            var cts = new CancellationTokenSource();
+            var curl = InitialDataUrl;
+            var param = new Dictionary<string, object>();
+            KeyedAtomicOrderBook<AtomicOrderUnit> orderbook = null;
 
-            var ft = Task.Run(async () =>
+            param.Add("symbol", key);
+
+            int tries, maxtries = 3;
+
+            for (tries = 0; tries < maxtries; tries++)
             {
-                var curl = InitialDataUrl;
-                var param = new Dictionary<string, object>();
-
-                param.Add("symbol", key);
-
                 try
                 {
                     var jobj = await MakeRequest(HttpMethod.Get, curl, auth: !IsPublic, reqParams: param);
 
-                    var orderbook = new KeyedAtomicOrderBook<AtomicOrderUnit>();
+                    orderbook = new KeyedAtomicOrderBook<AtomicOrderUnit>();
 
                     var asks = jobj["asks"] as JArray;
                     var bids = jobj["bids"] as JArray;
@@ -149,31 +192,16 @@ namespace KuCoin.NET.Websockets.Public
 
                     jobj.Populate(orderbook);
 
-
                     GC.Collect(2);
-                    return orderbook;
+                    break;
                 }
                 catch (Exception ex)
                 {
                     err = ex;
-                    return null;
-                }
-
-            }, cts.Token);
-
-            DateTime start = DateTime.UtcNow;
-
-            while ((DateTime.UtcNow - start).TotalSeconds < 60)
-            {
-                Thread.Sleep(10);
-
-                if (ft.IsCompleted)
-                {
-                    return ft.Result;
+                    break;
                 }
             }
 
-            cts.Cancel();
 
             if (err != null)
             {
@@ -181,9 +209,9 @@ namespace KuCoin.NET.Websockets.Public
                 throw err;
             }
 
-            return null;
+            return orderbook;
         }
-        
+
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         protected override void RouteJsonPacket(string json, FeedMessage e = null)
@@ -571,5 +599,6 @@ namespace KuCoin.NET.Websockets.Public
                 }
             }
         }
+
     }
 }

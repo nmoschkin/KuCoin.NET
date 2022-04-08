@@ -221,4 +221,35 @@ namespace KuCoin.NET.Websockets.Distribution
         }
     }
 
+
+    public abstract class CallbackEnabledDistributionFeed<TDistributable, TKey, TValue, TInitial> 
+        : DistributionFeed<TDistributable, TKey, TValue, TInitial>, IInitialDataProviderCallback<TKey, TValue>
+        where TDistributable : DistributableObject<TKey, TValue>
+        where TValue : IStreamableObject
+
+    {
+        /// <summary>
+        /// Instantiate a new distribution feed.
+        /// </summary>
+        /// <param name="credentialsProvider">API Credentials.</param>
+        public CallbackEnabledDistributionFeed(ICredentialsProvider credentialsProvider) : base(credentialsProvider)
+        {
+        }
+
+        /// <summary>
+        /// Instantiate a new distribution feed.
+        /// </summary>
+        /// <param name="key">API key.</param>
+        /// <param name="secret">API secret.</param>
+        /// <param name="passphrase">API passphrase.</param>
+        /// <param name="isSandbox">True if sandbox mode.</param>
+        /// <param name="futures">True if KuCoin Futures.</param>
+        public CallbackEnabledDistributionFeed(string key, string secret, string passphrase, bool isSandbox = false, bool futures = false) : base(key, secret, passphrase, isSandbox: isSandbox, futures: futures)
+        {
+        }
+
+        public abstract void BeginProvideInitialData(TKey key, Action<TValue> callback);
+        
+    }
+
 }
