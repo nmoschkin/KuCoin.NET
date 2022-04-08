@@ -122,6 +122,20 @@ namespace KuCoin.NET.Websockets.Public
             return new Level3OrderBook(this, sym);
         }
 
+        protected KeyedAtomicOrderBook<AtomicOrderUnit> ToOrderBook(JToken jobj)
+        {
+            var orderbook = new KeyedAtomicOrderBook<AtomicOrderUnit>();
+
+            var asks = jobj["asks"] as JArray;
+            var bids = jobj["bids"] as JArray;
+
+            orderbook.Asks.Capacity = (int)(asks.Count * 2.5);
+            orderbook.Bids.Capacity = (int)(bids.Count * 2.5);
+
+            jobj.Populate(orderbook);
+            return orderbook;
+        }
+
         protected override void BeginProvideInitialData(string key, Action<KeyedAtomicOrderBook<AtomicOrderUnit>> callback, int tryCount)
         {
             var curl = InitialDataUrl;
@@ -146,15 +160,7 @@ namespace KuCoin.NET.Websockets.Public
                     return;
                 }
 
-                orderbook = new KeyedAtomicOrderBook<AtomicOrderUnit>();
-
-                var asks = jobj["asks"] as JArray;
-                var bids = jobj["bids"] as JArray;
-
-                orderbook.Asks.Capacity = asks.Count * 4;
-                orderbook.Bids.Capacity = bids.Count * 4;
-
-                jobj.Populate(orderbook);
+                orderbook = ToOrderBook(jobj);
                 callback(orderbook);
 
             }, HttpMethod.Get, curl, auth: !IsPublic, reqParams: param);
@@ -179,16 +185,7 @@ namespace KuCoin.NET.Websockets.Public
                 try
                 {
                     var jobj = await MakeRequest(HttpMethod.Get, curl, auth: !IsPublic, reqParams: param);
-
-                    orderbook = new KeyedAtomicOrderBook<AtomicOrderUnit>();
-
-                    var asks = jobj["asks"] as JArray;
-                    var bids = jobj["bids"] as JArray;
-
-                    orderbook.Asks.Capacity = asks.Count * 4;
-                    orderbook.Bids.Capacity = bids.Count * 4;
-
-                    jobj.Populate(orderbook);
+                    orderbook = ToOrderBook(jobj);
 
                     GC.Collect(2);
                     break;
