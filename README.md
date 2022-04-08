@@ -1,4 +1,4 @@
-# KuCoin.NET v2.0 Experimental
+# KuCoin.NET v2.0a
 KuCoin and KuCoin Futures API Libraries for .NET.
 
 _This library is a client for the KuCoin API as described in (https://docs.kucoin.com/#general)._
