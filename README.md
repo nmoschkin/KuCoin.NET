@@ -9,11 +9,19 @@ __ATTENTION__: __The WPF Project has been moved to the 'legacy' branch.__
 
 #### VERSION 2 MERGED TO MAIN BRANCH
 
- - Dramatic speed improvements.
- - The order books in the sample app now load without freezing the UI, and much more quickly.
- - Implemented a custom Black/Red Binary Collection for the order books.
- - Implemented a callback pattern for HTTP requests and added this to the very root of the project classes.
- - Ability to select individual tickers in the console app (Ctrl + Page Up / Page Down).
+ - __Dramatic speed improvements.__
+ - The order books in the sample app now __load without freezing the UI__, and much more quickly.
+ - Implemented an experimental __Custom Black/Red Binary Collection__ for the order books.
+ - Implemented a __callback pattern for HTTP requests__ and added this to the very root of the project classes.
+ - Ability to __select individual tickers__ in the console app (Ctrl + Page Up / Page Down).
+
+#### Roadmap:
+
+ - Consolidate the base framework classes into an agnostic framework for reuse in other projects.
+ - Continue to analyze and tweak performance of the Black/Red Collection.
+ - Unify and improve the parallel distribution services.
+ - Formalize the __CryptoCredentials__ class from the credentials app and make it available for reuse.
+
 
 ### April 5, 2022:
 
