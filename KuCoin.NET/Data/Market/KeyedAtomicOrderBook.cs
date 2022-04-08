@@ -37,21 +37,20 @@ namespace KuCoin.NET.Data.Market
         /// The keyed list of asks (sell)
         /// </summary>
         [JsonProperty("asks")]
-        public KeyedBook<T> Asks { get; set; } = new KeyedBook<T>();
+        public virtual KeyedBook<T> Asks { get; set; } = new KeyedBook<T>(false);
 
         /// <summary>
         /// The keyed list of bids (buy)
         /// </summary>
         [JsonProperty("bids")]
-        public KeyedBook<T> Bids { get; set; } = new KeyedBook<T>(true);
+        public virtual KeyedBook<T> Bids { get; set; } = new KeyedBook<T>(true);
 
-        IList<T> IOrderUnitList<T>.Asks => Asks;
+        ICollection<T> IOrderUnitCollection<T>.Asks => Asks;
 
-        IList<T> IOrderUnitList<T>.Bids => Bids;
+        ICollection<T> IOrderUnitCollection<T>.Bids => Bids;
 
-        IList<T> IDataSeries<T, T, IList<T>, IList<T>>.Data1 => Asks;
-
-        IList<T> IDataSeries<T, T, IList<T>, IList<T>>.Data2 => Bids;
+        ICollection<T> IDataSeries<T, T, ICollection<T>, ICollection<T>>.Data1 => Asks;
+        ICollection<T> IDataSeries<T, T, ICollection<T>, ICollection<T>>.Data2 => Bids;
     }
 
     /// <summary>
@@ -121,13 +120,13 @@ namespace KuCoin.NET.Data.Market
             }
         }
 
-        IList<T> IOrderUnitList<T>.Asks => asks;
+        ICollection<T> IOrderUnitCollection<T>.Asks => asks;
 
-        IList<T> IOrderUnitList<T>.Bids => bids;
+        ICollection<T> IOrderUnitCollection<T>.Bids => bids;
 
-        IList<T> IDataSeries<T, T, IList<T>, IList<T>>.Data1 => asks;
+        ICollection<T> IDataSeries<T, T, ICollection<T>, ICollection<T>>.Data1 => asks;
 
-        IList<T> IDataSeries<T, T, IList<T>, IList<T>>.Data2 => bids;
+        ICollection<T> IDataSeries<T, T, ICollection<T>, ICollection<T>>.Data2 => bids;
     }
 
 }

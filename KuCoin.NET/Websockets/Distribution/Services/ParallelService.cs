@@ -36,6 +36,8 @@ namespace KuCoin.NET.Websockets.Distribution.Services
 
             public Thread Thread { get; private set; }
 
+            private List<Action> actions;
+
             public void Dispose()
             {
                 if (disposed) throw new ObjectDisposedException(GetType().FullName);
@@ -55,7 +57,7 @@ namespace KuCoin.NET.Websockets.Distribution.Services
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             private void ThreadMethod()
             {
-                var actions = new List<Action>();
+                actions = new List<Action>();
                 CancellationToken tok = cts.Token;
 
                 Action[] arrActions = new Action[0];
@@ -128,24 +130,27 @@ namespace KuCoin.NET.Websockets.Distribution.Services
 
                             f = 0;
                             arrActions = actions.ToArray();
+                            continue;
                         }
                     }
 
-                    if (zero)
+                    lock (lockObj)
                     {
-                        Thread.Sleep(5);
-                    }
-                    else if (many)
-                    {
-                        Parallel.Invoke(arrActions);
-                        if (sleepDivisor < 0) continue;
-                    }
-                    else
-                    {
-                        Tenants[0].DoWork();
+                        if (Tenants.Count == 0)
+                        {
+                            Thread.Sleep(5);
+                        }
+                        else if (many)
+                        {
+                            Parallel.Invoke(arrActions);
+                            if (sleepDivisor < 0) continue;
+                        }
+                        else
+                        {
+                            Tenants[0].DoWork();
+                        }
                     }
 
-                    
                     if (f == sleepDivisor)
                     {
                         Thread.Sleep(idleSleepTime);

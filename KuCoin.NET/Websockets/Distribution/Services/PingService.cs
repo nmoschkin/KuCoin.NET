@@ -69,18 +69,21 @@ namespace KuCoin.NET.Websockets.Distribution.Services
                     if (pi > maxwait) maxwait = pi;
                 }
 
-                if (tmpdict.Count > 1)
+                if (tmpdict.Count != 0)
                 {
-                    Wait = FindGCF(tmpdict.Keys.ToArray());
-                }
-                else
-                {
-                    Wait = tmpdict.Keys.First();
-                }
+                    if (tmpdict.Count > 1)
+                    {
+                        Wait = FindGCF(tmpdict.Keys.ToArray());
+                    }
+                    else
+                    {
+                        Wait = tmpdict.Keys.First();
+                    }
 
-                foreach (var kv in tmpdict)
-                {
-                    triggerGroups.Add(kv.Key, kv.Value.ToArray());
+                    foreach (var kv in tmpdict)
+                    {
+                        triggerGroups.Add(kv.Key, kv.Value.ToArray());
+                    }
                 }
             }
         }

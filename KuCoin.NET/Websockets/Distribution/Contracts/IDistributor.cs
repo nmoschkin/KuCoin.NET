@@ -1,5 +1,6 @@
 using KuCoin.NET.Data;
 using KuCoin.NET.Data.Market;
+using KuCoin.NET.Websockets.Distribution.Contracts;
 using KuCoin.NET.Websockets.Public;
 
 using System;
@@ -23,7 +24,7 @@ namespace KuCoin.NET.Websockets.Distribution
     /// <summary>
     /// An object that provides distributed objects with data.
     /// </summary>
-    public interface IDistributor : IWebsocketFeed, IFeedState
+    public interface IDistributor : IWebsocketFeed, IFeedState, ILogProvider
     {
         /// <summary>
         /// Get an <see cref="IEnumerable{T}"/> of the active feeds.

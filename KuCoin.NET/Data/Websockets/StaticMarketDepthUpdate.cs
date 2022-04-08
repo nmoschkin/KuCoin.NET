@@ -35,7 +35,7 @@ namespace KuCoin.NET.Data.Websockets
     /// <summary>
     /// Level 2 Static Market Depth Feed (5/50) Changes
     /// </summary>
-    public class StaticMarketDepthUpdate : ISymbol, IOrderUnitList<IOrderUnit>, IStreamableObject
+    public class StaticMarketDepthUpdate : ISymbol, IOrderUnitCollection<IOrderUnit>, IStreamableObject
     {
         public virtual string Symbol { get; set; }
 
@@ -51,13 +51,13 @@ namespace KuCoin.NET.Data.Websockets
         [JsonProperty("bids")]
         public OrderUnit[] Bids { get; set; }
 
-        IList<IOrderUnit> IOrderUnitList<IOrderUnit>.Asks => Asks;
+        ICollection<IOrderUnit> IOrderUnitCollection<IOrderUnit>.Asks => Asks;
 
-        IList<IOrderUnit> IOrderUnitList<IOrderUnit>.Bids => Bids;
+        ICollection<IOrderUnit> IOrderUnitCollection<IOrderUnit>.Bids => Bids;
 
-        IList<IOrderUnit> IDataSeries<IOrderUnit, IOrderUnit, IList<IOrderUnit>, IList<IOrderUnit>>.Data1 => Asks;
+        ICollection<IOrderUnit> IDataSeries<IOrderUnit, IOrderUnit, ICollection<IOrderUnit>, ICollection<IOrderUnit>>.Data1 => Asks;
 
-        IList<IOrderUnit> IDataSeries<IOrderUnit, IOrderUnit, IList<IOrderUnit>, IList<IOrderUnit>>.Data2 => Bids;
+        ICollection<IOrderUnit> IDataSeries<IOrderUnit, IOrderUnit, ICollection<IOrderUnit>, ICollection<IOrderUnit>>.Data2 => Bids;
 
 
         /// <summary>
@@ -82,7 +82,7 @@ namespace KuCoin.NET.Data.Websockets
     /// <summary>
     /// Level 2 Static Market Depth Feed (5/50) Changes
     /// </summary>
-    public class ObservableStaticMarketDepthUpdate : StaticMarketDepthUpdate, IOrderUnitList<IOrderUnit>, INotifyPropertyChanged, ISymbol, IDisposable
+    public class ObservableStaticMarketDepthUpdate : StaticMarketDepthUpdate, IOrderUnitCollection<IOrderUnit>, INotifyPropertyChanged, ISymbol, IDisposable
     {
         private string symbol = null;
         private DateTime time;
@@ -96,9 +96,9 @@ namespace KuCoin.NET.Data.Websockets
 
         public event PropertyChangedEventHandler PropertyChanged;
 
-        IList<IOrderUnit> IOrderUnitList<IOrderUnit>.Asks => asks;
+        ICollection<IOrderUnit> IOrderUnitCollection<IOrderUnit>.Asks => asks;
 
-        IList<IOrderUnit> IOrderUnitList<IOrderUnit>.Bids => bids;
+        ICollection<IOrderUnit> IOrderUnitCollection<IOrderUnit>.Bids => bids;
 
         protected void OnPropertyChanged([CallerMemberName] string propertyName = null)
         {

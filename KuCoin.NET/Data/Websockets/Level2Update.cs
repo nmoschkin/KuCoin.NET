@@ -18,15 +18,15 @@ namespace KuCoin.NET.Data.Websockets
     /// <summary>
     /// Level 2 New Sequence Changes
     /// </summary>
-    public struct Changes : IDataObject, IOrderUnitList<IOrderUnit>
+    public struct Changes : IDataObject, IOrderUnitCollection<IOrderUnit>
     {
-        IList<IOrderUnit> IOrderUnitList<IOrderUnit>.Asks => (IList<IOrderUnit>)Asks;
+        ICollection<IOrderUnit> IOrderUnitCollection<IOrderUnit>.Asks => (ICollection<IOrderUnit>)Asks;
 
-        IList<IOrderUnit> IOrderUnitList<IOrderUnit>.Bids => (IList<IOrderUnit>)Bids;
+        ICollection<IOrderUnit> IOrderUnitCollection<IOrderUnit>.Bids => (ICollection<IOrderUnit>)Bids;
 
-        IList<IOrderUnit> IDataSeries<IOrderUnit, IOrderUnit, IList<IOrderUnit>, IList<IOrderUnit>>.Data1 => (IList<IOrderUnit>)Asks;
+        ICollection<IOrderUnit> IDataSeries<IOrderUnit, IOrderUnit, ICollection<IOrderUnit>, ICollection<IOrderUnit>>.Data1 => (ICollection<IOrderUnit>)Asks;
 
-        IList<IOrderUnit> IDataSeries<IOrderUnit, IOrderUnit, IList<IOrderUnit>, IList<IOrderUnit>>.Data2 => (IList<IOrderUnit>)Bids;
+        ICollection<IOrderUnit> IDataSeries<IOrderUnit, IOrderUnit, ICollection<IOrderUnit>, ICollection<IOrderUnit>>.Data2 => (ICollection<IOrderUnit>)Bids;
 
 
         /// <summary>
@@ -97,7 +97,7 @@ namespace KuCoin.NET.Data.Websockets
         [JsonProperty("changes")]
         public Changes Changes { get; set; }
 
-        IOrderUnitList<IOrderUnit> IOrderUnitListProvider<IOrderUnit>.OrderList
+        IOrderUnitCollection<IOrderUnit> IOrderUnitListProvider<IOrderUnit>.OrderList
         {
             get => Changes;
             set => Changes = (Changes)value;

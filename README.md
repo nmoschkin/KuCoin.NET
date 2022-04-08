@@ -1,9 +1,20 @@
-# KuCoin.NET v1.0.2 Beta
+# KuCoin.NET v2 Experimental
 KuCoin and KuCoin Futures API Libraries for .NET.
+
+_Experimental Branch_
 
 _This library is a client for the KuCoin API as described in (https://docs.kucoin.com/#general)._
 
 __ATTENTION__: __The WPF Project has been moved to the 'legacy' branch.__
+
+
+
+### April 5, 2022:
+
+Have written a new collection based on a black/red node pattern.  It seems to be effective in increasing performance 
+under heavy market activity while still retaining some properties of a sorted list.
+
+Made other major improvements including allowing you to select and view the details of individual symbols.
 
 ### March 27, 2022:
 

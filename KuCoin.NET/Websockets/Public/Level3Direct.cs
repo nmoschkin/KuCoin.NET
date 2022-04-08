@@ -33,8 +33,8 @@ namespace KuCoin.NET.Websockets.Public
         /// <param name="credentialsProvider">API Credentials.</param>
         public Level3Direct(ICredentialsProvider credentialsProvider) : base(credentialsProvider)
         {
-            recvBufferSize = 1024 * 1024 * 1024;
-            minQueueBuffer = 10000;
+            recvBufferSize = 1024 * 1024 * 16;
+            minQueueBuffer = 100;
             chunkSize = 512;
         }
 
@@ -47,8 +47,8 @@ namespace KuCoin.NET.Websockets.Public
         /// <param name="isSandbox">True if sandbox mode.</param>
         public Level3Direct(string key, string secret, string passphrase, bool isSandbox = false) : base(key, secret, passphrase, isSandbox: isSandbox)
         {
-            recvBufferSize = 1024 * 1024 * 1024;
-            minQueueBuffer = 10000;
+            recvBufferSize = 1024 * 1024 * 16;
+            minQueueBuffer = 100;
             chunkSize = 512;
         }
 
@@ -93,6 +93,8 @@ namespace KuCoin.NET.Websockets.Public
                     }
                 }
             }
+            
+            await Task.Delay(100);
 
             var topic = $"{Topic}:{sb}";
 
@@ -119,6 +121,27 @@ namespace KuCoin.NET.Websockets.Public
 
             var sb = new StringBuilder();
 
+            var topic = $"{Topic}:{sb}";
+
+            var e = new FeedMessage()
+            {
+                Type = "unsubscribe",
+                Id = connectId.ToString("d"),
+                Topic = topic,
+                Response = true,
+                PrivateChannel = false
+            };
+
+
+            if (activeFeeds.Count == 0)
+            {
+                State = FeedState.Unsubscribed;
+            }
+
+            await Send(e);
+
+            await Task.Delay(100);
+
             lock (lockObj)
             {
                 foreach (var sym in keys)
@@ -137,25 +160,9 @@ namespace KuCoin.NET.Websockets.Public
                     if (sb.Length > 0) sb.Append(',');
                     sb.Append(sym);
                 }
+
             }
 
-            var topic = $"{Topic}:{sb}";
-
-            var e = new FeedMessage()
-            {
-                Type = "unsubscribe",
-                Id = connectId.ToString("d"),
-                Topic = topic,
-                Response = true,
-                PrivateChannel = false
-            };
-
-            await Send(e);
-
-            if (activeFeeds.Count == 0)
-            {
-                State = FeedState.Unsubscribed;
-            }
         }
 
 

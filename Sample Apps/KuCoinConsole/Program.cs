@@ -36,6 +36,7 @@ using System.Collections.Immutable;
 using System.Diagnostics.CodeAnalysis;
 using System.Collections.Specialized;
 using System.Linq.Expressions;
+using System.Windows.Forms;
 
 namespace KuCoinConsole
 {
@@ -88,6 +89,8 @@ namespace KuCoinConsole
 
         static object lockObj = new object();
         public static ICredentialsProvider cred;
+        
+        static bool metrics = true;
 
         static ISymbolDataService service;
         static StringBuilder readOut = new StringBuilder();
@@ -98,10 +101,15 @@ namespace KuCoinConsole
         static int sortorder = -1;
 
         static bool sortEnabled = true;
+        
+        static bool msgEnabled = true;
 
         static int scrollIndex = 0;
 
         static int maxScrollIndex = 0;
+
+        static int itemIndex = -1;
+
         static int currentConn = -1;
 
         static string subscribing = null;
@@ -114,7 +122,7 @@ namespace KuCoinConsole
 
         static int maxSymbolLen = 0;
         static int maxCurrencyLen = 0;
-        
+
         [DllImport("kernel32.dll")]
         static extern bool AllocConsole();
 
@@ -122,7 +130,7 @@ namespace KuCoinConsole
         static extern IntPtr GetConsoleWindow();
 
         static DateTime start = DateTime.Now;
-        
+
         public static event EventHandler TickersReady;
         static List<string> usersymbols = null;
         static int feednum;
@@ -131,7 +139,7 @@ namespace KuCoinConsole
         [STAThread]
         public static void Main(string[] args)
         {
-            AppCenter.Start("6e9f9975-8980-452b-be36-b5c9b087896f",
+            AppCenter.Start("d364ea69-c1fa-4d0d-8c37-debaa05f91bc",
                typeof(Analytics), typeof(Crashes));
 
             RunProgram();
@@ -142,9 +150,9 @@ namespace KuCoinConsole
             Console.WriteLine(e.Json);
         }
 
-        public static void RunProgram() 
+        public static void RunProgram()
         {
-            
+
             try
             {
                 if (GetConsoleWindow() == IntPtr.Zero)
@@ -170,7 +178,7 @@ namespace KuCoinConsole
 #if DOTNETSTD
             KuCoinSystem.Initialize();
 #else
-            KuCoinSystem.InitializeAsync().ConfigureAwait(false).GetAwaiter().GetResult();
+            KuCoinSystem.InitializeAsync(true).ConfigureAwait(false).GetAwaiter().GetResult();
 #endif
 
             market = KuCoinSystem.Market;
@@ -249,7 +257,7 @@ namespace KuCoinConsole
 
                 }
 
-                if (usersymbols.Count == 0) 
+                if (usersymbols.Count == 0)
                 {
                     usersymbols = null;
                     Console.WriteLine("Couldn't figure that out, defaulting to 10.");
@@ -277,11 +285,11 @@ namespace KuCoinConsole
             ParallelService.WorkRepeat = 2;
             ParallelService.WorkIdleSleepTime = 1;
 
-            var ast = market.GetAllTickers().ConfigureAwait(false). GetAwaiter().GetResult();
+            var ast = market.GetAllTickers().ConfigureAwait(false).GetAwaiter().GetResult();
 
             var tickers = new List<AllSymbolsTickerItem>(ast.Ticker);
             Dictionary<string, AllSymbolsTickerItem> tickerdict = new Dictionary<string, AllSymbolsTickerItem>();
-            
+
             tickers.Sort((a, b) =>
             {
                 if (a.VolumeValue > b.VolumeValue) return -1;
@@ -346,7 +354,7 @@ namespace KuCoinConsole
             //var syms = new List<string>(new string[] { "DOT-USDT", "UNI-USDT", "SOL-USDT", "LINK-USDT", "ETC-USDT", "BCH-USDT", "WBTC-USDT", "FIL-USDT", "DAI-USDT", "AAVE-USDT", "ICP-USDT", "MATIC-USDT", "XRP-USDT", "DOGE-USDT", "KCS-USDT", "ETH-USDT", "XLM-USDT", "BTC-USDT", "ADA-USDT", "LTC-USDT" });
 
             int tickerCount = 0;
-                        
+
             if (usersymbols != null)
             {
                 activeSymbols = usersymbols;
@@ -371,7 +379,7 @@ namespace KuCoinConsole
 
             //sortEnabled = false;
 
-            _ = Task.Run(async () =>
+            var th = new Thread(async () =>
             {
                 ISymbolDataService curr = service;
                 var ass = activeSymbols.ToArray();
@@ -407,10 +415,12 @@ namespace KuCoinConsole
                     try
                     {
                         bool pass;
+
                         lock (lockObj)
                         {
                             pass = Observers.ContainsKey(sym);
                         }
+
                         if (!pass)
                         {
                             try
@@ -446,9 +456,9 @@ namespace KuCoinConsole
                                     await curr.EnableLevel3();
                                 }
 
-                                await Task.Delay(10);
+                                Thread.Sleep(10);
 
-                                if (curr.Level3Feed == null) 
+                                if (curr.Level3Feed == null)
                                 {
                                     if (direct)
                                     {
@@ -458,7 +468,8 @@ namespace KuCoinConsole
                                     {
                                         await curr.EnableLevel3();
                                     }
-                                    await Task.Delay(10);
+
+                                    Thread.Sleep(10);
                                 }
 
                             }
@@ -472,7 +483,6 @@ namespace KuCoinConsole
                                 }
 
                             }
-
 
                             if (curr.Level3Feed != null)
                             {
@@ -488,7 +498,7 @@ namespace KuCoinConsole
                                     }
                                 }
 
-                                curr.Level3OrderBook.DiagnosticsEnabled = true;
+                                curr.Level3OrderBook.DiagnosticsEnabled = metrics;
                                 curr.Level3OrderBook.IsVolumeEnabled = true;
 
                                 lock (lockObj)
@@ -520,7 +530,7 @@ namespace KuCoinConsole
 
                         }
                     }
-                    catch (Exception ex) 
+                    catch (Exception ex)
                     {
 
                         var s = ex.Message;
@@ -543,238 +553,302 @@ namespace KuCoinConsole
 
             });
 
+
+            th.IsBackground = true;
+            th.SetApartmentState(ApartmentState.MTA);
+            th.Start();
+
             // loop until the connection is broken or the program is exited.
             while (true)
             {
-                Console.CursorVisible = false;
-
-                if (lwidth != Console.WindowWidth || lheight != Console.WindowHeight)
-                {
-                    lwidth = Console.WindowWidth;
-                    lheight = Console.WindowHeight;
-
-                    Console.BufferHeight = Console.WindowHeight;
-                    Console.Clear();
-
-                    continue;
-                }
-
-                if (Console.KeyAvailable)
-                {
-                    while(Console.KeyAvailable)
-                    {
-
-                        var key = Console.ReadKey();
-
-                        if (key.Modifiers == ConsoleModifiers.Control)
-                        {
-                            if (key.Key == ConsoleKey.DownArrow)
-                            {
-                                if (msgidx < messages.Count - 5)
-                                {
-                                    ++msgidx;
-                                }
-                            }
-                            else if (key.Key == ConsoleKey.UpArrow)
-                            {
-                                if (msgidx > 0)
-                                {
-                                    --msgidx;
-                                }
-                            }
-                            if (key.Key == ConsoleKey.LeftArrow)
-                            {
-                                KlineLeft();
-                            }
-                            else if (key.Key == ConsoleKey.RightArrow)
-                            {
-                                KlineRight();
-                            }
-
-                        }
-                        else
-                        {
-                            if (key.Key == ConsoleKey.RightArrow)
-                            {
-                                currentConn++;
-                                if (currentConn >= feeds.Count)
-                                {
-                                    currentConn = -1;
-                                }
-                                scrollIndex = 0;
-                                Console.Clear();
-                                continue;
-                            }
-                            else if (key.Key == ConsoleKey.LeftArrow)
-                            {
-                                currentConn--;
-                                if (currentConn < -1) currentConn = feeds.Count - 1;
-                                scrollIndex = 0;
-                                Console.Clear();
-                                continue;
-                            }
-                            else if (key.Key == ConsoleKey.DownArrow)
-                            {
-                                if (scrollIndex < maxScrollIndex)
-                                {
-                                    ++scrollIndex;
-                                }
-                            }
-                            else if (key.Key == ConsoleKey.UpArrow)
-                            {
-                                if (scrollIndex > 0)
-                                {
-                                    --scrollIndex;
-                                }
-                            }
-                            else if (key.Key == ConsoleKey.PageDown)
-                            {
-                                if (scrollIndex < maxScrollIndex)
-                                {
-                                    scrollIndex += 10;
-                                    if (scrollIndex > maxScrollIndex) scrollIndex = maxScrollIndex;
-                                }
-                            }
-                            else if (key.Key == ConsoleKey.PageUp)
-                            {
-                                if (scrollIndex > 0)
-                                {
-                                    scrollIndex -= 10;
-                                    if (scrollIndex < 0) scrollIndex = 0;
-                                }
-                            }
-                            else if (key.Key == ConsoleKey.Home)
-                            {
-                                scrollIndex = 0;
-                            }
-                            else if (key.Key == ConsoleKey.End)
-                            {
-                                scrollIndex = maxScrollIndex;
-                            }
-                            else if (key.Key == ConsoleKey.V)
-                            {
-                                if (sortmode == 0) sortorder = sortorder * -1;
-                                else sortmode = 0;
-                            }
-                            else if (key.Key == ConsoleKey.P)
-                            {
-                                if (sortmode == 1) sortorder = sortorder * -1;
-                                else sortmode = 1;
-                            }
-                            else if (key.Key == ConsoleKey.A)
-                            {
-                                if (sortmode == 2) sortorder = sortorder * -1;
-                                else sortmode = 2;
-                            }
-                            else if (key.Key == ConsoleKey.T)
-                            {
-                                if (sortmode == 3) sortorder = sortorder * -1;
-                                else sortmode = 3;
-                            }
-                            else if (key.Key == ConsoleKey.Q)
-                            {
-                                Console.CursorTop = Console.WindowHeight - 1;
-                                Console.CursorVisible = true;
-                                Environment.Exit(0);
-                            }
-
-                        }
-
-                    }
-
-                }
-
-                Task.Delay(delay).ConfigureAwait(false).GetAwaiter().GetResult();
-
-
-                // remember the cursor position on the screen
-                int lpos = Console.CursorTop;
-                Console.CursorTop = 0;
-                Console.CursorLeft = 0;
-
-                // let's find the most current update date/time from all feeds
-
-                DateTime ts = DateTime.MinValue;
-
+                
                 try
                 {
+
+                    Console.CursorVisible = false;
+
+                    if (lwidth != Console.WindowWidth || lheight != Console.WindowHeight)
+                    {
+                        lwidth = Console.WindowWidth;
+                        lheight = Console.WindowHeight;
+
+                        Console.BufferHeight = Console.WindowHeight;
+                        Console.Clear();
+
+                        continue;
+                    }
+
+                    if (Console.KeyAvailable)
+                    {
+                        while (Console.KeyAvailable)
+                        {
+
+                            var key = Console.ReadKey();
+
+                            if (key.Modifiers == ConsoleModifiers.Control)
+                            {
+                                if (key.Key == ConsoleKey.Home)
+                                {
+                                    if (msgidx < messages.Count - 5)
+                                    {
+                                        ++msgidx;
+                                    }
+                                }
+                                else if (key.Key == ConsoleKey.End)
+                                {
+                                    if (msgidx > 0)
+                                    {
+                                        --msgidx;
+                                    }
+                                }
+                                else if (key.Key == ConsoleKey.LeftArrow)
+                                {
+                                    KlineLeft();
+                                }
+                                else if (key.Key == ConsoleKey.RightArrow)
+                                {
+                                    KlineRight();
+                                }
+
+                                else if (key.Key == ConsoleKey.PageDown)
+                                {
+                                    if (itemIndex == -1) itemIndex = scrollIndex;
+                                    else itemIndex++;
+                                }
+                                else if (key.Key == ConsoleKey.PageUp)
+                                {
+                                    if (itemIndex > 0)
+                                    {
+                                        itemIndex--;
+                                    }
+                                }
+                            }
+                            else
+                            {
+                                if (key.Key == ConsoleKey.Escape)
+                                {
+                                    itemIndex = -1;
+                                }
+                                else if (key.Key == ConsoleKey.RightArrow)
+                                {
+                                    currentConn++;
+                                    if (currentConn >= feeds.Count)
+                                    {
+                                        currentConn = -1;
+                                    }
+                                    scrollIndex = 0;
+                                    itemIndex = -1;
+                                    Console.Clear();
+                                    continue;
+                                }
+                                else if (key.Key == ConsoleKey.LeftArrow)
+                                {
+                                    currentConn--;
+                                    if (currentConn < -1) currentConn = feeds.Count - 1;
+                                    scrollIndex = 0;
+                                    itemIndex = -1;
+                                    Console.Clear();
+                                    continue;
+                                }
+                                else if (key.Key == ConsoleKey.DownArrow)
+                                {
+                                    if (scrollIndex < maxScrollIndex)
+                                    {
+                                        ++scrollIndex;
+                                    }
+                                }
+                                else if (key.Key == ConsoleKey.UpArrow)
+                                {
+                                    if (scrollIndex > 0)
+                                    {
+                                        --scrollIndex;
+                                    }
+                                }
+                                else if (key.Key == ConsoleKey.PageDown)
+                                {
+                                    if (scrollIndex < maxScrollIndex)
+                                    {
+                                        scrollIndex += 10;
+                                        if (scrollIndex > maxScrollIndex) scrollIndex = maxScrollIndex;
+                                    }
+                                }
+                                else if (key.Key == ConsoleKey.PageUp)
+                                {
+                                    if (scrollIndex > 0)
+                                    {
+                                        scrollIndex -= 10;
+                                        if (scrollIndex < 0) scrollIndex = 0;
+                                    }
+                                }
+                                else if (key.Key == ConsoleKey.Home)
+                                {
+                                    scrollIndex = 0;
+                                }
+                                else if (key.Key == ConsoleKey.End)
+                                {
+                                    scrollIndex = maxScrollIndex;
+                                }
+                                else if (key.Key == ConsoleKey.V)
+                                {
+                                    if (sortmode == 0) sortorder = sortorder * -1;
+                                    else sortmode = 0;
+                                }
+                                else if (key.Key == ConsoleKey.P)
+                                {
+                                    if (sortmode == 1) sortorder = sortorder * -1;
+                                    else sortmode = 1;
+                                }
+                                else if (key.Key == ConsoleKey.A)
+                                {
+                                    if (sortmode == 2) sortorder = sortorder * -1;
+                                    else sortmode = 2;
+                                }
+                                else if (key.Key == ConsoleKey.T)
+                                {
+                                    if (sortmode == 3) sortorder = sortorder * -1;
+                                    else sortmode = 3;
+                                }
+                                else if (key.Key == ConsoleKey.M)
+                                {
+                                    msgEnabled = !msgEnabled;
+                                }
+                                else if (key.Key == ConsoleKey.D)
+                                {
+                                    metrics = !metrics;
+
+                                    lock (lockObj)
+                                    {
+                                        foreach (var obs in Observers)
+                                        {
+                                            if (obs.Value.Level3OrderBook != null)
+                                            {
+                                                obs.Value.Level3OrderBook.DiagnosticsEnabled = metrics;
+                                            }
+                                        }
+                                    }
+
+                                    Console.Clear();
+                                }
+                                else if (key.Key == ConsoleKey.Q)
+                                {
+                                    Console.CursorTop = Console.WindowHeight - 1;
+                                    Console.CursorVisible = true;
+                                    Environment.Exit(0);
+                                }
+
+                            }
+
+                        }
+
+                    }
+
+                    Task.Delay(delay).ConfigureAwait(false).GetAwaiter().GetResult();
+
+
+                    // remember the cursor position on the screen
+                    int lpos = Console.CursorTop;
+                    Console.CursorTop = 0;
+                    Console.CursorLeft = 0;
+
+                    // let's find the most current update date/time from all feeds
+
+                    DateTime ts = DateTime.MinValue;
+
                     foreach (var obs in Observers)
                     {
-                        if (obs.Value?.Level3OrderBook?.FullDepthOrderBook == null) continue;
-
-                        if (obs.Value.Level3OrderBook.FullDepthOrderBook.Timestamp > ts)
+                        try
                         {
-                            ts = obs.Value.Level3OrderBook.FullDepthOrderBook.Timestamp;
+                            if (obs.Value?.Level3OrderBook?.FullDepthOrderBook == null) continue;
+
+                            if (obs.Value.Level3OrderBook.FullDepthOrderBook.Timestamp > ts)
+                            {
+                                ts = obs.Value.Level3OrderBook.FullDepthOrderBook.Timestamp;
+                            }
+                        }
+                        catch
+                        {
                         }
                     }
-                }
-                catch
-                {
-                    continue;
-                }
 
-                string headerText = null;
-                string footerText = null;
-                IEnumerable<string> itemStrings = null;
-                // create the text.
+                    string headerText = null;
+                    string footerText = null;
 
-                WriteOut(ref headerText, ref itemStrings, ref footerText, ts);
+                    IEnumerable<string> itemStrings = null;
+                    // create the text.
 
-                if (headerText == "DISCONNECTED") break;
-
-                var headlines = headerText?.Split("\r\n")?.Length ?? 0;
-                var footerlines = footerText?.Split("\r\n")?.Length ?? 0;
-
-                var itemlines = itemStrings?.FirstOrDefault()?.Split("\r\n")?.Length ?? 3;
-
-                int conh = Console.WindowHeight - (headlines + footerlines + 2);
-                int maxitems = conh / itemlines;
-                if (maxitems > Observers.Count) maxitems = Observers.Count;
-
-                if (maxRows != maxitems)
-                {
-                    maxRows = maxitems;
-                    maxScrollIndex = Observers.Count - maxRows;
-
-                    if (scrollIndex > maxScrollIndex) scrollIndex = maxScrollIndex;
-                    
                     WriteOut(ref headerText, ref itemStrings, ref footerText, ts);
-                }
 
-                Console.ResetColor();
-                ColorConsole.Write(headerText);
+                    if (headerText == "DISCONNECTED") break;
 
-                foreach (var sitem in itemStrings)
-                {
-                    ColorConsole.WriteLine(sitem);
-                }
+                    var headlines = headerText?.Split("\r\n")?.Length ?? 0;
+                    var footerlines = footerText?.Split("\r\n")?.Length ?? 0;
 
-                ColorConsole.WriteLine(footerText);
-                conh = Console.CursorTop;
-                if (conh < Console.WindowHeight)
-                {
-                    for (int jz = conh; jz < Console.WindowHeight; jz++)
+                    var itemlines = itemStrings?.FirstOrDefault()?.Split("\r\n")?.Length ?? 3;
+
+                    int conh = Console.WindowHeight - (headlines + footerlines + 2);
+                    int maxitems = conh / itemlines;
+                    if (maxitems > Observers.Count) maxitems = Observers.Count;
+
+                    if (maxRows != maxitems)
                     {
-                        if (jz < Console.WindowHeight - 1) 
-                            Console.WriteLine(MinChars("", Console.WindowWidth - 2));
-                        else
-                            Console.Write(MinChars("", Console.WindowWidth - 2));
+                        maxRows = maxitems;
+                        maxScrollIndex = Observers.Count - maxRows;
+
+                        if (scrollIndex > maxScrollIndex) scrollIndex = maxScrollIndex;
+
+                        WriteOut(ref headerText, ref itemStrings, ref footerText, ts);
                     }
+
+                    Console.ResetColor();
+                    ColorConsole.Write(headerText);
+                
+                    try
+                    {
+                        itemStrings = itemStrings.Where((s) => s is object).ToArray();
+                    }
+                    catch
+                    {                    
+                        continue;
+                    }
+
+                    foreach (var sitem in itemStrings)
+                    {
+                        ColorConsole.WriteLine(sitem);
+                    }
+
+                    ColorConsole.WriteLine(footerText);
+                
+                    conh = Console.CursorTop;
+                
+                    if (conh < Console.WindowHeight)
+                    {
+                        for (int jz = conh; jz < Console.WindowHeight; jz++)
+                        {
+                            if (jz < Console.WindowHeight - 1)
+                                Console.WriteLine(MinChars("", Console.WindowWidth - 2));
+                            else
+                                Console.Write(MinChars("", Console.WindowWidth - 2));
+                        }
+                    }
+                    // write the text to the console.
+                    //var text = readOut.ToString();
+
+                    //Console.Write(text);
+
+                    // restore the cursor position.
+                    if (Console.CursorTop != lpos) Console.CursorTop = lpos;
+                    if (Console.CursorLeft != 0) Console.CursorLeft = 0;
                 }
-                // write the text to the console.
-                //var text = readOut.ToString();
-
-                //Console.Write(text);
-
-                // restore the cursor position.
-                if (Console.CursorTop != lpos) Console.CursorTop = lpos;
-                if (Console.CursorLeft != 0) Console.CursorLeft = 0;
-
+                catch (Exception ex)
+                {
+                    KuCoinSystem.Logger.Log(ex.Message);
+                    Environment.Exit(-1);
+                }
             }
 
             fslog?.Dispose();
             fslog = null;
-            
+
             _ = Task.Run(() =>
             {
                 Dispatcher.BeginInvokeOnMainThread((o) =>
@@ -788,29 +862,29 @@ namespace KuCoinConsole
         private static void Level3Feed_DataReceived(object sender, DataReceivedEventArgs e)
         {
             var msg = JsonConvert.DeserializeObject<FeedMessage>(e.Json);
-            int x = 1;
-            object feed;
+            
+            int x = 0;
 
             lock (feeds)
             {
-                feed = feeds.Where((x) => x == sender).FirstOrDefault();
-                if (feed == null) return;
+                foreach (var feed in feeds)
+                {
+                    x++;
+                    if (feed == sender) break;
+                }
             }
 
-            if (feed is Level3 l3a)
+            lock (messages)
             {
-                lock (messages)
-                {
-                    messages.Add($"{{Reset}}Feed {{White}}{x}{{Reset}}: {{Yellow}}{msg.Type} {{Cyan}}{msg.Subject} {msg.Topic} {{Blue}}({DateTime.Now:G}){{Reset}}");
-                    msgidx = messages.Count >= 4 ? messages.Count - 5 : messages.Count - 1;
-                }
+                messages.Add($"{{Reset}}Feed {{White}}{x}{{Reset}}: {{Yellow}}{msg.Type} {{Cyan}}{msg.Subject} {msg.Topic} {{Blue}}({DateTime.Now:G}){{Reset}}");
+                msgidx = messages.Count >= 4 ? messages.Count - 5 : messages.Count - 1;
+            }
 
-                lock (fslog)
-                {
-                    var tstr = ($"Feed {x}: {msg.Type} {msg.Subject} {msg.Topic} ({DateTime.Now:G})\r\n");
-                    fslog?.Write(Encoding.UTF8.GetBytes(tstr));
-                    fslog?.Flush();
-                }
+            lock (fslog)
+            {
+                var tstr = ($"Feed {x}: {msg.Type} {msg.Subject} {msg.Topic} ({DateTime.Now:G})\r\n");
+                fslog?.Write(Encoding.UTF8.GetBytes(tstr));
+                fslog?.Flush();
             }
         }
 
@@ -830,7 +904,7 @@ namespace KuCoinConsole
                     ktnext = KlineType.Min1;
                 }
 
-                foreach(var obs in Observers)
+                foreach (var obs in Observers)
                 {
                     obs.Value.Level3OrderBook.KlineType = ktnext;
                 }
@@ -871,7 +945,7 @@ namespace KuCoinConsole
         private static void Ticker_DataReceived(object sender, KuCoin.NET.Websockets.DataReceivedEventArgs e)
         {
         }
-        
+
         static DateTime resetCounter = DateTime.UtcNow;
         static long tps = 0;
         static long mps = 0;
@@ -885,7 +959,7 @@ namespace KuCoinConsole
         /// <param name="timestamp">The current feed timestamp, or null for local now.</param>
         private static void WriteOut(ref string headerText, ref IEnumerable<string> itemText, ref string footerText, DateTime? timestamp = null)
         {
-          
+
             try
             {
                 if (timestamp == null) timestamp = DateTime.Now;
@@ -910,514 +984,694 @@ namespace KuCoinConsole
                 int ccount = -1;
 
                 Level3 current = null;
-
-                try
+                lock (lockObj)
                 {
+
+                    try
+                    {
+                        lock (lockObj)
+                        {
+                            foreach (Level3 feed in feeds)
+                            {
+                                ++ccount;
+                                if (ccount == currentConn)
+                                {
+                                    current = feed;
+                                    break;
+                                }
+
+                            }
+                            
+                            int zx = 0;
+                            
+                            foreach (var obs in Observers)
+                            {
+                                if (currentConn == -1 || obs.Value.Level3Feed == current)
+                                {
+                                    var l3 = obs.Value.Level3OrderBook;
+
+                                    if (l3 != null)
+                                    {
+                                        biggrand += l3.GrandTotal;
+                                        matchgrand += l3.MatchTotal;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    catch { }
+
+                    pcts.Clear();
+
+                    int resetting = 0;
+                    int running = 0;
+                    int failed = 0;
+                    int failobook = 0;
+                    int failother = 0;
+
+                    double minresettime = 0d;
+                    ccount = -1;
+
                     lock (lockObj)
                     {
-                        foreach (Level3 feed in feeds)
-                        {
-                            ++ccount;
-                            if (ccount == currentConn)
-                            {
-                                current = feed;
-                                break;
-                            }
-
-                        }
-
                         foreach (var obs in Observers)
                         {
                             if (currentConn == -1 || obs.Value.Level3Feed == current)
                             {
                                 var l3 = obs.Value.Level3OrderBook;
 
-                                if (l3 != null)
-                                {
-                                    biggrand += l3.GrandTotal;
-                                    matchgrand += l3.MatchTotal;
-                                }
-                            }
-                        }
-                    }
-                }
-                catch { }
-
-                pcts.Clear();
-
-                int resetting = 0;
-                int running = 0;
-                int failed = 0;
-                int failobook = 0;
-                int failother = 0;
-
-                double minresettime = 0d;
-                ccount = -1;
-
-                lock (lockObj)
-                {
-                    foreach (var obs in Observers)
-                    {
-                        if (currentConn == -1 || obs.Value.Level3Feed == current)
-                        {
-                            var l3 = obs.Value.Level3OrderBook;
-
-                            if (l3 == null)
-                            {
-                                continue;
-                            }
-                            if (l3.State == FeedState.Running)
-                            {
-                                running++;
-                            }
-                            else if (l3.Failure)
-                            {
-                                if (l3.FailReason == FailReason.OrderBookTimeout)
-                                {
-                                    failobook++;
-                                }
-                                else
-                                {
-                                    failother++;
-                                }
-
-                                failed++;
-                                if (l3.TimeUntilNextRetry is double t)
-                                {
-                                    if (t < minresettime || minresettime == 0)
-                                        minresettime = t;
-                                }
-                            }
-                            else
-                            {
-                                resetting++;
-                            }
-                            pcts.Add(((double)l3.GrandTotal / (double)biggrand) * 100d);
-                            mpcts.Add(((double)l3.MatchTotal / (double)matchgrand) * 100d);
-                        }
-                    }
-
-                }
-
-                int z = scrollIndex;
-
-                readOut.Clear();
-                readOut.WriteToEdgeLine($"Feed Time Stamp:    {{Green}}{timestamp:G}{{Reset}}");
-                readOut.WriteToEdgeLine($"Up Time:            {{Blue}}{(DateTime.Now - start):G}{{Reset}}");
-                readOut.WriteToEdgeLine($"");
-                readOut.WriteToEdgeLine($"Feeds Running:      {{Green}}{running}{{Reset}}");
-                readOut.WriteToEdgeLine($"Feeds Initializing: {{Yellow}}{resetting}{{Reset}}");
-
-                var failtext = $"Feeds Failed:       {{Red}}{failed}{{Reset}}";
-                if (minresettime > 0)
-                {
-                    failtext += $" (Next reset in {(minresettime / 1000):#,##0} seconds. {failobook} order book timeouts. {failother} other failures.)          ";
-                }
-                failtext += "";
-
-                readOut.WriteToEdgeLine(failtext);
-                readOut.WriteToEdgeLine($"");
-
-                double through = 0d;
-                int queue = 0;
-                long maxqueue = 0;
-                int linkstr = 0;
-                ccount = -1;
-
-                if (current == null)
-                {
-                    lock (lockObj)
-                    {
-                        foreach (var f in feeds)
-                        {
-                            if (f is Level3 l3a)
-                            {
-                                if (!l3a.Connected)
+                                if (l3 == null)
                                 {
                                     continue;
                                 }
-
-                                through += l3a.Throughput;
-                                if (!(f is Level3Direct))
+                                if (l3.State == FeedState.Running)
                                 {
-                                    queue += l3a.QueueLength;
-                                    if (l3a.MaxQueueLengthLast60Seconds > maxqueue)
-                                        maxqueue += l3a.MaxQueueLengthLast60Seconds;
+                                    running++;
+                                }
+                                else if (l3.Failure)
+                                {
+                                    if (l3.FailReason == FailReason.OrderBookTimeout)
+                                    {
+                                        failobook++;
+                                    }
+                                    else
+                                    {
+                                        failother++;
+                                    }
 
+                                    failed++;
+                                    if (l3.TimeUntilNextRetry is double t)
+                                    {
+                                        if (t < minresettime || minresettime == 0)
+                                            minresettime = t;
+                                    }
                                 }
                                 else
                                 {
-                                    queue = -1;
+                                    resetting++;
+                                }
+                                pcts.Add(((double)l3.GrandTotal / (double)biggrand) * 100d);
+                                mpcts.Add(((double)l3.MatchTotal / (double)matchgrand) * 100d);
+                            }
+                        }
+
+                    }
+
+                    int z = scrollIndex;
+
+                    readOut.Clear();
+                    readOut.WriteToEdgeLine($"Feed Time Stamp:    {{Green}}{timestamp:G}{{Reset}}");
+                    readOut.WriteToEdgeLine($"Up Time:            {{Blue}}{(DateTime.Now - start):G}{{Reset}}");
+                    readOut.WriteToEdgeLine($"");
+                    readOut.WriteToEdgeLine($"Feeds Running:      {{Green}}{running}{{Reset}}");
+                    readOut.WriteToEdgeLine($"Feeds Initializing: {{Yellow}}{resetting}{{Reset}}");
+
+                    var failtext = $"Feeds Failed:       {{Red}}{failed}{{Reset}}";
+                    if (minresettime > 0)
+                    {
+                        failtext += $" (Next reset in {(minresettime / 1000):#,##0} seconds. {failobook} order book timeouts. {failother} other failures.)          ";
+                    }
+                    failtext += "";
+
+                    readOut.WriteToEdgeLine(failtext);
+                    readOut.WriteToEdgeLine($"");
+
+                    double through = 0d;
+                    int queue = 0;
+                    long maxqueue = 0;
+                    int linkstr = 0;
+                    ccount = -1;
+
+                    if (current == null)
+                    {
+                        lock (lockObj)
+                        {
+                            foreach (var f in feeds)
+                            {
+                                if (f is Level3 l3a)
+                                {
+                                    if (!l3a.Connected)
+                                    {
+                                        continue;
+                                    }
+
+                                    through += l3a.Throughput;
+                                    if (!(f is Level3Direct))
+                                    {
+                                        queue += l3a.QueueLength;
+                                        if (l3a.MaxQueueLengthLast60Seconds > maxqueue)
+                                            maxqueue += l3a.MaxQueueLengthLast60Seconds;
+
+                                    }
+                                    else
+                                    {
+                                        queue = -1;
+                                    }
                                 }
                             }
                         }
                     }
-                }
-                else
-                {
-                    through += current.Throughput;
-                    if (!(current is Level3Direct))
+                    else
                     {
-                        queue += current.QueueLength;
-                        if (current.MaxQueueLengthLast60Seconds > maxqueue)
-                            maxqueue += current.MaxQueueLengthLast60Seconds;
+                        through += current.Throughput;
+                        if (!(current is Level3Direct))
+                        {
+                            queue += current.QueueLength;
+                            if (current.MaxQueueLengthLast60Seconds > maxqueue)
+                                maxqueue += current.MaxQueueLengthLast60Seconds;
+
+                        }
 
                     }
 
-                }
-
-                if (subscribing != null)
-                {
-                    readOut.WriteToEdgeLine($"Subscribing:                        {{White}}{subscribing} ({activeSymbols.IndexOf(subscribing)} / {activeSymbols.Count}){{Reset}}");
-                }
-
-                if (currentConn != -1)
-                {
-                    readOut.WriteToEdgeLine($"Total Connections:                  {{White}}{MinChars(feeds.Count.ToString(), 4)}{{Reset}}       ({{White}}Showing Connection: {{Blue}}@{currentConn + 1}{{Reset}}{{Reset}})");
-                }
-                else
-                {
-                    readOut.WriteToEdgeLine($"Total Connections:                  {{White}}{MinChars(feeds.Count.ToString(), 4)}{{Reset}}");
-                }
-                readOut.WriteToEdgeLine($"Throughput:                         {{Green}}{PrintFriendlySpeed((ulong)through)}{{Reset}}");
-
-                if (queue != -1)
-                {
-                    if (currentConn == -1)
+                    if (subscribing != null)
                     {
-                        if (linkstr == 0)
-                        {
-                            readOut.WriteToEdgeLine($"Combined Queue Length:              {{Yellow}}{MinChars(queue.ToString(), 8)}{{Reset}}");
-                            readOut.WriteToEdgeLine($"Max Queue Length (Last 60 Seconds): {{Red}}{maxqueue}{{Reset}}");
-                        }
-                        else if (linkstr == feeds.Count)
-                        {
-                            readOut.WriteToEdgeLine($"Combined Queue Length:              {{Green}}Link Distribution Strategy (No Main Queue){{Reset}}");
-                            readOut.WriteToEdgeLine($"Max Queue Length (Last 60 Seconds): {{Red}}{maxqueue}{{Reset}}");
-                        }
-                        else
-                        {
-                            readOut.WriteToEdgeLine($"Combined Queue Length:              {{Yellow}}{MinChars(queue.ToString(), 8)} {{Green}}({linkstr} using Link Dist.) {{Reset}}");
-                            readOut.WriteToEdgeLine($"Max Queue Length (Last 60 Seconds): {{Red}}{maxqueue}{{Reset}}");
-                        }
+                        readOut.WriteToEdgeLine($"Subscribing:                        {{White}}{subscribing} ({activeSymbols.IndexOf(subscribing)} / {activeSymbols.Count}){{Reset}}");
+                    }
+
+                    if (currentConn != -1)
+                    {
+                        readOut.WriteToEdgeLine($"Total Connections:                  {{White}}{MinChars(feeds.Count.ToString(), 4)}{{Reset}}       ({{White}}Showing Connection: {{Blue}}@{currentConn + 1}{{Reset}}{{Reset}})");
                     }
                     else
                     {
-                        if (linkstr == 0)
+                        readOut.WriteToEdgeLine($"Total Connections:                  {{White}}{MinChars(feeds.Count.ToString(), 4)}{{Reset}}");
+                    }
+                    readOut.WriteToEdgeLine($"Throughput:                         {{Green}}{PrintFriendlySpeed((ulong)through)}{{Reset}}");
+
+                    if (queue != -1)
+                    {
+                        if (currentConn == -1)
                         {
-                            readOut.WriteToEdgeLine($"Queue Length:                       {{Yellow}}{MinChars(queue.ToString(), 8)}{{Reset}}");
-                            readOut.WriteToEdgeLine($"Max Queue Length (Last 60 Seconds): {{Red}}{maxqueue}{{Reset}}");
-                        }
-                        else if (linkstr == feeds.Count)
-                        {
-                            readOut.WriteToEdgeLine($"Queue Length:                       {{Green}}Link Distribution Strategy (No Main Queue){{Reset}}");
-                            readOut.WriteToEdgeLine($"Max Queue Length (Last 60 Seconds): {{Red}}{maxqueue}{{Reset}}");
+                            if (linkstr == 0)
+                            {
+                                readOut.WriteToEdgeLine($"Combined Queue Length:              {{Yellow}}{MinChars(queue.ToString(), 8)}{{Reset}}");
+                                readOut.WriteToEdgeLine($"Max Queue Length (Last 60 Seconds): {{Red}}{maxqueue}{{Reset}}");
+                            }
+                            else if (linkstr == feeds.Count)
+                            {
+                                readOut.WriteToEdgeLine($"Combined Queue Length:              {{Green}}Link Distribution Strategy (No Main Queue){{Reset}}");
+                                readOut.WriteToEdgeLine($"Max Queue Length (Last 60 Seconds): {{Red}}{maxqueue}{{Reset}}");
+                            }
+                            else
+                            {
+                                readOut.WriteToEdgeLine($"Combined Queue Length:              {{Yellow}}{MinChars(queue.ToString(), 8)} {{Green}}({linkstr} using Link Dist.) {{Reset}}");
+                                readOut.WriteToEdgeLine($"Max Queue Length (Last 60 Seconds): {{Red}}{maxqueue}{{Reset}}");
+                            }
                         }
                         else
                         {
-                            readOut.WriteToEdgeLine($"Queue Length:                       {{Yellow}}{MinChars(queue.ToString(), 8)} {{Green}}({linkstr} using Link Dist.) {{Reset}}");
-                            readOut.WriteToEdgeLine($"Max Queue Length (Last 60 Seconds): {{Red}}{maxqueue}{{Reset}}");
+                            if (linkstr == 0)
+                            {
+                                readOut.WriteToEdgeLine($"Queue Length:                       {{Yellow}}{MinChars(queue.ToString(), 8)}{{Reset}}");
+                                readOut.WriteToEdgeLine($"Max Queue Length (Last 60 Seconds): {{Red}}{maxqueue}{{Reset}}");
+                            }
+                            else if (linkstr == feeds.Count)
+                            {
+                                readOut.WriteToEdgeLine($"Queue Length:                       {{Green}}Link Distribution Strategy (No Main Queue){{Reset}}");
+                                readOut.WriteToEdgeLine($"Max Queue Length (Last 60 Seconds): {{Red}}{maxqueue}{{Reset}}");
+                            }
+                            else
+                            {
+                                readOut.WriteToEdgeLine($"Queue Length:                       {{Yellow}}{MinChars(queue.ToString(), 8)} {{Green}}({linkstr} using Link Dist.) {{Reset}}");
+                                readOut.WriteToEdgeLine($"Max Queue Length (Last 60 Seconds): {{Red}}{maxqueue}{{Reset}}");
+                            }
+
                         }
 
                     }
 
-                }
+                    readOut.WriteToEdgeLine($"");
+                    readOut.Append("Sort Order: ");
 
-                readOut.WriteToEdgeLine($"");
-                readOut.Append("Sort Order: ");
+                    string ordering = null;
 
-                string ordering = null;
+                    long HardInserts = 0;
+                    long HardRemoves = 0;
+                    long SoftInserts = 0;
+                    long SoftRemoves = 0;
+                    long BufferSize = 0;
+                    long TreeSize = 0;
+                    long LocalRebalances = 0;
+                    long ChangedRebalances = 0;
+                    long UnchangedRebalances = 0;
+                    float AverageInsertIndex = 0f;
 
-                List<ISymbolDataService> sortobs = null;
-
-                lock (lockObj)
-                {
-                    sortobs = new List<ISymbolDataService>(Observers.Values.Where((item) =>
-                    {
-                        return currentConn == -1 || item.Level3Feed == current;
-                    }));
-                }
-
-                if (sortEnabled)
-                {
+                    List<ISymbolDataService> sortobs = null;
                     var sortInfo = new List<FeedsInfo>();
 
-                    foreach (var item in sortobs)
+                    lock (lockObj)
                     {
-                        var nf = new FeedsInfo();
-
-                        nf.Service = item;
-                        nf.State = item.Level3OrderBook.State;
-                        nf.Symbol = item.Symbol;
-
-                        if (item.Level3OrderBook.State == FeedState.Running)
+                        sortobs = new List<ISymbolDataService>(Observers.Values.Where((item) =>
                         {
-                            nf.MarketVolume = item.Level3OrderBook.MarketVolume;
-                            nf.Throughput = item.Level3OrderBook.Throughput;
-                            nf.Price = ((IEnumerable<AtomicOrderUnit>)item.Level3OrderBook.FullDepthOrderBook.Bids).FirstOrDefault()?.Price ?? 0M;
-                        }
+                            return currentConn == -1 || item.Level3Feed == current;
+                        }));
 
-                        sortInfo.Add(nf);
-                    }
-
-                    sortInfo.Sort((a, b) =>
-                    {
-                        if (a.State == FeedState.Running && b.State == FeedState.Running)
+                        if (sortEnabled)
                         {
-                            try
+
+                            foreach (var item in sortobs)
                             {
-                                switch (sortmode)
+                                lock(item.Level3OrderBook.LockObject)
                                 {
-                                    case 0:
+                                    var nf = new FeedsInfo();
 
-                                        if (a.MarketVolume > b.MarketVolume) return 1 * sortorder;
-                                        else if (a.MarketVolume < b.MarketVolume) return -1 * sortorder;
-                                        else break;
+                                    nf.Service = item;
+                                    nf.State = item.Level3OrderBook.State;
+                                    nf.Symbol = item.Symbol;
 
-                                    case 1:
+                                    if (item.Level3OrderBook.State == FeedState.Running)
+                                    {
+                                        nf.MarketVolume = item.Level3OrderBook.MarketVolume;
+                                        nf.Throughput = item.Level3OrderBook.Throughput;
+                                        nf.Price = item.Level3OrderBook.FullDepthOrderBook.Bids.First.Price;
 
-                                        if (a.Price > b.Price) return 1 * sortorder;
-                                        else if (a.Price < b.Price) return -1 * sortorder;
-                                        else break;
+                                        nf.ChangedRebalances = item.Level3OrderBook.FullDepthOrderBook.Bids.ChangedRebalances;
+                                        nf.ChangedRebalances += item.Level3OrderBook.FullDepthOrderBook.Asks.ChangedRebalances;
 
-                                    case 3:
+                                        nf.UnchangedRebalances = item.Level3OrderBook.FullDepthOrderBook.Bids.UnchangedRebalances;
+                                        nf.UnchangedRebalances += item.Level3OrderBook.FullDepthOrderBook.Asks.UnchangedRebalances;
 
-                                        if (a.Throughput > b.Throughput) return 1 * sortorder;
-                                        else if (a.Throughput < b.Throughput) return -1 * sortorder;
-                                        else break;
+
+                                        nf.LocalRebalances = item.Level3OrderBook.FullDepthOrderBook.Bids.LocalRebalances;
+                                        nf.LocalRebalances += item.Level3OrderBook.FullDepthOrderBook.Asks.LocalRebalances;
+
+                                        nf.HardInserts = item.Level3OrderBook.FullDepthOrderBook.Bids.HardInserts;
+                                        nf.HardInserts += item.Level3OrderBook.FullDepthOrderBook.Asks.HardInserts;
+
+                                        nf.HardRemoves = item.Level3OrderBook.FullDepthOrderBook.Bids.HardRemoves;
+                                        nf.HardRemoves += item.Level3OrderBook.FullDepthOrderBook.Asks.HardRemoves;
+
+                                        nf.SoftInserts = item.Level3OrderBook.FullDepthOrderBook.Bids.SoftInserts;
+                                        nf.SoftInserts += item.Level3OrderBook.FullDepthOrderBook.Asks.SoftInserts;
+
+                                        nf.SoftRemoves = item.Level3OrderBook.FullDepthOrderBook.Bids.SoftRemoves;
+                                        nf.SoftRemoves += item.Level3OrderBook.FullDepthOrderBook.Asks.SoftRemoves;
+
+                                        nf.BufferSize = item.Level3OrderBook.FullDepthOrderBook.Bids.Count;
+                                        nf.BufferSize += item.Level3OrderBook.FullDepthOrderBook.Asks.Count;
+
+                                        nf.TreeSize = item.Level3OrderBook.FullDepthOrderBook.Bids.TreeSize;
+                                        nf.TreeSize += item.Level3OrderBook.FullDepthOrderBook.Asks.TreeSize;
+
+                                        nf.AverageInsertIndex = item.Level3OrderBook.FullDepthOrderBook.Bids.AverageInsertIndex;
+                                        nf.AverageInsertIndex += item.Level3OrderBook.FullDepthOrderBook.Asks.AverageInsertIndex;
+
+                                        nf.AverageInsertIndex /= 2f;
+
+                                        HardInserts += nf.HardInserts;
+                                        HardRemoves += nf.HardRemoves;
+                                        SoftInserts += nf.SoftInserts;
+                                        SoftRemoves += nf.SoftRemoves;
+
+                                        BufferSize += nf.BufferSize;
+                                        TreeSize += nf.TreeSize;
+
+                                        LocalRebalances += nf.LocalRebalances;
+                                        ChangedRebalances += nf.ChangedRebalances;
+                                        UnchangedRebalances += nf.UnchangedRebalances;
+
+                                        AverageInsertIndex += nf.AverageInsertIndex;
+
+                                    }
+
+                                    sortInfo.Add(nf);
                                 }
 
-                                return string.Compare(a.Symbol, b.Symbol) * sortorder;
-                            }
-                            catch
-                            {
-                                return 0;
                             }
 
+
+                            AverageInsertIndex /= sortInfo.Count;
                         }
 
-                        else if (a.State != FeedState.Running && b.State == FeedState.Running) return 1;
-                        else if (b.State != FeedState.Running && a.State == FeedState.Running) return -1;
+                        sortInfo.Sort((a, b) =>
+                        {
+                            if (a.State == FeedState.Running && b.State == FeedState.Running)
+                            {
+                                try
+                                {
+                                    switch (sortmode)
+                                    {
+                                        case 0:
 
-                        return 0;
+                                            if (a.MarketVolume > b.MarketVolume) return 1 * sortorder;
+                                            else if (a.MarketVolume < b.MarketVolume) return -1 * sortorder;
+                                            else break;
 
-                    });
+                                        case 1:
 
-                    sortobs = new List<ISymbolDataService>();
-                    foreach (var info in sortInfo)
-                    {
-                        sortobs.Add(info.Service);
+                                            if (a.Price > b.Price) return 1 * sortorder;
+                                            else if (a.Price < b.Price) return -1 * sortorder;
+                                            else break;
+
+                                        case 3:
+
+                                            if (a.Throughput > b.Throughput) return 1 * sortorder;
+                                            else if (a.Throughput < b.Throughput) return -1 * sortorder;
+                                            else break;
+                                    }
+
+                                    return string.Compare(a.Symbol, b.Symbol) * sortorder;
+                                }
+                                catch
+                                {
+                                    return 0;
+                                }
+
+                            }
+
+                            else if (a.State != FeedState.Running && b.State == FeedState.Running) return 1;
+                            else if (b.State != FeedState.Running && a.State == FeedState.Running) return -1;
+
+                            return 0;
+
+                        });
+
+                        sortobs = new List<ISymbolDataService>();
+                        foreach (var info in sortInfo)
+                        {
+                            sortobs.Add(info.Service);
+                        }
+
+                        if (itemIndex > -1)
+                        {
+                            if (itemIndex > sortInfo.Count - 1) itemIndex = sortInfo.Count - 1;
+
+                            HardInserts = sortInfo[itemIndex].HardInserts;
+                            HardRemoves = sortInfo[itemIndex].HardRemoves;
+                            SoftInserts = sortInfo[itemIndex].SoftInserts;
+                            SoftRemoves = sortInfo[itemIndex].SoftRemoves;
+                            BufferSize = sortInfo[itemIndex].BufferSize;
+                            TreeSize = sortInfo[itemIndex].TreeSize;
+                            LocalRebalances = sortInfo[itemIndex].LocalRebalances;
+                            ChangedRebalances = sortInfo[itemIndex].ChangedRebalances;
+                            UnchangedRebalances = sortInfo[itemIndex].UnchangedRebalances;
+                            AverageInsertIndex = sortInfo[itemIndex].AverageInsertIndex;
+                            biggrand = sortInfo[itemIndex].Service.Level3OrderBook?.GrandTotal ?? 0;
+                            matchgrand = sortInfo[itemIndex].Service.Level3OrderBook?.MatchTotal ?? 0;
+                        }
+
                     }
-                }
 
-                switch (sortmode)
-                {
-                    case 0:
-                        ordering = ($"{{White}}Volume ");
-                        break;
-                    case 1:
-                        ordering = ($"{{White}}Price ");
-                        break;
-                    case 2:
-                        ordering = ($"{{White}}Alphabetically ");
-                        break;
-                    case 3:
-                        ordering = ($"{{White}}Throughput ");
-                        break;
-                }
+                    switch (sortmode)
+                    {
+                        case 0:
+                            ordering = ($"{{White}}Volume ");
+                            break;
+                        case 1:
+                            ordering = ($"{{White}}Price ");
+                            break;
+                        case 2:
+                            ordering = ($"{{White}}Alphabetically ");
+                            break;
+                        case 3:
+                            ordering = ($"{{White}}Throughput ");
+                            break;
+                    }
 
-                if (sortorder > 0)
-                    ordering += ($"{{Green}}▲ {{Yellow}}Ascending{{Reset}}");
-                else
-                    ordering += ($"{{Red}}▼ {{Yellow}}Descending{{Reset}}");
+                    if (sortorder > 0)
+                        ordering += ($"{{Green}}▲ {{Yellow}}Ascending{{Reset}}");
+                    else
+                        ordering += ($"{{Red}}▼ {{Yellow}}Descending{{Reset}}");
 
-                readOut.Append(MinChars(ordering, 127));
+                    readOut.Append(MinChars(ordering, 127));
 
-                if (sortobs.FirstOrDefault() is SymbolDataService firstData)
-                {
-                    var klineStr = firstData.Level3OrderBook.KlineType.ToString("G");
-                    readOut.WriteToEdgeLine($"{{Reset}}Current K-Line: {{Cyan}}{klineStr}");
-                }
-                else
-                {
+                    if (sortobs.FirstOrDefault() is SymbolDataService firstData)
+                    {
+                        var klineStr = firstData.Level3OrderBook.KlineType.ToString("G");
+                        readOut.WriteToEdgeLine($"{{Reset}}Current K-Line: {{Cyan}}{klineStr}");
+                    }
+                    else
+                    {
+                        readOut.WriteToEdgeLine($"");
+                    }
+
                     readOut.WriteToEdgeLine($"");
-                }
 
-                readOut.WriteToEdgeLine($"");
+                    headerText = readOut.ToString();
 
-                headerText = readOut.ToString();
+                    int count = 0;
 
-                int count = 0;
+                    var itemTexts = new List<string>();
 
-                var itemTexts = new List<string>();
-
-                int idx = scrollIndex;
-                int obscount = sortobs.Count;
-
-                if (idx > obscount - maxRows) idx = obscount - maxRows;
-                if (idx < 0) idx = 0;
-                z = idx;
-                for (int vc = idx; vc < idx + maxRows; vc++)
-                {
-                    if (vc >= obscount) break;
-
-                    var obs = sortobs[vc];
-                    var l3 = obs.Level3OrderBook;
-                    var ts = DateTime.MinValue;
-
-                    int fidx = 0;
-                    int cidx = 0;
-
-                    if (currentConn == -1)
+                    if (itemIndex != -1 && itemIndex < scrollIndex)
                     {
-                        foreach (var feed in feeds)
+                        scrollIndex = itemIndex;
+                    }
+
+                    int idx = scrollIndex;
+                    int obscount = sortobs.Count;
+
+                    if (idx > obscount - maxRows) idx = obscount - maxRows;
+
+                    if (idx < 0) idx = 0;
+
+                    if (itemIndex != -1 && ((idx + maxRows) - 1) < itemIndex)
+                    {
+                        scrollIndex += (itemIndex - ((idx + maxRows) - 1));
+                        idx = scrollIndex;
+                    }
+
+                    z = idx;
+
+                    for (int vc = idx; vc < idx + maxRows; vc++)
+                    {
+                        if (vc >= obscount) break;
+
+                        var obs = sortobs[vc];
+                        var l3 = obs.Level3OrderBook;
+                        var ts = DateTime.MinValue;
+
+                        int fidx = 0;
+                        int cidx = 0;
+
+                        if (currentConn == -1)
                         {
-                            if (feed is Level3 l3b)
+                            foreach (var feed in feeds)
                             {
-                                if (l3b.ActiveFeeds.ContainsKey(obs.Symbol))
+                                if (feed is Level3 l3b)
                                 {
-                                    fidx = cidx + 1;
-                                    break;
+                                    if (l3b.ActiveFeeds.ContainsKey(obs.Symbol))
+                                    {
+                                        fidx = cidx + 1;
+                                        break;
+                                    }
                                 }
+                                cidx++;
                             }
-                            cidx++;
-                        }
 
-                    }
-                    else
-                    {
-                        fidx = currentConn + 1;
-                    }
-
-                    if (l3.FullDepthOrderBook is object)
-                    {
-                        ba = ((IEnumerable<AtomicOrderUnit>)l3.FullDepthOrderBook.Asks).FirstOrDefault()?.Price ?? 0;
-                        bb = ((IEnumerable<AtomicOrderUnit>)l3.FullDepthOrderBook.Bids).FirstOrDefault()?.Price ?? 0;
-                        ts = l3.FullDepthOrderBook.Timestamp;
-
-                        op = l3.Candle.OpenPrice;
-                        cp = l3.Candle.ClosePrice;
-
-                    }
-                    else
-                    {
-                        op = cp = ba = bb = 0;
-                    }
-
-                    var currname = "";
-                    var bc = market.Symbols[obs.Symbol].BaseCurrency;
-
-                    if (market.Currencies.Contains(bc))
-                    {
-                        currname = market.Currencies[bc].FullName;
-                    }
-                    else
-                    {
-                        currname = bc;
-                    }
-
-                    itsb.Clear();
-
-                    var zt = "{Reset}-";
-                    var t = "▲▼";
-
-                    if (op > cp)
-                    {
-                        zt = "{Red}▼{Reset}";
-                    }
-                    else if (cp > op)
-                    {
-                        zt = "{Green}▲{Reset}";
-                    }
-
-                    itsb.WriteToEdgeLine($"{MinChars(obs.Symbol, maxSymbolLen)} {zt} Best Ask: {{Red}}{MinChars(ba.ToString("#,##0.00######"), 12)}{{Reset}} Best Bid: {{Green}}{MinChars(bb.ToString("#,##0.00######"), 12)}{{Reset}} {{Yellow}}{MinChars(currname, maxCurrencyLen)}{{Reset}}          Volume: {{Cyan}}{MinChars(l3.MarketVolume.ToString("#,##0.00##"), 14)}{{Reset}}");
-
-
-                    if (l3.Parent.Connected == false)
-                    {
-                        itsb.WriteToEdgeLine($"{MinChars($"{{White}}{vc + 1} {{Red}}Feed Disconnected{{Reset}}", maxSymbolLen + 22)}");
-                    }
-                    else if (ba == 0)
-                    {
-                        itsb.WriteToEdgeLine($"{MinChars($"{{White}}{vc + 1} {{Yellow}}Initializing{{Reset}}", maxSymbolLen + 22)}");
-                    }
-                    else
-                    {
-                        if (queue == -1)
-                        {
-                            itsb.WriteToEdgeLine($"{MinChars($"{{White}}{vc + 1} {{Blue}}@{fidx}{{Reset}}", maxSymbolLen + 20)}   Match Share: {MinChars(mpcts[z].ToString("##0.##") + "%", 7)}   Total Share: {MinChars(pcts[z++].ToString("##0.##") + "%", 7)}   State: " + MinChars(l3.State.ToString(), 10) + "  Throughput: " + MinChars(PrintFriendlySpeed((ulong)l3.Throughput), 16) + $"{{Reset}} Timestamp: {{Blue}}{ts:G}{{Reset}}");
                         }
                         else
                         {
-                            itsb.WriteToEdgeLine($"{MinChars($"{{White}}{vc + 1} {{Blue}}@{fidx}{{Reset}}", maxSymbolLen + 20)}   Match Share: {MinChars(mpcts[z].ToString("##0.##") + "%", 7)}   Total Share: {MinChars(pcts[z++].ToString("##0.##") + "%", 7)}   State: " + MinChars(l3.State.ToString(), 14) + "  Queue Length: " + MinChars(l3.QueueLength.ToString(), 10) + $"{{Reset}} Timestamp: {{Blue}}{ts:G}{{Reset}}");
+                            fidx = currentConn + 1;
                         }
-                        //itsb.WriteToEdgeLine($"{MinChars($"{{White}}{vc + 1} ", maxSymbolLen + 7)} - Match Share: {MinChars(mpcts[z].ToString("##0") + "%", 4)}   Total Share: {MinChars(pcts[z++].ToString("##0") + "%", 4)}   State: " + MinChars(l3.State.ToString(), 14) + "  Queue Length: " + MinChars(l3.QueueLength.ToString(), 10) + $" {{Reset}}Feed: {{White}}{MinChars((fidx == 0) ? "N/A" : fidx.ToString(), 4)}");
-                    }
 
-                    itsb.WriteToEdge("");
-                    itemTexts.Add(itsb.ToString());
-                }
-
-                // trades per second:
-
-                if ((DateTime.UtcNow - resetCounter).TotalSeconds >= 1)
-                {
-                    mps = 0;
-                    tps = 0;
-
-                    resetCounter = DateTime.UtcNow;
-
-                    foreach (var obs in sortobs)
-                    {
-                        var l3 = obs.Level3OrderBook;
-                        mps += l3.MatchesPerSecond;
-                        tps += l3.TransactionsPerSecond;
-
-                    }
-                }
-
-                itemText = itemTexts;
-
-                var ft = new StringBuilder();
-
-                ft.WriteToEdgeLine("");
-
-                if (obscount - count > 0)
-                {
-                    ft.WriteToEdgeLine($"Feeds Not Shown: {{Magenta}}{obscount - maxRows}{{Reset}}");
-                }
-
-                ft.WriteToEdgeLine($"");
-                ft.WriteToEdgeLine($"Match Total: {{White}}{matchgrand:#,##0}{{Reset}}      ");
-                ft.WriteToEdgeLine($"Grand Total: {{White}}{biggrand:#,##0}{{Reset}}        ");
-                ft.WriteToEdgeLine($"                                                       ");
-                ft.WriteToEdgeLine($"Matches Per Second:      ~ {{Cyan}}{mps:#,###}{{Reset}}");
-                ft.WriteToEdgeLine($"Transactions Per Second: ~ {{Cyan}}{tps:#,###}{{Reset}}");
-                ft.WriteToEdgeLine($"");
-                ft.WriteToEdgeLine($"{{White}}Use Arrow Up/Arrow Down, Page Up/Page Down, Home/End to navigate the feed list. Ctrl+Arrow Up/Down scrolls the message log, below.{{Reset}}");
-                ft.WriteToEdgeLine($"{{White}}Use Arrow Left/Arrow Right to switch between different connections.  Use Ctrl + Arrow Left/Arrow Right to change the K-Line.{{Reset}}");
-                ft.WriteToEdgeLine($"{{White}}Press: (A) Sort Alphabetically, (P) Price, (V) Volume, (T) Throughput. Press again to reverse order. (Q) To Quit.");
-
-                lock (messages)
-                {
-                    if (messages.Count > 0)
-                    {
-                        if (msgidx < 0) msgidx = 0;
-                        int mc = messages.Count, mi, mg;
-                        mg = msgidx;
-
-                        ft.WriteToEdgeLine("");
-
-                        for (mi = mg; mi < mc; mi++)
+                        if (l3.FullDepthOrderBook is object)
                         {
-                            ft.WriteToEdgeLine(messages[mi]);
-                            if (mi - mg >= 4) break;
+                            ba = l3.FullDepthOrderBook.Asks.First.Price;
+                            bb = l3.FullDepthOrderBook.Bids.First.Price;
+                            ts = l3.FullDepthOrderBook.Timestamp;
+
+                            op = l3.Candle.OpenPrice;
+                            cp = l3.Candle.ClosePrice;
+
+                        }
+                        else
+                        {
+                            op = cp = ba = bb = 0;
+                        }
+
+                        var currname = "";
+                        var bc = market.Symbols[obs.Symbol].BaseCurrency;
+
+                        if (market.Currencies.Contains(bc))
+                        {
+                            currname = market.Currencies[bc].FullName;
+                        }
+                        else
+                        {
+                            currname = bc;
+                        }
+
+                        itsb.Clear();
+
+                        var zt = "{ForegroundReset}-";
+                        var t = "▲▼";
+
+                        if (op > cp)
+                        {
+                            zt = "{Red}▼{ForegroundReset}";
+                        }
+                        else if (cp > op)
+                        {
+                            zt = "{Green}▲{ForegroundReset}";
+                        }
+
+
+
+                        if (itemIndex == vc)
+                        {
+                            itsb.Append("{BackgroundDarkBlue}");
+                        }
+
+                        itsb.WriteToEdgeLine($"{MinChars(obs.Symbol, maxSymbolLen)} {zt} Best Ask: {{Red}}{MinChars(ba.ToString("#,##0.00######"), 12)}{{ForegroundReset}} Best Bid: {{Green}}{MinChars(bb.ToString("#,##0.00######"), 12)}{{ForegroundReset}} {{Yellow}}{MinChars(currname, maxCurrencyLen)}{{ForegroundReset}}          Volume: {{Cyan}}{MinChars(l3.MarketVolume.ToString("#,##0.00##"), 14)}{{ForegroundReset}}");
+
+                        if (l3.Parent.Connected == false)
+                        {
+                            itsb.WriteToEdgeLine($"{MinChars($"{{White}}{vc + 1} {{Red}}Feed Disconnected{{ForegroundReset}}", maxSymbolLen + 22)}");
+                        }
+                        else if (ba == 0)
+                        {
+                            itsb.WriteToEdgeLine($"{MinChars($"{{White}}{vc + 1} {{Yellow}}Initializing{{ForegroundReset}}", maxSymbolLen + 22)}");
+                        }
+                        else
+                        {
+                            if (queue == -1)
+                            {
+                                itsb.WriteToEdgeLine($"{MinChars($"{{White}}{MinChars($"{vc + 1}", 3)} {{Blue}}@{fidx}{{ForegroundReset}}", maxSymbolLen + 30)}   Match Share: {MinChars(metrics ? mpcts[z].ToString("##0.##") + "%" : "Off", 7)}   Total Share: {MinChars(metrics ? pcts[z++].ToString("##0.##") + "%" : "Off", 7)}   State: " + MinChars(l3.State.ToString(), 10) + "  Throughput: " + MinChars(metrics ? PrintFriendlySpeed((ulong)l3.Throughput) : "Off", 16) + $"{{ForegroundReset}} Timestamp: {{Blue}}{ts:G}{{ForegroundReset}}");
+                            }
+                            else
+                            {
+                                itsb.WriteToEdgeLine($"{MinChars($"{{White}}{MinChars($"{vc + 1}", 3)} {{Blue}}@{fidx}{{ForegroundReset}}", maxSymbolLen + 30)}   Match Share: {MinChars(metrics ? mpcts[z].ToString("##0.##") + "%" : "Off", 7)}   Total Share: {MinChars(metrics ? pcts[z++].ToString("##0.##") + "%" : "Off", 7)}   State: " + MinChars(l3.State.ToString(), 14) + "  Queue Length: " + MinChars(metrics ? l3.QueueLength.ToString() : "Off", 10) + $"{{ForegroundReset}} Timestamp: {{Blue}}{ts:G}{{ForegroundReset}}");
+                            }
+                            //itsb.WriteToEdgeLine($"{MinChars($"{{White}}{vc + 1} ", maxSymbolLen + 7)} - Match Share: {MinChars(mpcts[z].ToString("##0") + "%", 4)}   Total Share: {MinChars(pcts[z++].ToString("##0") + "%", 4)}   State: " + MinChars(l3.State.ToString(), 14) + "  Queue Length: " + MinChars(l3.QueueLength.ToString(), 10) + $" {{ForegroundReset}}Feed: {{White}}{MinChars((fidx == 0) ? "N/A" : fidx.ToString(), 4)}");
+                        }
+
+                        itsb.WriteToEdge("");
+
+                        if (itemIndex == vc)
+                        {
+                            itsb.Append("{BackgroundReset}");
+                        }
+
+                        itemTexts.Add(itsb.ToString());
+                    }
+
+                    // trades per second:
+
+                    if ((DateTime.UtcNow - resetCounter).TotalSeconds >= 1)
+                    {
+                        mps = 0;
+                        tps = 0;
+
+                        resetCounter = DateTime.UtcNow;
+                        var x = 0;
+                        foreach (var obs in sortobs)
+                        {
+                            if (itemIndex == -1)
+                            {
+                                var l3 = obs.Level3OrderBook;
+                                mps += l3.MatchesPerSecond;
+                                tps += l3.TransactionsPerSecond;
+                            }
+                            else if (itemIndex == x)
+                            {
+                                var l3 = obs.Level3OrderBook;
+                                mps = l3.MatchesPerSecond;
+                                tps = l3.TransactionsPerSecond;
+
+                                break;
+                            }
+                            x++;
                         }
                     }
+
+                    itemText = itemTexts;
+
+                    var ft = new StringBuilder();
+
+                    ft.WriteToEdgeLine("");
+
+                    if (obscount - count > 0)
+                    {
+                        ft.WriteToEdgeLine($"Feeds Not Shown: {{Magenta}}{obscount - maxRows}{{Reset}}");
+                    }
+
+                    if (metrics)
+                    {
+                        if (itemIndex != -1 && sortobs[itemIndex]?.Level3OrderBook?.FullDepthOrderBook != null)
+                        {
+                            var bids = new List<AtomicOrderUnit>();
+                            var asks = new List<AtomicOrderUnit>();
+                        
+                            int i = 0;
+
+                            foreach(var xitem in sortobs[itemIndex].Level3OrderBook.FullDepthOrderBook.Asks)
+                            {
+                                asks.Add(xitem);
+                                i++;
+                                if (i >= 5) break;
+                            }
+                            i = 0;
+                            foreach (var xitem in sortobs[itemIndex].Level3OrderBook.FullDepthOrderBook.Bids)
+                            {
+                                bids.Add(xitem);
+                                i++;
+                                if (i >= 5) break;
+                            }
+
+                            ft.WriteToEdgeLine("");
+                            ft.WriteToEdgeLine($"{{White}}{MinChars($"{sortobs[itemIndex].Symbol} - {sortobs[itemIndex].BaseCurrency.FullName}", 40)}    Best Asks                      Best Bids{{Reset}}");
+                            ft.WriteToEdgeLine($"");
+                            ft.WriteToEdgeLine($"Match Total: {{White}}{MinChars($"{matchgrand:#,##0}", 28)}{{Reset}}   {{BackgroundDarkBlue}}{{Red}}{MinChars($"{asks[0].Price:#,##0.00######}", 10)}   {MinChars(asks[0].Size.ToString(), 10)}        {{Green}}{MinChars($"{bids[0].Price:#,##0.00######}", 10)}   {MinChars(bids[0].Size.ToString(), 10)}{{Reset}}");
+                            ft.WriteToEdgeLine($"Grand Total: {{White}}{MinChars($"{biggrand:#,##0}", 28)}{{Reset}}   {{Red}}{MinChars($"{asks[1].Price:#,##0.00######}", 10)}   {MinChars(asks[1].Size.ToString(), 10)}        {{Green}}{MinChars($"{bids[1].Price:#,##0.00######}", 10)}   {MinChars(bids[1].Size.ToString(), 10)}{{Reset}}");
+                            ft.WriteToEdgeLine($"                                            {{Red}}{MinChars($"{asks[2].Price:#,##0.00######}", 10)}   {MinChars(asks[2].Size.ToString(), 10)}        {{Green}}{MinChars($"{bids[2].Price:#,##0.00######}", 10)}   {MinChars(bids[2].Size.ToString(), 10)}{{Reset}}");
+                            ft.WriteToEdgeLine($"Matches Per Second:      ~ {{Cyan}}{MinChars($"{mps:#,##0}", 15)}{{Reset}}  {{Red}}{MinChars($"{asks[3].Price:#,##0.00######}", 10)}   {MinChars(asks[3].Size.ToString(), 10)}        {{Green}}{MinChars($"{bids[3].Price:#,##0.00######}", 10)}   {MinChars(bids[3].Size.ToString(), 10)}{{Reset}}");
+                            ft.WriteToEdgeLine($"Transactions Per Second: ~ {{Cyan}}{MinChars($"{tps:#,##0}", 15)}{{Reset}}  {{Red}}{MinChars($"{asks[4].Price:#,##0.00######}", 10)}   {MinChars(asks[4].Size.ToString(), 10)}        {{Green}}{MinChars($"{bids[4].Price:#,##0.00######}", 10)}   {MinChars(bids[4].Size.ToString(), 10)}{{Reset}}");
+                        }
+                        else
+                        {
+                            ft.WriteToEdgeLine($"");
+                            ft.WriteToEdgeLine($"Match Total: {{White}}{matchgrand:#,##0}{{Reset}}      ");
+                            ft.WriteToEdgeLine($"Grand Total: {{White}}{biggrand:#,##0}{{Reset}}        ");
+                            ft.WriteToEdgeLine($"                                                       ");
+                            ft.WriteToEdgeLine($"Matches Per Second:      ~ {{Cyan}}{mps:#,##0}{{Reset}}");
+                            ft.WriteToEdgeLine($"Transactions Per Second: ~ {{Cyan}}{tps:#,##0}{{Reset}}");
+                        }
+
+                        ft.WriteToEdgeLine($"                                                       ");
+                        ft.WriteToEdgeLine($"Hard Inserts:    {{Cyan}}{HardInserts:#,##0}{{Reset}}        ");
+                        ft.WriteToEdgeLine($"Soft Inserts:    {{Cyan}}{SoftInserts:#,##0}{{Reset}}        ");
+                        ft.WriteToEdgeLine($"                                                       ");
+                        ft.WriteToEdgeLine($"Average Index:   {{Cyan}}{AverageInsertIndex:#,##0}{{Reset}}        ");
+                        ft.WriteToEdgeLine($"                                                       ");
+                        ft.WriteToEdgeLine($"Hard Removes:    {{Cyan}}{HardRemoves:#,##0}{{Reset}}        ");
+                        ft.WriteToEdgeLine($"Soft Removes:    {{Cyan}}{SoftRemoves:#,##0}{{Reset}}        ");
+                        ft.WriteToEdgeLine($"                                                       ");
+                        ft.WriteToEdgeLine($"Logical Size:    {{Cyan}}{BufferSize:#,##0}{{Reset}}        ");
+                        ft.WriteToEdgeLine($"Tree Size:       {{Cyan}}{TreeSize:#,##0}{{Reset}}    ({100 * ((double)TreeSize / BufferSize):#,#0.0#}%)    ");
+                        ft.WriteToEdgeLine($"                                                       ");
+                        ft.WriteToEdgeLine($"Local Rebalances:            {{Cyan}}{LocalRebalances:#,##0}{{Reset}}        ");
+                        ft.WriteToEdgeLine($"                                                       ");
+                        ft.WriteToEdgeLine($"Global Rebalances:           {{Cyan}}{ChangedRebalances:#,##0}{{Reset}}        ");
+                        ft.WriteToEdgeLine($"Declined Global Rebalances:  {{Cyan}}{UnchangedRebalances:#,##0}{{Reset}}        ");
+                    }
+
+                    ft.WriteToEdgeLine($"                                                       ");
+                    ft.WriteToEdgeLine($"{{White}}Use Arrow Up/Arrow Down, Page Up/Page Down, Home/End to navigate the feed list. Ctrl+Arrow Up/Down to select an item. Esc to clear selection.{{Reset}}");
+                    ft.WriteToEdgeLine($"{{White}}Use Arrow Left/Arrow Right to switch between different connections.  Use Ctrl + Arrow Left/Arrow Right to change the K-Line.{{Reset}}");
+                    ft.WriteToEdgeLine($"{{White}}Press: (A) Sort Alphabetically, (P) Price, (V) Volume, (T) Throughput. Press again to reverse order. (D) Diagnostics. (M) Messages (Q) To Quit.");
+
+                    lock (messages)
+                    {
+                        if (msgEnabled && messages.Count > 0)
+                        {
+                            if (msgidx < 0) msgidx = 0;
+                            int mc = messages.Count, mi, mg;
+                            mg = msgidx;
+
+                            ft.WriteToEdgeLine("");
+
+                            for (mi = mg; mi < mc; mi++)
+                            {
+                                ft.WriteToEdgeLine(messages[mi]);
+                                if (mi - mg >= 4) break;
+                            }
+                        }
+                    }
+
+                    footerText = ft.ToString();
                 }
-
-                footerText = ft.ToString();
-
             }
             catch
             {
@@ -1590,5 +1844,25 @@ namespace KuCoinConsole
         public FeedState State;
 
         public ISymbolDataService Service;
+
+        public long HardInserts;
+
+        public long SoftInserts;
+
+        public long HardRemoves;
+
+        public long SoftRemoves;
+
+        public long BufferSize;
+
+        public long TreeSize;
+
+        public long LocalRebalances;
+
+        public long ChangedRebalances;
+
+        public long UnchangedRebalances;
+
+        public float AverageInsertIndex;
     }
 }

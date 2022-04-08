@@ -239,7 +239,13 @@ namespace KuCoin.NET.Websockets.Distribution
             get => diagEnable;
             set
             {
-                SetProperty(ref diagEnable, value);
+                if (SetProperty(ref diagEnable, value))
+                {
+                    GrandTotal = 0;
+                    MatchesPerSecond = 0;
+                    MatchTotal = 0;
+                    TransactionsPerSecond = 0;
+                }
             }
         }
 
@@ -287,23 +293,12 @@ namespace KuCoin.NET.Websockets.Distribution
 
                     if (!initializing)
                     {
+                        if (buffer.Count < 1) return;
+
                         initializing = true;
                         startFetch = DateTime.UtcNow;
-                        cts = new CancellationTokenSource();
                         
-                        Initialize().ContinueWith((t) =>
-                        {
-                            if (t.Result)
-                            {
-                                State = FeedState.Running;
-                                FailReason = FailReason.None;
-
-                                if (direct) _ = Task.Run(() => ParallelService.UnregisterService(this));
-                            }
-
-                            cts = null;
-                            startFetch = null;
-                        }, cts.Token);
+                        _ = Initialize();
                     }
                     else if ((startFetch != null && (DateTime.UtcNow - (DateTime)startFetch).TotalMilliseconds >= (resetTimeout * 2)))
                     {
@@ -337,6 +332,18 @@ namespace KuCoin.NET.Websockets.Distribution
             }
         }
 
+        protected override void OnInitialized()
+        {
+            base.OnInitialized();
+
+            State = FeedState.Running;
+            FailReason = FailReason.None;
+
+            if (direct) _ = Task.Run(() => ParallelService.UnregisterService(this));
+
+            cts = null;
+            startFetch = null;
+        }
 
         public override void SetInitialDataProvider(IInitialDataProvider<string, TBookIn> dataProvider)
         {

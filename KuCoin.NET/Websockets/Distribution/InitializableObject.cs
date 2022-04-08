@@ -195,6 +195,32 @@ namespace KuCoin.NET.Websockets.Distribution
             Initialized?.Invoke(this, new EventArgs());
         }
 
+        private void InitialDataCallback(TInternal initData)
+        {
+            lock (lockObj)
+            {
+                if (!(initData is object))
+                {
+                    State = FeedState.Failed;
+                    LastFailureTime = DateTime.UtcNow;
+                    Failure = true;
+                    FailReason = FailReason.OrderBookTimeout;
+                    OnPropertyChanged(nameof(TimeUntilNextRetry));
+
+                    initializing = false;
+                    IsInitialized = false;
+                }
+                else
+                {
+                    initializing = false;
+                    IsInitialized = true;
+                }
+
+                OnInitialDataProvided(initData);
+                _ = Task.Run(OnInitialized);
+            }
+        }
+
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public async Task<bool> Initialize()
@@ -208,51 +234,31 @@ namespace KuCoin.NET.Websockets.Distribution
             }
 
             TInternal initData = default;
-            int maxtries = 3;
 
-            for (int tries = 0; tries < maxtries; tries++)
+            try
             {
-                try
-                {
-                    await Task.Delay(100);
+                await Task.Delay(100);
 
-                    if (DataProvider != null)
+                if (DataProvider != null)
+                {
+
+                    if (DataProvider is IInitialDataProviderCallback<TKey, TInternal> adp)
                     {
-                        initData = await DataProvider?.ProvideInitialData(key);
-                        if (initData != null) break;
+                        adp.BeginProvideInitialData(key, InitialDataCallback);
+                        return true;
                     }
-                }
-                catch
-                {
-                    initData = default;
-                    break;
+
+                    initData = await DataProvider?.ProvideInitialData(key);
                 }
             }
-
-            lock (lockObj)
+            catch (Exception ex)
             {
-                if (initData == null)
-                {
-                    State = FeedState.Failed;
-                    LastFailureTime = DateTime.UtcNow;
-                    Failure = true;
-                    FailReason = FailReason.Other;
-                    OnPropertyChanged(nameof(TimeUntilNextRetry));
-
-                    initializing = false;
-                    IsInitialized = false;
-
-                    return false;
-                }
-
-                initializing = false;
-                IsInitialized = true;
-
-                OnInitialDataProvided(initData);
-                _ = Task.Run(OnInitialized);
-
-                return IsInitialized;
+                KuCoinSystem.Logger.Log(ex.Message);
+                initData = default;
             }
+
+            InitialDataCallback(initData);
+            return initData is object;
         }
 
         /// <summary>
@@ -280,6 +286,7 @@ namespace KuCoin.NET.Websockets.Distribution
 
                     initialized = failure = false;
                     LastFailureTime = null;
+                    state = FeedState.Connected;
 
                     _ = Task.Run(() =>
                     {

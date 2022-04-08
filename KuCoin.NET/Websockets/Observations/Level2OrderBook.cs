@@ -5,6 +5,7 @@ using KuCoin.NET.Websockets.Public;
 
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text;
@@ -23,6 +24,43 @@ namespace KuCoin.NET.Websockets.Observations
             this.IsPresentationDisabled = true;
         }
 
+        private void CopyObservable(ICollection<OrderUnitStruct> src, ObservableCollection<ObservableOrderUnit> dest)
+        {
+            int md = this.marketDepth;
+
+            if (src.Count < md) md = src.Count;
+
+            if (dest.Count != md)
+            {
+                dest.Clear();
+
+                int i = 0;
+                foreach (var item in src)
+                {
+                    dest.Add(item.Clone<ObservableOrderUnit>());
+                    i++;
+                    if (i >= md) break;
+                }
+            }
+            else
+            {
+                int i = 0;
+                foreach (var item in src)
+                {
+                    if (dest[i].Price == item.Price)
+                    {
+                        dest[i].Size = item.Size;
+                    }
+                    else
+                    {
+                        dest[i] = item.Clone<ObservableOrderUnit>();
+                    }
+
+                    i++;
+                    if (i >= md) break;
+                }
+            }
+        }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public override void PresentData()
@@ -32,8 +70,8 @@ namespace KuCoin.NET.Websockets.Observations
                 if (fullDepth == null) return;
                 if (this.marketDepth <= 0) return;
 
-                var asks = fullDepth.Asks as IList<OrderUnitStruct>;
-                var bids = fullDepth.Asks as IList<OrderUnitStruct>;
+                var asks = fullDepth.Asks as ICollection<OrderUnitStruct>;
+                var bids = fullDepth.Bids as ICollection<OrderUnitStruct>;
 
                 if (orderBook == null)
                 {
@@ -42,62 +80,9 @@ namespace KuCoin.NET.Websockets.Observations
                     orderBook.Timestamp = fullDepth.Timestamp;
                 }
 
-                int marketDepth = this.marketDepth;
-
-                if (asks.Count < marketDepth) marketDepth = asks.Count;
-
-                if (orderBook.Asks.Count != marketDepth)
-                {
-                    orderBook.Asks.Clear();
-                    for (int i = 0; i < marketDepth; i++)
-                    {
-                        orderBook.Asks.Add(asks[i].Clone<ObservableOrderUnit>());
-                    }
-                }
-                else
-                {
-                    for (int i = 0; i < marketDepth; i++)
-                    {
-                        if (orderBook.Asks[i].Price == asks[i].Price)
-                        {
-                            orderBook.Asks[i].Price = asks[i].Price;
-                            orderBook.Asks[i].Size = asks[i].Size;
-                        }
-                        else
-                        {
-                            orderBook.Asks[i] = asks[i].Clone<ObservableOrderUnit>();
-                        }
-                    }
-                }
-
-                if (bids.Count < marketDepth) marketDepth = bids.Count;
-
-                if (orderBook.Bids.Count != marketDepth)
-                {
-                    orderBook.Bids.Clear();
-                    for (int i = 0; i < marketDepth; i++)
-                    {
-                        orderBook.Bids.Add(bids[i].Clone<ObservableOrderUnit>());
-                    }
-                }
-                else
-                {
-                    for (int i = 0; i < marketDepth; i++)
-                    {
-                        if (orderBook.Bids[i].Price == bids[i].Price)
-                        {
-                            orderBook.Bids[i].Price = bids[i].Price;
-                            orderBook.Bids[i].Size = bids[i].Size;
-                        }
-                        else
-                        {
-                            orderBook.Bids[i] = bids[i].Clone<ObservableOrderUnit>();
-                        }
-                    }
-                }
-
+                CopyObservable(asks, orderBook.Asks);
+                CopyObservable(bids, orderBook.Bids);
             }
-
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

@@ -1,4 +1,5 @@
-﻿using KuCoin.NET.Data;
+﻿
+using KuCoin.NET.Data;
 using KuCoin.NET.Data.Market;
 using KuCoin.NET.Data.Order;
 using KuCoin.NET.Data.Websockets;
@@ -28,7 +29,9 @@ namespace KuCoin.NET.Websockets.Distribution
     /// <typeparam name="TBookIn">The base order book type.</typeparam>
     /// <typeparam name="TBookOut">The observerable order book type.</typeparam>
     /// <typeparam name="TParent">The parent of the feed (the inheriter of <see cref="OrderBookFeed{TDistributable, TValue, TBookIn, TBookOut, TParent}"/>.)</typeparam>
-    public abstract class OrderBookFeed<TDistributable, TValue, TBookIn, TBookOut, TParent> : MarketFeed<TDistributable, TValue, TBookIn, TBookOut>
+    public abstract class OrderBookFeed<TDistributable, TValue, TBookIn, TBookOut, TParent> 
+        : MarketFeed<TDistributable, TValue, TBookIn, TBookOut>, 
+        IInitialDataProviderCallback<string, TBookIn>
         where TDistributable: OrderBookDistributable<TBookIn, TBookOut, TValue, TParent>
         where TValue: ISymbol, IStreamableObject
         where TBookIn: class, new()
@@ -70,51 +73,88 @@ namespace KuCoin.NET.Websockets.Distribution
         /// <returns></returns>
         protected abstract TDistributable CreateFeed(string sym);
 
+        public void BeginProvideInitialData(string key, Action<TBookIn> callback)
+        {
+            BeginProvideInitialData(key, callback, 0);
+        }
+
+        /// <summary>
+        /// Begin the request for initial data, and call the <paramref name="callback"/> function after the request has returned.
+        /// </summary>
+        /// <param name="key">They key for the data to acquire.</param>
+        /// <param name="callback">The callback function to execute after the network request returns.</param>
+        /// <param name="tryCount">The number of failed connection attempts that have been made, so far.</param>
+        /// <remarks>
+        /// The default behavior of this function is to attempt a network connection three times. If the network connection fails to produce a good result after three attempts, <paramref name="callback"/> will be called with a null parameter.
+        /// <br /><br />
+        /// This method is called directly by <see cref="BeginProvideInitialData(string, Action{TBookIn})"/>.
+        /// <br /><br />
+        /// Derived methods that override the default <paramref name="tryCount"/> handling behavior will need to remember to increment <paramref name="tryCount"/> by 1 for every successive call.
+        /// </remarks>
+        protected virtual void BeginProvideInitialData(string key, Action<TBookIn> callback, int tryCount)
+        {
+            var curl = InitialDataUrl;
+            var param = new Dictionary<string, object>
+            {
+                { "symbol", key }
+            };
+
+            BeginMakeRequest((jobj) =>
+            {
+                if (jobj == null)
+                {
+                    if (tryCount >= 3)
+                    {
+                        callback(null);
+                        return;
+                    }
+
+                    BeginProvideInitialData(key, callback, tryCount + 1);
+                    return;
+                }
+                var result = jobj.ToObject<TBookIn>();
+                callback(result);
+
+            }, HttpMethod.Get, curl, auth: !IsPublic, reqParams: param);
+
+        }
+
+
         public override async Task<TBookIn> ProvideInitialData(string key)
         {
             Exception err = null;
+            
+            TBookIn result = null;
 
-            var cts = new CancellationTokenSource();
+            var curl = InitialDataUrl;
+            int tries, maxtries = 3;
 
-            var ft = Task.Run(async () =>
+            var param = new Dictionary<string, object>
             {
-                var curl = InitialDataUrl;
-                var param = new Dictionary<string, object>();
+                { "symbol", key }
+            };
 
-                param.Add("symbol", key);
-
+            for (tries = 0; tries < maxtries; tries++)
+            {
                 try
                 {
                     var jobj = await MakeRequest(HttpMethod.Get, curl, auth: !IsPublic, reqParams: param);
-                    var result = jobj.ToObject<TBookIn>();
-                    GC.Collect(2);
-                    return result;
+                    result = jobj.ToObject<TBookIn>();
+                    break;
                 }
                 catch (Exception ex)
                 {
                     err = ex;
-                    return null;
-                }
-
-            }, cts.Token);
-
-            DateTime start = DateTime.UtcNow;
-
-            while ((DateTime.UtcNow - start).TotalSeconds < 60)
-            {
-                await Task.Delay(10);
-
-                if (ft.IsCompleted)
-                {
-                    return ft.Result;
                 }
             }
 
-            cts.Cancel();
+            if (err != null)
+            {
+                Logger.Log(err.Message);
+                throw err;
+            }
 
-            if (err != null) throw err;
-
-            return null;
+            return result;
         }
 
 

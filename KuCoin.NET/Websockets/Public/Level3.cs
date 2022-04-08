@@ -19,6 +19,7 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Net.WebSockets;
 using System.Runtime.ExceptionServices;
+using Newtonsoft.Json.Linq;
 
 namespace KuCoin.NET.Websockets.Public
 {
@@ -27,7 +28,7 @@ namespace KuCoin.NET.Websockets.Public
 
     }
 
-    public class Level3 : OrderBookFeed<Level3OrderBook, Level3Update, KeyedAtomicOrderBook<AtomicOrderUnit>, ObservableAtomicOrderBook<ObservableAtomicOrderUnit>, Level3>, ILevel3
+    public class Level3 : OrderBookFeed<Level3OrderBook, Level3Update, KeyedAtomicOrderBook<AtomicOrderUnit>, ObservableAtomicOrderBook<ObservableAtomicOrderUnit>, Level3>, ILevel3, IInitialDataProviderCallback<string, KeyedAtomicOrderBook<AtomicOrderUnit>>
     {
 
         public const int buy = -813464969;
@@ -58,9 +59,9 @@ namespace KuCoin.NET.Websockets.Public
         {
             if (credentialsProvider.GetFutures()) throw new NotSupportedException("Cannot use Futures API credentials on a spot market feed.");
 
-            recvBufferSize = 512 * 1024 * 1024;
+            recvBufferSize = 16 * 1024 * 1024;
             minQueueBuffer = 10000;
-            chunkSize = 2048;
+            chunkSize = 512;
 
             settings = new JsonSerializerSettings()
             {
@@ -80,9 +81,9 @@ namespace KuCoin.NET.Websockets.Public
         /// <param name="isSandbox">True if sandbox mode.</param>
         public Level3(string key, string secret, string passphrase, bool isSandbox = false) : base(key, secret, passphrase, isSandbox: isSandbox, futures: false)
         {
-            recvBufferSize = 512 * 1024 * 1024;
+            recvBufferSize = 16 * 1024 * 1024;
             minQueueBuffer = 10000;
-            chunkSize = 2048;
+            chunkSize = 512;
 
             settings = new JsonSerializerSettings()
             {
@@ -120,8 +121,93 @@ namespace KuCoin.NET.Websockets.Public
         {
             return new Level3OrderBook(this, sym);
         }
-        
-        
+
+        protected override void BeginProvideInitialData(string key, Action<KeyedAtomicOrderBook<AtomicOrderUnit>> callback, int tryCount)
+        {
+            var curl = InitialDataUrl;
+            KeyedAtomicOrderBook<AtomicOrderUnit> orderbook = null;
+
+            var param = new Dictionary<string, object>
+            {
+                { "symbol", key }
+            };
+
+            BeginMakeRequest((jobj) =>
+            {
+                if (jobj == null)
+                {
+                    if (tryCount >= 3)
+                    {
+                        callback(null);
+                        return;
+                    }
+
+                    BeginProvideInitialData(key, callback, tryCount + 1);
+                    return;
+                }
+
+                orderbook = new KeyedAtomicOrderBook<AtomicOrderUnit>();
+
+                var asks = jobj["asks"] as JArray;
+                var bids = jobj["bids"] as JArray;
+
+                orderbook.Asks.Capacity = asks.Count * 4;
+                orderbook.Bids.Capacity = bids.Count * 4;
+
+                jobj.Populate(orderbook);
+                callback(orderbook);
+
+            }, HttpMethod.Get, curl, auth: !IsPublic, reqParams: param);
+        }
+
+        public override async Task<KeyedAtomicOrderBook<AtomicOrderUnit>> ProvideInitialData(string key)
+        {
+            Exception err = null;
+
+            var curl = InitialDataUrl;
+            KeyedAtomicOrderBook<AtomicOrderUnit> orderbook = null;
+
+            var param = new Dictionary<string, object>
+            {
+                { "symbol", key }
+            };
+
+            int tries, maxtries = 3;
+
+            for (tries = 0; tries < maxtries; tries++)
+            {
+                try
+                {
+                    var jobj = await MakeRequest(HttpMethod.Get, curl, auth: !IsPublic, reqParams: param);
+
+                    orderbook = new KeyedAtomicOrderBook<AtomicOrderUnit>();
+
+                    var asks = jobj["asks"] as JArray;
+                    var bids = jobj["bids"] as JArray;
+
+                    orderbook.Asks.Capacity = asks.Count * 4;
+                    orderbook.Bids.Capacity = bids.Count * 4;
+
+                    jobj.Populate(orderbook);
+
+                    GC.Collect(2);
+                    break;
+                }
+                catch (Exception ex)
+                {
+                    err = ex;
+                }
+            }
+
+            if (err != null)
+            {
+                Logger.Log(err.Message);
+                throw err;
+            }
+
+            return orderbook;
+        }
+
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         protected override void RouteJsonPacket(string json, FeedMessage e = null)
@@ -509,5 +595,6 @@ namespace KuCoin.NET.Websockets.Public
                 }
             }
         }
+
     }
 }

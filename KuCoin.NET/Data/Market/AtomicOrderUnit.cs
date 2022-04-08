@@ -26,8 +26,7 @@ namespace KuCoin.NET.Data.Market
         protected DateTime time;
         protected string orderId;
 
-
-
+        public long Sequence { get; set; }
 
         /// <summary>
         /// Price * Size
@@ -140,15 +139,27 @@ namespace KuCoin.NET.Data.Market
                 Price = price,
                 Size = size,
                 OrderId = orderId,
-                Timestamp = time
+                Timestamp = time                
             };
+
+            if (ret is AtomicOrderUnit other)
+            {
+                other.Sequence = Sequence;
+            }
 
             return ret;
         }
 
         public override string ToString()
         {
-            return $"{OrderId} - {Timestamp}: {Price} ({Size})";
+            if (Sequence != 0)
+            {
+                return $"{OrderId} - {Timestamp}: {Price} ({Size})  :  {Sequence}";
+            }
+            else
+            {
+                return $"{OrderId} - {Timestamp}: {Price} ({Size})";
+            }
         }
 
     }

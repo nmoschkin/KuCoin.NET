@@ -61,17 +61,17 @@ namespace KuCoin.NET.Data.Market
     /// Lists of Asks and Bids Interface
     /// </summary>
     /// <typeparam name="T"></typeparam>
-    public interface IOrderUnitList<T> : IDataSeries<T, T, IList<T>, IList<T>> where T : IOrderUnit
+    public interface IOrderUnitCollection<T> : IDataSeries<T, T, ICollection<T>, ICollection<T>> where T : IOrderUnit
     {
         /// <summary>
         /// Asks (sell)
         /// </summary>
-        IList<T> Asks { get; }
+        ICollection<T> Asks { get; }
 
         /// <summary>
         /// Bids (buy)
         /// </summary>
-        IList<T> Bids { get; }
+        ICollection<T> Bids { get; }
     }
 
     /// <summary>
@@ -80,7 +80,7 @@ namespace KuCoin.NET.Data.Market
     /// <typeparam name="T">A type that implements <see cref="IOrderUnit"/>.</typeparam>
     public interface IOrderUnitListProvider<T> where T : IOrderUnit
     {
-        IOrderUnitList<T> OrderList { get; set; }
+        IOrderUnitCollection<T> OrderList { get; set; }
     }
 
 
@@ -88,8 +88,8 @@ namespace KuCoin.NET.Data.Market
     /// Interface for a class that contains keyed collections of asks and bids.
     /// </summary>
     /// <typeparam name="TUnit"></typeparam>
-    public interface IKeyedOrderUnitList<TCol, TKey, TUnit> 
-        : IOrderUnitList<TUnit>
+    public interface IKeyedOrderUnitCollection<TCol, TKey, TUnit> 
+        : IOrderUnitCollection<TUnit>
         where TCol : KeyedCollection<TKey, TUnit>
         where TUnit : IOrderUnit
     {
@@ -109,8 +109,8 @@ namespace KuCoin.NET.Data.Market
     /// Interface for a class that contains keyed collections of asks and bids for level 3.
     /// </summary>
     /// <typeparam name="TUnit"></typeparam>
-    public interface IAtomicOrderUnitList<TUnit>
-        : IOrderUnitList<TUnit>
+    public interface IAtomicOrderUnitCollection<TUnit>
+        : IOrderUnitCollection<TUnit>
         where TUnit : IAtomicOrderUnit, new()
     {
         /// <summary>
@@ -130,7 +130,7 @@ namespace KuCoin.NET.Data.Market
     /// Interface for any class that implements the properties of a full order book.
     /// </summary>
     /// <typeparam name="TUnit">A type that implements <see cref="IOrderUnit"/>.</typeparam>
-    public interface IOrderBook<TUnit> : IOrderUnitList<TUnit> 
+    public interface IOrderBook<TUnit> : IOrderUnitCollection<TUnit> 
         where TUnit : IOrderUnit
     {
         long Sequence { get; set; }
@@ -144,14 +144,14 @@ namespace KuCoin.NET.Data.Market
     {
     }
 
-    public interface IKeyedOrderBook<TCol, TUnit> : IOrderBook<TUnit>, IKeyedOrderUnitList<TCol, decimal, TUnit>
+    public interface IKeyedOrderBook<TCol, TUnit> : IOrderBook<TUnit>, IKeyedOrderUnitCollection<TCol, decimal, TUnit>
         where TCol : Level2KeyedCollection<TUnit>
         where TUnit : IOrderUnit
     {
     }
 
 
-    public interface IKeyedAtomicOrderBook<TCol, TUnit> : IAtomicOrderBook<TUnit>, IAtomicOrderUnitList<TUnit>
+    public interface IKeyedAtomicOrderBook<TCol, TUnit> : IAtomicOrderBook<TUnit>, IAtomicOrderUnitCollection<TUnit>
         where TUnit : IAtomicOrderUnit, new()
     {
     }

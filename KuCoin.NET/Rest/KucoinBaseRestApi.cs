@@ -11,6 +11,7 @@ using System.Collections.Generic;
 using System.Net.Http;
 using System.Security.Cryptography;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Xml.XPath;
 
@@ -189,20 +190,20 @@ namespace KuCoin.NET.Rest
                 // with a new default data contract resolver.
                 // This is set specifically for cases where we must deserialize decimal entities from strings.
                 ContractResolver = DataContractResolver.Instance,
-                
+
                 // We want to overwrite observable entities with new data
                 DefaultValueHandling = DefaultValueHandling.IgnoreAndPopulate,
 
                 // We don't care about nothing
                 NullValueHandling = NullValueHandling.Ignore,
 
-                Converters = new JsonConverter[] 
+                Converters = new JsonConverter[]
                 {
                     new StringToDecimalConverter()
                 },
 
                 FloatParseHandling = FloatParseHandling.Decimal
-                
+
             };
 
             // Set the new global default behavior for the JSON library.
@@ -419,6 +420,53 @@ namespace KuCoin.NET.Rest
             return l;
         }
 
+        
+        /// <summary>
+        /// Gets the last error encountered by the most recent invocation of <see cref="BeginMakeRequest(Action{JToken}, HttpMethod, string, int, bool, IDictionary{string, object}, bool)"/>.
+        /// </summary>
+        public Exception LastCallBackError { get; protected set; }
+
+
+        /// <summary>
+        /// Begin making a new request to the API endpoint with a callback function.
+        /// </summary>
+        /// <param name="callback">The callback function to execute after the connection has returned or timed out.</param>
+        /// <param name="method">The <see cref="HttpMethod"/> of the new call.</param>
+        /// <param name="uri">The relative path of the endpoint.</param>
+        /// <param name="timeout">Timeout value, in seconds.</param>
+        /// <param name="auth">True if the call is authenticated.</param>
+        /// <param name="reqParams">Optional parameters for the call.</param>
+        /// <param name="wholeResponseJson">True to return the whole response, or false to just return the 'data' portion.</param>
+        /// <remarks>
+        /// A <see cref="JToken"/> object that can be deserialized to suit members in the derived class will be passed to the <paramref name="callback"/> function.
+        /// <br /><br />This function returns immediately. Results should be handled by the <paramref name="callback"/> function.
+        /// <br /><br />In case of error, a null value is returned. The exception can be retrieved from the <see cref="LastCallBackError"/> property.
+        /// </remarks>
+        /// 
+        protected void BeginMakeRequest(
+            Action<JToken> callback,
+            HttpMethod method,
+            string uri,
+            int timeout = 10,
+            bool auth = true,
+            IDictionary<string, object> reqParams = null,
+            bool wholeResponseJson = false)
+        {
+            _ = Task.Run(async () =>
+            {
+                try
+                {
+                    var result = await MakeRequest(method, uri, timeout, auth, reqParams, wholeResponseJson);
+                    callback(result);
+                }
+                catch (Exception ex)
+                {                   
+                    LastCallBackError = ex;
+                    callback(null);
+                }
+            });
+        }
+
         /// <summary>
         /// Make a new request to the API endpoint.
         /// </summary>
@@ -529,15 +577,15 @@ namespace KuCoin.NET.Rest
                 {
                     if (nt - lastTime < 2_500_000)
                     {
-                        Task.Delay(250).ConfigureAwait(false).GetAwaiter().GetResult();
+                        Thread.Sleep(250);
                     }
 
                     lastTime = nt;
                 }
 
                 var resp = await httpClient.SendAsync(req);
-                var result = await CheckResponseData(resp, wholeResponseJson);
 
+                var result = await CheckResponseData(resp, wholeResponseJson);
                 return result;
             }
         }
