@@ -7,9 +7,9 @@ _This library is a client for the KuCoin API as described in (https://docs.kucoi
 
 __ATTENTION__: __The WPF Project has been moved to the 'legacy' branch.__
 
-### AApril 8, 2022: 
+### April 8, 2022: 
 
-####VERSION 2 MERGED TO MAIN BRANCH####
+#### VERSION 2 MERGED TO MAIN BRANCH
 
  - Dramatic speed improvements
  - The order books in the sample app now load without freezing the UI, and much more quickly.
