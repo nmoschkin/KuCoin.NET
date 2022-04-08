@@ -9,11 +9,11 @@ __ATTENTION__: __The WPF Project has been moved to the 'legacy' branch.__
 
 #### VERSION 2 MERGED TO MAIN BRANCH
 
- - Dramatic speed improvements
+ - Dramatic speed improvements.
  - The order books in the sample app now load without freezing the UI, and much more quickly.
  - Implemented a custom Black/Red Binary Collection for the order books.
  - Implemented a callback pattern for HTTP requests and added this to the very root of the project classes.
- - Ability to select individual tickers in the console app (Ctrl + Page Up / Page Down)
+ - Ability to select individual tickers in the console app (Ctrl + Page Up / Page Down).
 
 ### April 5, 2022:
 
