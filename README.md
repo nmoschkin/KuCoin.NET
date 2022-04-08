@@ -1,4 +1,4 @@
-# KuCoin.NET v2 Experimental
+# KuCoin.NET v2.0 Experimental
 KuCoin and KuCoin Futures API Libraries for .NET.
 
 _Experimental Branch_
@@ -7,7 +7,15 @@ _This library is a client for the KuCoin API as described in (https://docs.kucoi
 
 __ATTENTION__: __The WPF Project has been moved to the 'legacy' branch.__
 
+### AApril 8, 2022: 
 
+####VERSION 2 MERGED TO MAIN BRANCH####
+
+ - Dramatic speed improvements
+ - The order books in the sample app now load without freezing the UI, and much more quickly.
+ - Implemented a custom Black/Red Binary Collection for the order books.
+ - Implemented a callback pattern for HTTP requests and added this to the very root of the project classes.
+ - Ability to select individual tickers in the console app (Ctrl + Page Up / Page Down)
 
 ### April 5, 2022:
 
