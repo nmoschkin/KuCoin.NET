@@ -22,7 +22,7 @@ __ATTENTION__: __The WPF Project has been moved to the 'legacy' branch.__
  - Continue to analyze and tweak performance of the Black/Red Collection.
  - Unify and improve the parallel distribution services.
  - Formalize the __CryptoCredentials__ class from the credentials app and make it available for reuse.
-
+ - Drop support for .NET Standard 2.0. Understandably this might be inconvenient for some people, but the issue is speed.
 
 ### April 5, 2022:
 
