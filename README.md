@@ -10,6 +10,7 @@ __ATTENTION__: __The WPF Project has been moved to the 'legacy' branch.__
 #### VERSION 2 MERGED TO MAIN BRANCH
 
  - __Dramatic speed improvements.__
+ - Multiple bug fixes and stability issues addressed.
  - The order books in the sample app now __load without freezing the UI__, and much more quickly.
  - Implemented an experimental __Custom Black/Red Binary Collection__ for the order books.
  - Implemented a __callback pattern for HTTP requests__ and added this to the very root of the project classes.
