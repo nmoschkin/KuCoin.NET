@@ -100,9 +100,7 @@ Program.cs includes a skeleton class implementation of __ICredentialsProvider__ 
 
 The user will be prompted to enter their pin, and then be asked to provide either a number to list the top _n_ feeds by 24-hr volume, or provide a list of feeds separated by commas.
 
-The console app only demonstrates the ability to track Level 3 feeds.  Other functionality is not demonstrated in the examples, at this time.
-
-With a large number of feeds, the console app may appear to operate in a halting manner, in fits and starts, during the initialization process.  This is occurring because a sort operation is being attempted on a locked order book that is still being initialized.  This is normal.  Once all order books are initialized the interface will smooth out.
+The console app only demonstrates the ability to track __Level3Direct__ feeds.  Other functionality is not demonstrated in the examples, at this time.
 
 __Note__: The list will not sort until all connections have been created.
 
