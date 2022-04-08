@@ -428,7 +428,7 @@ namespace KuCoin.NET.Rest
 
 
         /// <summary>
-        /// Make a new request to the API endpoint with a callback function.
+        /// Begin making a new request to the API endpoint with a callback function.
         /// </summary>
         /// <param name="callback">The callback function to execute after the connection has returned or timed out.</param>
         /// <param name="method">The <see cref="HttpMethod"/> of the new call.</param>
