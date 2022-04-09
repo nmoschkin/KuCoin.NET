@@ -116,12 +116,12 @@ namespace KuCoin.NET.Data.Market
         /// <summary>
         /// Asks (sell)
         /// </summary>
-        new KeyedBook<TUnit> Asks { get; }
+        new AtomicOrderCollection<TUnit> Asks { get; }
 
         /// <summary>
         /// Bids (buy)
         /// </summary>
-        new KeyedBook<TUnit> Bids { get; }
+        new AtomicOrderCollection<TUnit> Bids { get; }
 
     }
 
@@ -145,7 +145,7 @@ namespace KuCoin.NET.Data.Market
     }
 
     public interface IKeyedOrderBook<TCol, TUnit> : IOrderBook<TUnit>, IKeyedOrderUnitCollection<TCol, decimal, TUnit>
-        where TCol : Level2KeyedCollection<TUnit>
+        where TCol : OrderUnitKeyedCollection<TUnit>
         where TUnit : IOrderUnit
     {
     }

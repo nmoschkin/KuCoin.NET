@@ -12,7 +12,7 @@ using System.Threading.Tasks;
 
 namespace KuCoin.NET.Futures.Websockets.Observations
 {
-    public class FuturesLevel2OrderBook : OrderBookDistributable<KeyedOrderBook<OrderUnitStruct>, ObservableOrderBook<ObservableOrderUnit>, FuturesLevel2Update, FuturesLevel2>
+    public class FuturesLevel2OrderBook : OrderBookDistributable<Level2OrderBook<OrderUnitStruct>, ObservableOrderBook<ObservableOrderUnit>, FuturesLevel2Update, FuturesLevel2>
     {
 
         public FuturesLevel2OrderBook(FuturesLevel2 parent, string symbol) : base(parent, symbol, false, false)
@@ -168,7 +168,7 @@ namespace KuCoin.NET.Futures.Websockets.Observations
         /// </summary>
         /// <param name="change">The change to sequence.</param>
         /// <param name="pieces">The collection to change (either an ask or a bid collection)</param>
-        private void SequencePieces(FuturesLevel2Update change, Level2KeyedCollection<OrderUnitStruct> pieces)
+        private void SequencePieces(FuturesLevel2Update change, OrderUnitKeyedCollection<OrderUnitStruct> pieces)
         {
             decimal cp = change.Change.Price;
 

@@ -23,12 +23,12 @@ using Newtonsoft.Json.Linq;
 
 namespace KuCoin.NET.Websockets.Public
 {
-    public interface ILevel3 : IMarketFeed<Level3OrderBook, Level3Update, KeyedAtomicOrderBook<AtomicOrderUnit>, ObservableAtomicOrderBook<ObservableAtomicOrderUnit>>
+    public interface ILevel3 : IMarketFeed<Level3OrderBook, Level3Update, AtomicOrderBook<AtomicOrderUnit>, ObservableAtomicOrderBook<ObservableAtomicOrderUnit>>
     {
 
     }
 
-    public class Level3 : OrderBookFeed<Level3OrderBook, Level3Update, KeyedAtomicOrderBook<AtomicOrderUnit>, ObservableAtomicOrderBook<ObservableAtomicOrderUnit>, Level3>, ILevel3, IInitialDataProviderCallback<string, KeyedAtomicOrderBook<AtomicOrderUnit>>
+    public class Level3 : OrderBookFeed<Level3OrderBook, Level3Update, AtomicOrderBook<AtomicOrderUnit>, ObservableAtomicOrderBook<ObservableAtomicOrderUnit>, Level3>, ILevel3, IInitialDataProviderCallback<string, AtomicOrderBook<AtomicOrderUnit>>
     {
 
         public const int buy = -813464969;
@@ -122,9 +122,9 @@ namespace KuCoin.NET.Websockets.Public
             return new Level3OrderBook(this, sym);
         }
 
-        protected KeyedAtomicOrderBook<AtomicOrderUnit> ToOrderBook(JToken jobj)
+        protected AtomicOrderBook<AtomicOrderUnit> ToOrderBook(JToken jobj)
         {
-            var orderbook = new KeyedAtomicOrderBook<AtomicOrderUnit>();
+            var orderbook = new AtomicOrderBook<AtomicOrderUnit>();
 
             var asks = jobj["asks"] as JArray;
             var bids = jobj["bids"] as JArray;
@@ -136,10 +136,10 @@ namespace KuCoin.NET.Websockets.Public
             return orderbook;
         }
 
-        protected override void BeginProvideInitialData(string key, Action<KeyedAtomicOrderBook<AtomicOrderUnit>> callback, int tryCount)
+        protected override void BeginProvideInitialData(string key, Action<AtomicOrderBook<AtomicOrderUnit>> callback, int tryCount)
         {
             var curl = InitialDataUrl;
-            KeyedAtomicOrderBook<AtomicOrderUnit> orderbook = null;
+            AtomicOrderBook<AtomicOrderUnit> orderbook = null;
 
             var param = new Dictionary<string, object>
             {
@@ -166,12 +166,12 @@ namespace KuCoin.NET.Websockets.Public
             }, HttpMethod.Get, curl, auth: !IsPublic, reqParams: param);
         }
 
-        public override async Task<KeyedAtomicOrderBook<AtomicOrderUnit>> ProvideInitialData(string key)
+        public override async Task<AtomicOrderBook<AtomicOrderUnit>> ProvideInitialData(string key)
         {
             Exception err = null;
 
             var curl = InitialDataUrl;
-            KeyedAtomicOrderBook<AtomicOrderUnit> orderbook = null;
+            AtomicOrderBook<AtomicOrderUnit> orderbook = null;
 
             var param = new Dictionary<string, object>
             {

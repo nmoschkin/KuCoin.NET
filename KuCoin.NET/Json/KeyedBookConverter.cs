@@ -16,7 +16,7 @@ namespace KuCoin.NET.Json
 
     public class KeyedBookConverter<TBook, TItem> : JsonConverter<TBook> 
         where TItem: class, IAtomicOrderUnit, new() 
-        where TBook: KeyedBook<TItem>, new()
+        where TBook: AtomicOrderCollection<TItem>, new()
     {
         public override TBook ReadJson(JsonReader reader, Type objectType, TBook existingValue, bool hasExistingValue, JsonSerializer serializer)
         {

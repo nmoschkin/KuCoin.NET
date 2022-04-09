@@ -78,7 +78,7 @@ namespace KuCoin.NET.Helpers
     /// </summary>
     /// <typeparam name="TKey">The type of key.</typeparam>
     /// <typeparam name="TValue">The type of value.</typeparam>
-    public abstract class KeyedBlackRedCollection<TKey, TValue> : BlackRedCollection<TValue> // Do not implement: IReadOnlyDictionary<TKey, TValue>
+    public abstract class KeyedBlackRedCollection<TKey, TValue> : BlackRedCollection<TValue> where TKey : IComparable<TKey>
     {
         List<TValue> items;
 
@@ -102,16 +102,10 @@ namespace KuCoin.NET.Helpers
 
         #endregion Public Constructors
 
-        #region Public Properties
-
-        public IEnumerable<TKey> Keys => keyDict.Keys;
-        public IEnumerable<TValue> Values => keyDict.Values;
-
-        #endregion Public Properties
-
         #region Public Indexers
 
         public TValue this[TKey key] => keyDict[key];
+
 
         #endregion Public Indexers
 
@@ -130,6 +124,7 @@ namespace KuCoin.NET.Helpers
             lock (syncRoot)
             {
                 return keyDict.TryGetValue(key, out value);
+
             }
         }
 
@@ -138,7 +133,7 @@ namespace KuCoin.NET.Helpers
         #region Protected Methods
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        protected override void InsertItem(TValue item)
+        protected internal override void InsertItem(TValue item)
         {
             lock (syncRoot)
             {
@@ -150,12 +145,13 @@ namespace KuCoin.NET.Helpers
         protected abstract TKey ProvideKey(TValue value);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        protected override void RemoveItem(int index)
+        protected internal override void RemoveItem(int index)
         {
             lock (syncRoot)
             {
                 var item = items[index];
-                keyDict.Remove(ProvideKey(item));
+                if (item != null) keyDict.Remove(ProvideKey(item));
+
                 base.RemoveItem(index);
             }
         }
@@ -689,7 +685,7 @@ namespace KuCoin.NET.Helpers
 
         #region Protected Properties
 
-        protected IList<T> Items => items;
+        protected internal IList<T> Items => items;
 
         #endregion Protected Properties
 
@@ -705,7 +701,7 @@ namespace KuCoin.NET.Helpers
         /// This function should only be used in conjunction with a call to either <see cref="Locate(T, out int)"/> or <see cref="Walk(T, TreeWalkMode)"/>.
         /// </remarks>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        protected virtual void AlterItem(T item, Func<T, T> alteration, int idx)
+        protected internal virtual void AlterItem(T item, Func<T, T> alteration, int idx)
         {
             lock (syncRoot)
             {
@@ -720,7 +716,7 @@ namespace KuCoin.NET.Helpers
         /// <summary>
         /// Clear the collection.
         /// </summary>
-        protected virtual void ClearItems()
+        protected internal virtual void ClearItems()
         {
             lock (syncRoot)
             {
@@ -735,7 +731,7 @@ namespace KuCoin.NET.Helpers
         /// <param name="item">The item.</param>
         /// <exception cref="ArgumentNullException" />
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        protected virtual void InsertItem(T item)
+        protected internal virtual void InsertItem(T item)
         {
             if (item == null) throw new ArgumentNullException(nameof(item));
 
@@ -799,7 +795,7 @@ namespace KuCoin.NET.Helpers
         /// <param name="globalRebalanceOperation">True to indicate this function is being called by <see cref="TryRebalance"/>.</param>
         /// <returns></returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        protected bool LocalRebalance(int index, RebalanceStrategy strategy, bool globalRebalanceOperation)
+        protected internal bool LocalRebalance(int index, RebalanceStrategy strategy, bool globalRebalanceOperation)
         {
             lock (syncRoot)
             {
@@ -918,7 +914,7 @@ namespace KuCoin.NET.Helpers
         /// <param name="item">The item to locate.</param>
         /// <param name="index">The current index in the tree.</param>
         /// <returns>True if the item exists.</returns>
-        protected virtual bool Locate(T item, out int index)
+        protected internal virtual bool Locate(T item, out int index)
         {
             index = Walk(item, TreeWalkMode.Locate);
             return index != -1;
@@ -929,7 +925,7 @@ namespace KuCoin.NET.Helpers
         /// </summary>
         /// <param name="index"></param>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        protected virtual void RemoveItem(int index)
+        protected internal virtual void RemoveItem(int index)
         {
             lock (syncRoot)
             {
@@ -979,7 +975,7 @@ namespace KuCoin.NET.Helpers
         /// <param name="walkMode">The type of walk (either for insert or locate)</param>
         /// <returns>The index where the item is or should be.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        protected virtual int Walk(T item1, TreeWalkMode walkMode = TreeWalkMode.InsertIndex)
+        protected internal virtual int Walk(T item1, TreeWalkMode walkMode = TreeWalkMode.InsertIndex)
         {
             int lo = 0;
             int hi = treeSize - 1;

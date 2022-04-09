@@ -15,12 +15,12 @@ using System.Threading.Tasks;
 
 namespace KuCoin.NET.Websockets.Public
 {
-    public interface ILevel2 : IMarketFeed<Level2OrderBook, Level2Update, KeyedOrderBook<OrderUnitStruct>, ObservableOrderBook<ObservableOrderUnit>>
+    public interface ILevel2 : IMarketFeed<Level2OrderBook, Level2Update, Level2OrderBook<OrderUnitStruct>, ObservableOrderBook<ObservableOrderUnit>>
     {
 
     }
 
-    public class Level2 : OrderBookFeed<Level2OrderBook, Level2Update, KeyedOrderBook<OrderUnitStruct>, ObservableOrderBook<ObservableOrderUnit>, Level2>, ILevel2
+    public class Level2 : OrderBookFeed<Level2OrderBook, Level2Update, Level2OrderBook<OrderUnitStruct>, ObservableOrderBook<ObservableOrderUnit>, Level2>, ILevel2
     {
         /// <summary>
         /// Instantiate a new market feed.

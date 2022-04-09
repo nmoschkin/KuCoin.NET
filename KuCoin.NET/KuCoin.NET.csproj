@@ -37,6 +37,11 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Compile Remove="Data\Market\Level3KeyedCollection.cs" />
+    <Compile Remove="Observable\ObservableLevel3OrderUnits.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
     <PackageReference Include="System.Security.Cryptography.Algorithms" Version="4.3.1" />
     <PackageReference Include="System.Security.Cryptography.Primitives" Version="4.3.0" />

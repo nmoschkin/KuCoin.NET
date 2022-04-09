@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Text;
@@ -9,19 +10,20 @@ using System.Text;
 namespace KuCoin.NET.Observable
 {
     /// <summary>
-    /// Standard observable, keyed collection of orders (asks and bids.)
+    /// Standard implementation of a keyed, observable collection for Level 3 atomic order units
     /// </summary>
     /// <typeparam name="T"></typeparam>
-    public class ObservableLevel3OrderUnits<T> : Level3KeyedCollection<T>, INotifyPropertyChanged, INotifyCollectionChanged where T : IAtomicOrderUnit
+    public class ObservableAtomicOrderCollection<T> : OrderUnitKeyedCollection<T>, INotifyPropertyChanged, INotifyCollectionChanged where T: IAtomicOrderUnit
     {
         public event NotifyCollectionChangedEventHandler CollectionChanged;
+
         public event PropertyChangedEventHandler PropertyChanged;
 
-        public ObservableLevel3OrderUnits() : this(false)
+        public ObservableAtomicOrderCollection() : this(false)
         {
         }
 
-        public ObservableLevel3OrderUnits(bool descending) : base(descending)
+        public ObservableAtomicOrderCollection(bool descending) : base()
         {
             this.descending = descending;
         }
@@ -65,22 +67,20 @@ namespace KuCoin.NET.Observable
                     InsertItem(0, item);
                     return;
                 }
-
                 var oldItem = ((IList<T>)this)[index];
-
-                if (Contains(item.OrderId))
+                
+                if (Contains(item.Price))
                 {
-                    if (oldItem?.Equals(item) ?? false) return;
+                    var orgitem = this[item.Price];
+                    
+                    orgitem.Size = item.Size;
+                    orgitem.Timestamp = item.Timestamp;
+                    orgitem.OrderId = item.OrderId;
 
-                    Remove(item.OrderId);
-                    InsertItem(index, item);
+                    return;
                 }
-                else
-                {
-                    base.SetItem(index, item);
-                    OnCollectionChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Replace, item, oldItem, index));
-                }
-
+                base.SetItem(index, item);
+                OnCollectionChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Replace, item, oldItem, index));
             }
         }
 
@@ -97,5 +97,6 @@ namespace KuCoin.NET.Observable
                     break;
             }
         }
+
     }
 }

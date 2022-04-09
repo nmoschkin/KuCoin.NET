@@ -15,8 +15,8 @@ namespace KuCoin.NET.Data.Market
     /// <summary>
     /// Represents Level 3 Market Data
     /// </summary>
-    public class KeyedAtomicOrderBook<T> : 
-        IKeyedAtomicOrderBook<KeyedBook<T>, T>
+    public class AtomicOrderBook<T> : 
+        IKeyedAtomicOrderBook<AtomicOrderCollection<T>, T>
         where T: IAtomicOrderUnit, new()
     {
 
@@ -37,13 +37,13 @@ namespace KuCoin.NET.Data.Market
         /// The keyed list of asks (sell)
         /// </summary>
         [JsonProperty("asks")]
-        public virtual KeyedBook<T> Asks { get; set; } = new KeyedBook<T>(false);
+        public virtual AtomicOrderCollection<T> Asks { get; set; } = new AtomicOrderCollection<T>(false);
 
         /// <summary>
         /// The keyed list of bids (buy)
         /// </summary>
         [JsonProperty("bids")]
-        public virtual KeyedBook<T> Bids { get; set; } = new KeyedBook<T>(true);
+        public virtual AtomicOrderCollection<T> Bids { get; set; } = new AtomicOrderCollection<T>(true);
 
         ICollection<T> IOrderUnitCollection<T>.Asks => Asks;
 

@@ -13,7 +13,7 @@ using System.Threading.Tasks;
 
 namespace KuCoin.NET.Websockets.Observations
 {
-    public class Level2OrderBook : OrderBookDistributable<KeyedOrderBook<OrderUnitStruct>, ObservableOrderBook<ObservableOrderUnit>, Level2Update, Level2>
+    public class Level2OrderBook : OrderBookDistributable<Level2OrderBook<OrderUnitStruct>, ObservableOrderBook<ObservableOrderUnit>, Level2Update, Level2>
     {
 
         public Level2OrderBook(Level2 parent, string symbol) : base(parent, symbol, false, false)
@@ -172,7 +172,7 @@ namespace KuCoin.NET.Websockets.Observations
         /// <param name="changes">The changes to sequence.</param>
         /// <param name="pieces">The collection to change (either an ask or a bid collection)</param>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        protected void SequencePieces(IList<OrderUnitStruct> changes, Level2KeyedCollection<OrderUnitStruct> pieces)
+        protected void SequencePieces(IList<OrderUnitStruct> changes, OrderUnitKeyedCollection<OrderUnitStruct> pieces)
         {
             foreach (var change in changes)
             {

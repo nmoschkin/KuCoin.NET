@@ -15,7 +15,7 @@ namespace KuCoin.NET.Observable
     /// Standard observable, keyed collection of orders (asks and bids.)
     /// </summary>
     /// <typeparam name="T"></typeparam>
-    public class ObservableOrderUnits<T> : Level2KeyedCollection<T>, INotifyPropertyChanged, INotifyCollectionChanged where T: IOrderUnit
+    public class ObservableOrderUnits<T> : OrderUnitKeyedCollection<T>, INotifyPropertyChanged, INotifyCollectionChanged where T: IOrderUnit
     {
         public event NotifyCollectionChangedEventHandler CollectionChanged;
         public event PropertyChangedEventHandler PropertyChanged;

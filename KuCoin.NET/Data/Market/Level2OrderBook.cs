@@ -16,7 +16,7 @@ namespace KuCoin.NET.Data.Market
     /// Provides the standard, observable order book implementation.
     /// </summary>
     /// <typeparam name="T">The type of the order unit.</typeparam>
-    public class KeyedOrderBook<T> : IKeyedOrderBook<Level2KeyedCollection<T>, T> where T: IOrderUnit 
+    public class Level2OrderBook<T> : IKeyedOrderBook<OrderUnitKeyedCollection<T>, T> where T: IOrderUnit 
     {
         /// <summary>
         /// The sequence number of the order
@@ -29,13 +29,13 @@ namespace KuCoin.NET.Data.Market
         /// Asks (sell)
         /// </summary>
         [JsonProperty("asks")]
-        public Level2KeyedCollection<T> Asks { get; set; } = new Level2KeyedCollection<T>();
+        public OrderUnitKeyedCollection<T> Asks { get; set; } = new OrderUnitKeyedCollection<T>();
 
         /// <summary>
         /// Bids (buy)
         /// </summary>
         [JsonProperty("bids")]
-        public Level2KeyedCollection<T> Bids { get; set; } = new Level2KeyedCollection<T>(true);
+        public OrderUnitKeyedCollection<T> Bids { get; set; } = new OrderUnitKeyedCollection<T>(true);
 
         /// <summary>
         /// The time stamp of the order

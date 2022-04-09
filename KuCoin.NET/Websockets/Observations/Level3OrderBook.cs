@@ -20,7 +20,7 @@ namespace KuCoin.NET.Websockets.Observations
     /// <summary>
     /// Level 3 Market Feed Order Book.
     /// </summary>
-    public sealed class Level3OrderBook : OrderBookDistributable<KeyedAtomicOrderBook<AtomicOrderUnit>, ObservableAtomicOrderBook<ObservableAtomicOrderUnit>, Level3Update, Level3>
+    public sealed class Level3OrderBook : OrderBookDistributable<AtomicOrderBook<AtomicOrderUnit>, ObservableAtomicOrderBook<ObservableAtomicOrderUnit>, Level3Update, Level3>
     {
 
         /// <summary>
@@ -333,7 +333,7 @@ namespace KuCoin.NET.Websockets.Observations
         /// <param name="changes">The changes to sequence.</param>
         /// <param name="pieces">The collection to change (either an ask or a bid collection)</param>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private bool SequencePieces(Level3Update change, KeyedBook<AtomicOrderUnit> pieces, KeyedBook<AtomicOrderUnit> otherPieces)
+        private bool SequencePieces(Level3Update change, AtomicOrderCollection<AtomicOrderUnit> pieces, AtomicOrderCollection<AtomicOrderUnit> otherPieces)
         {
             switch (change.sc)
             {
