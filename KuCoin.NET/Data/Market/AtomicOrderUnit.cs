@@ -19,7 +19,7 @@ namespace KuCoin.NET.Data.Market
     /// </summary>
 
     [JsonConverter(typeof(AtomicOrderUnitConverter))]
-    public class AtomicOrderUnit : DataObject, ICloneable, IAtomicOrderUnit
+    public class AtomicOrderUnit : DataObject, ICloneable, IAtomicOrderUnit, IKeyProvider<string>
     {
         protected decimal price;
         protected decimal size;
@@ -48,6 +48,7 @@ namespace KuCoin.NET.Data.Market
             }
         }
 
+        string IKeyProvider<string>.Key => orderId;
 
         /// <summary>
         /// The price in quote currency of the ask or bid.
@@ -268,6 +269,8 @@ namespace KuCoin.NET.Data.Market
         internal decimal size;
         
         internal DateTime timestamp;
+
+        string IKeyProvider<string>.Key => orderId;
 
         [JsonProperty("orderId")]
         public string OrderId

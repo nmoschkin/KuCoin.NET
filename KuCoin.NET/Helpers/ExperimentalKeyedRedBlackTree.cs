@@ -11,166 +11,29 @@ using System.Runtime.CompilerServices;
 using System.Text;
 using System.Xml.Linq;
 
-//using DataTools.Text;
-
 namespace KuCoin.NET.Helpers
 {
-    /// <summary>
-    /// The result of the rebalance activity.
-    /// </summary>
-    public enum RebalanceResult
+    public interface IKeyProvider<T>
     {
-        /// <summary>
-        /// The tree was not walked.
-        /// </summary>
-        NotPerformed,
-
-        /// <summary>
-        /// The was walked but not rebalanced.
-        /// </summary>
-        Unchanged,
-
-        /// <summary>
-        /// The tree was walked and changed.
-        /// </summary>
-        Changed
+        T Key { get; }
     }
 
-    /// <summary>
-    /// Rebalance strategies
-    /// </summary>
-    public enum RebalanceStrategy : int
+    public class KeyProvidedRedBlackTree<TKey, TValue> : ExperimentalKeyedRedBlackTree<TKey, TValue> where TValue : IKeyProvider<TKey>
     {
-        /// <summary>
-        /// Examine 4 nodes locally.
-        /// </summary>
-        Cadance4 = 4,
-
-        /// <summary>
-        /// Examine 8 nodes locally.
-        /// </summary>
-        Cadence8 = 8,
-
-        /// <summary>
-        /// Examine 16 nodes locally.
-        /// </summary>
-        Cadence16 = 16
-    }
-
-    /// <summary>
-    /// The method to use to walk the tree.
-    /// </summary>
-    public enum TreeWalkMode
-    {
-        /// <summary>
-        /// Find a suitable insert index for the specified item.
-        /// </summary>
-        InsertIndex,
-
-        /// <summary>
-        /// Locate the specified item.
-        /// </summary>
-        Locate
-    }
-
-    /// <summary>
-    /// A version of <see cref="BufferedCollection{T}"/> with an additional cross-reference for keys.
-    /// </summary>
-    /// <typeparam name="TKey">The type of key.</typeparam>
-    /// <typeparam name="TValue">The type of value.</typeparam>
-    public abstract class KeyedBufferedCollection<TKey, TValue> : BufferedCollection<TValue> where TKey : IComparable<TKey>
-    {
-        List<TValue> items;
-
-        #region Protected Fields
-
-        protected SortedDictionary<TKey, TValue> keyDict = new SortedDictionary<TKey, TValue>();
-
-        #endregion Protected Fields
-
-        #region Public Constructors
-
-        public KeyedBufferedCollection() : base()
+        protected override TKey ProvideKey(TValue item)
         {
-            items = (List<TValue>)base.Items;
+            return item.Key;
         }
+    
+    } 
 
-        public KeyedBufferedCollection(IComparer<TValue> comparer) : base(comparer)
-        {
-            items = (List<TValue>)base.Items;
-        }
-
-        #endregion Public Constructors
-
-        #region Public Indexers
-
-        public TValue this[TKey key] => keyDict[key];
-
-
-        #endregion Public Indexers
-
-        #region Public Methods
-
-        public bool ContainsKey(TKey key)
-        {
-            lock (syncRoot)
-            {
-                return keyDict.ContainsKey(key);
-            }
-        }
-
-        public bool TryGetValue(TKey key, out TValue value)
-        {
-            lock (syncRoot)
-            {
-                return keyDict.TryGetValue(key, out value);
-
-            }
-        }
-
-        #endregion Public Methods
-
-        #region Protected Methods
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        protected internal override void InsertItem(TValue item)
-        {
-            lock (syncRoot)
-            {
-                keyDict.Add(ProvideKey(item), item);
-                base.InsertItem(item);
-            }
-        }
-
-        protected abstract TKey ProvideKey(TValue value);
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        protected internal override void RemoveItem(int index)
-        {
-            lock (syncRoot)
-            {
-                var item = items[index];
-                if (item != null) keyDict.Remove(ProvideKey(item));
-
-                base.RemoveItem(index);
-            }
-        }
-
-        #endregion Protected Methods
-    }
-
-    /// <summary>
-    /// A sorted, discontiguous collection implementing a black/red node pattern.
-    /// </summary>
-    /// <typeparam name="T">The type of the collection (must be a class)</typeparam>
-    /// <remarks>
-    /// Items cannot be <see cref="null"/>.
-    /// </remarks>
-    public class BufferedCollection<T> : ComparingBase<T>, ICollection<T>
+    public abstract class ExperimentalKeyedRedBlackTree<TKey, TValue> : ComparingBase<TKey>, ICollection<TValue>
     {
         #region Protected Fields
 
-        protected T[] arrspace;
+        protected TValue[] arrspace;
+        protected TKey[] keyspace;
+
         protected RebalanceStrategy globalStrategy = RebalanceStrategy.Cadance4;
         protected RebalanceStrategy localStrategy = RebalanceStrategy.Cadence16;
         protected float rebalanceThreshold = 1.2f;
@@ -180,7 +43,10 @@ namespace KuCoin.NET.Helpers
 
         #region Private Fields
 
-        private List<T> items;
+        private List<TValue> items;
+        private List<TKey> keys;
+
+
         private int count = 0;
         private int treeSize = 0;
 
@@ -207,56 +73,57 @@ namespace KuCoin.NET.Helpers
         #region Public Constructors
 
         /// <summary>
-        /// Creates a new instance of <see cref="BufferedCollection{T}"/>.
+        /// Creates a new instance of <see cref="RedBlackTree{T}"/>.
         /// </summary>
         /// <param name="space">The number of total new elements to insert for each single new element inserted.</param>
         /// <param name="comparer">The comparer class.</param>
         /// <param name="sortOrder">The sort order.</param>
         /// <exception cref="ArgumentOutOfRangeException"></exception>
         /// <exception cref="ArgumentException"></exception>
-        public BufferedCollection(IComparer<T> comparer, float threshold = 1.2f, RebalanceStrategy globStrategy = RebalanceStrategy.Cadance4, RebalanceStrategy locStrategy = RebalanceStrategy.Cadence16) : base(comparer)
+        public ExperimentalKeyedRedBlackTree(IComparer<TKey> comparer, float threshold = 1.2f, RebalanceStrategy globStrategy = RebalanceStrategy.Cadance4, RebalanceStrategy locStrategy = RebalanceStrategy.Cadence16) : base(comparer)
         {
             rebalanceThreshold = threshold;
             globalStrategy = globStrategy;
             localStrategy = locStrategy;
 
-            items = new List<T>();
+            items = new List<TValue>();
 
-            arrspace = new T[2];
+            arrspace = new TValue[2];
+            keyspace = new TKey[2];
 
         }
 
         /// <summary>
-        /// Creates a new instance of <see cref="BufferedCollection{T}"/>.
+        /// Creates a new instance of <see cref="RedBlackTree{T}"/>.
         /// </summary>
         /// <param name="sortOrder">The sort order.</param>
         /// <exception cref="ArgumentOutOfRangeException"></exception>
         /// <exception cref="ArgumentException"></exception>
-        public BufferedCollection(float threshold = 1.2f, RebalanceStrategy globStrategy = RebalanceStrategy.Cadance4, RebalanceStrategy locStrategy = RebalanceStrategy.Cadence16) : this((IComparer<T>)null, threshold, globStrategy, locStrategy)
+        public ExperimentalKeyedRedBlackTree(float threshold = 1.2f, RebalanceStrategy globStrategy = RebalanceStrategy.Cadance4, RebalanceStrategy locStrategy = RebalanceStrategy.Cadence16) : this((IComparer<TKey>)null, threshold, globStrategy, locStrategy)
         {
         }
 
         /// <summary>
-        /// Creates a new instance of <see cref="BufferedCollection{T}"/>.
+        /// Creates a new instance of <see cref="RedBlackTree{T}"/>.
         /// </summary>
         /// <param name="initialItems">The initial items used to populate the collection.</param>
         /// <param name="comparer">The comparer class.</param>
         /// <param name="sortOrder">The sort order.</param>
         /// <exception cref="ArgumentOutOfRangeException"></exception>
         /// <exception cref="ArgumentException"></exception>
-        public BufferedCollection(IEnumerable<T> initialItems, IComparer<T> comparer, float threshold = 1.2f, RebalanceStrategy globStrategy = RebalanceStrategy.Cadance4, RebalanceStrategy locStrategy = RebalanceStrategy.Cadence16) : this(comparer, threshold, globStrategy, locStrategy)
+        public ExperimentalKeyedRedBlackTree(IEnumerable<TValue> initialItems, IComparer<TKey> comparer, float threshold = 1.2f, RebalanceStrategy globStrategy = RebalanceStrategy.Cadance4, RebalanceStrategy locStrategy = RebalanceStrategy.Cadence16) : this(comparer, threshold, globStrategy, locStrategy)
         {
             AddRange(initialItems);
         }
 
         /// <summary>
-        /// Creates a new instance of <see cref="BufferedCollection{T}"/>.
+        /// Creates a new instance of <see cref="RedBlackTree{T}"/>.
         /// </summary>
         /// <param name="initialItems">The initial items used to populate the collection.</param>
         /// <param name="sortOrder">The sort order.</param>
         /// <exception cref="ArgumentOutOfRangeException"></exception>
         /// <exception cref="ArgumentException"></exception>
-        public BufferedCollection(IEnumerable<T> initialItems, float threshold = 1.2f, RebalanceStrategy globStrategy = RebalanceStrategy.Cadance4, RebalanceStrategy locStrategy = RebalanceStrategy.Cadence16) : this((IComparer<T>)null, threshold, globStrategy, locStrategy)
+        public ExperimentalKeyedRedBlackTree(IEnumerable<TValue> initialItems, float threshold = 1.2f, RebalanceStrategy globStrategy = RebalanceStrategy.Cadance4, RebalanceStrategy locStrategy = RebalanceStrategy.Cadence16) : this((IComparer<TKey>)null, threshold, globStrategy, locStrategy)
         {
             AddRange(initialItems);
         }
@@ -353,17 +220,53 @@ namespace KuCoin.NET.Helpers
         public bool IsReadOnly { get; } = false;
 
         /// <summary>
-        /// Gets the first element in the sorted collection.
+        /// Gets the first key element in the sorted collection.
         /// </summary>
-        public T First
+        public TKey FirstKey
+        {
+            get => count == 0 ? default : keys[0];
+        }
+
+        public TValue this[TKey key]
+        {
+            get
+            {
+                var x = Walk(key, TreeWalkMode.Locate);
+                if (x != -1)
+                {
+                    return items[x];
+                }
+
+                throw new KeyNotFoundException();
+            }
+        }
+
+        /// <summary>
+        /// Gets the last key element in the sorted collection.
+        /// </summary>
+        public TKey LastKey
+        {
+            get
+            {
+                var ic = treeSize - 1;
+                if (ic == -1) return default;
+                if (keys[ic] is object) return keys[ic];
+                else return keys[ic - 1];
+            }
+        }
+
+        /// <summary>
+        /// Gets the first item element in the sorted collection.
+        /// </summary>
+        public TValue FirstItem
         {
             get => count == 0 ? default : items[0];
         }
 
         /// <summary>
-        /// Gets the last element in the sorted collection.
+        /// Gets the last item element in the sorted collection.
         /// </summary>
-        public T Last
+        public TValue LastItem
         {
             get
             {
@@ -431,16 +334,17 @@ namespace KuCoin.NET.Helpers
 
         #region Public Methods
 
-        public void Add(T item)
+
+        public void Add(TValue item)
         {
             InsertItem(item);
         }
 
         /// <summary>
-        /// Adds multiple items to the <see cref="BufferedCollection{T}"/> at once.
+        /// Adds multiple items to the <see cref="RedBlackTree{T}"/> at once.
         /// </summary>
         /// <param name="newItems"></param>
-        public void AddRange(IEnumerable<T> newItems)
+        public void AddRange(IEnumerable<TValue> newItems)
         {
             foreach (var item in newItems)
             {
@@ -454,11 +358,11 @@ namespace KuCoin.NET.Helpers
         /// <param name="item">The item to alter.</param>
         /// <param name="alteration">The alteration function that returns the changed item.</param>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void AlterItem(T item, Func<T, T> alteration)
+        public void AlterItem(TValue item, Func<TValue, TValue> alteration)
         {
             lock (syncRoot)
             {
-                int idx = Walk(item, TreeWalkMode.Locate);
+                int idx = Walk(ProvideKey(item), TreeWalkMode.Locate);
                 if (idx == -1)
                 {
                     int c = treeSize;
@@ -489,15 +393,23 @@ namespace KuCoin.NET.Helpers
             ClearItems();
         }
 
-        public bool Contains(T item)
+        public bool ContainsKey(TKey key)
         {
             lock (syncRoot)
             {
-                return Walk(item, TreeWalkMode.Locate) != -1;
+                return Walk(key, TreeWalkMode.Locate) != -1;
             }
         }
 
-        public void CopyTo(T[] array, int arrayIndex)
+        public bool Contains(TValue key)
+        {
+            lock (syncRoot)
+            {
+                return Walk(ProvideKey(key), TreeWalkMode.Locate) != -1;
+            }
+        }
+
+        public void CopyTo(TValue[] array, int arrayIndex)
         {
             lock (syncRoot)
             {
@@ -510,7 +422,7 @@ namespace KuCoin.NET.Helpers
         }
 
         /// <summary>
-        /// Copies <paramref name="count"/> elements of the <see cref="BufferedCollection{T}"/> to an <see cref="Array"/>, starting at a particular <see cref="Array"/> index.
+        /// Copies <paramref name="count"/> elements of the <see cref="RedBlackTree{T}"/> to an <see cref="Array"/>, starting at a particular <see cref="Array"/> index.
         /// </summary>
         /// <param name="array"></param>
         /// <param name="arrayIndex"></param>
@@ -518,7 +430,7 @@ namespace KuCoin.NET.Helpers
         /// <exception cref="ArgumentOutOfRangeException"></exception>
         /// <exception cref="ArgumentNullException"></exception>
         /// <exception cref="ArgumentException"></exception>
-        public void CopyTo(T[] array, int arrayIndex, int count)
+        public void CopyTo(TValue[] array, int arrayIndex, int count)
         {
             lock (syncRoot)
             {
@@ -538,7 +450,7 @@ namespace KuCoin.NET.Helpers
             }
         }
 
-        public IEnumerator<T> GetEnumerator()
+        public IEnumerator<TValue> GetEnumerator()
         {
             foreach (var item in items)
             {
@@ -550,11 +462,11 @@ namespace KuCoin.NET.Helpers
 
         IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 
-        public bool Remove(T item)
+        public bool Remove(TValue item)
         {
             lock (syncRoot)
             {
-                var idx = Walk(item, TreeWalkMode.Locate);
+                var idx = Walk(ProvideKey(item), TreeWalkMode.Locate);
                 if (idx == -1) return false;
 
                 RemoveItem(idx);
@@ -585,14 +497,14 @@ namespace KuCoin.NET.Helpers
         }
 
         /// <summary>
-        /// Return a new <see cref="Array"/> of the items in this <see cref="BufferedCollection{T}"/>.
+        /// Return a new <see cref="Array"/> of the items in this <see cref="RedBlackTree{T}"/>.
         /// </summary>
         /// <returns>A new <see cref="Array"/>.</returns>
-        public T[] ToArray()
+        public TValue[] ToArray()
         {
             lock (syncRoot)
             {
-                var l = new List<T>();
+                var l = new List<TValue>();
 
                 foreach (var item in this)
                 {
@@ -604,16 +516,16 @@ namespace KuCoin.NET.Helpers
         }
 
         /// <summary>
-        /// Return a new <see cref="Array"/> of at most <paramref name="elementCount"/> items in this <see cref="BufferedCollection{T}"/>.
+        /// Return a new <see cref="Array"/> of at most <paramref name="elementCount"/> items in this <see cref="RedBlackTree{T}"/>.
         /// </summary>
         /// <returns>A new <see cref="Array"/> with at most <paramref name="elementCount"/> items.</returns>
-        public T[] ToArray(int elementCount)
+        public TValue[] ToArray(int elementCount)
         {
             if (elementCount < 1) throw new ArgumentOutOfRangeException();
 
             lock (syncRoot)
             {
-                var l = new List<T>();
+                var l = new List<TValue>();
                 int x = 0;
 
                 foreach (var item in this)
@@ -634,9 +546,9 @@ namespace KuCoin.NET.Helpers
         /// <param name="item">The item to alter.</param>
         /// <param name="alteration">The alteration function that returns the changed item.</param>
         /// <returns>True if successful.</returns>
-        public bool TryAlterItem(T item, Func<T, T> alteration)
+        public bool TryAlterItem(TValue item, Func<TValue, TValue> alteration)
         {
-            var idx = Walk(item, TreeWalkMode.Locate);
+            var idx = Walk(ProvideKey(item), TreeWalkMode.Locate);
 
             if (idx != -1)
             {
@@ -645,6 +557,23 @@ namespace KuCoin.NET.Helpers
             }
 
             return false;
+        }
+
+        public bool TryGetValue(TKey key, out TValue result)
+        {
+            lock (syncRoot)
+            {
+                int x = Walk(key, TreeWalkMode.Locate);
+
+                if (x != -1)
+                {
+                    result = items[x];
+                    return true;
+                }
+
+                result = default;
+                return false;
+            }
         }
 
         /// <summary>
@@ -685,11 +614,18 @@ namespace KuCoin.NET.Helpers
 
         #region Protected Properties
 
-        protected internal IList<T> Items => items;
+        protected internal IList<TValue> Items => items;
 
         #endregion Protected Properties
 
         #region Protected Methods
+
+        /// <summary>
+        /// Provide the key for the specified value.
+        /// </summary>
+        /// <param name="item">The value.</param>
+        /// <returns></returns>
+        protected abstract TKey ProvideKey(TValue item);
 
         /// <summary>
         /// Alter an item.
@@ -698,10 +634,10 @@ namespace KuCoin.NET.Helpers
         /// <param name="alteration">The alteration function that returns the changed item.</param>
         /// <param name="idx">The index of the item.</param>
         /// <remarks>
-        /// This function should only be used in conjunction with a call to either <see cref="Locate(T, out int)"/> or <see cref="Walk(T, TreeWalkMode)"/>.
+        /// This function should only be used in conjunction with a call to either <see cref="Locate(TValue, out int)"/> or <see cref="Walk(TValue, TreeWalkMode)"/>.
         /// </remarks>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        protected internal virtual void AlterItem(T item, Func<T, T> alteration, int idx)
+        protected internal virtual void AlterItem(TValue item, Func<TValue, TValue> alteration, int idx)
         {
             lock (syncRoot)
             {
@@ -731,26 +667,33 @@ namespace KuCoin.NET.Helpers
         /// <param name="item">The item.</param>
         /// <exception cref="ArgumentNullException" />
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        protected internal virtual void InsertItem(T item)
+        protected internal virtual void InsertItem(TValue item)
         {
             if (item == null) throw new ArgumentNullException(nameof(item));
 
             lock (syncRoot)
             {
-                var index = Walk(item);
+                var key = ProvideKey(item);
+                var index = Walk(key);
 
                 if (index < treeSize && items[index] == null)
                 {
+                    keys[index] = key;
                     items[index] = item;
                     if (metrics) softInserts++;
                 }
                 else if (index > 0 && items[index - 1] == null)
                 {
+                    keys[index - 1] = key;
                     items[index - 1] = item;
                     if (metrics) softInserts++;
                 }
                 else if (index < treeSize - 2 && items[index + 2] == null)
                 {
+                    keys[index + 2] = keys[index + 1];
+                    keys[index + 1] = keys[index];
+                    keys[index] = key;
+
                     items[index + 2] = items[index + 1];
                     items[index + 1] = items[index];
                     items[index] = item;
@@ -764,14 +707,22 @@ namespace KuCoin.NET.Helpers
                         arrspace[0] = item;
                         arrspace[1] = default;
 
+                        keyspace[0] = key;
+                        keyspace[1] = default;
+
                     }
                     else
                     {
                         arrspace[0] = default;
                         arrspace[1] = item;
+
+                        keyspace[0] = default;
+                        keyspace[1] = key;
                     }
 
                     items.InsertRange(index, arrspace);
+                    keys.InsertRange(index, keyspace);
+
                     this.treeSize += 2;
 
                     if (metrics) hardInserts++;
@@ -827,7 +778,18 @@ namespace KuCoin.NET.Helpers
                         items[index + 6] = items[index + 12];
                         items[index + 7] = items[index + 14];
 
+                        keys[index + 1] = keys[index + 2];
+                        keys[index + 2] = keys[index + 4];
+                        keys[index + 3] = keys[index + 6];
+                        keys[index + 4] = keys[index + 8];
+                        keys[index + 5] = keys[index + 10];
+                        keys[index + 6] = keys[index + 12];
+                        keys[index + 7] = keys[index + 14];
+
+
                         items.RemoveRange(index + 8, 8);
+                        keys.RemoveRange(index + 8, 8);
+
                         treeSize -= 8;
 
                         if (metrics && !globalRebalanceOperation)
@@ -860,7 +822,13 @@ namespace KuCoin.NET.Helpers
                         items[index + 2] = items[index + 4];
                         items[index + 3] = items[index + 6];
 
+                        keys[index + 1] = keys[index + 2];
+                        keys[index + 2] = keys[index + 4];
+                        keys[index + 3] = keys[index + 6];
+
                         items.RemoveRange(index + 4, 4);
+                        keys.RemoveRange(index + 4, 4);
+
                         treeSize -= 4;
 
                         if (metrics && !globalRebalanceOperation)
@@ -889,7 +857,11 @@ namespace KuCoin.NET.Helpers
                         )
                     {
                         items[index + 1] = items[index + 2];
+                        keys[index + 1] = keys[index + 2];
+
                         items.RemoveRange(index + 2, 2);
+                        keys.RemoveRange(index + 2, 2);
+
                         treeSize -= 2;
 
                         if (metrics && !globalRebalanceOperation)
@@ -914,9 +886,9 @@ namespace KuCoin.NET.Helpers
         /// <param name="item">The item to locate.</param>
         /// <param name="index">The current index in the tree.</param>
         /// <returns>True if the item exists.</returns>
-        protected internal virtual bool Locate(T item, out int index)
+        protected internal virtual bool Locate(TValue item, out int index)
         {
-            index = Walk(item, TreeWalkMode.Locate);
+            index = Walk(ProvideKey(item), TreeWalkMode.Locate);
             return index != -1;
         }
 
@@ -930,6 +902,8 @@ namespace KuCoin.NET.Helpers
             lock (syncRoot)
             {
                 items[index] = default;
+                keys[index] = default;
+
                 count--;
 
                 if ((index & 1) == 0)
@@ -939,6 +913,9 @@ namespace KuCoin.NET.Helpers
                         items[index] = items[index + 1];
                         items[index + 1] = default;
 
+                        keys[index] = keys[index + 1];
+                        keys[index + 1] = default;
+
                         if (metrics) softRemoves++;
                     }
                     else if (index < treeSize - 3 && items[index + 2] is object && items[index + 3] is object)
@@ -947,11 +924,17 @@ namespace KuCoin.NET.Helpers
                         items[index + 2] = items[index + 3];
                         items[index + 3] = default;
 
+                        keys[index] = keys[index + 2];
+                        keys[index + 2] = keys[index + 3];
+                        keys[index + 3] = default;
+
                         if (metrics) softRemoves++;
                     }
                     else
                     {
                         items.RemoveRange(index, 2);
+                        keys.RemoveRange(index, 2);
+
                         treeSize -= 2;
                         if (metrics) hardRemoves++;
                     }
@@ -975,13 +958,13 @@ namespace KuCoin.NET.Helpers
         /// <param name="walkMode">The type of walk (either for insert or locate)</param>
         /// <returns>The index where the item is or should be.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        protected internal virtual int Walk(T item1, TreeWalkMode walkMode = TreeWalkMode.InsertIndex)
+        protected internal virtual int Walk(TKey item1, TreeWalkMode walkMode = TreeWalkMode.InsertIndex)
         {
             int lo = 0;
             int hi = treeSize - 1;
             int mid = 0;
 
-            T item2, item3;
+            TKey item2, item3;
             int r = 0;
 
             while (true)
@@ -992,17 +975,17 @@ namespace KuCoin.NET.Helpers
                     {
                         if ((lo & 1) == 0)
                         {
-                            if (lo < treeSize - 1 && !(items[lo + 1] is object))
+                            if (lo < treeSize - 1 && !(keys[lo + 1] is object))
                             {
-                                r = comp(item1, items[lo]);
+                                r = comp(item1, keys[lo]);
                                 if (r >= 0) lo++;
                             }
 
-                            else if (lo > 0 && !(items[lo - 1] is object))
+                            else if (lo > 0 && !(keys[lo - 1] is object))
                             {
                                 if (lo < treeSize)
                                 {
-                                    r = comp(item1, items[lo]);
+                                    r = comp(item1, keys[lo]);
                                     if (r <= 0) lo--;
                                 }
                                 else
@@ -1019,8 +1002,8 @@ namespace KuCoin.NET.Helpers
                     else
                     {
                         if (lo < 0 || lo >= treeSize) return -1;
-                        else if (!(items[lo] is object)) return -1;
-                        else if (comp(item1, items[lo]) != 0) return -1;
+                        else if (!(keys[lo] is object)) return -1;
+                        else if (comp(item1, keys[lo]) != 0) return -1;
                     }
 
                     return lo;
@@ -1030,8 +1013,8 @@ namespace KuCoin.NET.Helpers
 
                 if ((mid & 1) == 1) mid--;
 
-                item2 = items[mid];
-                item3 = items[mid + 1];
+                item2 = keys[mid];
+                item3 = keys[mid + 1];
 
                 r = comp(item1, item2);
 
@@ -1063,29 +1046,5 @@ namespace KuCoin.NET.Helpers
         }
 
         #endregion Protected Methods
-
-    }
-
-    /// <summary>
-    /// An exception that is thrown when a black node in a red/black tree is null or empty.
-    /// </summary>
-    /// <remarks>
-    /// This is only used for debugging. In production, if the tree cannot be walked in every case, it should not be in production.<br /><br />
-    /// This exception indicates an untenable bug.
-    /// </remarks>
-    public class TreeUnbalancedException : Exception
-    {
-        #region Public Constructors
-
-        public TreeUnbalancedException() : base()
-        {
-
-        }
-        public TreeUnbalancedException(string message) : base(message)
-        {
-        }
-
-        #endregion Public Constructors
-
     }
 }

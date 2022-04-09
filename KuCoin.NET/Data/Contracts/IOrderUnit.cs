@@ -1,4 +1,6 @@
 ﻿
+using KuCoin.NET.Helpers;
+
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -33,7 +35,7 @@ namespace KuCoin.NET.Data.Market
     /// <summary>
     /// Level 3 Atomic Order Unit Interface
     /// </summary>
-    public interface IAtomicOrderUnit : IOrderUnit //, IEquatable<IAtomicOrderUnit>
+    public interface IAtomicOrderUnit : IOrderUnit, IKeyProvider<string> //, IEquatable<IAtomicOrderUnit>
     {
         /// <summary>
         /// The Order Id
