@@ -339,7 +339,14 @@ namespace KuCoin.NET.Websockets.Observations
             {
                 case 'd':
 
-                    pieces.Remove(change.OrderId);
+                    try
+                    {
+                        pieces.Remove(change.OrderId);
+                    }
+                    catch
+                    {
+                        return false;
+                    }
                     return true;
 
                 case 'o':
@@ -404,7 +411,8 @@ namespace KuCoin.NET.Websockets.Observations
                         && otherPieces.TryGetValue(change.MakerOrderId, out AtomicOrderUnit o))
                     {
 
-                        if (!otherPieces.TryAlterItem(o, (itm) => {
+                        if (!otherPieces.TryAlterItem(o, (itm) =>
+                        {
                             itm.Size -= csize;
                             itm.Sequence = change.Sequence;
                             return itm;
@@ -421,9 +429,9 @@ namespace KuCoin.NET.Websockets.Observations
                             var d = (csize * p);
                             Candle.Volume += d;
                         }
+                        return true;
                     }
-
-                    return true;
+                    else return false;
 
             }
 
