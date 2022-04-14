@@ -429,9 +429,9 @@ namespace KuCoin.NET.Websockets.Observations
                             var d = (csize * p);
                             Candle.Volume += d;
                         }
-                        return true;
                     }
-                    else return false;
+
+                    return true;
 
             }
 
