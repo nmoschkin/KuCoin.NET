@@ -3,7 +3,11 @@ KuCoin and KuCoin Futures API Libraries for .NET.
 
 _This library is a client for the KuCoin API as described in (https://docs.kucoin.com/#general)._
 
-__ATTENTION__: __The WPF Project has been moved to the 'legacy' branch.__
+__ATTENTION__: __The Level 3 API for KuCoin is deprecated as of 4/28/2022
+
+### May 6, 2022:
+
+Since all level 3 services have been deprecated, I will be migrating much of the current optimization work to level 2, and updating the example app to reflect that.
 
 ### April 8, 2022: 
 
