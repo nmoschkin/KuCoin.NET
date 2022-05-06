@@ -449,14 +449,7 @@ namespace KuCoinConsole
                                     services.Add(curr);
                                 }
 
-                                if (direct)
-                                {
-                                    await curr.EnableLevel3Direct();
-                                }
-                                else
-                                {
-                                    await curr.EnableLevel3();
-                                }
+                                await curr.EnableLevel3();
 
                                 Thread.Sleep(10);
 

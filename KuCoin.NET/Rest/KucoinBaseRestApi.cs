@@ -273,7 +273,7 @@ namespace KuCoin.NET.Rest
             ICredentialsProvider cred = this.cred;
 
             var ucm = KuCoinSystem.UseCredentialsMode;
-
+            
             if (ucm == UseCredentialsMode.Never)
             {
                 return cred;
