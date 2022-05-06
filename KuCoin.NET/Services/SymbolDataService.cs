@@ -35,13 +35,7 @@ namespace KuCoin.NET.Services
 
         protected Level2OrderBook level2obs;
 
-        protected Level3OrderBook level3obs;
-
         protected Level2 level2feed;
-
-        protected Level3 level3feed;
-
-        protected Level3Direct level3directfeed;
 
         protected ICredentialsProvider cred;
 
@@ -59,10 +53,6 @@ namespace KuCoin.NET.Services
 
         protected bool level2enabled;
 
-        protected bool level3enabled;
-        
-        protected bool level3directenabled;
-
         protected bool level2d5enabled;
 
         protected bool level2d50enabled;
@@ -74,8 +64,6 @@ namespace KuCoin.NET.Services
         protected bool ownmarket = true;
 
         public virtual Level2OrderBook Level2OrderBook => level2obs;
-
-        public virtual Level3OrderBook Level3OrderBook => level3obs;
 
         public virtual bool Connected
         {
@@ -94,8 +82,6 @@ namespace KuCoin.NET.Services
                 if (level2d50enabled) b &= level2d50?.Connected ?? false;
 
                 if (level2enabled) b &= level2feed?.Connected ?? false;
-
-                if (level3enabled) b &= level3feed?.Connected ?? false;
 
                 return b;
             }
@@ -122,10 +108,6 @@ namespace KuCoin.NET.Services
         public virtual ObservableStaticMarketDepthUpdate Level2Depth5Update => level2d5update;
 
         public virtual ObservableStaticMarketDepthUpdate Level2Depth50Update => level2d50update;
-
-        public virtual Level3 Level3Feed => level3feed ?? level3directfeed;
-
-        public virtual Level3Direct Level3DirectFeed => level3directfeed;
 
         public virtual TradingSymbol TradingSymbolInfo => symbol;
 
@@ -177,15 +159,6 @@ namespace KuCoin.NET.Services
                     await level2feed?.Reconnect();
                 }
 
-                if (level3enabled)
-                {
-                    await level3feed?.Reconnect();
-                }
-
-                if (level3directenabled)
-                {
-                    await level3directfeed?.Reconnect();
-                }
             }
 
             return Connected;
@@ -248,18 +221,6 @@ namespace KuCoin.NET.Services
                     level2feed = new Level2(cred);
                     level2feed.FeedDisconnected += OnLevel2Disconnected;
                 }
-
-                if (level3feed == null || level3feed.Disposed || connection != null)
-                {
-                    level3feed = new Level3(cred);
-                    level3feed.FeedDisconnected += OnLevel3Disconnected;
-                }
-
-                if (level3directfeed == null || level3directfeed.Disposed || connection != null)
-                {
-                    level3directfeed = new Level3Direct(cred);
-                    level3directfeed.FeedDisconnected += OnLevel3Disconnected;
-                }
             }
         }
 
@@ -298,22 +259,6 @@ namespace KuCoin.NET.Services
                         sym.level2enabled = true;
                     }
 
-                    if (level3feed != null && level3feed.Connected)
-                    {
-                        sym.level3feed = level3feed;
-                        sym.level3enabled = true;
-                        sym.level3directfeed = null;
-                        sym.level3directenabled = false;
-                    }
-
-                    if (level3directfeed != null && level3directfeed.Connected)
-                    {
-                        sym.level3directfeed = level3directfeed;
-                        sym.level3directenabled = true;
-                        sym.level3feed = null;
-                        sym.level3enabled = false;
-                    }
-
                 }
 
                 sym.ownmarket = false;
@@ -338,18 +283,6 @@ namespace KuCoin.NET.Services
                 {
                     level2feed?.Disconnect();
                     level2enabled = false;
-                }
-            }
-            if (level3enabled || level3directenabled)
-            {
-                level3obs?.Dispose();
-
-                if (ownmarket)
-                {
-                    level3directfeed?.Disconnect();
-                    level3feed?.Disconnect();
-                    level3enabled = false;
-                    level3directenabled = false;
                 }
             }
 
@@ -443,19 +376,6 @@ namespace KuCoin.NET.Services
                 level2obs = await level2feed.SubscribeOne(newSymbol);
             }
 
-            if (level3enabled || level3directenabled)
-            {
-                level3obs?.Dispose();
-                if (level3directenabled)
-                {
-                    level3obs = await level3directfeed.SubscribeOne(newSymbol);
-                }
-                else
-                {
-                    level3obs = await level3feed.SubscribeOne(newSymbol);
-                }
-            }
-
             if (klineEnabled)
             {
                 var kt = new List<KlineType>();
@@ -528,74 +448,6 @@ namespace KuCoin.NET.Services
             level2enabled = false;
             level2feed = null;
             level2obs = null;
-        }
-
-        public virtual async Task EnableLevel3()
-        {
-            if (disposed) throw new ObjectDisposedException(this.GetType().FullName);
-            if (level3enabled || level3directenabled) return;
-
-            if (cred == null)
-            {
-                throw new AuthenticationException();
-            }
-
-            if (level3feed == null)
-            {
-                level3feed = new Level3(cred);
-            }
-
-            level3directfeed = null;
-
-            if (level3feed.Connected == false)
-            {
-                await level3feed.Connect();
-            }
-            OnPropertyChanged(nameof(Level3Feed));
-            level3feed.FeedDisconnected += OnLevel3Disconnected;
-
-            level3obs = await level3feed.SubscribeOne((string)symbol);
-            OnPropertyChanged(nameof(Level3OrderBook));
-            level3enabled = true;
-        }
-
-        public virtual async Task EnableLevel3Direct()
-        {
-
-            if (disposed) throw new ObjectDisposedException(this.GetType().FullName);
-            if (level3enabled || level3directenabled) return;
-
-            if (cred == null)
-            {
-                throw new AuthenticationException();
-            }
-
-            if (level3directfeed == null)
-            {
-                level3directfeed = new Level3Direct(cred);
-            }
-
-            level3feed = null;
-
-            if (level3directfeed.Connected == false)
-            {
-                await level3directfeed.Connect();
-            }
-            OnPropertyChanged(nameof(Level3DirectFeed));
-            level3directfeed.FeedDisconnected += OnLevel3Disconnected;
-
-            level3obs = await level3directfeed.SubscribeOne((string)symbol);
-            OnPropertyChanged(nameof(Level3OrderBook));
-            level3directenabled = true;
-        }
-
-        protected virtual void OnLevel3Disconnected(object sender, KuCoin.NET.Websockets.FeedDisconnectedEventArgs e)
-        {
-            level3enabled = false;
-            level3directenabled = false;
-            level3feed = null;
-            level3directfeed = null;
-            level3obs = null;
         }
 
         public virtual async Task<AllSymbolsTickerItem> Get24HourStats()
@@ -691,15 +543,8 @@ namespace KuCoin.NET.Services
                 level2feed.FeedDisconnected -= OnLevel2Disconnected;
             }
 
-            if (level3feed != null)
-            {
-                level3feed.FeedDisconnected -= OnLevel3Disconnected;
-            }
-
             level2obs?.Dispose();
-            level3obs?.Dispose();
             level2feed?.Dispose();
-            level3feed?.Dispose();
             klinefeed?.Dispose();
             tickerfeed?.Dispose();
             level2d5?.Dispose();
@@ -708,12 +553,10 @@ namespace KuCoin.NET.Services
             if (disposing)
             {
                 disposed = true;
-                level3enabled = level2enabled = klineEnabled = tickerEnabled = level2d5enabled = level2d50enabled = false;
+                level2enabled = klineEnabled = tickerEnabled = level2d5enabled = level2d50enabled = false;
 
                 level2obs = null;
-                level3obs = null;
                 level2feed = null;
-                level3feed = null;
                 klinefeed = null;
                 tickerfeed = null;
                 level2d5 = null;

@@ -95,11 +95,11 @@ namespace KuCoin.NET.Websockets.Observations
                 if (fullDepth == null)
                 {
                     if (!failure) Failure = true;
-                    return false;
+                    return true;
                 }
                 else if (obj.SequenceEnd <= fullDepth.Sequence)
                 {
-                    return false;
+                    return true;
                 }
                 else if (obj.SequenceStart - fullDepth.Sequence > 1)
                 {
@@ -133,7 +133,7 @@ namespace KuCoin.NET.Websockets.Observations
 
                 if (updVol)
                 {
-                    decimal price = (decimal)fullDepth.Bids[0].Price;
+                    decimal price = fullDepth.Bids.FirstOrDefault().Price;
 
                     if (!Candle.IsTimeInCandle(candle, fullDepth.Timestamp.ToUniversalTime()))
                     {
@@ -177,12 +177,13 @@ namespace KuCoin.NET.Websockets.Observations
             foreach (var change in changes)
             {
                 decimal cp = change.Price;
+                if (cp == 0) return;
 
-                if (change.Size == 0.0M)
+                if (change.Size == 0.0M && pieces.TryGetValue(cp, out OrderUnitStruct item))
                 {
                     if (updVol)
                     {
-                        Candle.Volume += pieces[cp].Price * pieces[cp].Size;
+                        Candle.Volume += pieces[cp].Size;
                     }
                     pieces.Remove(cp);
                 }

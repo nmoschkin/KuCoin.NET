@@ -106,12 +106,7 @@ namespace KuCoin.NET.Services
         /// Gets the level 2 feed, or null if not active.
         /// </summary>
         Level2 Level2Feed { get; }
-
-        /// <summary>
-        /// Gets the level 3 observation, or null if not active.
-        /// </summary>
-        Level3OrderBook Level3OrderBook { get; }
-
+                
         /// <summary>
         /// Gets the level 2 static depth market feed (5 best ask/bid), or null if not active.
         /// </summary>
@@ -131,17 +126,7 @@ namespace KuCoin.NET.Services
         /// The observable market depth 50 list.
         /// </summary>
         ObservableStaticMarketDepthUpdate Level2Depth50Update { get; }
-
-        /// <summary>
-        /// Gets the level 3 feed, or null if not active.
-        /// </summary>
-        Level3 Level3Feed { get; }    
-
-        /// <summary>
-        /// Gets the level 3 direct feed.
-        /// </summary>
-        Level3Direct Level3DirectFeed { get; }
-
+                
         /// <summary>
         /// Gets a value that indicates that the service is connected.
         /// </summary>
@@ -155,7 +140,6 @@ namespace KuCoin.NET.Services
         /// <paramref name="credentialsProvider"/> can be null, but level 2 and level 3 feeds will be unavailable.
         /// </remarks>
         Task<bool> Connect(ICredentialsProvider credentialsProvider);
-
 
         /// <summary>
         /// Attempt to drop and re-establish the connection.
@@ -181,16 +165,6 @@ namespace KuCoin.NET.Services
         /// Enable level 2
         /// </summary>
         Task EnableLevel2();
-
-        /// <summary>
-        /// Enable level 3
-        /// </summary>
-        Task EnableLevel3();
-
-        /// <summary>
-        /// Enable level 3 direct
-        /// </summary>
-        Task EnableLevel3Direct();
 
         /// <summary>
         /// Gets the 24-hour stats

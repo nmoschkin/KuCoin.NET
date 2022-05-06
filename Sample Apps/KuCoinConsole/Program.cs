@@ -449,20 +449,13 @@ namespace KuCoinConsole
                                     services.Add(curr);
                                 }
 
-                                await curr.EnableLevel3();
+                                await curr.EnableLevel2();
 
                                 Thread.Sleep(10);
 
-                                if (curr.Level3Feed == null)
+                                if (curr.Level2Feed == null)
                                 {
-                                    if (direct)
-                                    {
-                                        await curr.EnableLevel3Direct();
-                                    }
-                                    else
-                                    {
-                                        await curr.EnableLevel3();
-                                    }
+                                    await curr.EnableLevel2();
 
                                     Thread.Sleep(10);
                                 }
@@ -479,22 +472,22 @@ namespace KuCoinConsole
 
                             }
 
-                            if (curr.Level3Feed != null)
+                            if (curr.Level2Feed != null)
                             {
-                                if (!feeds.Contains(curr.Level3Feed))
+                                if (!feeds.Contains(curr.Level2Feed))
                                 {
-                                    curr.Level3Feed.DataReceived += Level3Feed_DataReceived;
+                                    curr.Level2Feed.DataReceived += Level3Feed_DataReceived;
 
                                     //curr.Level3Feed.DistributionStrategy = DistributionStrategy.Link;
-                                    curr.Level3Feed.MonitorThroughput = true;
+                                    curr.Level2Feed.MonitorThroughput = true;
                                     lock (feeds)
                                     {
-                                        feeds.Add(curr.Level3Feed);
+                                        feeds.Add(curr.Level2Feed);
                                     }
                                 }
 
-                                curr.Level3OrderBook.DiagnosticsEnabled = metrics;
-                                curr.Level3OrderBook.IsVolumeEnabled = true;
+                                curr.Level2OrderBook.DiagnosticsEnabled = metrics;
+                                curr.Level2OrderBook.IsVolumeEnabled = true;
 
                                 lock (lockObj)
                                 {
@@ -715,9 +708,9 @@ namespace KuCoinConsole
                                     {
                                         foreach (var obs in Observers)
                                         {
-                                            if (obs.Value.Level3OrderBook != null)
+                                            if (obs.Value.Level2OrderBook != null)
                                             {
-                                                obs.Value.Level3OrderBook.DiagnosticsEnabled = metrics;
+                                                obs.Value.Level2OrderBook.DiagnosticsEnabled = metrics;
                                             }
                                         }
                                     }
@@ -753,11 +746,11 @@ namespace KuCoinConsole
                     {
                         try
                         {
-                            if (obs.Value?.Level3OrderBook?.FullDepthOrderBook == null) continue;
+                            if (obs.Value?.Level2OrderBook?.FullDepthOrderBook == null) continue;
 
-                            if (obs.Value.Level3OrderBook.FullDepthOrderBook.Timestamp > ts)
+                            if (obs.Value.Level2OrderBook.FullDepthOrderBook.Timestamp > ts)
                             {
-                                ts = obs.Value.Level3OrderBook.FullDepthOrderBook.Timestamp;
+                                ts = obs.Value.Level2OrderBook.FullDepthOrderBook.Timestamp;
                             }
                         }
                         catch
@@ -890,7 +883,7 @@ namespace KuCoinConsole
                 var obs1 = Observers.FirstOrDefault().Value ?? null;
                 if (obs1 == null) return;
 
-                IKlineType kt = obs1.Level3OrderBook.KlineType;
+                IKlineType kt = obs1.Level2OrderBook.KlineType;
 
                 IKlineType ktnext = KlineType.AllTypes.Where((x) => x.TimeSpan > kt.TimeSpan)?.FirstOrDefault() ?? default;
 
@@ -901,7 +894,7 @@ namespace KuCoinConsole
 
                 foreach (var obs in Observers)
                 {
-                    obs.Value.Level3OrderBook.KlineType = ktnext;
+                    obs.Value.Level2OrderBook.KlineType = ktnext;
                 }
             }
         }
@@ -913,7 +906,7 @@ namespace KuCoinConsole
                 var obs1 = Observers.FirstOrDefault().Value ?? null;
                 if (obs1 == null) return;
 
-                IKlineType kt = obs1.Level3OrderBook.KlineType;
+                IKlineType kt = obs1.Level2OrderBook.KlineType;
 
                 IKlineType ktnext = KlineType.AllTypes.Reverse().Where((x) => x.TimeSpan < kt.TimeSpan)?.FirstOrDefault() ?? default;
 
@@ -924,7 +917,7 @@ namespace KuCoinConsole
 
                 foreach (var obs in Observers)
                 {
-                    obs.Value.Level3OrderBook.KlineType = ktnext;
+                    obs.Value.Level2OrderBook.KlineType = ktnext;
                 }
             }
         }
@@ -978,7 +971,7 @@ namespace KuCoinConsole
                 long matchgrand = 0;
                 int ccount = -1;
 
-                Level3 current = null;
+                Level2 current = null;
                 lock (lockObj)
                 {
 
@@ -986,7 +979,7 @@ namespace KuCoinConsole
                     {
                         lock (lockObj)
                         {
-                            foreach (Level3 feed in feeds)
+                            foreach (Level2 feed in feeds)
                             {
                                 ++ccount;
                                 if (ccount == currentConn)
@@ -1001,9 +994,9 @@ namespace KuCoinConsole
                             
                             foreach (var obs in Observers)
                             {
-                                if (currentConn == -1 || obs.Value.Level3Feed == current)
+                                if (currentConn == -1 || obs.Value.Level2Feed == current)
                                 {
-                                    var l3 = obs.Value.Level3OrderBook;
+                                    var l3 = obs.Value.Level2OrderBook;
 
                                     if (l3 != null)
                                     {
@@ -1031,9 +1024,9 @@ namespace KuCoinConsole
                     {
                         foreach (var obs in Observers)
                         {
-                            if (currentConn == -1 || obs.Value.Level3Feed == current)
+                            if (currentConn == -1 || obs.Value.Level2Feed == current)
                             {
-                                var l3 = obs.Value.Level3OrderBook;
+                                var l3 = obs.Value.Level2OrderBook;
 
                                 if (l3 == null)
                                 {
@@ -1103,25 +1096,18 @@ namespace KuCoinConsole
                         {
                             foreach (var f in feeds)
                             {
-                                if (f is Level3 l3a)
+                                if (f is Level2 l2a)
                                 {
-                                    if (!l3a.Connected)
+                                    if (!l2a.Connected)
                                     {
                                         continue;
                                     }
 
-                                    through += l3a.Throughput;
-                                    if (!(f is Level3Direct))
-                                    {
-                                        queue += l3a.QueueLength;
-                                        if (l3a.MaxQueueLengthLast60Seconds > maxqueue)
-                                            maxqueue += l3a.MaxQueueLengthLast60Seconds;
+                                    through += l2a.Throughput;
+                                    queue += l2a.QueueLength;
+                                    if (l2a.MaxQueueLengthLast60Seconds > maxqueue)
+                                        maxqueue += l2a.MaxQueueLengthLast60Seconds;
 
-                                    }
-                                    else
-                                    {
-                                        queue = -1;
-                                    }
                                 }
                             }
                         }
@@ -1129,13 +1115,10 @@ namespace KuCoinConsole
                     else
                     {
                         through += current.Throughput;
-                        if (!(current is Level3Direct))
-                        {
-                            queue += current.QueueLength;
-                            if (current.MaxQueueLengthLast60Seconds > maxqueue)
-                                maxqueue += current.MaxQueueLengthLast60Seconds;
+                        queue += current.QueueLength;
+                        if (current.MaxQueueLengthLast60Seconds > maxqueue)
+                            maxqueue += current.MaxQueueLengthLast60Seconds;
 
-                        }
 
                     }
 
@@ -1219,7 +1202,7 @@ namespace KuCoinConsole
                     {
                         sortobs = new List<ISymbolDataService>(Observers.Values.Where((item) =>
                         {
-                            return currentConn == -1 || item.Level3Feed == current;
+                            return currentConn == -1 || item.Level2Feed == current;
                         }));
 
                         if (sortEnabled)
@@ -1227,66 +1210,19 @@ namespace KuCoinConsole
 
                             foreach (var item in sortobs)
                             {
-                                lock(item.Level3OrderBook.LockObject)
+                                lock(item.Level2OrderBook.LockObject)
                                 {
                                     var nf = new FeedsInfo();
 
                                     nf.Service = item;
-                                    nf.State = item.Level3OrderBook.State;
+                                    nf.State = item.Level2OrderBook.State;
                                     nf.Symbol = item.Symbol;
 
-                                    if (item.Level3OrderBook.State == FeedState.Running)
+                                    if (item.Level2OrderBook.State == FeedState.Running)
                                     {
-                                        nf.MarketVolume = item.Level3OrderBook.MarketVolume;
-                                        nf.Throughput = item.Level3OrderBook.Throughput;
-                                        nf.Price = item.Level3OrderBook.FullDepthOrderBook.Bids.First.Price;
-
-                                        nf.ChangedRebalances = item.Level3OrderBook.FullDepthOrderBook.Bids.ChangedRebalances;
-                                        nf.ChangedRebalances += item.Level3OrderBook.FullDepthOrderBook.Asks.ChangedRebalances;
-
-                                        nf.UnchangedRebalances = item.Level3OrderBook.FullDepthOrderBook.Bids.UnchangedRebalances;
-                                        nf.UnchangedRebalances += item.Level3OrderBook.FullDepthOrderBook.Asks.UnchangedRebalances;
-
-
-                                        nf.LocalRebalances = item.Level3OrderBook.FullDepthOrderBook.Bids.LocalRebalances;
-                                        nf.LocalRebalances += item.Level3OrderBook.FullDepthOrderBook.Asks.LocalRebalances;
-
-                                        nf.HardInserts = item.Level3OrderBook.FullDepthOrderBook.Bids.HardInserts;
-                                        nf.HardInserts += item.Level3OrderBook.FullDepthOrderBook.Asks.HardInserts;
-
-                                        nf.HardRemoves = item.Level3OrderBook.FullDepthOrderBook.Bids.HardRemoves;
-                                        nf.HardRemoves += item.Level3OrderBook.FullDepthOrderBook.Asks.HardRemoves;
-
-                                        nf.SoftInserts = item.Level3OrderBook.FullDepthOrderBook.Bids.SoftInserts;
-                                        nf.SoftInserts += item.Level3OrderBook.FullDepthOrderBook.Asks.SoftInserts;
-
-                                        nf.SoftRemoves = item.Level3OrderBook.FullDepthOrderBook.Bids.SoftRemoves;
-                                        nf.SoftRemoves += item.Level3OrderBook.FullDepthOrderBook.Asks.SoftRemoves;
-
-                                        nf.BufferSize = item.Level3OrderBook.FullDepthOrderBook.Bids.Count;
-                                        nf.BufferSize += item.Level3OrderBook.FullDepthOrderBook.Asks.Count;
-
-                                        nf.TreeSize = item.Level3OrderBook.FullDepthOrderBook.Bids.TreeSize;
-                                        nf.TreeSize += item.Level3OrderBook.FullDepthOrderBook.Asks.TreeSize;
-
-                                        nf.AverageInsertIndex = item.Level3OrderBook.FullDepthOrderBook.Bids.AverageInsertIndex;
-                                        nf.AverageInsertIndex += item.Level3OrderBook.FullDepthOrderBook.Asks.AverageInsertIndex;
-
-                                        nf.AverageInsertIndex /= 2f;
-
-                                        HardInserts += nf.HardInserts;
-                                        HardRemoves += nf.HardRemoves;
-                                        SoftInserts += nf.SoftInserts;
-                                        SoftRemoves += nf.SoftRemoves;
-
-                                        BufferSize += nf.BufferSize;
-                                        TreeSize += nf.TreeSize;
-
-                                        LocalRebalances += nf.LocalRebalances;
-                                        ChangedRebalances += nf.ChangedRebalances;
-                                        UnchangedRebalances += nf.UnchangedRebalances;
-
-                                        AverageInsertIndex += nf.AverageInsertIndex;
+                                        nf.MarketVolume = item.Level2OrderBook.MarketVolume;
+                                        nf.Throughput = item.Level2Feed.Throughput;
+                                        nf.Price = item.Level2OrderBook.FullDepthOrderBook.Bids.FirstOrDefault().Price;
 
                                     }
 
@@ -1352,18 +1288,8 @@ namespace KuCoinConsole
                         {
                             if (itemIndex > sortInfo.Count - 1) itemIndex = sortInfo.Count - 1;
 
-                            HardInserts = sortInfo[itemIndex].HardInserts;
-                            HardRemoves = sortInfo[itemIndex].HardRemoves;
-                            SoftInserts = sortInfo[itemIndex].SoftInserts;
-                            SoftRemoves = sortInfo[itemIndex].SoftRemoves;
-                            BufferSize = sortInfo[itemIndex].BufferSize;
-                            TreeSize = sortInfo[itemIndex].TreeSize;
-                            LocalRebalances = sortInfo[itemIndex].LocalRebalances;
-                            ChangedRebalances = sortInfo[itemIndex].ChangedRebalances;
-                            UnchangedRebalances = sortInfo[itemIndex].UnchangedRebalances;
-                            AverageInsertIndex = sortInfo[itemIndex].AverageInsertIndex;
-                            biggrand = sortInfo[itemIndex].Service.Level3OrderBook?.GrandTotal ?? 0;
-                            matchgrand = sortInfo[itemIndex].Service.Level3OrderBook?.MatchTotal ?? 0;
+                            biggrand = sortInfo[itemIndex].Service.Level2OrderBook?.GrandTotal ?? 0;
+                            matchgrand = sortInfo[itemIndex].Service.Level2OrderBook?.MatchTotal ?? 0;
                         }
 
                     }
@@ -1393,7 +1319,7 @@ namespace KuCoinConsole
 
                     if (sortobs.FirstOrDefault() is SymbolDataService firstData)
                     {
-                        var klineStr = firstData.Level3OrderBook.KlineType.ToString("G");
+                        var klineStr = firstData.Level2OrderBook.KlineType.ToString("G");
                         readOut.WriteToEdgeLine($"{{Reset}}Current K-Line: {{Cyan}}{klineStr}");
                     }
                     else
@@ -1434,7 +1360,7 @@ namespace KuCoinConsole
                         if (vc >= obscount) break;
 
                         var obs = sortobs[vc];
-                        var l3 = obs.Level3OrderBook;
+                        var l3 = obs.Level2OrderBook;
                         var ts = DateTime.MinValue;
 
                         int fidx = 0;
@@ -1444,9 +1370,9 @@ namespace KuCoinConsole
                         {
                             foreach (var feed in feeds)
                             {
-                                if (feed is Level3 l3b)
+                                if (feed is Level2 l2b)
                                 {
-                                    if (l3b.ActiveFeeds.ContainsKey(obs.Symbol))
+                                    if (l2b.ActiveFeeds.ContainsKey(obs.Symbol))
                                     {
                                         fidx = cidx + 1;
                                         break;
@@ -1463,8 +1389,8 @@ namespace KuCoinConsole
 
                         if (l3.FullDepthOrderBook is object)
                         {
-                            ba = l3.FullDepthOrderBook.Asks.First.Price;
-                            bb = l3.FullDepthOrderBook.Bids.First.Price;
+                            ba = l3.FullDepthOrderBook.Asks.FirstOrDefault().Price;
+                            bb = l3.FullDepthOrderBook.Bids.FirstOrDefault().Price;
                             ts = l3.FullDepthOrderBook.Timestamp;
 
                             op = l3.Candle.OpenPrice;
@@ -1515,22 +1441,8 @@ namespace KuCoinConsole
                         {
                             itsb.WriteToEdgeLine($"{MinChars($"{{White}}{vc + 1} {{Red}}Feed Disconnected{{ForegroundReset}}", maxSymbolLen + 22)}");
                         }
-                        else if (ba == 0)
-                        {
-                            itsb.WriteToEdgeLine($"{MinChars($"{{White}}{vc + 1} {{Yellow}}Initializing{{ForegroundReset}}", maxSymbolLen + 22)}");
-                        }
-                        else
-                        {
-                            if (queue == -1)
-                            {
-                                itsb.WriteToEdgeLine($"{MinChars($"{{White}}{MinChars($"{vc + 1}", 3)} {{Blue}}@{fidx}{{ForegroundReset}}", maxSymbolLen + 30)}   Match Share: {MinChars(metrics ? mpcts[z].ToString("##0.##") + "%" : "Off", 7)}   Total Share: {MinChars(metrics ? pcts[z++].ToString("##0.##") + "%" : "Off", 7)}   State: " + MinChars(l3.State.ToString(), 10) + "  Throughput: " + MinChars(metrics ? PrintFriendlySpeed((ulong)l3.Throughput) : "Off", 16) + $"{{ForegroundReset}} Timestamp: {{Blue}}{ts:G}{{ForegroundReset}}");
-                            }
-                            else
-                            {
-                                itsb.WriteToEdgeLine($"{MinChars($"{{White}}{MinChars($"{vc + 1}", 3)} {{Blue}}@{fidx}{{ForegroundReset}}", maxSymbolLen + 30)}   Match Share: {MinChars(metrics ? mpcts[z].ToString("##0.##") + "%" : "Off", 7)}   Total Share: {MinChars(metrics ? pcts[z++].ToString("##0.##") + "%" : "Off", 7)}   State: " + MinChars(l3.State.ToString(), 14) + "  Queue Length: " + MinChars(metrics ? l3.QueueLength.ToString() : "Off", 10) + $"{{ForegroundReset}} Timestamp: {{Blue}}{ts:G}{{ForegroundReset}}");
-                            }
-                            //itsb.WriteToEdgeLine($"{MinChars($"{{White}}{vc + 1} ", maxSymbolLen + 7)} - Match Share: {MinChars(mpcts[z].ToString("##0") + "%", 4)}   Total Share: {MinChars(pcts[z++].ToString("##0") + "%", 4)}   State: " + MinChars(l3.State.ToString(), 14) + "  Queue Length: " + MinChars(l3.QueueLength.ToString(), 10) + $" {{ForegroundReset}}Feed: {{White}}{MinChars((fidx == 0) ? "N/A" : fidx.ToString(), 4)}");
-                        }
+
+                        itsb.WriteToEdgeLine($"{MinChars($"{{White}}{MinChars($"{vc + 1}", 3)} {{Blue}}@{fidx}{{ForegroundReset}}", maxSymbolLen + 30)}   Match Share: {MinChars(metrics ? mpcts[z].ToString("##0.##") + "%" : "Off", 7)}   Total Share: {MinChars(metrics ? pcts[z++].ToString("##0.##") + "%" : "Off", 7)}   State: " + MinChars(l3.State.ToString(), 14) + "  Queue Length: " + MinChars(metrics ? l3.QueueLength.ToString() : "Off", 10) + $"{{ForegroundReset}} Timestamp: {{Blue}}{ts:G}{{ForegroundReset}}");
 
                         itsb.WriteToEdge("");
 
@@ -1555,13 +1467,13 @@ namespace KuCoinConsole
                         {
                             if (itemIndex == -1)
                             {
-                                var l3 = obs.Level3OrderBook;
+                                var l3 = obs.Level2OrderBook;
                                 mps += l3.MatchesPerSecond;
                                 tps += l3.TransactionsPerSecond;
                             }
                             else if (itemIndex == x)
                             {
-                                var l3 = obs.Level3OrderBook;
+                                var l3 = obs.Level2OrderBook;
                                 mps = l3.MatchesPerSecond;
                                 tps = l3.TransactionsPerSecond;
 
@@ -1584,21 +1496,21 @@ namespace KuCoinConsole
 
                     if (metrics)
                     {
-                        if (itemIndex != -1 && sortobs[itemIndex]?.Level3OrderBook?.FullDepthOrderBook != null)
+                        if (itemIndex != -1 && sortobs[itemIndex]?.Level2OrderBook?.FullDepthOrderBook != null)
                         {
-                            var bids = new List<AtomicOrderUnit>();
-                            var asks = new List<AtomicOrderUnit>();
+                            var bids = new List<OrderUnitStruct>();
+                            var asks = new List<OrderUnitStruct>();
                         
                             int i = 0;
 
-                            foreach(var xitem in sortobs[itemIndex].Level3OrderBook.FullDepthOrderBook.Asks)
+                            foreach(var xitem in sortobs[itemIndex].Level2OrderBook.FullDepthOrderBook.Asks)
                             {
                                 asks.Add(xitem);
                                 i++;
                                 if (i >= 5) break;
                             }
                             i = 0;
-                            foreach (var xitem in sortobs[itemIndex].Level3OrderBook.FullDepthOrderBook.Bids)
+                            foreach (var xitem in sortobs[itemIndex].Level2OrderBook.FullDepthOrderBook.Bids)
                             {
                                 bids.Add(xitem);
                                 i++;
@@ -1840,24 +1752,24 @@ namespace KuCoinConsole
 
         public ISymbolDataService Service;
 
-        public long HardInserts;
+        //public long HardInserts;
 
-        public long SoftInserts;
+        //public long SoftInserts;
 
-        public long HardRemoves;
+        //public long HardRemoves;
 
-        public long SoftRemoves;
+        //public long SoftRemoves;
 
-        public long BufferSize;
+        //public long BufferSize;
 
-        public long TreeSize;
+        //public long TreeSize;
 
-        public long LocalRebalances;
+        //public long LocalRebalances;
 
-        public long ChangedRebalances;
+        //public long ChangedRebalances;
 
-        public long UnchangedRebalances;
+        //public long UnchangedRebalances;
 
-        public float AverageInsertIndex;
+        //public float AverageInsertIndex;
     }
 }
