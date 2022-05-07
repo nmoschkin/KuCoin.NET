@@ -96,6 +96,8 @@ namespace KuCoin.NET.Data.Websockets
         /// </summary>
         [JsonProperty("changes")]
         public Changes Changes { get; set; }
+        
+        internal int size;
 
         IOrderUnitCollection<IOrderUnit> IOrderUnitListProvider<IOrderUnit>.OrderList
         {

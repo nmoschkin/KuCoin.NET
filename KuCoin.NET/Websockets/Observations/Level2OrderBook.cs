@@ -9,22 +9,97 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace KuCoin.NET.Websockets.Observations
 {
-    public class Level2OrderBook : OrderBookDistributable<Level2OrderBook<OrderUnitStruct>, ObservableOrderBook<ObservableOrderUnit>, Level2Update, Level2>, IObserver<MatchExecution>
+    public class Level2OrderBook : OrderBookDistributable<AggregatedOrderBook<OrderUnit>, ObservableOrderBook<ObservableOrderUnit>, Level2Update, Level2>, IObserver<MatchExecution>
     {
-
-        public Level2OrderBook(Level2 parent, string symbol) : base(parent, symbol, false, false)
+        public Level2OrderBook(Level2 parent, string symbol) : base(parent, symbol, false, parent is Level2Direct)
         {
             this.parent = parent;
             base.parent = parent;
             this.dataProvider = parent;
             this.IsPresentationDisabled = true;
         }
+        protected override void OnInitialDataProvided(AggregatedOrderBook<OrderUnit> data)
+        {
+            base.OnInitialDataProvided(data);
 
-        private void CopyObservable(ICollection<OrderUnitStruct> src, ObservableCollection<ObservableOrderUnit> dest)
+            if (fullDepth != null)
+            {
+                fullDepth.Asks.EnableMetrics = diagEnable;
+                fullDepth.Bids.EnableMetrics = diagEnable;
+            }
+
+        }
+
+        public override void OnNext(Level2Update value)
+        {
+            if (!direct)
+            {
+                base.OnNext(value);
+            }
+            else
+            {
+                lock (lockObj)
+                {
+                    buffer.Add(value);
+                }
+
+                if (initialized) DoWork();
+                else Thread.Sleep(0);
+
+                if (diagEnable)
+                {
+                    if (DateTime.UtcNow.Ticks - marktime >= 10_000_000)
+                    {
+                        marktime = DateTime.UtcNow.Ticks;
+                        throughput = bytesreceived * 8;
+                        bytesreceived = 0;
+                    }
+                    else
+                    {
+                        bytesreceived += value.size;
+                    }
+                }
+
+            }
+        }
+
+        long bytesreceived;
+        long throughput;
+        long marktime = DateTime.UtcNow.Ticks;
+
+        public override bool DiagnosticsEnabled
+        {
+            get => base.DiagnosticsEnabled;
+            set
+            {
+                if (diagEnable != value)
+                {
+                    base.DiagnosticsEnabled = value;
+
+                    bytesreceived = 0;
+                    throughput = 0;
+                    marktime = 0;
+
+                    if (fullDepth != null)
+                    {
+                        fullDepth.Asks.EnableMetrics = value;
+                        fullDepth.Bids.EnableMetrics = value;
+                    }
+                }
+            }
+        }
+
+        public long Throughput
+        {
+            get => throughput;
+        }
+
+        private void CopyObservable(ICollection<OrderUnit> src, ObservableCollection<ObservableOrderUnit> dest)
         {
             int md = this.marketDepth;
 
@@ -70,8 +145,8 @@ namespace KuCoin.NET.Websockets.Observations
                 if (fullDepth == null) return;
                 if (this.marketDepth <= 0) return;
 
-                var asks = fullDepth.Asks as ICollection<OrderUnitStruct>;
-                var bids = fullDepth.Bids as ICollection<OrderUnitStruct>;
+                var asks = fullDepth.Asks as ICollection<OrderUnit>;
+                var bids = fullDepth.Bids as ICollection<OrderUnit>;
 
                 if (orderBook == null)
                 {
@@ -172,20 +247,20 @@ namespace KuCoin.NET.Websockets.Observations
         /// <param name="changes">The changes to sequence.</param>
         /// <param name="pieces">The collection to change (either an ask or a bid collection)</param>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        protected void SequencePieces(IList<OrderUnitStruct> changes, OrderUnitKeyedCollection<OrderUnitStruct> pieces)
+        protected void SequencePieces(IList<OrderUnitStruct> changes, OrderUnitKeyedCollection<OrderUnit> pieces)
         {
             foreach (var change in changes)
             {
                 decimal cp = change.Price;
                 if (cp == 0) return;
 
-                if (change.Size == 0.0M && pieces.TryGetValue(cp, out OrderUnitStruct item))
+                if (change.Size == 0.0M)
                 {
                     pieces.Remove(cp);
                 }
                 else
                 {
-                    if (pieces.Contains(cp))
+                    if (pieces.ContainsKey(cp))
                     {
                         var piece = pieces[cp];
 
@@ -194,7 +269,7 @@ namespace KuCoin.NET.Websockets.Observations
                     }
                     else
                     {
-                        var newPiece = new OrderUnitStruct
+                        var newPiece = new OrderUnit
                         {
                             Price = change.Price,
                             Size = change.Size,

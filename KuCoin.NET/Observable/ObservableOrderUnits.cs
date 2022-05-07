@@ -15,7 +15,7 @@ namespace KuCoin.NET.Observable
     /// Standard observable, keyed collection of orders (asks and bids.)
     /// </summary>
     /// <typeparam name="T"></typeparam>
-    public class ObservableOrderUnits<T> : OrderUnitKeyedCollection<T>, INotifyPropertyChanged, INotifyCollectionChanged where T: IOrderUnit
+    public class ObservableOrderUnits<T> : OrderUnitKeyedCollection<T>, INotifyPropertyChanged, INotifyCollectionChanged where T: IOrderUnit, new()
     {
         public event NotifyCollectionChangedEventHandler CollectionChanged;
         public event PropertyChangedEventHandler PropertyChanged;
@@ -24,63 +24,37 @@ namespace KuCoin.NET.Observable
         {
         }
 
-        public ObservableOrderUnits(bool descending) : base()
+        public ObservableOrderUnits(bool descending) : base(descending)
         {
-            this.descending = descending;
         }
 
-        protected override void ClearItems()
+        protected internal override void ClearItems()
         {
-            lock(lockObj)
+            lock(syncRoot)
             {
                 base.ClearItems();
                 OnCollectionChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset));
             }
         }
 
-        protected override void InsertItem(int index, T item)
+        protected internal override void InsertItem(T item)
         {
-            lock(lockObj)
+            lock(syncRoot)
             {
-                index = GetInsertIndex(item);
 
-                base.InsertItem(index, item);
-                OnCollectionChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Add, item, index));
+                base.InsertItem(item);
+
+                OnCollectionChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Add, item, Walk(item, TreeWalkMode.Locate)));
             }
         }
 
-        protected override void RemoveItem(int index)
+        protected internal override void RemoveItem(int index)
         {
-            lock (lockObj)
+            lock (syncRoot)
             {
                 var oldItem = ((IList<T>)this)[index];
                 base.RemoveItem(index);
                 OnCollectionChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Remove, oldItem, index));
-            }
-        }
-
-        protected override void SetItem(int index, T item)
-        {
-            lock (lockObj)
-            {
-                if (index >= Count)
-                {
-                    InsertItem(0, item);
-                    return;
-                }
-                var oldItem = ((IList<T>)this)[index];
-                if (Contains(item.Price))
-                {
-                    var orgitem = this[item.Price];
-                    orgitem.Size = item.Size;
-
-                    if (item is ISequencedOrderUnit seq && orgitem is ISequencedOrderUnit orgseq)
-                        orgseq.Sequence = seq.Sequence;
-
-                    return;
-                }
-                base.SetItem(index, item);
-                OnCollectionChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Replace, item, oldItem, index));
             }
         }
 

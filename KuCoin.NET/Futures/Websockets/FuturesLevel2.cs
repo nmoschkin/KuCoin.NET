@@ -20,7 +20,7 @@ namespace KuCoin.NET.Futures.Websockets
     /// <summary>
     /// An object that implements an <see cref="IMarketFeed{TDistributable, TValue, TInitial, TObservable}"/> for the Level 2 futures market feed.
     /// </summary>
-    public interface IFuturesLevel2 : IMarketFeed<FuturesLevel2OrderBook, FuturesLevel2Update, Level2OrderBook<OrderUnitStruct>, ObservableOrderBook<ObservableOrderUnit>>
+    public interface IFuturesLevel2 : IMarketFeed<FuturesLevel2OrderBook, FuturesLevel2Update, AggregatedOrderBook<OrderUnitStruct>, ObservableOrderBook<ObservableOrderUnit>>
     {
 
     }
@@ -28,7 +28,7 @@ namespace KuCoin.NET.Futures.Websockets
     /// <summary>
     /// Level 2 Futures Market Feed
     /// </summary>
-    public class FuturesLevel2 : OrderBookFeed<FuturesLevel2OrderBook, FuturesLevel2Update, Level2OrderBook<OrderUnitStruct>, ObservableOrderBook<ObservableOrderUnit>, FuturesLevel2>, IFuturesLevel2
+    public class FuturesLevel2 : OrderBookFeed<FuturesLevel2OrderBook, FuturesLevel2Update, AggregatedOrderBook<OrderUnitStruct>, ObservableOrderBook<ObservableOrderUnit>, FuturesLevel2>, IFuturesLevel2
     {
         /// <summary>
         /// Instantiate a new market feed.

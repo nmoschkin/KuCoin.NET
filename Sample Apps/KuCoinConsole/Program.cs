@@ -1225,6 +1225,57 @@ namespace KuCoinConsole
                                         nf.Throughput = item.Level2Feed.Throughput;
                                         nf.Price = item.Level2OrderBook.FullDepthOrderBook.Bids.FirstOrDefault().Price;
 
+                                        nf.MarketVolume = item.Level2OrderBook.MarketVolume;
+                                        nf.Throughput = item.Level2OrderBook.Throughput;
+                                        nf.Price = item.Level2OrderBook.FullDepthOrderBook.Bids.First.Price;
+
+                                        nf.ChangedRebalances = item.Level2OrderBook.FullDepthOrderBook.Bids.ChangedRebalances;
+                                        nf.ChangedRebalances += item.Level2OrderBook.FullDepthOrderBook.Asks.ChangedRebalances;
+
+                                        nf.UnchangedRebalances = item.Level2OrderBook.FullDepthOrderBook.Bids.UnchangedRebalances;
+                                        nf.UnchangedRebalances += item.Level2OrderBook.FullDepthOrderBook.Asks.UnchangedRebalances;
+
+
+                                        nf.LocalRebalances = item.Level2OrderBook.FullDepthOrderBook.Bids.LocalRebalances;
+                                        nf.LocalRebalances += item.Level2OrderBook.FullDepthOrderBook.Asks.LocalRebalances;
+
+                                        nf.HardInserts = item.Level2OrderBook.FullDepthOrderBook.Bids.HardInserts;
+                                        nf.HardInserts += item.Level2OrderBook.FullDepthOrderBook.Asks.HardInserts;
+
+                                        nf.HardRemoves = item.Level2OrderBook.FullDepthOrderBook.Bids.HardRemoves;
+                                        nf.HardRemoves += item.Level2OrderBook.FullDepthOrderBook.Asks.HardRemoves;
+
+                                        nf.SoftInserts = item.Level2OrderBook.FullDepthOrderBook.Bids.SoftInserts;
+                                        nf.SoftInserts += item.Level2OrderBook.FullDepthOrderBook.Asks.SoftInserts;
+
+                                        nf.SoftRemoves = item.Level2OrderBook.FullDepthOrderBook.Bids.SoftRemoves;
+                                        nf.SoftRemoves += item.Level2OrderBook.FullDepthOrderBook.Asks.SoftRemoves;
+
+                                        nf.BufferSize = item.Level2OrderBook.FullDepthOrderBook.Bids.Count;
+                                        nf.BufferSize += item.Level2OrderBook.FullDepthOrderBook.Asks.Count;
+
+                                        nf.TreeSize = item.Level2OrderBook.FullDepthOrderBook.Bids.TreeSize;
+                                        nf.TreeSize += item.Level2OrderBook.FullDepthOrderBook.Asks.TreeSize;
+
+                                        nf.AverageInsertIndex = item.Level2OrderBook.FullDepthOrderBook.Bids.AverageInsertIndex;
+                                        nf.AverageInsertIndex += item.Level2OrderBook.FullDepthOrderBook.Asks.AverageInsertIndex;
+
+                                        nf.AverageInsertIndex /= 2f;
+
+                                        HardInserts += nf.HardInserts;
+                                        HardRemoves += nf.HardRemoves;
+                                        SoftInserts += nf.SoftInserts;
+                                        SoftRemoves += nf.SoftRemoves;
+
+                                        BufferSize += nf.BufferSize;
+                                        TreeSize += nf.TreeSize;
+
+                                        LocalRebalances += nf.LocalRebalances;
+                                        ChangedRebalances += nf.ChangedRebalances;
+                                        UnchangedRebalances += nf.UnchangedRebalances;
+
+                                        AverageInsertIndex += nf.AverageInsertIndex;
+
                                     }
 
                                     sortInfo.Add(nf);
@@ -1288,7 +1339,16 @@ namespace KuCoinConsole
                         if (itemIndex > -1)
                         {
                             if (itemIndex > sortInfo.Count - 1) itemIndex = sortInfo.Count - 1;
-
+                            HardInserts = sortInfo[itemIndex].HardInserts;
+                            HardRemoves = sortInfo[itemIndex].HardRemoves;
+                            SoftInserts = sortInfo[itemIndex].SoftInserts;
+                            SoftRemoves = sortInfo[itemIndex].SoftRemoves;
+                            BufferSize = sortInfo[itemIndex].BufferSize;
+                            TreeSize = sortInfo[itemIndex].TreeSize;
+                            LocalRebalances = sortInfo[itemIndex].LocalRebalances;
+                            ChangedRebalances = sortInfo[itemIndex].ChangedRebalances;
+                            UnchangedRebalances = sortInfo[itemIndex].UnchangedRebalances;
+                            AverageInsertIndex = sortInfo[itemIndex].AverageInsertIndex;
                             biggrand = sortInfo[itemIndex].Service.Level2OrderBook?.GrandTotal ?? 0;
                             matchgrand = sortInfo[itemIndex].Service.Level2OrderBook?.MatchTotal ?? 0;
                         }
@@ -1499,8 +1559,8 @@ namespace KuCoinConsole
                     {
                         if (itemIndex != -1 && sortobs[itemIndex]?.Level2OrderBook?.FullDepthOrderBook != null)
                         {
-                            var bids = new List<OrderUnitStruct>();
-                            var asks = new List<OrderUnitStruct>();
+                            var bids = new List<OrderUnit>();
+                            var asks = new List<OrderUnit>();
                         
                             int i = 0;
 
@@ -1753,24 +1813,24 @@ namespace KuCoinConsole
 
         public ISymbolDataService Service;
 
-        //public long HardInserts;
+        public long HardInserts;
 
-        //public long SoftInserts;
+        public long SoftInserts;
 
-        //public long HardRemoves;
+        public long HardRemoves;
 
-        //public long SoftRemoves;
+        public long SoftRemoves;
 
-        //public long BufferSize;
+        public long BufferSize;
 
-        //public long TreeSize;
+        public long TreeSize;
 
-        //public long LocalRebalances;
+        public long LocalRebalances;
 
-        //public long ChangedRebalances;
+        public long ChangedRebalances;
 
-        //public long UnchangedRebalances;
+        public long UnchangedRebalances;
 
-        //public float AverageInsertIndex;
+        public float AverageInsertIndex;
     }
 }

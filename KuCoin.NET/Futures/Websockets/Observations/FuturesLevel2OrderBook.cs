@@ -12,7 +12,7 @@ using System.Threading.Tasks;
 
 namespace KuCoin.NET.Futures.Websockets.Observations
 {
-    public class FuturesLevel2OrderBook : OrderBookDistributable<Level2OrderBook<OrderUnitStruct>, ObservableOrderBook<ObservableOrderUnit>, FuturesLevel2Update, FuturesLevel2>
+    public class FuturesLevel2OrderBook : OrderBookDistributable<AggregatedOrderBook<OrderUnitStruct>, ObservableOrderBook<ObservableOrderUnit>, FuturesLevel2Update, FuturesLevel2>
     {
 
         public FuturesLevel2OrderBook(FuturesLevel2 parent, string symbol) : base(parent, symbol, false, false)
@@ -182,7 +182,7 @@ namespace KuCoin.NET.Futures.Websockets.Observations
             }
             else
             {
-                if (pieces.Contains(cp))
+                if (pieces.ContainsKey(cp))
                 {
                     var piece = pieces[cp];
 

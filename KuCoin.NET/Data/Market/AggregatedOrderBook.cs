@@ -16,7 +16,7 @@ namespace KuCoin.NET.Data.Market
     /// Provides the standard, observable order book implementation.
     /// </summary>
     /// <typeparam name="T">The type of the order unit.</typeparam>
-    public class Level2OrderBook<T> : IKeyedOrderBook<OrderUnitKeyedCollection<T>, T> where T: IOrderUnit 
+    public class AggregatedOrderBook<T> : IKeyedOrderBook<OrderUnitKeyedCollection<T>, T> where T: IOrderUnit, new()
     {
         /// <summary>
         /// The sequence number of the order

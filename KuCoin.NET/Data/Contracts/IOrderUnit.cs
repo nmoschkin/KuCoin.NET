@@ -31,6 +31,7 @@ namespace KuCoin.NET.Data.Market
         ///// <returns></returns>
         //T Clone<T>() where T : IOrderUnit, new();
     }
+       
 
     /// <summary>
     /// Level 3 Atomic Order Unit Interface
@@ -51,7 +52,7 @@ namespace KuCoin.NET.Data.Market
     /// <summary>
     /// Ask or Bid Order Unit with Sequence Number Interface
     /// </summary>
-    public interface ISequencedOrderUnit : IOrderUnit
+    public interface ISequencedOrderUnit : IOrderUnit, IComparable<ISequencedOrderUnit>
     {
         /// <summary>
         /// The sequence number of the order
@@ -92,7 +93,7 @@ namespace KuCoin.NET.Data.Market
     /// <typeparam name="TUnit"></typeparam>
     public interface IKeyedOrderUnitCollection<TCol, TKey, TUnit> 
         : IOrderUnitCollection<TUnit>
-        where TCol : KeyedCollection<TKey, TUnit>
+        where TCol : IEnumerable<TUnit>
         where TUnit : IOrderUnit
     {
         /// <summary>
@@ -128,7 +129,7 @@ namespace KuCoin.NET.Data.Market
 
     public interface IKeyedOrderBook<TCol, TUnit> : IOrderBook<TUnit>, IKeyedOrderUnitCollection<TCol, decimal, TUnit>
         where TCol : OrderUnitKeyedCollection<TUnit>
-        where TUnit : IOrderUnit
+        where TUnit : IOrderUnit, new()
     {
     }
 

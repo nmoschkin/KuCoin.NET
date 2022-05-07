@@ -118,6 +118,28 @@ namespace KuCoin.NET.Data.Market
 
         }
 
+        public int CompareTo(ISequencedOrderUnit other)
+        {
+            int i = price.CompareTo(other.Price);
+
+            if (i == 0)
+                i = size.CompareTo(other.Size);
+
+            if (i == 0)
+                i = seq.CompareTo(other.Sequence);
+
+            return i;
+        }
+
+        public int CompareTo(IOrderUnit other)
+        {
+            int i = price.CompareTo(other.Price);
+
+            if (i == 0)
+                i = size.CompareTo(other.Size);
+
+            return i;
+        }
 
         internal OrderUnit(string[] data)
         {
@@ -232,6 +254,27 @@ namespace KuCoin.NET.Data.Market
         {
             get => size;
             set => size = value;
+        }
+
+        public int CompareTo(IOrderUnit other)
+        {
+            int i = price.CompareTo(other.Price);
+
+            if (i == 0)
+                i = size.CompareTo(other.Size);
+
+            return i;
+        }
+        public int CompareTo(ISequencedOrderUnit other)
+        {
+            int i = price.CompareTo(other.Price);
+
+            if (i == 0)
+                i = size.CompareTo(other.Size);
+
+            if (i == 0)
+                i = seq.CompareTo(other.Sequence);
+            return i;
         }
 
         internal OrderUnitStruct(string[] data)
