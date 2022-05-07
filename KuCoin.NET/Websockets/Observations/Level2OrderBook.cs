@@ -16,6 +16,9 @@ namespace KuCoin.NET.Websockets.Observations
 {
     public class Level2OrderBook : OrderBookDistributable<AggregatedOrderBook<OrderUnit>, ObservableOrderBook<ObservableOrderUnit>, Level2Update, Level2>, IObserver<MatchExecution>
     {
+        int cresets = 0;
+        DateTime lreset = DateTime.Now;
+
         public Level2OrderBook(Level2 parent, string symbol) : base(parent, symbol, false, parent is Level2Direct)
         {
             this.parent = parent;
@@ -83,7 +86,6 @@ namespace KuCoin.NET.Websockets.Observations
         }
 
         long bytesreceived;
-        long throughput;
         long marktime = DateTime.UtcNow.Ticks;
 
         public override bool DiagnosticsEnabled
@@ -108,9 +110,21 @@ namespace KuCoin.NET.Websockets.Observations
             }
         }
 
-        public long Throughput
+        protected override void PerformResetTasks()
         {
-            get => throughput;
+            base.PerformResetTasks();
+
+            cresets++;
+            if (cresets > 3 && (lreset - DateTime.Now) < new TimeSpan(0, 0, 0, 30))
+            {
+                cresets = 0;
+
+                Failure = true;
+                FailReason = FailReason.Other;
+                LastFailureTime = DateTime.Now;
+            }
+
+            lreset = DateTime.Now;
         }
 
         private void CopyObservable(ICollection<OrderUnit> src, ObservableCollection<ObservableOrderUnit> dest)
@@ -184,7 +198,7 @@ namespace KuCoin.NET.Websockets.Observations
                 if (fullDepth == null)
                 {
                     if (!failure) Failure = true;
-                    return false;
+                    return true;
                 }
                 else if (obj.SequenceEnd <= fullDepth.Sequence)
                 {
@@ -230,22 +244,22 @@ namespace KuCoin.NET.Websockets.Observations
                         LastCandles.Add(candle);
 
                         Candle = new Candle() { Type = (KlineType)klineType, Timestamp = klineTime };
-                        Candle.Volume = 0;
+                        candle.Volume = 0;
 
-                        Candle.OpenPrice = Candle.ClosePrice = Candle.HighPrice = Candle.LowPrice = price;
-                        KlineTime = Candle.Timestamp = KlineType.GetCurrentKlineStartTime();
+                        candle.OpenPrice = candle.ClosePrice = candle.HighPrice = candle.LowPrice = price;
+                        KlineTime = candle.Timestamp = klineType.GetCurrentKlineStartTime();
                     }
                     else
                     {
-                        Candle.ClosePrice = price;
+                        candle.ClosePrice = price;
 
-                        if (price > Candle.HighPrice)
+                        if (price > candle.HighPrice)
                         {
-                            Candle.HighPrice = price;
+                            candle.HighPrice = price;
                         }
-                        else if (price < Candle.LowPrice)
+                        else if (price < candle.LowPrice)
                         {
-                            Candle.LowPrice = price;
+                            candle.LowPrice = price;
                         }
                     }
 

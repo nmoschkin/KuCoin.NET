@@ -37,5 +37,11 @@ namespace KuCoin.NET.Websockets.Distribution
         /// Gets the transactions per second.
         /// </summary>
         long TransactionsPerSecond { get; }
+
+        /// <summary>
+        /// Gets the throughput in bits per second.
+        /// </summary>
+        long Throughput { get; }
+
     }
 }

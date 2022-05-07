@@ -395,6 +395,7 @@ namespace KuCoin.NET.Websockets.Distribution.Services
             lock (lockObj)
             {
                 var distributor = distributors.Where((a) => a.Tenants.Contains(feed)).FirstOrDefault();
+                if (distributor == null) return;
 
                 lock (distributor.Tenants)
                 {

@@ -99,6 +99,8 @@ namespace KuCoin.NET.Websockets.Distribution
                 { "symbol", key }
             };
 
+            Thread.Sleep(250);
+
             BeginMakeRequest((jobj) =>
             {
                 if (jobj == null)

@@ -64,6 +64,8 @@ namespace KuCoin.NET.Websockets.Distribution
 
         protected int marketDepth = 50;
 
+        protected long throughput = 0;
+
         public OrderBookDistributable(TParent parent, string symbol, bool observationDisabledByDefault, bool direct) : base(parent, symbol, direct)
         {
             this.parent = parent;
@@ -257,6 +259,7 @@ namespace KuCoin.NET.Websockets.Distribution
 
         public virtual long TransactionsPerSecond { get; protected set; }
 
+        public virtual long Throughput => throughput;
 
         protected override void PerformResetTasks()
         {

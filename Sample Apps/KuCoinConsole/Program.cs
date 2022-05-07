@@ -1251,6 +1251,8 @@ namespace KuCoinConsole
 
                                     if (item.Level2OrderBook.State == FeedState.Running)
                                     {
+                                        if (item.Level2OrderBook.FullDepthOrderBook == null) continue;
+
                                         nf.MarketVolume = item.Level2OrderBook.MarketVolume;
                                         nf.Throughput = item.Level2Feed.Throughput;
                                         nf.Price = item.Level2OrderBook.FullDepthOrderBook.Bids.FirstOrDefault().Price;
