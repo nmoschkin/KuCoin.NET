@@ -97,6 +97,18 @@ namespace KuCoin.NET.Services
         /// </summary>
         TradingSymbol TradingSymbolInfo { get; }
 
+
+        /// <summary>
+        /// Gets the current K-Line feed object.
+        /// </summary>
+        KlineFeed<Candle> KlineFeed { get; }
+
+        /// <summary>
+        /// Gets the current Match feed object.
+        /// </summary>
+        MatchFeed MatchFeed { get; }
+
+
         /// <summary>
         /// Gets the level 2 observation, or null if not active.
         /// </summary>
@@ -147,6 +159,13 @@ namespace KuCoin.NET.Services
         /// <param name="flushSubscriptions">True to reinstantiate all classes and dispose subscribed observers.</param>
         /// <returns></returns>
         Task<bool> Reconnect(bool flushSubscriptions);
+
+        /// <summary>
+        /// Subscribe to the Level 3 Match Execution Feed
+        /// </summary>
+        /// <param name="observer">The observer to subscribe.</param>
+        /// <returns></returns>
+        IDisposable SubscribeMatch(IObserver<MatchExecution> observer);
 
         /// <summary>
         /// Subscribe to the Kline

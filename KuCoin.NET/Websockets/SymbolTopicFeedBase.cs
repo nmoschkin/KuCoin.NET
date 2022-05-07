@@ -112,6 +112,8 @@ namespace KuCoin.NET.Websockets
 
                 activeSymbols.Add(sym);
             }
+            
+            if (sb.Length == 0) return;
 
             var topic = $"{this.topic}:{sb}";
 
@@ -159,6 +161,8 @@ namespace KuCoin.NET.Websockets
 
                 activeSymbols.Remove(sym);
             }
+
+            if (sb.Length == 0) return;
 
             var topic = $"{this.topic}:{sb}";
 

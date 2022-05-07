@@ -49,6 +49,8 @@ namespace KuCoin.NET.Services
 
         protected KlineFeed<Candle> klinefeed;
 
+        protected MatchFeed matchfeed;
+
         protected TickerFeed tickerfeed;
 
         protected bool level2enabled;
@@ -58,6 +60,8 @@ namespace KuCoin.NET.Services
         protected bool level2d50enabled;
 
         protected bool klineEnabled;
+
+        protected bool matchEnabled;
 
         protected bool tickerEnabled;
 
@@ -114,6 +118,10 @@ namespace KuCoin.NET.Services
         public virtual MarketCurrency BaseCurrency => baseCurrency;
         
         public virtual MarketCurrency QuoteCurrency => quoteCurrency;
+
+        public virtual KlineFeed<Candle> KlineFeed => klinefeed;
+
+        public virtual MatchFeed MatchFeed => matchfeed;
 
         string IReadOnlySymbolicated.BaseCurrency => baseCurrency?.Currency;
 
@@ -172,9 +180,11 @@ namespace KuCoin.NET.Services
                 tickerfeed.FeedDisconnected += OnTickerDisconnected;
             }
 
-
             if (klinefeed == null || klinefeed.Disposed || connection != null)
                 klinefeed = new KlineFeed<Candle>();
+
+            if (matchfeed == null || matchfeed.Disposed || connection != null)
+                matchfeed = new MatchFeed();
 
             if (Dispatcher.Initialized)
             {
@@ -189,6 +199,7 @@ namespace KuCoin.NET.Services
 
                 await tickerfeed.MultiplexInit(connection);
                 await klinefeed.MultiplexInit(connection);
+                await matchfeed.MultiplexInit(connection);
 
                 if (Dispatcher.Initialized)
                 {
@@ -205,6 +216,7 @@ namespace KuCoin.NET.Services
 
                 await tickerfeed.Connect(true);
                 await klinefeed.MultiplexInit(tickerfeed);
+                await matchfeed.MultiplexInit(tickerfeed);
 
                 if (Dispatcher.Initialized)
                 {
@@ -229,6 +241,7 @@ namespace KuCoin.NET.Services
             klineEnabled = tickerEnabled = level2d5enabled = level2d50enabled = false;
 
             klinefeed = null;
+            matchfeed = null;
             tickerfeed = null;
             level2d5 = null;
             level2d50 = null;
@@ -246,10 +259,14 @@ namespace KuCoin.NET.Services
                 sym.cred = cred;
                 await sym.Initialize(tickerfeed);
 
+                sym.matchEnabled = matchEnabled;
                 sym.klineEnabled = klineEnabled;
                 sym.tickerEnabled = tickerEnabled;
                 sym.level2d50enabled = level2d50enabled;
                 sym.level2d5enabled = level2d5enabled;
+                sym.klinefeed = klinefeed;
+                sym.tickerfeed = tickerfeed;
+                sym.matchfeed = matchfeed;
 
                 if (cred != null) 
                 {
@@ -290,6 +307,11 @@ namespace KuCoin.NET.Services
             if (klineEnabled)
             {
                 await klinefeed.ClearAllTickers();
+            }
+
+            if (matchEnabled)
+            {
+                await matchfeed.UnsubscribeAll();
             }
 
             if (tickerEnabled)
@@ -385,7 +407,18 @@ namespace KuCoin.NET.Services
                     kt.Add(sym.KlineType);
                 }
 
-                await klinefeed.ClearAllTickers();
+                if (oldSym != null)
+                {
+                    var afeeds = klinefeed.GetActiveFeeds();
+                    foreach (SymbolKline feed in afeeds)
+                    {
+                        if (feed.Symbol == (string)oldSym)
+                        {
+                            await klinefeed.UnsubscribeOne(feed);
+                        }
+                    }
+
+                }
 
                 foreach (var k in kt)
                 {
@@ -393,9 +426,22 @@ namespace KuCoin.NET.Services
                 }
             }
 
+            if (matchEnabled)
+            {
+                if (oldSym != null)
+                {
+                    await matchfeed.UnsubscribeOne((string)oldSym);
+                }
+
+                await matchfeed.SubscribeOne((string)symbol);
+            }
+
             if (tickerEnabled)
             {
-                await tickerfeed.UnsubscribeAll();
+                if (oldSym != null)
+                {
+                    await tickerfeed.UnsubscribeOne((string)oldSym);
+                }
                 await tickerfeed.SubscribeOne((string)symbol);
             }
 
@@ -513,6 +559,16 @@ namespace KuCoin.NET.Services
             }
         }
 
+        public virtual IDisposable SubscribeMatch(IObserver<MatchExecution> observer)
+        {
+            if (disposed) throw new ObjectDisposedException(this.GetType().FullName);
+
+            _ = Task.Run(async () => await matchfeed.SubscribeOne(Symbol));
+
+            matchEnabled = true;
+            return matchfeed.Subscribe(observer); 
+        }
+
         public virtual IDisposable SubscribeKline(KlineType klineType, IObserver<KlineFeedMessage<Candle>> observer)
         {
             if (disposed) throw new ObjectDisposedException(this.GetType().FullName);
@@ -520,9 +576,8 @@ namespace KuCoin.NET.Services
             _ = Task.Run(async () => await klinefeed.SubscribeOne(Symbol, klineType));
 
             klineEnabled = true;
-            return klinefeed.Subscribe(observer); 
+            return klinefeed.Subscribe(observer);
         }
-
         public virtual IDisposable SubscribeTicker(IObserver<Ticker> observer)
         {
             if (disposed) throw new ObjectDisposedException(this.GetType().FullName);
@@ -546,6 +601,7 @@ namespace KuCoin.NET.Services
             level2obs?.Dispose();
             level2feed?.Dispose();
             klinefeed?.Dispose();
+            matchfeed?.Dispose();
             tickerfeed?.Dispose();
             level2d5?.Dispose();
             level2d50?.Dispose();
@@ -558,6 +614,7 @@ namespace KuCoin.NET.Services
                 level2obs = null;
                 level2feed = null;
                 klinefeed = null;
+                matchfeed = null;
                 tickerfeed = null;
                 level2d5 = null;
                 level2d50 = null;

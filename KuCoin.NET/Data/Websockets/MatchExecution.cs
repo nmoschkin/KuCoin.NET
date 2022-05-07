@@ -13,7 +13,7 @@ namespace KuCoin.NET.Data.Websockets
     /// <summary>
     /// Level 3 match execution
     /// </summary>
-    public class MatchExecution : DataObject, IReadOnlySymbol, IStreamableObject
+    public class MatchExecution : DataObject, ISymbol, IStreamableObject
     {
 
 

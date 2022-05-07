@@ -284,8 +284,8 @@ namespace KuCoinConsole
 
             ParallelService.MaxTenants = maxTenants;
             ParallelService.SleepDivisor = 4;
-            ParallelService.WorkRepeat = 2;
-            ParallelService.WorkIdleSleepTime = 1;
+            ParallelService.WorkRepeat = 1;
+            ParallelService.WorkIdleSleepTime = 0;
 
             var ast = market.GetAllTickers().ConfigureAwait(false).GetAwaiter().GetResult();
 
@@ -488,6 +488,7 @@ namespace KuCoinConsole
 
                                 curr.Level2OrderBook.DiagnosticsEnabled = metrics;
                                 curr.Level2OrderBook.IsVolumeEnabled = true;
+                                curr.SubscribeMatch(curr.Level2OrderBook);
 
                                 lock (lockObj)
                                 {

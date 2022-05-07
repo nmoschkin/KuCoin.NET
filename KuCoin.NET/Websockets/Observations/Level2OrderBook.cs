@@ -13,7 +13,7 @@ using System.Threading.Tasks;
 
 namespace KuCoin.NET.Websockets.Observations
 {
-    public class Level2OrderBook : OrderBookDistributable<Level2OrderBook<OrderUnitStruct>, ObservableOrderBook<ObservableOrderUnit>, Level2Update, Level2>
+    public class Level2OrderBook : OrderBookDistributable<Level2OrderBook<OrderUnitStruct>, ObservableOrderBook<ObservableOrderUnit>, Level2Update, Level2>, IObserver<MatchExecution>
     {
 
         public Level2OrderBook(Level2 parent, string symbol) : base(parent, symbol, false, false)
@@ -181,10 +181,6 @@ namespace KuCoin.NET.Websockets.Observations
 
                 if (change.Size == 0.0M && pieces.TryGetValue(cp, out OrderUnitStruct item))
                 {
-                    if (updVol)
-                    {
-                        Candle.Volume += pieces[cp].Size;
-                    }
                     pieces.Remove(cp);
                 }
                 else
@@ -208,6 +204,26 @@ namespace KuCoin.NET.Websockets.Observations
                         pieces.Add(newPiece);
                     }
                 }
+            }
+        }
+
+        void IObserver<MatchExecution>.OnCompleted()
+        {
+        }
+
+        void IObserver<MatchExecution>.OnError(Exception error)
+        {
+        }
+
+        void IObserver<MatchExecution>.OnNext(MatchExecution value)
+        {
+
+            if (value.Symbol == Symbol)
+            {
+                MatchTotal++;
+                matchSec++;
+
+                Candle.Volume += (value.Price * value.Size);
             }
         }
     }
