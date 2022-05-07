@@ -23,17 +23,31 @@ namespace KuCoin.NET.Websockets.Observations
             this.dataProvider = parent;
             this.IsPresentationDisabled = true;
         }
-        protected override void OnInitialDataProvided(AggregatedOrderBook<OrderUnit> data)
+        protected override void OnInitialized()
         {
-            base.OnInitialDataProvided(data);
+            base.OnInitialized();
 
-            if (fullDepth != null)
+            lock (lockObj)
             {
-                fullDepth.Asks.EnableMetrics = diagEnable;
-                fullDepth.Bids.EnableMetrics = diagEnable;
-            }
+                if (fullDepth != null)
+                {
+                    fullDepth.Asks.EnableMetrics = diagEnable;
+                    fullDepth.Bids.EnableMetrics = diagEnable;
 
+                    fullDepth.Asks.TryRebalance();
+                    fullDepth.Bids.TryRebalance();
+
+                    if (diagEnable)
+                    {
+                        fullDepth.Asks.ResetMetrics();
+                        fullDepth.Bids.ResetMetrics();
+                    }
+
+                    parent.Logger.Log($"{Symbol} Initialized. Market Depth: {fullDepth.Asks.Count:#,##0} Asks, {fullDepth.Bids.Count:#,##0} Bids.");
+                }
+            }
         }
+
 
         public override void OnNext(Level2Update value)
         {
@@ -170,7 +184,7 @@ namespace KuCoin.NET.Websockets.Observations
                 if (fullDepth == null)
                 {
                     if (!failure) Failure = true;
-                    return true;
+                    return false;
                 }
                 else if (obj.SequenceEnd <= fullDepth.Sequence)
                 {

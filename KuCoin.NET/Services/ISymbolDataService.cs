@@ -118,12 +118,6 @@ namespace KuCoin.NET.Services
         /// Gets the level 2 feed, or null if not active.
         /// </summary>
         Level2 Level2Feed { get; }
-
-
-        /// <summary>
-        /// Gets the level 2 direct feed, which bypasses the parallel distributor.
-        /// </summary>
-        Level2Direct Level2Direct { get; }
                 
         /// <summary>
         /// Gets the level 2 static depth market feed (5 best ask/bid), or null if not active.

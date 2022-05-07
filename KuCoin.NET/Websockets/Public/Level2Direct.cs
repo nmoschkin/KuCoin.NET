@@ -15,17 +15,12 @@ namespace KuCoin.NET.Websockets.Public
 {
     public class Level2Direct : Level2
     {
-
         /// <summary>
         /// Instantiate a new market feed.
         /// </summary>
         /// <param name="credentialsProvider">API Credentials.</param>
         public Level2Direct(ICredentialsProvider credentialsProvider) : base(credentialsProvider)
         {
-            if (credentialsProvider.GetFutures()) throw new NotSupportedException("Cannot use Futures API credentials on a spot market feed.");
-
-            recvBufferSize = 4194304;
-            chunkSize = 1024;
             wantPump = false;
         }
 
@@ -38,12 +33,8 @@ namespace KuCoin.NET.Websockets.Public
         /// <param name="isSandbox">True if sandbox mode.</param>
         public Level2Direct(string key, string secret, string passphrase, bool isSandbox = false) : base(key, secret, passphrase, isSandbox: isSandbox)
         {
-            recvBufferSize = 4194304;
-            chunkSize = 1024;
             wantPump = false;
         }
-
-
 
         /// <summary>
         /// The data receive thread.

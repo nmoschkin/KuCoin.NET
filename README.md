@@ -7,7 +7,7 @@ __ATTENTION__: __The Level 3 API for KuCoin is deprecated as of 4/28/2022__
 
 ### May 6, 2022:
 
-Since all level 3 services have been deprecated, I will be migrating much of the current optimization work to level 2, and updating the example app to reflect that.
+Since all level 3 services have been deprecated, I have migrated the console application to use Level 2 feeds, instead.
 
 ### April 8, 2022: 
 
@@ -97,7 +97,7 @@ __CryptoCredentials__ class, provided, you will have to implement your own __ICr
 
 ## Running the Sample Console App
   
-The sample app starts multiple Level3Direct feeds (see below.)
+The sample app starts multiple Level2Direct feeds (see below.)
 
 When you run the sample app, it will look for credentials configured by the Windows Forms app, by default.  
 
@@ -105,7 +105,7 @@ Program.cs includes a skeleton class implementation of __ICredentialsProvider__ 
 
 The user will be prompted to enter their pin, and then be asked to provide either a number to list the top _n_ feeds by 24-hr volume, or provide a list of feeds separated by commas.
 
-The console app only demonstrates the ability to track __Level3Direct__ feeds.  Other functionality is not demonstrated in the examples, at this time.
+The console app only demonstrates the ability to track __Level2Direct__ feeds.  Other functionality is not demonstrated in the examples, at this time.
 
 _(Try running with __300__ feeds.  Works well on an i7-10700K with a Gigabit internet connection, but it only uses about 20-30 Mbps.  Uses about 1.4 GB of RAM)_
 
@@ -135,13 +135,13 @@ Public feeds in the namespace __Kucoin.NET.Websockets.Public__:
   - __MarketFeed__ - Pushes an entire market.
   - __SnapshotFeed__ - Pushes market snapshots.
   - __TickerFeed__ - Pushes basic symbol price tickers.
+  - __MatchFeed__ - Pushes Level 3 match execution events.
 
 Private feeds in the namespace __Kucoin.NET.Websockets.Private__:
 
   - __Level2__ - Pushes the full-depth Level 2 market feed (calibrated).
+  - __Level2Direct__ - Level 2 that bypasses the parallel service dispatcher and updates order books from the socket thread. 
   - __Level2Depth5/Level2Depth50__ - Pushes the 5/50 best ask/bid static market depth feeds.
-  - __Level3__ - Level 3 Full Match Engine 
-  - __Level3Direct__ - Level 3 Full Match Engine that bypasses the parallel service dispatcher and updates order books from the socket thread. 
 
 All of the feeds support multiplexing.  You may create a single feed object, and use that object's connection to start sub-channels that will be served to the multiplex child classes.  Multiplexing is implemented in the __KucoinBaseWebsocketFeed__ abstract class.  
   

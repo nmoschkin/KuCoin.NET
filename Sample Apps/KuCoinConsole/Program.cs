@@ -508,30 +508,7 @@ namespace KuCoinConsole
                                 {
                                     Observers.Add(sym, curr);
                                 }
-                            }
-                            else if (curr.Level2Direct != null && curr.Level2Direct.ActiveFeeds.Count > 0)
-                            {
-                                if (!feeds.Contains(curr.Level2Direct))
-                                {
-                                    curr.Level2Direct.DataReceived += OnDataReceived;
-
-                                    //curr.Level3Feed.DistributionStrategy = DistributionStrategy.Link;
-                                    curr.Level2Direct.MonitorThroughput = true;
-                                    lock (feeds)
-                                    {
-                                        feeds.Add(curr.Level2Direct);
-                                    }
-                                }
-
-                                curr.Level2OrderBook.DiagnosticsEnabled = metrics;
-                                curr.Level2OrderBook.IsVolumeEnabled = true;
-                                curr.SubscribeMatch(curr.Level2OrderBook);
-
-                                lock (lockObj)
-                                {
-                                    Observers.Add(sym, curr);
-                                }
-                            }
+                            }                           
                             else
                             {
                                 lock (fslog)
