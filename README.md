@@ -136,9 +136,6 @@ Public feeds in the namespace __Kucoin.NET.Websockets.Public__:
   - __SnapshotFeed__ - Pushes market snapshots.
   - __TickerFeed__ - Pushes basic symbol price tickers.
   - __MatchFeed__ - Pushes Level 3 match execution events.
-
-Private feeds in the namespace __Kucoin.NET.Websockets.Private__:
-
   - __Level2__ - Pushes the full-depth Level 2 market feed (calibrated).
   - __Level2Direct__ - Level 2 that bypasses the parallel service dispatcher and updates order books from the socket thread. 
   - __Level2Depth5/Level2Depth50__ - Pushes the 5/50 best ask/bid static market depth feeds.
