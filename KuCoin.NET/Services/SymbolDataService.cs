@@ -471,7 +471,7 @@ namespace KuCoin.NET.Services
                 throw new AuthenticationException();
             }
 
-            if (level2feed == null)
+            if (level2feed == null || (level2feed is Level2Direct))
             {
                 level2feed = new Level2(cred);
             }
@@ -500,7 +500,7 @@ namespace KuCoin.NET.Services
                 throw new AuthenticationException();
             }
 
-            if (level2feed == null)
+            if (level2feed == null || !(level2feed is Level2Direct))
             {
                 level2feed = new Level2Direct(cred);
             }
