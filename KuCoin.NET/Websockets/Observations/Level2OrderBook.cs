@@ -247,7 +247,7 @@ namespace KuCoin.NET.Websockets.Observations
         /// <param name="changes">The changes to sequence.</param>
         /// <param name="pieces">The collection to change (either an ask or a bid collection)</param>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        protected void SequencePieces(IList<OrderUnitStruct> changes, OrderUnitKeyedCollection<OrderUnit> pieces)
+        protected void SequencePieces(IList<OrderUnit> changes, OrderUnitKeyedCollection<OrderUnit> pieces)
         {
             foreach (var change in changes)
             {

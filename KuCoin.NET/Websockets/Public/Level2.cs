@@ -20,7 +20,7 @@ namespace KuCoin.NET.Websockets.Public
 
     }
 
-    public class Level2 : OrderBookFeed<Level2OrderBook, Level2Update, AggregatedOrderBook<OrderUnit>, ObservableOrderBook<ObservableOrderUnit>, Level2>, ILevel2
+    public class Level2 : OrderBookFeed<Level2OrderBook, Level2Update, AggregatedOrderBook<OrderUnit>, ObservableOrderBook<ObservableOrderUnit>, Level2>, ILevel2, IInitialDataProviderCallback<string, AggregatedOrderBook<OrderUnit>>
     {
         /// <summary>
         /// Instantiate a new market feed.
@@ -83,11 +83,12 @@ namespace KuCoin.NET.Websockets.Public
         protected override void RouteJsonPacket(string json, FeedMessage e = null)
         {
             var msg = JsonConvert.DeserializeObject<FeedMessage<Level2Update>>(json, settings);
-            var symbol = msg.Data.Symbol;
+            string symbol = msg.Data?.Symbol;
 
             if (msg.TunnelId == tunnelId && msg.Type == "message")
             {
                 if (string.IsNullOrEmpty(symbol)) return;
+                msg.Data.size = json.Length;
                 activeFeeds[symbol].OnNext(msg.Data);
             }
             else

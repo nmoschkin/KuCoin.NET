@@ -118,6 +118,12 @@ namespace KuCoin.NET.Services
         /// Gets the level 2 feed, or null if not active.
         /// </summary>
         Level2 Level2Feed { get; }
+
+
+        /// <summary>
+        /// Gets the level 2 direct feed, which bypasses the parallel distributor.
+        /// </summary>
+        Level2Direct Level2Direct { get; }
                 
         /// <summary>
         /// Gets the level 2 static depth market feed (5 best ask/bid), or null if not active.
@@ -180,10 +186,17 @@ namespace KuCoin.NET.Services
         /// <param name="observer">The observer to subscribe.</param>
         /// <returns></returns>
         IDisposable SubscribeTicker(IObserver<Ticker> observer);
+
         /// <summary>
         /// Enable level 2
         /// </summary>
         Task EnableLevel2();
+
+        /// <summary>
+        /// Enable level 2 direct
+        /// </summary>
+        Task EnableLevel2Direct();
+
 
         /// <summary>
         /// Gets the 24-hour stats

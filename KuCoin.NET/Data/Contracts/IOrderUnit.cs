@@ -32,23 +32,6 @@ namespace KuCoin.NET.Data.Market
         //T Clone<T>() where T : IOrderUnit, new();
     }
        
-
-    /// <summary>
-    /// Level 3 Atomic Order Unit Interface
-    /// </summary>
-    public interface IAtomicOrderUnit : IOrderUnit, IKeyProvider<string> //, IEquatable<IAtomicOrderUnit>
-    {
-        /// <summary>
-        /// The Order Id
-        /// </summary>
-        string OrderId { get; set; }
-
-        /// <summary>
-        /// The time stamp of the order
-        /// </summary>
-        DateTime Timestamp { get; set; }
-    }
-
     /// <summary>
     /// Ask or Bid Order Unit with Sequence Number Interface
     /// </summary>
@@ -122,18 +105,11 @@ namespace KuCoin.NET.Data.Market
 
     }
 
-    public interface IAtomicOrderBook<TUnit> : IOrderBook<TUnit> 
-        where TUnit: IAtomicOrderUnit
-    {
-    }
-
     public interface IKeyedOrderBook<TCol, TUnit> : IOrderBook<TUnit>, IKeyedOrderUnitCollection<TCol, decimal, TUnit>
         where TCol : OrderUnitKeyedCollection<TUnit>
         where TUnit : IOrderUnit, new()
     {
     }
-
-
     public interface ILevel2Update : ISymbol, IOrderUnitListProvider<IOrderUnit>, IStreamableObject
     {
     }

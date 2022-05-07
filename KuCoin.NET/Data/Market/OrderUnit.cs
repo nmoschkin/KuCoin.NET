@@ -16,7 +16,7 @@ namespace KuCoin.NET.Data.Market
     /// Level 2 Ask or Bid
     /// </summary>
 
-    [JsonConverter(typeof(OrderUnitConverter))]
+    [JsonConverter(typeof(OrderUnitConverter<OrderUnit>))]
     public class OrderUnit : DataObject, ISequencedOrderUnit
     {
         protected decimal price;
@@ -167,7 +167,7 @@ namespace KuCoin.NET.Data.Market
     /// Level 2 Ask or Bid
     /// </summary>
 
-    [JsonConverter(typeof(OrderUnitConverter))]
+    [JsonConverter(typeof(OrderUnitConverter<ObservableOrderUnit>))]
     public class ObservableOrderUnit : OrderUnit, INotifyPropertyChanged
     {
 
@@ -229,7 +229,7 @@ namespace KuCoin.NET.Data.Market
 
     }
 
-    [JsonConverter(typeof(OrderUnitConverter))]
+    [JsonConverter(typeof(OrderUnitConverter<OrderUnitStruct>))]
     public struct OrderUnitStruct : ISequencedOrderUnit
     {
         internal long seq;

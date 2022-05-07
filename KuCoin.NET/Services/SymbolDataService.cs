@@ -37,6 +37,8 @@ namespace KuCoin.NET.Services
 
         protected Level2 level2feed;
 
+        protected Level2Direct level2direct;
+
         protected ICredentialsProvider cred;
 
         protected Level2Depth5 level2d5;
@@ -54,6 +56,8 @@ namespace KuCoin.NET.Services
         protected TickerFeed tickerfeed;
 
         protected bool level2enabled;
+        
+        protected bool level2denabled;
 
         protected bool level2d5enabled;
 
@@ -87,6 +91,8 @@ namespace KuCoin.NET.Services
 
                 if (level2enabled) b &= level2feed?.Connected ?? false;
 
+                if (level2denabled) b &= level2direct?.Connected ?? false;
+
                 return b;
             }
         }
@@ -104,6 +110,8 @@ namespace KuCoin.NET.Services
         }
 
         public virtual Level2 Level2Feed => level2feed;
+
+        public virtual Level2Direct Level2Direct => level2direct;
 
         public virtual Level2Depth5 Level2Depth5 => level2d5;
 
@@ -165,6 +173,10 @@ namespace KuCoin.NET.Services
                 if (level2enabled)
                 {
                     await level2feed?.Reconnect();
+                }
+                else if (level2denabled)
+                {
+                    await level2direct?.Reconnect();
                 }
 
             }
@@ -275,6 +287,11 @@ namespace KuCoin.NET.Services
                         sym.level2feed = level2feed;
                         sym.level2enabled = true;
                     }
+                    else if (level2direct != null && level2direct.Connected)
+                    {
+                        sym.level2direct = level2direct;
+                        sym.level2denabled = true;
+                    }
 
                 }
 
@@ -300,6 +317,16 @@ namespace KuCoin.NET.Services
                 {
                     level2feed?.Disconnect();
                     level2enabled = false;
+                }
+            }
+            else if (level2denabled)
+            {
+                level2obs?.Dispose();
+
+                if (ownmarket)
+                {
+                    level2direct?.Disconnect();
+                    level2denabled = false;
                 }
             }
 
@@ -397,6 +424,11 @@ namespace KuCoin.NET.Services
                 level2obs?.Dispose();
                 level2obs = await level2feed.SubscribeOne(newSymbol);
             }
+            else if (level2denabled)
+            {
+                level2obs?.Dispose();
+                level2obs = await level2direct.SubscribeOne(newSymbol);
+            }
 
             if (klineEnabled)
             {
@@ -464,7 +496,7 @@ namespace KuCoin.NET.Services
         public virtual async Task EnableLevel2()
         {
             if (disposed) throw new ObjectDisposedException(this.GetType().FullName);
-            if (level2enabled) return;
+            if (level2enabled || level2denabled) return;
 
             if (cred == null)
             {
@@ -489,10 +521,42 @@ namespace KuCoin.NET.Services
             level2enabled = true;
         }
 
+
+        public virtual async Task EnableLevel2Direct()
+        {
+            if (disposed) throw new ObjectDisposedException(this.GetType().FullName);
+            if (level2enabled || level2denabled) return;
+
+            if (cred == null)
+            {
+                throw new AuthenticationException();
+            }
+
+            if (level2direct == null)
+            {
+                level2direct = new Level2Direct(cred);
+            }
+
+            if (level2direct.Connected == false)
+            {
+                await level2direct.Connect();
+            }
+
+            OnPropertyChanged(nameof(Level2Direct));
+            level2direct.FeedDisconnected += OnLevel2Disconnected;
+
+            level2obs = await level2direct.SubscribeOne((string)symbol);
+            OnPropertyChanged(nameof(Level2OrderBook));
+            level2denabled = true;
+        }
+
+
         protected virtual void OnLevel2Disconnected(object sender, KuCoin.NET.Websockets.FeedDisconnectedEventArgs e)
         {
             level2enabled = false;
+            level2denabled = false;
             level2feed = null;
+            level2direct = null;
             level2obs = null;
         }
 
@@ -598,8 +662,14 @@ namespace KuCoin.NET.Services
                 level2feed.FeedDisconnected -= OnLevel2Disconnected;
             }
 
+            if (level2direct != null)
+            {
+                level2direct.FeedDisconnected -= OnLevel2Disconnected;
+            }
+
             level2obs?.Dispose();
             level2feed?.Dispose();
+            level2direct?.Dispose();
             klinefeed?.Dispose();
             matchfeed?.Dispose();
             tickerfeed?.Dispose();
@@ -609,10 +679,11 @@ namespace KuCoin.NET.Services
             if (disposing)
             {
                 disposed = true;
-                level2enabled = klineEnabled = tickerEnabled = level2d5enabled = level2d50enabled = false;
+                level2enabled = level2denabled = klineEnabled = tickerEnabled = level2d5enabled = level2d50enabled = false;
 
                 level2obs = null;
                 level2feed = null;
+                level2direct = null;
                 klinefeed = null;
                 matchfeed = null;
                 tickerfeed = null;

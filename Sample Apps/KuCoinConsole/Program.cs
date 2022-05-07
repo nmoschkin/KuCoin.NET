@@ -449,13 +449,27 @@ namespace KuCoinConsole
                                     services.Add(curr);
                                 }
 
-                                await curr.EnableLevel2();
-
+                                if (direct)
+                                {
+                                    await curr.EnableLevel2Direct();
+                                }
+                                else
+                                {
+                                    await curr.EnableLevel2();
+                                }
+                                
                                 Thread.Sleep(10);
 
                                 if (curr.Level2Feed == null)
                                 {
-                                    await curr.EnableLevel2();
+                                    if (direct)
+                                    {
+                                        await curr.EnableLevel2Direct();
+                                    }
+                                    else
+                                    {
+                                        await curr.EnableLevel2();
+                                    }
 
                                     Thread.Sleep(10);
                                 }
@@ -472,17 +486,40 @@ namespace KuCoinConsole
 
                             }
 
-                            if (curr.Level2Feed != null)
+                            if (curr.Level2Feed != null && curr.Level2Feed.ActiveFeeds.Count > 0)
                             {
                                 if (!feeds.Contains(curr.Level2Feed))
                                 {
-                                    curr.Level2Feed.DataReceived += Level3Feed_DataReceived;
+                                    curr.Level2Feed.DataReceived += OnDataReceived;
 
                                     //curr.Level3Feed.DistributionStrategy = DistributionStrategy.Link;
                                     curr.Level2Feed.MonitorThroughput = true;
                                     lock (feeds)
                                     {
                                         feeds.Add(curr.Level2Feed);
+                                    }
+                                }
+
+                                curr.Level2OrderBook.DiagnosticsEnabled = metrics;
+                                curr.Level2OrderBook.IsVolumeEnabled = true;
+                                curr.SubscribeMatch(curr.Level2OrderBook);
+
+                                lock (lockObj)
+                                {
+                                    Observers.Add(sym, curr);
+                                }
+                            }
+                            else if (curr.Level2Direct != null && curr.Level2Direct.ActiveFeeds.Count > 0)
+                            {
+                                if (!feeds.Contains(curr.Level2Direct))
+                                {
+                                    curr.Level2Direct.DataReceived += OnDataReceived;
+
+                                    //curr.Level3Feed.DistributionStrategy = DistributionStrategy.Link;
+                                    curr.Level2Direct.MonitorThroughput = true;
+                                    lock (feeds)
+                                    {
+                                        feeds.Add(curr.Level2Direct);
                                     }
                                 }
 
@@ -848,7 +885,7 @@ namespace KuCoinConsole
 
         }
 
-        private static void Level3Feed_DataReceived(object sender, DataReceivedEventArgs e)
+        private static void OnDataReceived(object sender, DataReceivedEventArgs e)
         {
             var msg = JsonConvert.DeserializeObject<FeedMessage>(e.Json);
             
@@ -1105,9 +1142,18 @@ namespace KuCoinConsole
                                     }
 
                                     through += l2a.Throughput;
-                                    queue += l2a.QueueLength;
-                                    if (l2a.MaxQueueLengthLast60Seconds > maxqueue)
-                                        maxqueue += l2a.MaxQueueLengthLast60Seconds;
+
+                                    if (!(f is Level2Direct))
+                                    {
+                                        queue += l2a.QueueLength;
+                                        if (l2a.MaxQueueLengthLast60Seconds > maxqueue)
+                                            maxqueue += l2a.MaxQueueLengthLast60Seconds;
+
+                                    }
+                                    else
+                                    {
+                                        queue = -1;
+                                    }
 
                                 }
                             }
@@ -1116,10 +1162,17 @@ namespace KuCoinConsole
                     else
                     {
                         through += current.Throughput;
-                        queue += current.QueueLength;
-                        if (current.MaxQueueLengthLast60Seconds > maxqueue)
-                            maxqueue += current.MaxQueueLengthLast60Seconds;
+                        if (!(current is Level2Direct))
+                        {
+                            queue += current.QueueLength;
+                            if (current.MaxQueueLengthLast60Seconds > maxqueue)
+                                maxqueue += current.MaxQueueLengthLast60Seconds;
 
+                        }
+                        else
+                        {
+                            queue = -1;
+                        }
 
                     }
 
@@ -1503,8 +1556,15 @@ namespace KuCoinConsole
                             itsb.WriteToEdgeLine($"{MinChars($"{{White}}{vc + 1} {{Red}}Feed Disconnected{{ForegroundReset}}", maxSymbolLen + 22)}");
                         }
 
-                        itsb.WriteToEdgeLine($"{MinChars($"{{White}}{MinChars($"{vc + 1}", 3)} {{Blue}}@{fidx}{{ForegroundReset}}", maxSymbolLen + 30)}   Match Share: {MinChars(metrics ? mpcts[z].ToString("##0.##") + "%" : "Off", 7)}   Total Share: {MinChars(metrics ? pcts[z++].ToString("##0.##") + "%" : "Off", 7)}   State: " + MinChars(l3.State.ToString(), 14) + "  Queue Length: " + MinChars(metrics ? l3.QueueLength.ToString() : "Off", 10) + $"{{ForegroundReset}} Timestamp: {{Blue}}{ts:G}{{ForegroundReset}}");
-
+                        if (queue == -1)
+                        {
+                            itsb.WriteToEdgeLine($"{MinChars($"{{White}}{MinChars($"{vc + 1}", 3)} {{Blue}}@{fidx}{{ForegroundReset}}", maxSymbolLen + 30)}   Match Share: {MinChars(metrics ? mpcts[z].ToString("##0.##") + "%" : "Off", 7)}   Total Share: {MinChars(metrics ? pcts[z++].ToString("##0.##") + "%" : "Off", 7)}   State: " + MinChars(l3.State.ToString(), 10) + "  Throughput: " + MinChars(metrics ? PrintFriendlySpeed((ulong)l3.Throughput) : "Off", 16) + $"{{ForegroundReset}} Timestamp: {{Blue}}{ts:G}{{ForegroundReset}}");
+                        }
+                        else
+                        {
+                            itsb.WriteToEdgeLine($"{MinChars($"{{White}}{MinChars($"{vc + 1}", 3)} {{Blue}}@{fidx}{{ForegroundReset}}", maxSymbolLen + 30)}   Match Share: {MinChars(metrics ? mpcts[z].ToString("##0.##") + "%" : "Off", 7)}   Total Share: {MinChars(metrics ? pcts[z++].ToString("##0.##") + "%" : "Off", 7)}   State: " + MinChars(l3.State.ToString(), 14) + "  Queue Length: " + MinChars(metrics ? l3.QueueLength.ToString() : "Off", 10) + $"{{ForegroundReset}} Timestamp: {{Blue}}{ts:G}{{ForegroundReset}}");
+                        }
+                        
                         itsb.WriteToEdge("");
 
                         if (itemIndex == vc)

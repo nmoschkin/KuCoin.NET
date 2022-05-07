@@ -33,13 +33,13 @@ namespace KuCoin.NET.Data.Websockets
         /// Asks (from sellers)
         /// </summary>
         [JsonProperty("asks")]
-        public List<OrderUnitStruct> Asks { get; set; }
+        public List<OrderUnit> Asks { get; set; }
 
         /// <summary>
         /// Bids (from buyers)
         /// </summary>
         [JsonProperty("bids")]
-        public List<OrderUnitStruct> Bids { get; set; }
+        public List<OrderUnit> Bids { get; set; }
 
         public Dictionary<string, object> ToDict()
         {
@@ -52,9 +52,9 @@ namespace KuCoin.NET.Data.Websockets
                 l1.Add(ask.ToDict());
             }
 
-            foreach (var ask in Bids)
+            foreach (var bid in Bids)
             {
-                l2.Add(ask.ToDict());
+                l2.Add(bid.ToDict());
             }
 
             return new Dictionary<string, object>()
@@ -71,7 +71,7 @@ namespace KuCoin.NET.Data.Websockets
     /// <summary>
     /// Level 2 Full Market Depth Data Update
     /// </summary>
-    public struct Level2Update : ILevel2Update
+    public class Level2Update : ILevel2Update
     {
         /// <summary>
         /// Update sequence start
