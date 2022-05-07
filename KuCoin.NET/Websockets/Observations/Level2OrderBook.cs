@@ -229,11 +229,11 @@ namespace KuCoin.NET.Websockets.Observations
                         candle.ClosePrice = price;
                         LastCandles.Add(candle);
 
-                        Candle = new Candle();
+                        Candle = new Candle() { Type = (KlineType)klineType, Timestamp = klineTime };
                         Candle.Volume = 0;
 
                         Candle.OpenPrice = Candle.ClosePrice = Candle.HighPrice = Candle.LowPrice = price;
-                        KlineTime = Candle.Timestamp = klineType.GetCurrentKlineStartTime();
+                        KlineTime = Candle.Timestamp = KlineType.GetCurrentKlineStartTime();
                     }
                     else
                     {
