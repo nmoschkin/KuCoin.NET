@@ -111,6 +111,15 @@ _(Try running with __300__ feeds.  Works well on an i7-10700K with a Gigabit int
 
 ![](docs/docimg1.png?raw=true)
 
+### Console App Instructions
+
+	- Use Arrow Up/Arrow Down, Page Up/Page Down, Home/End to navigate the feed list. 
+	- Use Ctrl + Page Up/Down to select an item. Esc to clear selection.
+	- Use Arrow Left/Arrow Right to switch between different connections.  
+	- Use Ctrl + Arrow Left/Arrow Right to change the K-Line.
+
+	- Press: (A) Sort Alphabetically, (P) Price, (V) Volume, (T) Throughput. Press again to reverse order. (D) Diagnostics. (M) Messages (Q) To Quit.
+
 ## Using the Library
 
 _(Note: A Wiki will be coming soon!)_
