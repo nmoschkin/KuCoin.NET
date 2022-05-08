@@ -118,7 +118,10 @@ _(Try running with __300__ feeds.  Works well on an i7-10700K with a Gigabit int
   * Use Arrow Left/Arrow Right to switch between different connections.  
   * Use Ctrl + Arrow Left/Arrow Right to change the K-Line.
 
-  * Press: (A) Sort Alphabetically, (P) Price, (V) Volume, (T) Throughput. Press again to reverse order. (D) Diagnostics. (M) Messages (Q) To Quit.
+  * Press: (A) Sort Alphabetically, (P) Price, (V) Volume, (T) Throughput. Press again to reverse order. 
+  * Press: (D) Show/Hide Diagnostics. 
+  * Press: (M) Show/Hide Messages 
+  * Press: (Q) To Quit.
 
 ## Using the Library
 
