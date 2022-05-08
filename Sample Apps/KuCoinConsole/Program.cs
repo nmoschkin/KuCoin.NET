@@ -1655,7 +1655,7 @@ namespace KuCoinConsole
                     }
 
                     ft.WriteToEdgeLine($"                                                       ");
-                    ft.WriteToEdgeLine($"{{White}}Use Arrow Up/Arrow Down, Page Up/Page Down, Home/End to navigate the feed list. Ctrl+Arrow Up/Down to select an item. Esc to clear selection.{{Reset}}");
+                    ft.WriteToEdgeLine($"{{White}}Use Arrow Up/Arrow Down, Page Up/Page Down, Home/End to navigate the feed list. Ctrl+Page Up/Down to select an item. Esc to clear selection.{{Reset}}");
                     ft.WriteToEdgeLine($"{{White}}Use Arrow Left/Arrow Right to switch between different connections.  Use Ctrl + Arrow Left/Arrow Right to change the K-Line.{{Reset}}");
                     ft.WriteToEdgeLine($"{{White}}Press: (A) Sort Alphabetically, (P) Price, (V) Volume, (T) Throughput. Press again to reverse order. (D) Diagnostics. (M) Messages (Q) To Quit.");
 
