@@ -427,13 +427,17 @@ namespace KuCoinConsole
                         {
                             try
                             {
+                                var share = (tickerCount == 0 || (tickerCount % maxSharedConn != 0));
                                 var precurr = curr;
-                                curr = serviceFactory.EnableOrAddSymbol(sym, curr, (tickerCount == 0 || (tickerCount % maxSharedConn != 0)));
+
+                                if (!share && tickerCount != 0) await Task.Delay(2000);
+
+                                curr = serviceFactory.EnableOrAddSymbol(sym, curr, share);
 
                                 if (curr == null)
                                 {
                                     curr = precurr;
-                                    curr = serviceFactory.EnableOrAddSymbol(sym, curr, (tickerCount == 0 || (tickerCount % maxSharedConn != 0)));
+                                    curr = serviceFactory.EnableOrAddSymbol(sym, curr, share);
 
                                     if (curr == null)
                                     {
