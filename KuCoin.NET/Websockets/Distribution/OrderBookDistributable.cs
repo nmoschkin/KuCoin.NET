@@ -296,7 +296,7 @@ namespace KuCoin.NET.Websockets.Distribution
 
                     if (!initializing)
                     {
-                        if (buffer.Count < 1) return;
+                        if (buffer.Count < 10) return;
 
                         initializing = true;
                         startFetch = DateTime.UtcNow;

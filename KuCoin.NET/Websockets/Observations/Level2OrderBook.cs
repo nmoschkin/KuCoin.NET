@@ -115,13 +115,12 @@ namespace KuCoin.NET.Websockets.Observations
             base.PerformResetTasks();
 
             cresets++;
-            if (cresets > 3 && (lreset - DateTime.Now) < new TimeSpan(0, 0, 0, 30))
+
+            if (cresets > 10 && (lreset - DateTime.Now) < new TimeSpan(0, 0, 0, 30))
             {
                 cresets = 0;
 
                 Failure = true;
-                FailReason = FailReason.Other;
-                LastFailureTime = DateTime.Now;
             }
 
             lreset = DateTime.Now;
