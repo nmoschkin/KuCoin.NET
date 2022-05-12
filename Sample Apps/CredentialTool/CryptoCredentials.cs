@@ -463,9 +463,25 @@ namespace CredentialTool
                     if (File.Exists(path)) File.Delete(path);
 
                     File.WriteAllText(path, crypted);
-                    File.Encrypt(path);
 
-                    File.Delete(oldpath);
+                    try
+                    {
+                        File.Encrypt(path);
+
+                    }
+                    catch
+                    {
+
+                    }
+
+                    try
+                    {
+                        File.Delete(oldpath);
+                    }
+                    catch
+                    {
+
+                    }
                 }
 
 
