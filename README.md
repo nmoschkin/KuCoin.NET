@@ -132,7 +132,7 @@ and create and acquire __IServiceFactory__ and  __ISymbolDataService__ instances
 
 ### REST API 
 
-Inside the __Kucoin.NET.Rest__ namespace you will find three objects, __Market__, __Trade__, __Margin__, and __User__.  __Margin__, __Trade__, and __User__ require API Keys.  
+Inside the __Kucoin.NET.Rest__ namespace you will find four objects, __Market__, __Trade__, __Margin__, and __User__.  __Margin__, __Trade__, and __User__ require API Keys.  
 
 There are two credentials providers, there is the default __MemoryEncryptedCredentialsProvider__ that is in the KuCoin.NET library, and then the __CryptoCredentials__ class in the example app and the credentials editor app.
 
